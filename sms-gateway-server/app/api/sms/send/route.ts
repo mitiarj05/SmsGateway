@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import { authenticateApiClient } from '@/lib/auth'
 import { sendNewTaskPush } from '@/lib/send-push'
+import { selectBestDevice } from '@/lib/select-device'
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,27 +60,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 4. Chercher un device ONLINE avec un token FCM
-    const { data: device } = await supabaseAdmin
-      .from('devices')
-      .select('id, nom, fcm_token')
-      .eq('statut', 'ONLINE')
-      .not('fcm_token', 'is', null)
-      .order('derniere_activite', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+    // 4. Sélectionner le meilleur device disponible (least-busy + limite horaire)
+    const device = await selectBestDevice()
 
     // 5. Envoyer le push (non bloquant)
     let pushSent = false
     if (device?.fcm_token) {
       try {
         pushSent = await sendNewTaskPush(device.fcm_token, task.id)
-        console.log(`Push FCM envoyé au device ${device.id} : ${pushSent}`)
+        console.log(`Push FCM envoyé au device ${device.id} (${device.sms_last_hour} SMS/heure) : ${pushSent}`)
       } catch (pushErr) {
         console.error('Erreur push FCM (non bloquant):', pushErr)
       }
     } else {
-      console.warn('Aucun device ONLINE avec fcm_token — pas de push')
+      console.warn('Aucun device disponible — pas de push')
     }
 
     // 6. Réponse
@@ -88,6 +82,9 @@ export async function POST(request: NextRequest) {
         message: 'SMS mis en file d\'attente',
         task: task,
         push_sent: pushSent,
+        device_selected: device
+          ? { id: device.id, nom: device.nom, sms_last_hour: device.sms_last_hour }
+          : null,
         client: { id: client.id, nom: client.nom },
       },
       { status: 201 }
