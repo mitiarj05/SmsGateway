@@ -27,10 +27,10 @@ object ApiClient {
     /**
      * URL du serveur, modifiable sans recompiler :
      * [setBaseUrl] au démarrage (service / écran d'accueil).
-     * En émulateur : http://10.0.2.2:3001 — sur téléphone : http://IP_DU_PC:3001
+     * En émulateur : http://10.0.2.2:3000 — sur téléphone : http://IP_DU_PC:3000
      */
     @Volatile
-    var baseUrl: String = DevicePreferences.DEFAULT_SERVER_URL
+    var baseUrl: String = "http://${DevicePreferences.DEFAULT_SERVER_HOST}:${DevicePreferences.DEFAULT_SERVER_PORT}"
         private set
 
     fun setBaseUrl(url: String) {
@@ -267,6 +267,38 @@ object ApiClient {
         } catch (e: Exception) {
             Log.e(TAG, "Erreur updateTaskStatus (réseau coupé ?), task=$taskId statut=$statut", e)
             return@withContext StatusResult.NetworkError
+        }
+    }
+
+    /**
+     * Envoie le token FCM au serveur.
+     */
+    suspend fun updateFcmToken(
+        deviceId: String,
+        authToken: String,
+        fcmToken: String
+    ): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val body = gson.toJson(mapOf("fcm_token" to fcmToken))
+                .toRequestBody(JSON)
+
+            val request = Request.Builder()
+                .url("$baseUrl/api/devices/$deviceId/fcm-token")
+                .header("Authorization", "Bearer $authToken")
+                .post(body)
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    Log.e(TAG, "updateFcmToken échoué : ${response.code}")
+                    return@withContext false
+                }
+                Log.d(TAG, "Token FCM envoyé au serveur")
+                return@withContext true
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Erreur updateFcmToken", e)
+            return@withContext false
         }
     }
 

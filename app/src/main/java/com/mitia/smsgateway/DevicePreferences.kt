@@ -20,9 +20,73 @@ object DevicePreferences {
 
     private val KEY_DEVICE_ID = stringPreferencesKey("device_id")
     private val KEY_TOKEN = stringPreferencesKey("device_token")
-    private val KEY_SERVER_URL = stringPreferencesKey("server_url")
+    private val KEY_SERVER_HOST = stringPreferencesKey("server_host")
+    private val KEY_SERVER_PORT = stringPreferencesKey("server_port")
 
-    const val DEFAULT_SERVER_URL = "http://192.168.4.147:3001"
+    const val DEFAULT_SERVER_HOST = "192.168.4.147"
+    const val DEFAULT_SERVER_PORT = "3000"
+
+    /**
+     * URL complète du serveur.
+     */
+    suspend fun getServerUrl(context: Context): String {
+        val host = getServerHost(context)
+        val port = getServerPort(context)
+        return "http://$host:$port"
+    }
+
+    /**
+     * Sauvegarde la connexion serveur avec host et port séparés.
+     */
+    suspend fun saveServerUrl(context: Context, url: String) {
+        val normalized = normalizeUrl(url)
+        val hostPort = normalized
+            .removePrefix("http://")
+            .removePrefix("https://")
+            .removeSuffix("/")
+        val parts = hostPort.split(":")
+        context.dataStore.edit { prefs ->
+            prefs[KEY_SERVER_HOST] = parts.first()
+            prefs[KEY_SERVER_PORT] = parts.getOrNull(1) ?: DEFAULT_SERVER_PORT
+        }
+    }
+
+    /**
+     * Récupère le host du serveur (IP ou nom de domaine).
+     */
+    suspend fun getServerHost(context: Context): String {
+        val prefs = context.dataStore.data.first()
+        return prefs[KEY_SERVER_HOST] ?: DEFAULT_SERVER_HOST
+    }
+
+    /**
+     * Récupère le port du serveur.
+     */
+    suspend fun getServerPort(context: Context): String {
+        val prefs = context.dataStore.data.first()
+        return prefs[KEY_SERVER_PORT] ?: DEFAULT_SERVER_PORT
+    }
+
+    /**
+     * Met à jour uniquement le host du serveur (le port reste 3000).
+     * Appelle cette méthode quand tu changes de WiFi.
+     */
+    suspend fun saveServerHost(context: Context, host: String) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_SERVER_HOST] = host
+        }
+    }
+
+    /**
+     * Normalise une URL brute en format host:port.
+     */
+    fun normalizeUrl(raw: String): String {
+        var url = raw.trim().removeSuffix("/")
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            url = "http://$url"
+        }
+        return url
+    }
 
     /**
      * Sauvegarde le deviceId et le token.
@@ -56,28 +120,5 @@ object DevicePreferences {
             prefs.remove(KEY_DEVICE_ID)
             prefs.remove(KEY_TOKEN)
         }
-    }
-
-    /**
-     * URL du serveur (modifiable dans l'app quand on change de WiFi,
-     * sans recompiler). Normalisée : sans '/' final.
-     */
-    suspend fun getServerUrl(context: Context): String {
-        val prefs = context.dataStore.data.first()
-        return normalizeUrl(prefs[KEY_SERVER_URL] ?: DEFAULT_SERVER_URL)
-    }
-
-    suspend fun saveServerUrl(context: Context, url: String) {
-        context.dataStore.edit { prefs ->
-            prefs[KEY_SERVER_URL] = normalizeUrl(url)
-        }
-    }
-
-    fun normalizeUrl(raw: String): String {
-        var url = raw.trim().removeSuffix("/")
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            url = "http://$url"
-        }
-        return url
     }
 }

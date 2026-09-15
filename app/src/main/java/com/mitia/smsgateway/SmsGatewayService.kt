@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +27,6 @@ class SmsGatewayService : Service() {
     private val NOTIFICATION_ID = 1
     private val TAG = "SmsGatewayService"
     private val POLL_INTERVAL_MS = 30_000L
-    private val MAX_POLL_INTERVAL_MS = 300_000L // 5 min max en cas de coupure réseau
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var pollingJob: Job? = null
@@ -93,12 +93,22 @@ class SmsGatewayService : Service() {
 
         var deviceId = creds.first
         var token = creds.second
-        // Log complet pour le test (permet de rejouer en PowerShell avec le même token).
-        // En prod : ne logger que les 8 premiers caractères.
         Log.d(TAG, "Device prêt : id=$deviceId token=$token")
 
+        // Récupérer et envoyer le token FCM actuel
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val fcmToken = task.result
+                Log.d(TAG, "Token FCM actuel : $fcmToken")
+                serviceScope.launch {
+                    ApiClient.updateFcmToken(deviceId, token, fcmToken)
+                }
+            } else {
+                Log.e(TAG, "Impossible de récupérer le token FCM", task.exception)
+            }
+        }
+
         // --- 2. Boucle de polling ---
-        var consecutiveNetworkFailures = 0
         while (currentCoroutineContext().isActive) {
             try {
                 // 2a. Rejouer les confirmations en attente (retry réseau pur,
@@ -106,20 +116,9 @@ class SmsGatewayService : Service() {
                 retryPendingConfirmations(deviceId, token)
 
                 Log.d(TAG, "Polling des tâches...")
-                when (val result = ApiClient.getTasksDetailed(deviceId, token)) {
-                    is ApiClient.TasksResult.NetworkError -> {
-                        consecutiveNetworkFailures++
-                        val backoff = (POLL_INTERVAL_MS * (1 shl consecutiveNetworkFailures.coerceAtMost(4)))
-                            .coerceAtMost(MAX_POLL_INTERVAL_MS)
-                        Log.w(TAG, "Réseau indisponible, prochain essai dans ${backoff}ms (échec n°$consecutiveNetworkFailures)")
-                        updateNotification("Hors ligne, nouvel essai bientôt...")
-                        delay(backoff)
-                        continue
-                    }
-                    is ApiClient.TasksResult.Success -> {
-                        consecutiveNetworkFailures = 0
-                        handleTasks(deviceId, token, result.tasks)
-                    }
+                val tasks = ApiClient.getTasks(deviceId, token)
+                if (tasks.isNotEmpty()) {
+                    processTasks(deviceId, token, tasks)
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -151,7 +150,7 @@ class SmsGatewayService : Service() {
         }
     }
 
-    private suspend fun handleTasks(
+    private suspend fun processTasks(
         deviceId: String,
         token: String,
         tasks: List<ApiClient.TaskDto>
@@ -166,42 +165,30 @@ class SmsGatewayService : Service() {
         for (task in tasks) {
             Log.d(TAG, "Traitement de la task ${task.id}")
 
-            // 1. Claim SENDING en UNE seule tentative. Si le serveur dit
-            //    que la task appartient déjà à un autre device (ou qu'elle
-            //    est finalisée), on SKIP SANS envoyer le SMS (anti-doublon).
-            when (val claim = ApiClient.updateTaskStatusDetailed(
-                deviceId, token, task.id, "SENDING"
-            )) {
-                is ApiClient.StatusResult.Success,
-                is ApiClient.StatusResult.AlreadyConfirmed -> {
-                    // Claim accepté (ou déjà à nous) → on peut envoyer.
+            val claim = ApiClient.updateTaskStatusDetailed(deviceId, token, task.id, "SENDING")
+            val sendingOk = when (claim) {
+                is ApiClient.StatusResult.Success, is ApiClient.StatusResult.AlreadyConfirmed -> true
+                else -> false
+            }
+            if (!sendingOk) {
+                when (claim) {
+                    is ApiClient.StatusResult.AssignedToOther ->
+                        Log.w(TAG, "Task ${task.id} déjà prise par ${claim.assignedTo}, on skip (pas de SMS)")
+                    is ApiClient.StatusResult.FinalizedConflict ->
+                        Log.w(TAG, "Task ${task.id} déjà finalisée (${claim.currentStatus}), on skip (pas de SMS)")
+                    is ApiClient.StatusResult.HttpError, is ApiClient.StatusResult.NetworkError ->
+                        Log.w(TAG, "Claim SENDING impossible (réseau ?), on skip sans envoyer : ${task.id}")
+                    else -> {}
                 }
-                is ApiClient.StatusResult.AssignedToOther -> {
-                    Log.w(TAG, "Task ${task.id} déjà prise par ${claim.assignedTo}, on skip (pas de SMS)")
-                    continue
-                }
-                is ApiClient.StatusResult.FinalizedConflict -> {
-                    Log.w(TAG, "Task ${task.id} déjà finalisée (${claim.currentStatus}), on skip (pas de SMS)")
-                    continue
-                }
-                is ApiClient.StatusResult.HttpError,
-                is ApiClient.StatusResult.NetworkError -> {
-                    Log.w(TAG, "Claim SENDING impossible (réseau ?), on skip sans envoyer : ${task.id}")
-                    continue
-                }
+                continue
             }
 
-            // 2. Envoyer le SMS UNE SEULE FOIS.
             val sent = SmsSender.sendSms(
                 context = applicationContext,
                 numero = task.numero_destinataire,
                 message = task.message
             )
 
-            // 3. Confirmer au serveur avec retry (jamais de 2e envoi SMS).
-            //    En cas d'échec persistant (WiFi coupé), on persiste en file :
-            //    le SMS est déjà parti, la confirmation sera rejouée aux
-            //    prochains cycles jusqu'au 200 (ou 409 idempotent).
             if (sent) {
                 Log.d(TAG, "SMS envoyé à ${task.numero_destinataire}")
                 val confirmed = ApiClient.confirmWithRetry(deviceId, token, task.id, "SENT")
@@ -215,9 +202,7 @@ class SmsGatewayService : Service() {
             } else {
                 Log.e(TAG, "Échec de l'envoi du SMS")
                 val errorMessage = "SmsManager a retourné un échec"
-                val confirmed = ApiClient.confirmWithRetry(
-                    deviceId, token, task.id, "FAILED", errorMessage
-                )
+                val confirmed = ApiClient.confirmWithRetry(deviceId, token, task.id, "FAILED", errorMessage)
                 if (confirmed) {
                     updateNotification("Échec SMS à ${task.numero_destinataire}")
                 } else {
@@ -228,6 +213,12 @@ class SmsGatewayService : Service() {
             }
         }
     }
+
+    private suspend fun handleTasks(
+        deviceId: String,
+        token: String,
+        tasks: List<ApiClient.TaskDto>
+    ) = processTasks(deviceId, token, tasks)
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

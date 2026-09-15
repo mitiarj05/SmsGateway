@@ -1,11 +1,16 @@
 package com.mitia.smsgateway
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,8 +38,25 @@ import com.mitia.smsgateway.ui.theme.SmsGatewayTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+
+    private val requestSendSmsPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            Log.d("MainActivity", "Permission SEND_SMS accordée")
+        } else {
+            Log.e("MainActivity", "Permission SEND_SMS refusée")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (ContextCompat.checkSelfPermission(
+                this, Manifest.permission.SEND_SMS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestSendSmsPermission.launch(Manifest.permission.SEND_SMS)
+        }
         enableEdgeToEdge()
         setContent {
             SmsGatewayTheme {

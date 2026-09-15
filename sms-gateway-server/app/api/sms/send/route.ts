@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import { authenticateApiClient } from '@/lib/auth'
+import { sendNewTaskPush } from '@/lib/send-push'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { to, message, cle_api } = body
 
-    // 1. Validation des champs
+    // 1. Validation
     if (!to || typeof to !== 'string' || to.trim().length === 0) {
       return NextResponse.json(
-        { error: 'Le champ "to" (numéro destinataire) est obligatoire' },
+        { error: 'Le champ "to" est obligatoire' },
         { status: 400 }
       )
     }
@@ -38,8 +39,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 3. Création de la tâche SMS
-    const { data, error } = await supabaseAdmin
+    // 3. Créer la task
+    const { data: task, error } = await supabaseAdmin
       .from('sms_tasks')
       .insert({
         numero_destinataire: to.trim(),
@@ -58,11 +59,35 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 4. Réponse
+    // 4. Chercher un device ONLINE avec un token FCM
+    const { data: device } = await supabaseAdmin
+      .from('devices')
+      .select('id, nom, fcm_token')
+      .eq('statut', 'ONLINE')
+      .not('fcm_token', 'is', null)
+      .order('derniere_activite', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    // 5. Envoyer le push (non bloquant)
+    let pushSent = false
+    if (device?.fcm_token) {
+      try {
+        pushSent = await sendNewTaskPush(device.fcm_token, task.id)
+        console.log(`Push FCM envoyé au device ${device.id} : ${pushSent}`)
+      } catch (pushErr) {
+        console.error('Erreur push FCM (non bloquant):', pushErr)
+      }
+    } else {
+      console.warn('Aucun device ONLINE avec fcm_token — pas de push')
+    }
+
+    // 6. Réponse
     return NextResponse.json(
       {
         message: 'SMS mis en file d\'attente',
-        task: data,
+        task: task,
+        push_sent: pushSent,
         client: { id: client.id, nom: client.nom },
       },
       { status: 201 }
