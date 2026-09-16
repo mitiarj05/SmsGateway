@@ -203,9 +203,6 @@ fun MainScreen(
         netType = networkType(context)
         serviceRunning = isServiceRunning(context)
         scope.launch {
-            serverUrl = container.deviceRepository.getServerUrl()
-            deviceName = container.deviceRepository.getDeviceName()
-            deviceToken = container.deviceRepository.getCredentials()?.second
             val (sync, count) = container.deviceRepository.loadSync()
             lastSync = sync
             lastCount = count
@@ -216,7 +213,15 @@ fun MainScreen(
         }
     }
 
-    LaunchedEffect(Unit) { refresh() }
+    LaunchedEffect(Unit) {
+        // Chargement initial uniquement : ensuite les champs gardent la frappe.
+        scope.launch {
+            serverUrl = container.deviceRepository.getServerUrl()
+            deviceName = container.deviceRepository.getDeviceName()
+            deviceToken = container.deviceRepository.getCredentials()?.second
+        }
+        refresh()
+    }
     LaunchedEffect(permissionTick) { if (permissionTick > 0) refresh() }
 
     val connected = serviceRunning && lastSync > 0 &&
@@ -259,8 +264,10 @@ fun MainScreen(
                     settingsMessage = "Renseigne l'adresse du serveur."
                     return@launch
                 }
-                serverUrl = container.deviceRepository.saveServerUrl(serverUrl)
-                settingsMessage = "Adresse enregistrée : $serverUrl"
+                // On ne réécrit pas le champ : il garde la frappe, le message
+                // affiche la forme normalisée réellement enregistrée.
+                val normalized = container.deviceRepository.saveServerUrl(serverUrl)
+                settingsMessage = "Adresse enregistrée : $normalized"
                 refresh()
             }
         },

@@ -25,6 +25,7 @@ object DevicePreferences {
     private val KEY_TOKEN = stringPreferencesKey("device_token")
     private val KEY_SERVER_HOST = stringPreferencesKey("server_host")
     private val KEY_SERVER_PORT = stringPreferencesKey("server_port")
+    private val KEY_SERVER_URL = stringPreferencesKey("server_url")
     private val KEY_DEVICE_NAME = stringPreferencesKey("device_name")
     private val KEY_LAST_SYNC = longPreferencesKey("last_sync")
     private val KEY_LAST_COUNT = intPreferencesKey("last_task_count")
@@ -35,27 +36,24 @@ object DevicePreferences {
     const val DEFAULT_SERVER_PORT = "3000"
 
     /**
-     * URL complète du serveur.
+     * URL complète du serveur, exactement telle que saisie
+     * (ex. https://sms-gateway-omega.vercel.app ou http://192.168.1.10:3000).
+     * Migration : anciennes versions stockées en host/port séparés.
      */
     suspend fun getServerUrl(context: Context): String {
-        val host = getServerHost(context)
-        val port = getServerPort(context)
+        val prefs = context.dataStore.data.first()
+        prefs[KEY_SERVER_URL]?.takeIf { it.isNotBlank() }?.let { return it }
+        val host = prefs[KEY_SERVER_HOST] ?: DEFAULT_SERVER_HOST
+        val port = prefs[KEY_SERVER_PORT] ?: DEFAULT_SERVER_PORT
         return "http://$host:$port"
     }
 
     /**
-     * Sauvegarde la connexion serveur avec host et port séparés.
+     * Sauvegarde l'URL telle que saisie (sans ajout de port).
      */
     suspend fun saveServerUrl(context: Context, url: String) {
-        val normalized = normalizeUrl(url)
-        val hostPort = normalized
-            .removePrefix("http://")
-            .removePrefix("https://")
-            .removeSuffix("/")
-        val parts = hostPort.split(":")
         context.dataStore.edit { prefs ->
-            prefs[KEY_SERVER_HOST] = parts.first()
-            prefs[KEY_SERVER_PORT] = parts.getOrNull(1) ?: DEFAULT_SERVER_PORT
+            prefs[KEY_SERVER_URL] = normalizeUrl(url)
         }
     }
 
@@ -86,14 +84,30 @@ object DevicePreferences {
     }
 
     /**
-     * Normalise une URL brute en format host:port.
+     * Normalise une URL saisie : rogne les espaces et le "/" final, ajoute un
+     * schéma seulement s'il manque (http pour le local, https sinon).
+     * Le port n'est JAMAIS ajouté : saisissez-le explicitement si besoin
+     * (ex. http://192.168.1.10:3000).
      */
     fun normalizeUrl(raw: String): String {
         var url = raw.trim().removeSuffix("/")
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            url = "http://$url"
+            val host = url.substringBefore(":").substringBefore("/").lowercase()
+            url = if (isLocalHost(host)) "http://$url" else "https://$url"
         }
         return url
+    }
+
+    private fun isLocalHost(host: String): Boolean {
+        if (host == "localhost" || host == "127.0.0.1" || host == "10.0.2.2") return true
+        if (host.startsWith("192.168.") || host.startsWith("10.")) return true
+        if (host.startsWith("172.")) {
+            val second = host.split(".").getOrNull(1)?.toIntOrNull()
+            if (second != null && second in 16..31) return true
+        }
+        // Toute autre adresse IPv4 = réseau local par défaut.
+        if (host.matches(Regex("\\d+\\.\\d+\\.\\d+\\.\\d+"))) return true
+        return false
     }
 
     /**

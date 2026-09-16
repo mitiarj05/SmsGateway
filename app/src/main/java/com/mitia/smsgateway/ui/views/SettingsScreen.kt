@@ -89,7 +89,7 @@ fun SettingsScreen(
         DarkTextField(
             value = serverUrl,
             onValueChange = onServerUrlChange,
-            placeholder = "http://192.168.1.10:3000",
+            placeholder = "https://sms-gateway-omega.vercel.app",
         )
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
