@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import { authenticateApiClient } from '@/lib/auth'
 import { sendNewTaskPush } from '@/lib/send-push'
-import { selectBestDevice } from '@/lib/select-device'
+import { getDeviceAvailability } from '@/lib/select-device'
+import { expireStalePending } from '@/lib/pending-expiry'
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!cle_api || typeof cle_api !== 'string') {
+    if (!cle_api || typeof cle_api !== 'string' || cle_api.trim().length === 0) {
       return NextResponse.json(
         { error: 'Le champ "cle_api" est obligatoire' },
         { status: 400 }
@@ -32,15 +33,37 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Authentification du client API
-    const client = await authenticateApiClient(cle_api)
+    const trimmedKey = cle_api.trim()
+    const client = await authenticateApiClient(trimmedKey)
     if (!client) {
+      // Diagnostic sans exposer la clé : longueur 36 = clé complète,
+      // ~15 + "…" = clé masquée copiée depuis la liste.
+      console.warn(
+        `[sms/send] cle_api rejetée (longueur=${trimmedKey.length}, préfixe=${trimmedKey.slice(0, 8)}…, suffixe=${trimmedKey.slice(-3)})`
+      )
       return NextResponse.json(
         { error: 'Clé API invalide' },
         { status: 401 }
       )
     }
 
-    // 3. Créer la task
+    // Expiration des PENDING trop anciennes (ne bloque jamais l'envoi)
+    await expireStalePending()
+
+    // 3. Quota strict : refuser AVANT de créer la task si tout est saturé
+    const availability = await getDeviceAvailability()
+    if (availability.saturated) {
+      return NextResponse.json(
+        {
+          error: `Quota SMS/heure atteint (${availability.quota}/h/device). Réessayez dans ~${availability.retryAfterSeconds}s.`,
+          quota: availability.quota,
+          retry_after_seconds: availability.retryAfterSeconds,
+        },
+        { status: 429 }
+      )
+    }
+
+    // 4. Créer la task
     const { data: task, error } = await supabaseAdmin
       .from('sms_tasks')
       .insert({
@@ -60,10 +83,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 4. Sélectionner le meilleur device disponible (least-busy + limite horaire)
-    const device = await selectBestDevice()
-
-    // 5. Envoyer le push (non bloquant)
+    // 5. Envoyer le push au device sélectionné (non bloquant)
+    const device = availability.device
     let pushSent = false
     if (device?.fcm_token) {
       try {

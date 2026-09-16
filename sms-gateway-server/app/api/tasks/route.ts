@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
+import { expireStalePending } from '@/lib/pending-expiry'
 
 export async function GET() {
   try {
+    await expireStalePending()
     const { data, error } = await supabaseAdmin
       .from('sms_tasks')
       .select('id, numero_destinataire, message, statut, device_id, error_message, created_at, updated_at')

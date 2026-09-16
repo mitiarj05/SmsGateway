@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import { authenticateDevice } from '@/lib/auth'
+import { getIntSetting } from '@/lib/settings'
+import { getDeviceUsage } from '@/lib/select-device'
+import { expireStalePending } from '@/lib/pending-expiry'
 
 // Une task SENDING depuis plus de 5 minutes est considérée abandonnée
 const SENDING_TIMEOUT_MS = 5 * 60 * 1000
@@ -28,6 +31,17 @@ export async function GET(
         { status: 401 }
       )
     }
+
+    // Quota strict : un device au quota ne reçoit plus de tasks pendant 1 h.
+    // Les PENDING restent en file pour plus tard ou un autre device.
+    const quota = await getIntSetting('sms_quota_per_hour')
+    const usage = await getDeviceUsage(deviceId)
+    const quotaReached = usage >= quota
+    if (quotaReached) {
+      console.warn(`quota: ${deviceId} au quota (${usage}/${quota}), polling sans tasks`)
+    }
+
+    await expireStalePending()
 
     // 1. Récupérer les tasks PENDING (jamais assignées)
     const { data: pendingTasks, error: err1 } = await supabaseAdmin
@@ -84,7 +98,7 @@ export async function GET(
         .eq('statut', 'SENDING')
     }
 
-    // 4. Fusionner les deux listes
+    // 4. Fusionner les deux listes (vide si quota atteint)
     const allTasks = [
       ...(pendingTasks || []),
       ...(expiredTasks || []).map(t => ({
@@ -94,7 +108,8 @@ export async function GET(
         statut: 'PENDING',  // désormais réassignable
         created_at: t.created_at,
       })),
-    ].slice(0, 5)  // max 5 par polling
+    ]
+    const visibleTasks = quotaReached ? [] : allTasks.slice(0, 5)  // max 5 par polling
 
     // 5. Mettre le device en ONLINE — SAUF s'il est désactivé manuellement
     // (sinon le polling réactiverait un device DISABLED quelques secondes après)
@@ -119,8 +134,10 @@ export async function GET(
     return NextResponse.json(
       {
         device: { id: device.id, nom: device.nom },
-        tasks: allTasks,
-        count: allTasks.length,
+        tasks: visibleTasks,
+        count: visibleTasks.length,
+        quota_reached: quotaReached,
+        quota,
       },
       { status: 200 }
     )

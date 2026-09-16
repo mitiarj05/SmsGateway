@@ -81,6 +81,19 @@ object ApiClient {
         val nom: String
     )
 
+    data class GetQuotaResponse(
+        val quota: Int,
+        val usage: Int,
+        val remaining: Int,
+        val quota_reached: Boolean,
+        val retry_after_seconds: Int
+    )
+
+    sealed interface QuotaResult {
+        data class Success(val quota: GetQuotaResponse) : QuotaResult
+        data object NetworkError : QuotaResult
+    }
+
     data class StatusResponse(
         val message: String,
         val task: TaskDto
@@ -117,6 +130,75 @@ object ApiClient {
     }
 
     // -------------------- Méthodes --------------------
+
+    /**
+     * Teste la joignabilité du serveur (GET racine, attendue 200).
+     * Utilisé par l'écran d'accueil, avant d'enregistrer l'adresse.
+     */
+    suspend fun pingServer(): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val request = Request.Builder()
+                .url(baseUrl)
+                .get()
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                return@withContext response.isSuccessful
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "pingServer échoué ($baseUrl)", e)
+            return@withContext false
+        }
+    }
+
+    /**
+     * Signale l'arrêt du device (bouton Déconnecter, service tué).
+     * Le serveur passe le statut à OFFLINE (jamais DISABLED, réservé admin).
+     */
+    suspend fun disconnect(deviceId: String, token: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val request = Request.Builder()
+                .url("$baseUrl/api/devices/$deviceId/offline")
+                .header("Authorization", "Bearer $token")
+                .post(ByteArray(0).toRequestBody(null))
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                return@withContext response.isSuccessful
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Erreur disconnect (réseau coupé ?)", e)
+            return@withContext false
+        }
+    }
+
+    /**
+     * Quota et usage horaire du device (endpoint imposé par le serveur).
+     * Utilisé par l'app pour l'écran Statut et les réglages.
+     */
+    suspend fun getQuotaDetailed(deviceId: String, token: String): QuotaResult = withContext(Dispatchers.IO) {
+        try {
+            val request = Request.Builder()
+                .url("$baseUrl/api/devices/$deviceId/quota")
+                .header("Authorization", "Bearer $token")
+                .get()
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    Log.e(TAG, "getQuota échoué : ${response.code} ${response.message}")
+                    return@withContext QuotaResult.NetworkError
+                }
+                val responseBody = response.body?.string()
+                    ?: return@withContext QuotaResult.NetworkError
+                val parsed = gson.fromJson(responseBody, GetQuotaResponse::class.java)
+                return@withContext QuotaResult.Success(parsed)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Erreur getQuota (réseau coupé ?)", e)
+            return@withContext QuotaResult.NetworkError
+        }
+    }
 
     /**
      * Enregistre un nouveau device auprès du serveur.

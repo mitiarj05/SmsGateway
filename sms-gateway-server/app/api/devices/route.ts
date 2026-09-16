@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
+import { markStaleDevicesOffline } from '@/lib/device-status'
 
 export async function GET() {
   try {
+    await markStaleDevicesOffline()
     const { data, error } = await supabaseAdmin
       .from('devices')
       .select('id, nom, statut, fcm_token, sms_last_hour, derniere_activite, created_at')

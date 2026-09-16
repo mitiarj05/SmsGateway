@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Send,
   ChevronRight,
+  LogOut,
 } from 'lucide-react'
 import { Device } from './ui'
 
@@ -51,6 +52,14 @@ export default function DashboardShell({
   }, [darkMode])
 
   const hasOnlineDevice = devices.some((d) => d.statut === 'ONLINE' || d.statut === 'BUSY')
+
+  async function logout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } finally {
+      window.location.href = '/login'
+    }
+  }
 
   const navItems = [
     { href: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" />, label: 'Tableau de bord' },
@@ -119,7 +128,7 @@ export default function DashboardShell({
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-zinc-200 bg-white/80 px-6 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80">
           <div>
             <h1 className="text-base font-bold text-zinc-900 dark:text-white">{title()}</h1>
-            <p className="text-xs text-zinc-400">
+            <p className="text-xs text-zinc-400" suppressHydrationWarning>
               Actualisé à {lastRefresh.toLocaleTimeString('fr-FR')}
             </p>
           </div>
@@ -145,6 +154,13 @@ export default function DashboardShell({
             >
               <Send className="h-4 w-4" />
               <span className="hidden sm:inline">Nouveau SMS</span>
+            </button>
+            <button
+              onClick={logout}
+              title="Se déconnecter"
+              className="rounded-lg border border-zinc-200 bg-white p-2 text-zinc-600 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            >
+              <LogOut className="h-4 w-4" />
             </button>
           </div>
         </header>

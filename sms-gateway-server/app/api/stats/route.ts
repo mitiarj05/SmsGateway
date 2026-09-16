@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
+import { expireStalePending } from '@/lib/pending-expiry'
 
 export async function GET() {
   try {
+    await expireStalePending()
     const { count: onlineDevices } = await supabaseAdmin
       .from('devices').select('*', { count: 'exact', head: true }).eq('statut', 'ONLINE')
     const { count: tasksSent } = await supabaseAdmin

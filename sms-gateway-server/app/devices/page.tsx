@@ -31,6 +31,7 @@ export default function DevicesPage() {
   const [testMessage, setTestMessage] = useState('')
   const [testApiKey, setTestApiKey] = useState('')
   const [sending, setSending] = useState(false)
+  const [quota, setQuota] = useState(SMS_QUOTA_PER_HOUR)
 
   function showToast(type: 'success' | 'error', text: string) {
     setToast({ type, text })
@@ -40,9 +41,18 @@ export default function DevicesPage() {
   const fetchData = async (silent = false) => {
     if (!silent) setRefreshing(true)
     try {
-      const res = await fetch('/api/devices')
+      const [res, setRes] = await Promise.all([
+        fetch('/api/devices'),
+        fetch('/api/settings'),
+      ])
       const data = await res.json()
       if (data.devices) setDevices(data.devices)
+      if (setRes.ok) {
+        const setData = await setRes.json()
+        if (typeof setData.settings?.sms_quota_per_hour === 'number') {
+          setQuota(setData.settings.sms_quota_per_hour)
+        }
+      }
       setLastRefresh(new Date())
     } finally {
       setLoading(false)
@@ -51,8 +61,10 @@ export default function DevicesPage() {
   }
 
   useEffect(() => {
+    const savedKey = localStorage.getItem('sms-gateway-api-key')
+    if (savedKey) setTestApiKey(savedKey)
     fetchData(true)
-    const interval = setInterval(() => fetchData(true), 5000)
+    const interval = setInterval(() => fetchData(true), 3000)
     return () => clearInterval(interval)
   }, [])
 
@@ -111,13 +123,18 @@ export default function DevicesPage() {
       const res = await fetch('/api/sms/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: testNumber, message: testMessage, cle_api: testApiKey }),
+        body: JSON.stringify({ to: testNumber, message: testMessage, cle_api: testApiKey.trim() }),
       })
+      const data = await res.json().catch(() => null)
       if (res.ok) {
         setModalOpen(false)
         setTestMessage('')
         fetchData(true)
+      } else {
+        showToast('error', data?.error ?? 'Erreur lors de l’envoi')
       }
+    } catch {
+      showToast('error', 'Erreur réseau')
     } finally {
       setSending(false)
     }
@@ -160,14 +177,14 @@ export default function DevicesPage() {
                   <th className="px-5 py-3">Appareil</th>
                   <th className="px-5 py-3">Statut</th>
                   <th className="px-5 py-3">Push</th>
-                  <th className="px-5 py-3 w-64">Utilisation (SMS/h)</th>
+                  <th className="px-5 py-3 w-64">Utilisation (SMS/h, quota {quota})</th>
                   <th className="px-5 py-3">Dernière activité</th>
                   <th className="px-5 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/60">
                 {devices.map((d) => {
-                  const pct = Math.min(100, Math.round(((d.sms_last_hour ?? 0) / SMS_QUOTA_PER_HOUR) * 100))
+                  const pct = Math.min(100, Math.round(((d.sms_last_hour ?? 0) / quota) * 100))
                   const barColor = pct >= 90 ? 'bg-red-500' : pct >= 60 ? 'bg-amber-500' : 'bg-blue-500'
                   return (
                     <tr key={d.id} className="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40">

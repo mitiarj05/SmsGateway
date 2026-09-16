@@ -31,12 +31,14 @@ export async function authenticateDevice(deviceId: string, token: string) {
  */
 export async function authenticateApiClient(cleApi: string) {
   if (!cleApi) return null
+  const cle = cleApi.trim()
+  if (!cle) return null
 
   const supabaseAdmin = getSupabaseAdmin()
   const { data, error } = await supabaseAdmin
     .from('api_clients')
     .select('id, nom, cle_api')
-    .eq('cle_api', cleApi)
+    .eq('cle_api', cle)
     .single()
 
   if (error || !data) return null

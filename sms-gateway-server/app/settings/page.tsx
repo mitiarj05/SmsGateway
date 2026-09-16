@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Settings as SettingsIcon, Send, CheckCircle2, AlertTriangle, Loader2, X, KeyRound, Trash2, Bell } from 'lucide-react'
+import { Settings as SettingsIcon, Send, CheckCircle2, AlertTriangle, Loader2, X, KeyRound, Trash2, Bell, Clock } from 'lucide-react'
 import DashboardShell from '../../components/DashboardShell'
 import { Device } from '../../components/ui'
 
@@ -23,8 +23,10 @@ export default function SettingsPage() {
 
   const [quota, setQuota] = useState('10')
   const [alertThreshold, setAlertThreshold] = useState('10')
+  const [expireHours, setExpireHours] = useState('24')
   const [savingQuota, setSavingQuota] = useState(false)
   const [savingAlert, setSavingAlert] = useState(false)
+  const [savingExpire, setSavingExpire] = useState(false)
 
   const [clients, setClients] = useState<ApiClient[]>([])
   const [newClientName, setNewClientName] = useState('')
@@ -40,14 +42,27 @@ export default function SettingsPage() {
   const fetchData = async () => {
     setRefreshing(true)
     try {
-      const [devRes, cliRes] = await Promise.all([
+      const [devRes, cliRes, setRes] = await Promise.all([
         fetch('/api/devices'),
         fetch('/api/api-clients'),
+        fetch('/api/settings'),
       ])
       const devData = await devRes.json()
       const cliData = await cliRes.json()
       if (devData.devices) setDevices(devData.devices)
       if (cliData.clients) setClients(cliData.clients)
+      if (setRes.ok) {
+        const setData = await setRes.json()
+        if (typeof setData.settings?.sms_quota_per_hour === 'number') {
+          setQuota(String(setData.settings.sms_quota_per_hour))
+        }
+        if (typeof setData.settings?.queue_alert_threshold === 'number') {
+          setAlertThreshold(String(setData.settings.queue_alert_threshold))
+        }
+        if (typeof setData.settings?.max_pending_hours === 'number') {
+          setExpireHours(String(setData.settings.max_pending_hours))
+        }
+      }
       setLastRefresh(new Date())
     } finally {
       setRefreshing(false)
@@ -58,10 +73,6 @@ export default function SettingsPage() {
     fetchData()
     const savedKey = localStorage.getItem('sms-gateway-api-key')
     if (savedKey) { setApiKey(savedKey); setTestApiKey(savedKey) }
-    const savedQuota = localStorage.getItem('sms-gateway-quota')
-    if (savedQuota) setQuota(savedQuota)
-    const savedAlert = localStorage.getItem('sms-gateway-alert-threshold')
-    if (savedAlert) setAlertThreshold(savedAlert)
   }, [])
 
   function showToast(type: 'success' | 'error', text: string) {
@@ -72,26 +83,81 @@ export default function SettingsPage() {
   function saveApiKey(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
-    localStorage.setItem('sms-gateway-api-key', apiKey)
-    setTestApiKey(apiKey)
+    const trimmed = apiKey.trim()
+    setApiKey(trimmed)
+    localStorage.setItem('sms-gateway-api-key', trimmed)
+    setTestApiKey(trimmed)
     setSaving(false)
     showToast('success', 'Clé API enregistrée localement')
   }
 
-  function saveQuota(e: React.FormEvent) {
+  async function saveQuota(e: React.FormEvent) {
     e.preventDefault()
     setSavingQuota(true)
-    localStorage.setItem('sms-gateway-quota', quota)
-    setSavingQuota(false)
-    showToast('success', `Quota SMS/heure : ${quota}`)
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cle: 'sms_quota_per_hour', valeur: Number(quota) }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setQuota(String(data.settings.sms_quota_per_hour))
+        showToast('success', `Quota SMS/heure : ${data.settings.sms_quota_per_hour}`)
+      } else {
+        showToast('error', data.error ?? 'Erreur enregistrement')
+      }
+    } catch {
+      showToast('error', 'Erreur réseau')
+    } finally {
+      setSavingQuota(false)
+    }
   }
 
-  function saveAlert(e: React.FormEvent) {
+  async function saveAlert(e: React.FormEvent) {
     e.preventDefault()
     setSavingAlert(true)
-    localStorage.setItem('sms-gateway-alert-threshold', alertThreshold)
-    setSavingAlert(false)
-    showToast('success', `Seuil d'alerte : ${alertThreshold} tâches`)
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cle: 'queue_alert_threshold', valeur: Number(alertThreshold) }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setAlertThreshold(String(data.settings.queue_alert_threshold))
+        showToast('success', `Seuil d'alerte : ${data.settings.queue_alert_threshold} tâches`)
+      } else {
+        showToast('error', data.error ?? 'Erreur enregistrement')
+      }
+    } catch {
+      showToast('error', 'Erreur réseau')
+    } finally {
+      setSavingAlert(false)
+    }
+  }
+
+  async function saveExpire(e: React.FormEvent) {
+    e.preventDefault()
+    setSavingExpire(true)
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cle: 'max_pending_hours', valeur: Number(expireHours) }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setExpireHours(String(data.settings.max_pending_hours))
+        showToast('success', `Expiration : ${data.settings.max_pending_hours} h`)
+      } else {
+        showToast('error', data.error ?? 'Erreur enregistrement')
+      }
+    } catch {
+      showToast('error', 'Erreur réseau')
+    } finally {
+      setSavingExpire(false)
+    }
   }
 
   async function createClient(e: React.FormEvent) {
@@ -142,7 +208,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/sms/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: testNumber, message: testMessage, cle_api: testApiKey }),
+        body: JSON.stringify({ to: testNumber, message: testMessage, cle_api: testApiKey.trim() }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -185,7 +251,7 @@ export default function SettingsPage() {
         {/* Quota SMS */}
         <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
           <h2 className="mb-1 text-sm font-bold text-zinc-900 dark:text-white">Quota SMS / heure / device</h2>
-          <p className="mb-4 text-xs text-zinc-400">Limite utilisée par selectBestDevice pour répartir la charge.</p>
+          <p className="mb-4 text-xs text-zinc-400">Limite stricte : au-delà, l&apos;envoi répond 429 et les téléphones ne prennent plus de tâches pendant 1 h.</p>
           <form onSubmit={saveQuota} className="flex gap-2">
             <input type="number" min={1} max={1000} value={quota} onChange={(e) => setQuota(e.target.value)}
               className="w-28 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
@@ -209,6 +275,24 @@ export default function SettingsPage() {
             <button type="submit" disabled={savingAlert}
               className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
               {savingAlert ? '…' : 'Enregistrer'}
+            </button>
+          </form>
+        </section>
+
+        {/* Expiration PENDING */}
+        <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
+          <div className="mb-1 flex items-center gap-2">
+            <Clock className="h-4 w-4 text-zinc-400" />
+            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Expiration des tâches en attente</h2>
+          </div>
+          <p className="mb-4 text-xs text-zinc-400">Une tâche PENDING non prise par un device sous ce délai passe en Échoué.</p>
+          <form onSubmit={saveExpire} className="flex gap-2">
+            <input type="number" min={1} max={1000} value={expireHours} onChange={(e) => setExpireHours(e.target.value)}
+              className="w-28 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
+            <span className="self-center text-xs text-zinc-400">heures</span>
+            <button type="submit" disabled={savingExpire}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
+              {savingExpire ? '…' : 'Enregistrer'}
             </button>
           </form>
         </section>

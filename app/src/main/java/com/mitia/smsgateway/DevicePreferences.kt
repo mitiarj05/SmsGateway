@@ -1,7 +1,10 @@
 package com.mitia.smsgateway
 
 import android.content.Context
+import android.os.Build
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
@@ -22,6 +25,11 @@ object DevicePreferences {
     private val KEY_TOKEN = stringPreferencesKey("device_token")
     private val KEY_SERVER_HOST = stringPreferencesKey("server_host")
     private val KEY_SERVER_PORT = stringPreferencesKey("server_port")
+    private val KEY_DEVICE_NAME = stringPreferencesKey("device_name")
+    private val KEY_LAST_SYNC = longPreferencesKey("last_sync")
+    private val KEY_LAST_COUNT = intPreferencesKey("last_task_count")
+    private val KEY_QUOTA = intPreferencesKey("quota")
+    private val KEY_QUOTA_USAGE = intPreferencesKey("quota_usage")
 
     const val DEFAULT_SERVER_HOST = "192.168.4.147"
     const val DEFAULT_SERVER_PORT = "3000"
@@ -89,6 +97,21 @@ object DevicePreferences {
     }
 
     /**
+     * Nom affiché du device sur le dashboard (modèle du téléphone par défaut).
+     * Utilisé à l'enregistrement ; changer de nom ensuite = réinitialiser + redémarrer.
+     */
+    suspend fun getDeviceName(context: Context): String {
+        val prefs = context.dataStore.data.first()
+        return prefs[KEY_DEVICE_NAME]?.takeIf { it.isNotBlank() } ?: Build.MODEL
+    }
+
+    suspend fun saveDeviceName(context: Context, name: String) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_DEVICE_NAME] = name.trim()
+        }
+    }
+
+    /**
      * Sauvegarde le deviceId et le token.
      */
     suspend fun save(context: Context, deviceId: String, token: String) {
@@ -110,6 +133,35 @@ object DevicePreferences {
         } else {
             null
         }
+    }
+
+    /**
+     * Dernier polling réussi (epoch ms, 0 = jamais) + tâches vues.
+     * Alimente les écrans Statut / Tâches.
+     */
+    suspend fun saveSync(context: Context, at: Long, count: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_LAST_SYNC] = at
+            prefs[KEY_LAST_COUNT] = count
+        }
+    }
+
+    suspend fun loadSync(context: Context): Pair<Long, Int> {
+        val prefs = context.dataStore.data.first()
+        return (prefs[KEY_LAST_SYNC] ?: 0L) to (prefs[KEY_LAST_COUNT] ?: 0)
+    }
+
+    /** Snapshot quota serveur (usage / quota), affiché écrans Statut / Réglages. */
+    suspend fun saveQuotaSnapshot(context: Context, quota: Int, usage: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_QUOTA] = quota
+            prefs[KEY_QUOTA_USAGE] = usage
+        }
+    }
+
+    suspend fun loadQuotaSnapshot(context: Context): Pair<Int, Int> {
+        val prefs = context.dataStore.data.first()
+        return (prefs[KEY_QUOTA] ?: 20) to (prefs[KEY_QUOTA_USAGE] ?: 0)
     }
 
     /**

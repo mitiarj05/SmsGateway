@@ -51,6 +51,28 @@ class SmsGatewayService : Service() {
     }
 
     override fun onDestroy() {
+        // Best-effort : prévenir le serveur avant de mourir (bouton Déconnecter
+        // ou système). Si ça n'aboutit pas, le sweep OFFLINE serveur (90 s
+        // sans polling) prend le relais automatiquement.
+        try {
+            val t = Thread {
+                try {
+                    kotlinx.coroutines.runBlocking {
+                        kotlinx.coroutines.withTimeout(5000L) {
+                            val creds = DevicePreferences.load(applicationContext)
+                            if (creds != null) {
+                                ApiClient.setBaseUrl(DevicePreferences.getServerUrl(applicationContext))
+                                ApiClient.disconnect(creds.first, creds.second)
+                            }
+                        }
+                    }
+                } catch (_: Exception) {
+                }
+            }
+            t.start()
+            t.join(6000L)
+        } catch (_: Exception) {
+        }
         pollingJob?.cancel()
         serviceScope.cancel()
         super.onDestroy()
@@ -78,15 +100,18 @@ class SmsGatewayService : Service() {
         // --- 1. Auth : load sinon register ---
         var creds = DevicePreferences.load(applicationContext)
         if (creds == null) {
-            Log.d(TAG, "Aucun device enregistré, tentative registerDevice(\"Mon telephone\")...")
-            val registered = ApiClient.registerDevice("Mon telephone")
+            val deviceName = DevicePreferences.getDeviceName(applicationContext)
+            Log.d(TAG, "Aucun device enregistré, tentative registerDevice(\"$deviceName\")...")
+            val registered = ApiClient.registerDevice(deviceName)
             if (registered == null) {
                 Log.e(TAG, "Échec registerDevice : vérifie BASE_URL, serveur Next.js démarré, et INTERNET")
+                EventLog.log(applicationContext, "échec enregistrement : serveur injoignable")
                 return
             }
             DevicePreferences.save(applicationContext, registered.first, registered.second)
             creds = registered
             Log.d(TAG, "Device enregistré et stocké : id=${registered.first}")
+            EventLog.log(applicationContext, "appareil enregistré : $deviceName")
         } else {
             Log.d(TAG, "Device déjà enregistré : id=${creds.first}")
         }
@@ -109,16 +134,69 @@ class SmsGatewayService : Service() {
         }
 
         // --- 2. Boucle de polling ---
+        var wasConnected = false
+        var firstSync = true
+        var wasQuotaReached = false
         while (currentCoroutineContext().isActive) {
             try {
                 // 2a. Rejouer les confirmations en attente (retry réseau pur,
                 //     aucun SMS n'est renvoyé ici).
                 retryPendingConfirmations(deviceId, token)
 
-                Log.d(TAG, "Polling des tâches...")
-                val tasks = ApiClient.getTasks(deviceId, token)
-                if (tasks.isNotEmpty()) {
-                    processTasks(deviceId, token, tasks)
+                when (val tasksResult = ApiClient.getTasksDetailed(deviceId, token)) {
+                    is ApiClient.TasksResult.Success -> {
+                        if (!wasConnected) {
+                            wasConnected = true
+                            EventLog.log(
+                                applicationContext,
+                                if (firstSync) "connexion au serveur ok" else "connexion rétablie"
+                            )
+                            firstSync = false
+                        }
+                        val now = System.currentTimeMillis()
+                        DevicePreferences.saveSync(applicationContext, now, tasksResult.tasks.size)
+                        TaskHistoryStore.upsertReceived(applicationContext, tasksResult.tasks)
+
+                        // 2b. Quota serveur (transitions loggées une seule fois)
+                        when (val quotaResult = ApiClient.getQuotaDetailed(deviceId, token)) {
+                            is ApiClient.QuotaResult.Success -> {
+                                DevicePreferences.saveQuotaSnapshot(
+                                    applicationContext,
+                                    quotaResult.quota.quota,
+                                    quotaResult.quota.usage
+                                )
+                                if (quotaResult.quota.quota_reached && !wasQuotaReached) {
+                                    wasQuotaReached = true
+                                    EventLog.log(
+                                        applicationContext,
+                                        "quota horaire atteint (${quotaResult.quota.usage}/${quotaResult.quota.quota})"
+                                    )
+                                } else if (!quotaResult.quota.quota_reached && wasQuotaReached) {
+                                    wasQuotaReached = false
+                                    EventLog.log(applicationContext, "quota horaire réinitialisé")
+                                }
+                            }
+                            ApiClient.QuotaResult.NetworkError -> {
+                                // Le polling a marché : simple raté, on réessaiera au prochain tour.
+                            }
+                        }
+
+                        if (tasksResult.tasks.isNotEmpty()) {
+                            EventLog.log(
+                                applicationContext,
+                                "sync file d'attente · ${tasksResult.tasks.size} tâche(s)"
+                            )
+                            processTasks(deviceId, token, tasksResult.tasks)
+                        } else {
+                            Log.d(TAG, "Polling des tâches... aucune")
+                        }
+                    }
+                    ApiClient.TasksResult.NetworkError -> {
+                        if (wasConnected) {
+                            wasConnected = false
+                            EventLog.log(applicationContext, "réseau perdu · reprise dans 30 s")
+                        }
+                    }
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -191,8 +269,11 @@ class SmsGatewayService : Service() {
 
             if (sent) {
                 Log.d(TAG, "SMS envoyé à ${task.numero_destinataire}")
+                TaskHistoryStore.updateStatus(applicationContext, task.id, "SENT")
+                EventLog.log(applicationContext, "sms envoyé > ${task.numero_destinataire}")
                 val confirmed = ApiClient.confirmWithRetry(deviceId, token, task.id, "SENT")
                 if (confirmed) {
+                    EventLog.log(applicationContext, "accusé transmis au serveur")
                     updateNotification("SMS envoyé à ${task.numero_destinataire}")
                 } else {
                     PendingConfirmStore.add(applicationContext, task.id, "SENT")
@@ -202,8 +283,11 @@ class SmsGatewayService : Service() {
             } else {
                 Log.e(TAG, "Échec de l'envoi du SMS")
                 val errorMessage = "SmsManager a retourné un échec"
+                TaskHistoryStore.updateStatus(applicationContext, task.id, "FAILED", errorMessage)
+                EventLog.log(applicationContext, "sms échoué > ${task.numero_destinataire}")
                 val confirmed = ApiClient.confirmWithRetry(deviceId, token, task.id, "FAILED", errorMessage)
                 if (confirmed) {
+                    EventLog.log(applicationContext, "rapport d'échec envoyé au serveur")
                     updateNotification("Échec SMS à ${task.numero_destinataire}")
                 } else {
                     PendingConfirmStore.add(applicationContext, task.id, "FAILED", errorMessage)

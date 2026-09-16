@@ -47,6 +47,8 @@ export default function HistoryPage() {
   }
 
   useEffect(() => {
+    const savedKey = localStorage.getItem('sms-gateway-api-key')
+    if (savedKey) setTestApiKey(savedKey)
     fetchData(true)
     const interval = setInterval(() => fetchData(true), 10000)
     return () => clearInterval(interval)
@@ -59,13 +61,18 @@ export default function HistoryPage() {
       const res = await fetch('/api/sms/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: testNumber, message: testMessage, cle_api: testApiKey }),
+        body: JSON.stringify({ to: testNumber, message: testMessage, cle_api: testApiKey.trim() }),
       })
+      const data = await res.json().catch(() => null)
       if (res.ok) {
         setModalOpen(false)
         setTestMessage('')
         fetchData(true)
+      } else {
+        showToast('error', data?.error ?? 'Erreur lors de l’envoi')
       }
+    } catch {
+      showToast('error', 'Erreur réseau')
     } finally {
       setSending(false)
     }

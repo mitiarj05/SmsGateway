@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
+import { markStaleDevicesOffline } from '@/lib/device-status'
 
 /** GET /api/devices/[id] — détails d'un device */
 export async function GET(
@@ -7,6 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await markStaleDevicesOffline()
     const { id } = await params
     const { data, error } = await supabaseAdmin
       .from('devices')

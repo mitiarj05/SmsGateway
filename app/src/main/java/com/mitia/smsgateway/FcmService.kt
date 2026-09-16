@@ -37,6 +37,9 @@ class FcmService : FirebaseMessagingService() {
 
         if (message.data["action"] == "new_task") {
             Log.d(TAG, "Nouvelle tâche détectée, déclenchement du polling")
+            CoroutineScope(Dispatchers.IO).launch {
+                EventLog.log(applicationContext, "notification push reçue")
+            }
             val intent = Intent(applicationContext, SmsGatewayService::class.java)
             intent.action = "ACTION_POLL_NOW"
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

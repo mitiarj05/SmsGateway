@@ -41,7 +41,8 @@ export interface HourlyPoint {
 
 /* ============================ CONFIG ============================ */
 
-export const SMS_QUOTA_PER_HOUR = 50
+// Repli d'affichage — la vraie valeur vient de /api/settings (défaut serveur : 20)
+export const SMS_QUOTA_PER_HOUR = 20
 
 export const DEVICE_STATUS: Record<string, { label: string; badge: string; dot: string }> = {
   ONLINE:   { label: 'En ligne',   badge: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-400/20',  dot: 'bg-emerald-500' },

@@ -23,9 +23,16 @@ export default function DashboardOverviewPage() {
   const [testMessage, setTestMessage] = useState('')
   const [testApiKey, setTestApiKey] = useState('')
   const [sending, setSending] = useState(false)
+  const [queueThreshold, setQueueThreshold] = useState(10)
+  const [sendError, setSendError] = useState<string | null>(null)
 
   useEffect(() => {
     setDarkMode(document.documentElement.classList.contains('dark'))
+  }, [])
+
+  useEffect(() => {
+    const savedKey = localStorage.getItem('sms-gateway-api-key')
+    if (savedKey) setTestApiKey(savedKey)
   }, [])
 
   const computeHourly = useCallback((taskList: Task[]): HourlyPoint[] => {
@@ -62,6 +69,18 @@ export default function DashboardOverviewPage() {
       if (statData.stats) setStats(statData.stats)
 
       try {
+        const setRes = await fetch('/api/settings')
+        if (setRes.ok) {
+          const setData = await setRes.json()
+          if (typeof setData.settings?.queue_alert_threshold === 'number') {
+            setQueueThreshold(setData.settings.queue_alert_threshold)
+          }
+        }
+      } catch {
+        /* repli : seuil par défaut */
+      }
+
+      try {
         const actRes = await fetch('/api/stats/hourly')
         if (actRes.ok) {
           const actData = await actRes.json()
@@ -82,24 +101,30 @@ export default function DashboardOverviewPage() {
 
   useEffect(() => {
     fetchData(true)
-    const interval = setInterval(() => fetchData(true), 5000)
+    const interval = setInterval(() => fetchData(true), 3000)
     return () => clearInterval(interval)
   }, [fetchData])
 
   async function sendTestSMS(e: React.FormEvent) {
     e.preventDefault()
     setSending(true)
+    setSendError(null)
     try {
       const res = await fetch('/api/sms/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: testNumber, message: testMessage, cle_api: testApiKey }),
+        body: JSON.stringify({ to: testNumber, message: testMessage, cle_api: testApiKey.trim() }),
       })
+      const data = await res.json().catch(() => null)
       if (res.ok) {
         setModalOpen(false)
         setTestMessage('')
         fetchData(true)
+      } else {
+        setSendError(data?.error ?? 'Erreur lors de l’envoi')
       }
+    } catch {
+      setSendError('Serveur injoignable')
     } finally {
       setSending(false)
     }
@@ -113,14 +138,13 @@ export default function DashboardOverviewPage() {
     : { backgroundColor: '#ffffff', border: '1px solid #e4e4e7', borderRadius: 12, fontSize: 12 }
 
   /* ---------- Alertes ---------- */
-  const QUEUE_ALERT_THRESHOLD = 10
   const OFFLINE_ALERT_MIN = 10
   const staleDevices = devices.filter((d) => {
     if (!d.derniere_activite) return true
     return Date.now() - new Date(d.derniere_activite).getTime() > OFFLINE_ALERT_MIN * 60_000
   })
   const queueCount = stats?.tasks_pending ?? 0
-  const showQueueAlert = queueCount >= QUEUE_ALERT_THRESHOLD
+  const showQueueAlert = queueCount >= queueThreshold
 
   /* ---------- Camembert statuts ---------- */
   const lastTasks = tasks.slice(0, 5)
@@ -214,7 +238,7 @@ export default function DashboardOverviewPage() {
             <div className="flex items-center gap-3 rounded-2xl bg-amber-50 p-4 ring-1 ring-amber-600/20 dark:bg-amber-500/10 dark:ring-amber-400/20">
               <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
               <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
-                File d'attente élevée : {queueCount} tâche(s) en attente (seuil : {QUEUE_ALERT_THRESHOLD})
+                File d'attente élevée : {queueCount} tâche(s) en attente (seuil : {queueThreshold})
               </p>
             </div>
           )}
@@ -268,6 +292,11 @@ export default function DashboardOverviewPage() {
               <input type="password" required value={testApiKey}
                 onChange={(e) => setTestApiKey(e.target.value)}
                 className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
+              {sendError && (
+                <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700 ring-1 ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-400/20">
+                  {sendError}
+                </p>
+              )}
               <div className="flex gap-2">
                 <button type="button" onClick={() => !sending && setModalOpen(false)}
                   className="flex-1 rounded-lg border border-zinc-200 py-2 text-sm dark:border-zinc-700 dark:text-zinc-300">Annuler</button>
