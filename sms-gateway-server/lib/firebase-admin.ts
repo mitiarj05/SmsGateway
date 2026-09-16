@@ -25,7 +25,26 @@ function loadCredential() {
 }
 
 if (!getApps().length) {
-  initializeApp({ credential: loadCredential() })
+  try {
+    initializeApp({ credential: loadCredential() })
+  } catch (e) {
+    // Build/Vercel sans credentials : on n'échoue pas à l'import.
+    // L'erreur sera levée seulement à l'envoi réel d'un push.
+    console.warn('[firebase-admin]', (e as Error).message)
+  }
 }
 
-export const messaging = getMessaging()
+export function getMessagingAdmin() {
+  if (!getApps().length) {
+    initializeApp({ credential: loadCredential() })
+  }
+  return getMessaging()
+}
+
+export const messaging = new Proxy({} as ReturnType<typeof getMessaging>, {
+  get(_target, prop) {
+    const m = getMessagingAdmin() as unknown as Record<PropertyKey, unknown>
+    const value = m[prop]
+    return typeof value === 'function' ? value.bind(m) : value
+  },
+})
