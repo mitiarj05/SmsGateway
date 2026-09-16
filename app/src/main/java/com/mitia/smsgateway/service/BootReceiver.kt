@@ -1,4 +1,4 @@
-package com.mitia.smsgateway
+package com.mitia.smsgateway.service
 
 import android.content.BroadcastReceiver
 import android.content.Context

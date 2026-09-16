@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
-import Script from "next/script"
 import "./globals.css"
 
 const geistSans = Geist({
@@ -21,12 +20,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
+      {/* Pas de script inline ici : Next 16 le refuse dans le layout.
+          Le thème s'initialise au montage (DashboardShell, /login) depuis
+          localStorage — persistant en navigation SPA. */}
       <body className="min-h-full flex flex-col">
-        {/* Thème appliqué avant l'hydratation (anti-flash) : next/script
-            l'injecte dans le <head>, id obligatoire pour le contenu inline. */}
-        <Script id="theme-init" strategy="beforeInteractive">
-          {`(function(){try{var s=localStorage.getItem('sms-gateway-theme');if(s==='dark'||(!s&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}}catch(e){}})();`}
-        </Script>
         {children}
       </body>
     </html>

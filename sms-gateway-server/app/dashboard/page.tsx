@@ -1,153 +1,152 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Smartphone, CheckCircle2, Clock, XCircle, BarChart3, Send, Loader2, AlertTriangle, History as HistoryIcon } from 'lucide-react'
+import Link from 'next/link'
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  Smartphone, CheckCircle2, Clock, XCircle, Send, Loader2, RefreshCw,
+  Activity, Signal, BarChart3, Inbox, ChevronRight, Hash,
+} from 'lucide-react'
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts'
 import DashboardShell from '../../components/DashboardShell'
-import { Device, Task, Stats, HourlyPoint, KpiCard, TASK_STATUS, StatusBadge, formatTime, timeAgo } from '../../components/ui'
+import {
+  DEVICE_STATUS, TASK_STATUS, StatusBadge, Toast, Modal, EmptyState, Progress,
+} from '../../components/ui'
 
-export default function DashboardOverviewPage() {
+interface Device {
+  id: string; nom: string; statut: string; sms_last_hour: number
+  derniere_activite: string | null
+}
+interface Task {
+  id: string; numero_destinataire: string; message: string; statut: string
+  device_id: string | null; created_at: string; updated_at: string
+  error_message?: string | null; erreur?: string | null
+}
+interface Stats {
+  online_devices: number; tasks_sent: number; tasks_pending: number; tasks_failed: number
+}
+interface HourlyPoint { hour: string; count: number }
+
+const FEED_ICONS: Record<string, React.ReactNode> = {
+  SENT: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />,
+  FAILED: <XCircle className="h-3.5 w-3.5 text-red-500" />,
+  SENDING: <Clock className="h-3.5 w-3.5 text-blue-500" />,
+  PENDING: <Clock className="h-3.5 w-3.5 text-amber-500" />,
+}
+
+export default function DashboardPage() {
   const [devices, setDevices] = useState<Device[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
-  const [stats, setStats] = useState<Stats['stats'] | null>(null)
+  const [stats, setStats] = useState<Stats | null>(null)
   const [hourly, setHourly] = useState<HourlyPoint[]>([])
+  const [quota, setQuota] = useState(50)
   const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
-  const [darkMode, setDarkMode] = useState(false)
-
+  const [lastRefresh, setLastRefresh] = useState(new Date())
   const [modalOpen, setModalOpen] = useState(false)
-  const [testNumber, setTestNumber] = useState('')
-  const [testMessage, setTestMessage] = useState('')
-  const [testApiKey, setTestApiKey] = useState('')
   const [sending, setSending] = useState(false)
-  const [queueThreshold, setQueueThreshold] = useState(10)
-  const [sendError, setSendError] = useState<string | null>(null)
+  const [detailTask, setDetailTask] = useState<Task | null>(null)
+  const [form, setForm] = useState({ to: '', message: '', cle_api: '' })
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [darkMode] = useState(
+    () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
+  )
 
-  useEffect(() => {
-    setDarkMode(document.documentElement.classList.contains('dark'))
+  const showToast = useCallback((type: 'success' | 'error', text: string) => {
+    setToast({ type, text })
+    setTimeout(() => setToast(null), 4000)
   }, [])
 
-  useEffect(() => {
-    const savedKey = localStorage.getItem('sms-gateway-api-key')
-    if (savedKey) setTestApiKey(savedKey)
-  }, [])
-
-  const computeHourly = useCallback((taskList: Task[]): HourlyPoint[] => {
+  const computeHourly = useCallback((list: Task[]): HourlyPoint[] => {
     const buckets = new Map<string, number>()
     const now = new Date()
     for (let i = 23; i >= 0; i--) {
       const d = new Date(now.getTime() - i * 3600_000)
       buckets.set(`${d.getHours()}h`, 0)
     }
-    taskList.forEach((t) => {
+    list.forEach((t) => {
       const d = new Date(t.created_at)
       if (now.getTime() - d.getTime() <= 24 * 3600_000) {
-        const key = `${d.getHours()}h`
-        if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + 1)
+        const k = `${d.getHours()}h`
+        if (buckets.has(k)) buckets.set(k, (buckets.get(k) ?? 0) + 1)
       }
     })
     return Array.from(buckets, ([hour, count]) => ({ hour, count }))
   }, [])
 
-  const fetchData = useCallback(async (silent = false) => {
-    if (!silent) setRefreshing(true)
+  const fetchData = useCallback(async () => {
     try {
-      const [devRes, taskRes, statRes] = await Promise.all([
-        fetch('/api/devices'),
-        fetch('/api/tasks'),
-        fetch('/api/stats'),
+      const [d, t, s, q] = await Promise.all([
+        fetch('/api/devices'), fetch('/api/tasks'), fetch('/api/stats'), fetch('/api/settings'),
       ])
-      const devData = await devRes.json()
-      const taskData = await taskRes.json()
-      const statData = await statRes.json()
-      const taskList: Task[] = taskData.tasks ?? []
-      if (devData.devices) setDevices(devData.devices)
-      if (taskList.length) setTasks(taskList)
-      if (statData.stats) setStats(statData.stats)
-
+      const [dd, td, sd] = [await d.json(), await t.json(), await s.json()]
+      if (dd.devices) setDevices(dd.devices)
+      // Le serveur renvoie error_message : on l'expose aussi en `erreur`.
+      const taskList: Task[] = (td.tasks ?? []).map((task: Task) => ({
+        ...task, erreur: task.erreur ?? task.error_message ?? null,
+      }))
+      if (td.tasks) setTasks(taskList)
+      if (sd.stats) setStats(sd.stats)
+      if (q.ok) {
+        const qd = await q.json()
+        if (typeof qd.settings?.sms_quota_per_hour === 'number') {
+          setQuota(qd.settings.sms_quota_per_hour)
+        }
+      }
       try {
-        const setRes = await fetch('/api/settings')
-        if (setRes.ok) {
-          const setData = await setRes.json()
-          if (typeof setData.settings?.queue_alert_threshold === 'number') {
-            setQueueThreshold(setData.settings.queue_alert_threshold)
+        const hr = await fetch('/api/stats/hourly')
+        if (hr.ok) {
+          const hd = await hr.json()
+          if (hd.hourly) {
+            setHourly(hd.hourly)
+            setLastRefresh(new Date())
+            return
           }
         }
-      } catch {
-        /* repli : seuil par défaut */
-      }
-
-      try {
-        const actRes = await fetch('/api/stats/hourly')
-        if (actRes.ok) {
-          const actData = await actRes.json()
-          if (actData.hourly) setHourly(actData.hourly)
-        } else {
-          setHourly(computeHourly(taskList))
-        }
+        setHourly(computeHourly(taskList))
       } catch {
         setHourly(computeHourly(taskList))
       }
-
       setLastRefresh(new Date())
+    } catch {
+      showToast('error', 'Serveur injoignable')
     } finally {
       setLoading(false)
-      setRefreshing(false)
     }
-  }, [computeHourly])
+  }, [computeHourly, showToast])
 
   useEffect(() => {
-    fetchData(true)
-    const interval = setInterval(() => fetchData(true), 3000)
-    return () => clearInterval(interval)
+    const savedKey = localStorage.getItem('sms-gateway-api-key')
+    if (savedKey) setForm((f) => ({ ...f, cle_api: savedKey }))
+    fetchData()
+    const i = setInterval(() => fetchData(), 3000)
+    return () => clearInterval(i)
   }, [fetchData])
 
-  async function sendTestSMS(e: React.FormEvent) {
+  async function sendSMS(e: React.FormEvent) {
     e.preventDefault()
     setSending(true)
-    setSendError(null)
     try {
       const res = await fetch('/api/sms/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: testNumber, message: testMessage, cle_api: testApiKey.trim() }),
+        body: JSON.stringify({ to: form.to, message: form.message, cle_api: form.cle_api.trim() }),
       })
       const data = await res.json().catch(() => null)
       if (res.ok) {
+        showToast('success', `SMS mis en file → ${form.to}`)
         setModalOpen(false)
-        setTestMessage('')
-        fetchData(true)
+        setForm({ to: '', message: '', cle_api: form.cle_api })
+        fetchData()
       } else {
-        setSendError(data?.error ?? 'Erreur lors de l’envoi')
+        showToast('error', data?.error ?? 'Erreur lors de l’envoi')
       }
     } catch {
-      setSendError('Serveur injoignable')
+      showToast('error', 'Erreur réseau')
     } finally {
       setSending(false)
     }
   }
-
-  const total24h = hourly.reduce((acc, p) => acc + p.count, 0)
-  const chartGrid = darkMode ? '#3f3f46' : '#e4e4e7'
-  const chartTick = darkMode ? '#a1a1aa' : '#71717a'
-  const tooltipStyle = darkMode
-    ? { backgroundColor: '#18181b', border: '1px solid #3f3f46', borderRadius: 12, color: '#fafafa', fontSize: 12 }
-    : { backgroundColor: '#ffffff', border: '1px solid #e4e4e7', borderRadius: 12, fontSize: 12 }
-
-  /* ---------- Alertes ---------- */
-  const OFFLINE_ALERT_MIN = 10
-  const staleDevices = devices.filter((d) => {
-    if (!d.derniere_activite) return true
-    return Date.now() - new Date(d.derniere_activite).getTime() > OFFLINE_ALERT_MIN * 60_000
-  })
-  const queueCount = stats?.tasks_pending ?? 0
-  const showQueueAlert = queueCount >= queueThreshold
-
-  /* ---------- Camembert statuts ---------- */
-  const lastTasks = tasks.slice(0, 5)
 
   if (loading) {
     return (
@@ -157,158 +156,240 @@ export default function DashboardOverviewPage() {
     )
   }
 
+  const recentTasks = [...tasks].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 8)
+  const feed = recentTasks.slice(0, 6)
+  const detailDevice = detailTask?.device_id ? devices.find((d) => d.id === detailTask.device_id) : null
+  const chartGrid = darkMode ? '#3f3f46' : '#e4e4e7'
+  const chartTick = darkMode ? '#a1a1aa' : '#71717a'
+
   return (
     <DashboardShell
-      devices={devices} lastRefresh={lastRefresh} refreshing={refreshing}
-      onRefresh={() => fetchData()} onNewSMS={() => setModalOpen(true)}
+      title="Tableau de bord"
+      subtitle={`Actualisé à ${lastRefresh.toLocaleTimeString('fr-FR')} · auto 3 s`}
+      actions={
+        <>
+          <button onClick={() => fetchData()}
+            className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-600 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700">
+            <RefreshCw className="h-4 w-4" /> Actualiser
+          </button>
+          <button onClick={() => setModalOpen(true)}
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
+            <Send className="h-4 w-4" /> Nouveau SMS
+          </button>
+        </>
+      }
     >
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard
-          icon={<Smartphone className="h-5 w-5 text-emerald-600" />}
-          label="Appareils en ligne" value={stats?.online_devices ?? 0}
-          sub={`sur ${devices.length} enregistré(s)`}
-          accent="bg-emerald-50 dark:bg-emerald-500/10"
-          dark="bg-white ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800"
-        />
-        <KpiCard
-          icon={<CheckCircle2 className="h-5 w-5 text-blue-600" />}
-          label="SMS envoyés" value={stats?.tasks_sent ?? 0}
-          sub="toutes périodes confondues"
-          accent="bg-blue-50 dark:bg-blue-500/10"
-          dark="bg-white ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800"
-        />
-        <KpiCard
-          icon={<Clock className="h-5 w-5 text-amber-600" />}
-          label="En file d'attente" value={stats?.tasks_pending ?? 0}
-          sub="en attente d'assignation"
-          accent="bg-amber-50 dark:bg-amber-500/10"
-          dark="bg-white ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800"
-        />
-        <KpiCard
-          icon={<XCircle className="h-5 w-5 text-red-600" />}
-          label="Échecs" value={stats?.tasks_failed ?? 0}
-          sub="à traiter manuellement"
-          accent="bg-red-50 dark:bg-red-500/10"
-          dark="bg-white ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800"
-        />
+      {/* KPI */}
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          { icon: <Smartphone className="h-5 w-5 text-emerald-600" />, label: 'Appareils en ligne', value: stats?.online_devices ?? 0, sub: `sur ${devices.length} enregistré(s)`, accent: 'bg-emerald-50 dark:bg-emerald-500/10' },
+          { icon: <CheckCircle2 className="h-5 w-5 text-blue-600" />, label: 'SMS envoyés', value: stats?.tasks_sent ?? 0, sub: 'toutes périodes', accent: 'bg-blue-50 dark:bg-blue-500/10' },
+          { icon: <Clock className="h-5 w-5 text-amber-600" />, label: 'En file d’attente', value: stats?.tasks_pending ?? 0, sub: 'en attente d’assignation', accent: 'bg-amber-50 dark:bg-amber-500/10' },
+          { icon: <XCircle className="h-5 w-5 text-red-600" />, label: 'Échecs', value: stats?.tasks_failed ?? 0, sub: 'à traiter', accent: 'bg-red-50 dark:bg-red-500/10' },
+        ].map((k) => (
+          <div key={k.label} className={`rounded-2xl bg-white p-5 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800 ${k.accent}`}>
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{k.label}</p>
+                <p className="mt-1 text-3xl font-bold tabular-nums text-zinc-900 dark:text-white">{k.value}</p>
+                <p className="mt-1 text-xs text-zinc-400">{k.sub}</p>
+              </div>
+              <div className="rounded-xl bg-white/60 p-2.5 dark:bg-white/5">{k.icon}</div>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Graphique 24h */}
-      <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
+      {/* Chart */}
+      <section className="mb-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
         <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-zinc-400" />
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Activité SMS — dernières 24 h</h2>
-          </div>
+          <h2 className="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-white">
+            <BarChart3 className="h-4 w-4 text-zinc-400" /> Activité SMS — dernières 24 h
+          </h2>
           <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-            {total24h} SMS
+            {hourly.reduce((a, p) => a + p.count, 0)} SMS
           </span>
         </div>
-
-        {hourly.length === 0 ? (
-          <div className="flex h-56 items-center justify-center">
-            <p className="text-sm text-zinc-400">Pas encore de données sur les 24 dernières heures.</p>
-          </div>
-        ) : (
-          <div className="h-56 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={hourly} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="smsGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#2563eb" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#2563eb" stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} vertical={false} />
-                <XAxis dataKey="hour" tick={{ fill: chartTick, fontSize: 11 }} tickLine={false} axisLine={{ stroke: chartGrid }} interval="preserveStartEnd" />
-                <YAxis allowDecimals={false} tick={{ fill: chartTick, fontSize: 11 }} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={tooltipStyle} labelStyle={{ fontWeight: 600 }} formatter={(value) => [`${value ?? 0} SMS`, 'Envoyés']} />
-                <Area type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} fill="url(#smsGradient)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        )}
+        <div className="h-56 w-full" suppressHydrationWarning>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={hourly} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
+              <defs>
+                <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2563eb" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#2563eb" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} vertical={false} />
+              <XAxis dataKey="hour" tick={{ fill: chartTick, fontSize: 11 }} tickLine={false} axisLine={{ stroke: chartGrid }} interval="preserveStartEnd" />
+              <YAxis allowDecimals={false} tick={{ fill: chartTick, fontSize: 11 }} tickLine={false} axisLine={false} />
+              <Tooltip formatter={(v) => [`${v ?? 0} SMS`, 'Envoyés']} />
+              <Area type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} fill="url(#g)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </section>
 
-      {/* ================= ALERTES ================= */}
-      {(showQueueAlert || staleDevices.length > 0) && (
-        <div className="space-y-2">
-          {showQueueAlert && (
-            <div className="flex items-center gap-3 rounded-2xl bg-amber-50 p-4 ring-1 ring-amber-600/20 dark:bg-amber-500/10 dark:ring-amber-400/20">
-              <AlertTriangle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
-              <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
-                File d'attente élevée : {queueCount} tâche(s) en attente (seuil : {queueThreshold})
-              </p>
-            </div>
-          )}
-          {staleDevices.map((d) => (
-            <div key={d.id} className="flex items-center gap-3 rounded-2xl bg-red-50 p-4 ring-1 ring-red-600/20 dark:bg-red-500/10 dark:ring-red-400/20">
-              <AlertTriangle className="h-5 w-5 shrink-0 text-red-600 dark:text-red-400" />
-              <p className="text-sm font-medium text-red-800 dark:text-red-300">
-                {d.nom} : inactif depuis {timeAgo(d.derniere_activite)} (&gt; {OFFLINE_ALERT_MIN} min)
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ================= DERNIÈRES TÂCHES ================= */}
-      <section className="rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
+      {/* Devices + Activité */}
+      <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <section className="rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800 xl:col-span-2">
           <div className="flex items-center gap-2 border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
-            <HistoryIcon className="h-4 w-4 text-zinc-400" />
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Dernières tâches</h2>
+            <Signal className="h-4 w-4 text-zinc-400" />
+            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Appareils connectés</h2>
+            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{devices.length}</span>
           </div>
-          {lastTasks.length === 0 ? (
-            <p className="py-8 text-center text-sm text-zinc-400">Aucune tâche pour le moment.</p>
+          {devices.length === 0 ? (
+            <EmptyState icon={<Smartphone className="h-9 w-9" />} title="Aucun appareil" hint="Installez l'app Android et associez-la au serveur." />
           ) : (
-            <ul className="divide-y divide-zinc-50 dark:divide-zinc-800/60">
-              {lastTasks.map((t) => (
-                <li key={t.id} className="flex items-center justify-between gap-3 px-5 py-3">
-                  <div className="min-w-0">
-                    <p className="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t.numero_destinataire}</p>
-                    <p className="truncate text-xs text-zinc-400" title={t.message}>{t.message}</p>
-                  </div>
-                  <StatusBadge status={t.statut} config={TASK_STATUS} />
-                </li>
-              ))}
-            </ul>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-100 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:border-zinc-800">
+                  <th className="px-5 py-3">Appareil</th><th className="px-5 py-3">Statut</th>
+                  <th className="px-5 py-3 w-52">SMS/h</th><th className="px-5 py-3">Activité</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/60">
+                {devices.map((d) => (
+                  <tr key={d.id} className="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
+                          <Smartphone className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                        </div>
+                        <p className="font-medium text-zinc-800 dark:text-zinc-200">{d.nom}</p>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5"><StatusBadge status={d.statut} config={DEVICE_STATUS} /></td>
+                    <td className="px-5 py-3.5">
+                      <Progress value={d.sms_last_hour} max={quota} showValue />
+                    </td>
+                    <td className="px-5 py-3.5 text-xs text-zinc-400">
+                      {d.derniere_activite ? new Date(d.derniere_activite).toLocaleTimeString('fr-FR') : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </section>
 
-      {/* Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4 backdrop-blur-sm" onClick={() => !sending && setModalOpen(false)}>
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-zinc-900 dark:ring-1 dark:ring-zinc-800" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-base font-bold text-zinc-900 dark:text-white">Envoyer un SMS</h3>
-            <form onSubmit={sendTestSMS} className="mt-4 space-y-4">
-              <input type="tel" required placeholder="+261328725411" value={testNumber}
-                onChange={(e) => setTestNumber(e.target.value)}
-                className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
-              <textarea required rows={3} maxLength={160} value={testMessage}
-                onChange={(e) => setTestMessage(e.target.value)}
-                className="w-full resize-none rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
-              <p className="text-right text-[11px] text-zinc-400">{testMessage.length}/160</p>
-              <input type="password" required value={testApiKey}
-                onChange={(e) => setTestApiKey(e.target.value)}
-                className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
-              {sendError && (
-                <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700 ring-1 ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-400/20">
-                  {sendError}
-                </p>
-              )}
-              <div className="flex gap-2">
-                <button type="button" onClick={() => !sending && setModalOpen(false)}
-                  className="flex-1 rounded-lg border border-zinc-200 py-2 text-sm dark:border-zinc-700 dark:text-zinc-300">Annuler</button>
-                <button type="submit" disabled={sending}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white disabled:opacity-60">
-                  <Send className="h-4 w-4" /> {sending ? 'Envoi…' : 'Envoyer'}
-                </button>
-              </div>
-            </form>
+        {/* Flux d'activité */}
+        <section className="rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
+          <div className="flex items-center gap-2 border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
+            <Activity className="h-4 w-4 text-zinc-400" />
+            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Flux d&apos;activité</h2>
           </div>
+          <div className="p-3">
+            {feed.length === 0 ? (
+              <EmptyState icon={<Inbox className="h-8 w-8" />} title="Aucune activité" />
+            ) : feed.map((t) => (
+              <button key={t.id} onClick={() => setDetailTask(t)}
+                className="flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                {FEED_ICONS[t.statut] ?? <Clock className="h-3.5 w-3.5 text-zinc-400" />}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium text-zinc-800 dark:text-zinc-200">{t.numero_destinataire}</p>
+                  <p className="truncate text-[11px] text-zinc-400">{TASK_STATUS[t.statut]?.label ?? t.statut}</p>
+                </div>
+                <span className="text-[11px] text-zinc-400">{new Date(t.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      {/* Dernières tâches — cliquables */}
+      <section className="rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
+        <div className="flex items-center gap-2 border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
+          <Activity className="h-4 w-4 text-zinc-400" />
+          <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Dernières tâches</h2>
+          <Link href="/history" className="ml-auto flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline dark:text-blue-400">
+            Tout voir <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
-      )}
+        <div className="divide-y divide-zinc-50 dark:divide-zinc-800/60">
+          {recentTasks.map((t) => (
+            <button key={t.id} onClick={() => setDetailTask(t)}
+              className="flex w-full items-center gap-4 px-5 py-3 text-left hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40">
+              <span className="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t.numero_destinataire}</span>
+              <span className="min-w-0 flex-1 truncate text-xs text-zinc-500 dark:text-zinc-400">{t.message}</span>
+              {t.erreur && (
+                <span className="hidden max-w-40 truncate text-[11px] text-red-500 md:inline" title={t.erreur}>{t.erreur}</span>
+              )}
+              <StatusBadge status={t.statut} config={TASK_STATUS} />
+              <span className="text-xs text-zinc-400">{new Date(t.created_at).toLocaleTimeString('fr-FR')}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ===== MODALE : fiche tâche (inspection) ===== */}
+      <Modal open={!!detailTask} onClose={() => setDetailTask(null)} wide
+        title="Détail de la tâche" subtitle="Traçabilité complète pour l'audit et le debug anti-doublon">
+        {detailTask && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <StatusBadge status={detailTask.statut} config={TASK_STATUS} />
+              {detailTask.erreur && (
+                <span className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
+                  {detailTask.erreur}
+                </span>
+              )}
+            </div>
+            <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800/60">
+              <p className="text-lg font-bold text-zinc-900 dark:text-white">{detailTask.numero_destinataire}</p>
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{detailTask.message}</p>
+            </div>
+            <dl className="grid grid-cols-2 gap-3 text-xs">
+              {[
+                ['Créée le', new Date(detailTask.created_at).toLocaleString('fr-FR')],
+                ['Mise à jour', new Date(detailTask.updated_at).toLocaleString('fr-FR')],
+                ['Appareil assigné', detailDevice?.nom ?? (detailTask.device_id ? 'inconnu' : '—')],
+                ['Statut serveur', detailTask.statut],
+              ].map(([k, v]) => (
+                <div key={k} className="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800/60">
+                  <dt className="text-zinc-400">{k}</dt>
+                  <dd className="mt-0.5 font-semibold text-zinc-800 dark:text-zinc-200">{v}</dd>
+                </div>
+              ))}
+            </dl>
+            {/* Idempotence : preuve piège n°3 */}
+            <div className="flex items-center gap-2 rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-700">
+              <Hash className="h-3.5 w-3.5 text-zinc-400" />
+              <span className="text-[11px] text-zinc-400">ID unique (idempotence) :</span>
+              <code className="flex-1 truncate font-mono text-[11px] text-zinc-600 dark:text-zinc-300">{detailTask.id}</code>
+            </div>
+            <p className="text-[11px] leading-relaxed text-zinc-400">
+              Cet identifiant garantit qu&apos;une re-délivrance (coupure réseau, redémarrage) ne provoque
+              jamais un double envoi : le serveur rejette les accusés portant un ID déjà traité.
+            </p>
+          </div>
+        )}
+      </Modal>
+
+      {/* ===== MODALE : envoi ===== */}
+      <Modal open={modalOpen} onClose={() => !sending && setModalOpen(false)}
+        title="Envoyer un SMS" subtitle="La tâche sera ajoutée à la file d'attente">
+        <form onSubmit={sendSMS} className="space-y-4">
+          <input type="tel" required placeholder="+261328725411" value={form.to}
+            onChange={(e) => setForm({ ...form, to: e.target.value })}
+            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
+          <div>
+            <textarea required rows={3} maxLength={160} placeholder="Votre message…" value={form.message}
+              onChange={(e) => setForm({ ...form, message: e.target.value })}
+              className="w-full resize-none rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
+            <p className="mt-1 text-right text-[11px] text-zinc-400">{form.message.length}/160</p>
+          </div>
+          <input type="password" required value={form.cle_api}
+            onChange={(e) => setForm({ ...form, cle_api: e.target.value })}
+            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
+          <button type="submit" disabled={sending}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
+            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            {sending ? 'Envoi…' : 'Envoyer'}
+          </button>
+        </form>
+      </Modal>
+
+      <Toast toast={toast} />
     </DashboardShell>
   )
 }

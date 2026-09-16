@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Smartphone, Signal, Send, Bell, Power, CheckCircle2, AlertTriangle, X } from 'lucide-react'
+import { Smartphone, Signal, Send, Bell, Power, CheckCircle2, AlertTriangle, X, RefreshCw } from 'lucide-react'
 import DashboardShell from '../../components/DashboardShell'
 import { Device, DEVICE_STATUS, StatusBadge, timeAgo, SMS_QUOTA_PER_HOUR } from '../../components/ui'
 
@@ -150,8 +150,20 @@ export default function DevicesPage() {
 
   return (
     <DashboardShell
-      devices={devices} lastRefresh={lastRefresh} refreshing={refreshing}
-      onRefresh={() => fetchData()} onNewSMS={() => setModalOpen(true)}
+      title="Appareils"
+      subtitle={`${devices.length} enregistré(s) · actualisé à ${lastRefresh.toLocaleTimeString('fr-FR')}`}
+      actions={
+        <>
+          <button onClick={() => fetchData()}
+            className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-600 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700">
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} /> Actualiser
+          </button>
+          <button onClick={() => setModalOpen(true)}
+            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
+            <Send className="h-4 w-4" /> Nouveau SMS
+          </button>
+        </>
+      }
     >
       <section className="rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
         <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">

@@ -1,4 +1,4 @@
-package com.mitia.smsgateway
+package com.mitia.smsgateway.data.local
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
@@ -6,21 +6,14 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.mitia.smsgateway.domain.model.HistoryTask
+import com.mitia.smsgateway.domain.model.TaskDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.util.Calendar
 
 private val Context.taskHistoryStore by preferencesDataStore(name = "task_history")
-
-data class HistoryTask(
-    val id: String,
-    val numero: String,
-    val message: String,
-    val statut: String,
-    val error: String?,
-    val at: Long
-)
 
 /**
  * Historique local des tâches reçues par ce device (le serveur ne renvoie
@@ -40,7 +33,7 @@ object TaskHistoryStore {
             ?: emptyList()
 
     /** Enregistre les tâches vues au polling (sans écraser les statuts connus). */
-    suspend fun upsertReceived(context: Context, tasks: List<ApiClient.TaskDto>) {
+    suspend fun upsertReceived(context: Context, tasks: List<TaskDto>) {
         if (tasks.isEmpty()) return
         try {
             context.taskHistoryStore.edit { prefs ->

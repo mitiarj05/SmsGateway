@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import { markStaleDevicesOffline } from '@/lib/device-status'
+import { getDeviceUsage } from '@/lib/select-device'
 
 /** GET /api/devices/[id] — détails d'un device */
 export async function GET(
@@ -29,7 +30,10 @@ export async function GET(
       ? `${data.fcm_token.substring(0, 8)}... (${data.fcm_token.length} chars)`
       : null
 
-    return NextResponse.json({ device: { ...data, fcm_token: masked, fcm_present: !!data.fcm_token } })
+    // Compteur live (voir GET /api/devices).
+    const smsLastHour = await getDeviceUsage(id)
+
+    return NextResponse.json({ device: { ...data, sms_last_hour: smsLastHour, fcm_token: masked, fcm_present: !!data.fcm_token } })
   } catch {
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }

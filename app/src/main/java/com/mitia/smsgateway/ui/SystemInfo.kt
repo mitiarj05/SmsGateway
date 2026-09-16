@@ -15,7 +15,7 @@ fun isServiceRunning(context: Context): Boolean {
     val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
     @Suppress("DEPRECATION")
     return am.getRunningServices(Int.MAX_VALUE)
-        .any { it.service.className == "com.mitia.smsgateway.SmsGatewayService" }
+        .any { it.service.className == "com.mitia.smsgateway.service.SmsGatewayService" }
 }
 
 /** Type de réseau actif (nécessite ACCESS_NETWORK_STATE, normale). */

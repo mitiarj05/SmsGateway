@@ -10,14 +10,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.mitia.smsgateway.EventItem
-import com.mitia.smsgateway.HistoryTask
+import com.mitia.smsgateway.domain.model.EventItem
+import com.mitia.smsgateway.domain.model.HistoryTask
 import com.mitia.smsgateway.ui.components.BottomNav
 import com.mitia.smsgateway.ui.components.DashboardTab
-import com.mitia.smsgateway.ui.screens.LogScreen
-import com.mitia.smsgateway.ui.screens.SettingsScreen
-import com.mitia.smsgateway.ui.screens.StatusScreen
-import com.mitia.smsgateway.ui.screens.TasksScreen
+import com.mitia.smsgateway.ui.views.LogScreen
+import com.mitia.smsgateway.ui.views.SettingsScreen
+import com.mitia.smsgateway.ui.views.StatusScreen
+import com.mitia.smsgateway.ui.views.TasksScreen
 import com.mitia.smsgateway.ui.theme.DarkBg
 import com.mitia.smsgateway.ui.timeAgoText
 

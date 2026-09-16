@@ -1,6 +1,7 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
+import { X, AlertTriangle, Loader2, CheckCircle2 } from 'lucide-react'
 
 /* ============================ TYPES ============================ */
 
@@ -99,6 +100,107 @@ export function KpiCard({ icon, label, value, sub, accent, dark }: {
         </div>
         <div className="rounded-xl bg-white/60 p-2.5 dark:bg-white/5">{icon}</div>
       </div>
+    </div>
+  )
+}
+
+/* ============================ MODALE ============================ */
+
+export function Modal({ open, onClose, title, subtitle, children, wide }: {
+  open: boolean; onClose: () => void; title: string; subtitle?: string
+  children: React.ReactNode; wide?: boolean
+}) {
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
+  if (!open) return null
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4 backdrop-blur-sm"
+      onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()}
+        className={`w-full ${wide ? 'max-w-2xl' : 'max-w-md'} max-h-[85vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl dark:bg-zinc-900 dark:ring-1 dark:ring-zinc-800`}>
+        <div className="mb-4 flex items-start justify-between">
+          <div>
+            <h3 className="text-base font-bold text-zinc-900 dark:text-white">{title}</h3>
+            {subtitle && <p className="text-xs text-zinc-400">{subtitle}</p>}
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+/* ---------- Confirmation destructive ---------- */
+export function ConfirmDialog({ open, onClose, onConfirm, title, message, confirmLabel = 'Confirmer', loading }: {
+  open: boolean; onClose: () => void; onConfirm: () => void
+  title: string; message: string; confirmLabel?: string; loading?: boolean
+}) {
+  return (
+    <Modal open={open} onClose={onClose} title={title}>
+      <div className="mb-5 flex items-start gap-3">
+        <span className="rounded-xl bg-red-50 p-2 dark:bg-red-500/10">
+          <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+        </span>
+        <p className="text-sm text-zinc-600 dark:text-zinc-300">{message}</p>
+      </div>
+      <div className="flex gap-2">
+        <button onClick={onClose} className="flex-1 rounded-lg border border-zinc-200 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
+          Annuler
+        </button>
+        <button onClick={onConfirm} disabled={loading}
+          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60">
+          {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+          {confirmLabel}
+        </button>
+      </div>
+    </Modal>
+  )
+}
+
+/* ---------- Toast flottant ---------- */
+export function Toast({ toast }: {
+  toast: { type: 'success' | 'error'; text: string } | null
+}) {
+  if (!toast) return null
+  const ok = toast.type === 'success'
+  return (
+    <div className={`fixed bottom-5 right-5 z-50 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-white shadow-lg ${ok ? 'bg-emerald-600' : 'bg-red-600'}`}>
+      {ok ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+      {toast.text}
+    </div>
+  )
+}
+
+/* ---------- Empty state ---------- */
+export function EmptyState({ icon, title, hint }: { icon: React.ReactNode; title: string; hint?: string }) {
+  return (
+    <div className="flex flex-col items-center gap-2 py-16 text-center">
+      <div className="text-zinc-300 dark:text-zinc-600">{icon}</div>
+      <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">{title}</p>
+      {hint && <p className="text-xs text-zinc-400">{hint}</p>}
+    </div>
+  )
+}
+
+/* ---------- Barre de progression ---------- */
+export function Progress({ value, max, showValue }: { value: number; max: number; showValue?: boolean }) {
+  const safeMax = max > 0 ? max : 1
+  const pct = Math.min(100, Math.round((value / safeMax) * 100))
+  const color = pct >= 90 ? 'bg-red-500' : pct >= 60 ? 'bg-amber-500' : 'bg-blue-500'
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
+      </div>
+      {showValue && <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 tabular-nums">{value}</span>}
     </div>
   )
 }

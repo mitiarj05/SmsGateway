@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import { authenticateDevice } from '@/lib/auth'
+import { getDeviceUsage } from '@/lib/select-device'
 
 export async function POST(
   request: NextRequest,
@@ -132,6 +133,17 @@ export async function POST(
         { error: 'Erreur lors de la mise à jour', details: error.message },
         { status: 500 }
       )
+    }
+
+    // Compteurs horaires du device : recalculés sur la dernière heure glissante
+    // (pas d'incrément simple, sinon ils ne redescendraient jamais).
+    // Seul un passage en SENT les fait bouger ; les lectures les calculent en live.
+    if (statut === 'SENT') {
+      const usage = await getDeviceUsage(deviceId)
+      await supabaseAdmin
+        .from('devices')
+        .update({ sms_last_hour: usage, sms_envoyes_heure: usage })
+        .eq('id', deviceId)
     }
 
     // Ne jamais réactiver un device DISABLED via le polling/confirmations

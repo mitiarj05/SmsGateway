@@ -1,9 +1,17 @@
-package com.mitia.smsgateway
+package com.mitia.smsgateway.data.remote
 
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.mitia.smsgateway.data.local.DevicePreferences
+import com.mitia.smsgateway.domain.model.GetTasksResponse
+import com.mitia.smsgateway.domain.model.QuotaDto
+import com.mitia.smsgateway.domain.model.QuotaResult
+import com.mitia.smsgateway.domain.model.RegisterResponse
+import com.mitia.smsgateway.domain.model.StatusResult
+import com.mitia.smsgateway.domain.model.TaskDto
+import com.mitia.smsgateway.domain.model.TasksResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -19,7 +27,6 @@ import java.util.concurrent.TimeUnit
  * Toutes les méthodes sont "suspend" : elles doivent être appelées depuis
  * une coroutine. Elles utilisent Dispatchers.IO pour ne pas bloquer le thread UI.
  */
-@Suppress("PropertyName") // noms snake_case volontaires : identiques au JSON serveur
 object ApiClient {
 
     private const val TAG = "ApiClient"
@@ -47,88 +54,6 @@ object ApiClient {
     private val gson = Gson()
     private val JSON = "application/json; charset=utf-8".toMediaType()
 
-    // -------------------- Data classes --------------------
-
-    data class RegisterResponse(
-        val message: String,
-        val device: DeviceDto
-    )
-
-    data class DeviceDto(
-        val id: String,
-        val nom: String,
-        val token: String,
-        val statut: String,
-        val created_at: String
-    )
-
-    data class TaskDto(
-        val id: String,
-        val numero_destinataire: String,
-        val message: String,
-        val statut: String,
-        val created_at: String
-    )
-
-    data class GetTasksResponse(
-        val device: DeviceSimpleDto,
-        val tasks: List<TaskDto>,
-        val count: Int
-    )
-
-    data class DeviceSimpleDto(
-        val id: String,
-        val nom: String
-    )
-
-    data class GetQuotaResponse(
-        val quota: Int,
-        val usage: Int,
-        val remaining: Int,
-        val quota_reached: Boolean,
-        val retry_after_seconds: Int
-    )
-
-    sealed interface QuotaResult {
-        data class Success(val quota: GetQuotaResponse) : QuotaResult
-        data object NetworkError : QuotaResult
-    }
-
-    data class StatusResponse(
-        val message: String,
-        val task: TaskDto
-    )
-
-    // -------------------- Résultats détaillés (anti-doublon) --------------------
-
-    /**
-     * Résultat précis d'un updateTaskStatus.
-     *
-     * Pourquoi pas un simple Boolean ? Piège 3 :
-     * - le téléphone retry une confirmation SENT après une coupure WiFi ;
-     *   si le serveur répond 409 "déjà SENT", c'est un SUCCÈS idempotent,
-     *   pas un échec (le SMS est bien parti, inutile de le renvoyer).
-     * - si la task est assignée à un AUTRE device (409), il ne faut PAS
-     *   envoyer le SMS : on skip.
-     */
-    sealed interface StatusResult {
-        data object Success : StatusResult
-        /** 409 mais current_status == statut demandé → le retry a déjà abouti. */
-        data object AlreadyConfirmed : StatusResult
-        /** Task claimée par un autre device → ne pas envoyer le SMS. */
-        data class AssignedToOther(val assignedTo: String?) : StatusResult
-        /** Task finalisée (SENT/FAILED) avec un statut différent → ne pas toucher. */
-        data class FinalizedConflict(val currentStatus: String?) : StatusResult
-        data class HttpError(val code: Int) : StatusResult
-        /** Timeout, DNS, WiFi coupé... → à retry plus tard, JAMAIS renvoyer le SMS. */
-        data object NetworkError : StatusResult
-    }
-
-    sealed interface TasksResult {
-        data class Success(val tasks: List<TaskDto>) : TasksResult
-        data object NetworkError : TasksResult
-    }
-
     // -------------------- Méthodes --------------------
 
     /**
@@ -148,55 +73,6 @@ object ApiClient {
         } catch (e: Exception) {
             Log.e(TAG, "pingServer échoué ($baseUrl)", e)
             return@withContext false
-        }
-    }
-
-    /**
-     * Signale l'arrêt du device (bouton Déconnecter, service tué).
-     * Le serveur passe le statut à OFFLINE (jamais DISABLED, réservé admin).
-     */
-    suspend fun disconnect(deviceId: String, token: String): Boolean = withContext(Dispatchers.IO) {
-        try {
-            val request = Request.Builder()
-                .url("$baseUrl/api/devices/$deviceId/offline")
-                .header("Authorization", "Bearer $token")
-                .post(ByteArray(0).toRequestBody(null))
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                return@withContext response.isSuccessful
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Erreur disconnect (réseau coupé ?)", e)
-            return@withContext false
-        }
-    }
-
-    /**
-     * Quota et usage horaire du device (endpoint imposé par le serveur).
-     * Utilisé par l'app pour l'écran Statut et les réglages.
-     */
-    suspend fun getQuotaDetailed(deviceId: String, token: String): QuotaResult = withContext(Dispatchers.IO) {
-        try {
-            val request = Request.Builder()
-                .url("$baseUrl/api/devices/$deviceId/quota")
-                .header("Authorization", "Bearer $token")
-                .get()
-                .build()
-
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) {
-                    Log.e(TAG, "getQuota échoué : ${response.code} ${response.message}")
-                    return@withContext QuotaResult.NetworkError
-                }
-                val responseBody = response.body?.string()
-                    ?: return@withContext QuotaResult.NetworkError
-                val parsed = gson.fromJson(responseBody, GetQuotaResponse::class.java)
-                return@withContext QuotaResult.Success(parsed)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Erreur getQuota (réseau coupé ?)", e)
-            return@withContext QuotaResult.NetworkError
         }
     }
 
@@ -381,6 +257,55 @@ object ApiClient {
         } catch (e: Exception) {
             Log.e(TAG, "Erreur updateFcmToken", e)
             return@withContext false
+        }
+    }
+
+    /**
+     * Signale l'arrêt du device (bouton Déconnecter, service tué).
+     * Le serveur passe le statut à OFFLINE (jamais DISABLED, réservé admin).
+     */
+    suspend fun disconnect(deviceId: String, token: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val request = Request.Builder()
+                .url("$baseUrl/api/devices/$deviceId/offline")
+                .header("Authorization", "Bearer $token")
+                .post(ByteArray(0).toRequestBody(null))
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                return@withContext response.isSuccessful
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Erreur disconnect (réseau coupé ?)", e)
+            return@withContext false
+        }
+    }
+
+    /**
+     * Quota et usage horaire du device (endpoint imposé par le serveur).
+     * Utilisé par l'app pour l'écran Statut et les réglages.
+     */
+    suspend fun getQuotaDetailed(deviceId: String, token: String): QuotaResult = withContext(Dispatchers.IO) {
+        try {
+            val request = Request.Builder()
+                .url("$baseUrl/api/devices/$deviceId/quota")
+                .header("Authorization", "Bearer $token")
+                .get()
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    Log.e(TAG, "getQuota échoué : ${response.code} ${response.message}")
+                    return@withContext QuotaResult.NetworkError
+                }
+                val responseBody = response.body?.string()
+                    ?: return@withContext QuotaResult.NetworkError
+                val parsed = gson.fromJson(responseBody, QuotaDto::class.java)
+                return@withContext QuotaResult.Success(parsed)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Erreur getQuota (réseau coupé ?)", e)
+            return@withContext QuotaResult.NetworkError
         }
     }
 

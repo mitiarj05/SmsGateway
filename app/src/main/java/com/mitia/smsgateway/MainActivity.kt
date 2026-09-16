@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.mitia.smsgateway.service.SmsGatewayService
 import com.mitia.smsgateway.ui.AppNavigation
 import com.mitia.smsgateway.ui.batteryInfo
 import com.mitia.smsgateway.ui.isBatteryUnrestricted
@@ -113,19 +114,18 @@ class MainActivity : ComponentActivity() {
      */
     private fun disconnectAndStop() {
         lifecycleScope.launch {
-            val creds = DevicePreferences.load(this@MainActivity)
+            val container = (application as SmsGatewayApp).appContainer
+            val creds = container.deviceRepository.getCredentials()
             var signaled = false
             if (creds != null) {
-                ApiClient.setBaseUrl(DevicePreferences.getServerUrl(this@MainActivity))
-                signaled = ApiClient.disconnect(creds.first, creds.second)
+                signaled = container.deviceRepository.disconnect(creds.first, creds.second)
                 Log.d("MainActivity", "Signalement offline au serveur : $signaled")
-                EventLog.log(
-                    this@MainActivity,
+                container.logRepository.log(
                     if (signaled) "signalement offline ok"
                     else "signalement offline impossible, sweep 90s"
                 )
             } else {
-                EventLog.log(this@MainActivity, "déconnexion sans identifiants (rien à signaler)")
+                container.logRepository.log("déconnexion sans identifiants (rien à signaler)")
             }
             stopService(Intent(this@MainActivity, SmsGatewayService::class.java))
             permissionTick++
@@ -140,12 +140,13 @@ class MainActivity : ComponentActivity() {
 
     private fun exportJournal() {
         lifecycleScope.launch {
-            val events = EventLog.snapshot(this@MainActivity)
+            val logs = (application as SmsGatewayApp).appContainer.logRepository
+            val events = logs.snapshot()
             if (events.isEmpty()) {
                 Toast.makeText(this@MainActivity, "Journal vide.", Toast.LENGTH_SHORT).show()
                 return@launch
             }
-            pendingExport = EventLog.toText(events)
+            pendingExport = logs.toText(events)
             exportDocLauncher.launch("smsgateway-journal.txt")
         }
     }
@@ -163,6 +164,9 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val container = remember(context) {
+        (context.applicationContext as SmsGatewayApp).appContainer
+    }
 
     var serverUrl by remember { mutableStateOf("") }
     var deviceName by remember { mutableStateOf("") }
@@ -181,8 +185,8 @@ fun MainScreen(
     var quotaUsage by remember { mutableStateOf(0) }
     var settingsMessage by remember { mutableStateOf("") }
 
-    val history by TaskHistoryStore.observe(context).collectAsState(initial = emptyList())
-    val events by EventLog.observe(context).collectAsState(initial = emptyList())
+    val history by container.taskRepository.observeHistory().collectAsState(initial = emptyList())
+    val events by container.logRepository.observe().collectAsState(initial = emptyList())
 
     fun refresh() {
         hasSmsPerm = ContextCompat.checkSelfPermission(
@@ -199,15 +203,14 @@ fun MainScreen(
         netType = networkType(context)
         serviceRunning = isServiceRunning(context)
         scope.launch {
-            serverUrl = DevicePreferences.getServerUrl(context)
-            deviceName = DevicePreferences.getDeviceName(context)
-            deviceToken = DevicePreferences.load(context)?.second
-            ApiClient.setBaseUrl(serverUrl)
-            val (sync, count) = DevicePreferences.loadSync(context)
+            serverUrl = container.deviceRepository.getServerUrl()
+            deviceName = container.deviceRepository.getDeviceName()
+            deviceToken = container.deviceRepository.getCredentials()?.second
+            val (sync, count) = container.deviceRepository.loadSync()
             lastSync = sync
             lastCount = count
-            sentToday = TaskHistoryStore.countSentToday(context)
-            val (q, u) = DevicePreferences.loadQuotaSnapshot(context)
+            sentToday = container.taskRepository.countSentToday()
+            val (q, u) = container.deviceRepository.loadQuotaSnapshot()
             quota = q
             quotaUsage = u
         }
@@ -243,7 +246,7 @@ fun MainScreen(
         events = events,
         onExportLog = onExportJournal,
         onClearLog = {
-            scope.launch { EventLog.clear(context) }
+            scope.launch { container.logRepository.clear() }
         },
         serverUrl = serverUrl,
         onServerUrlChange = { serverUrl = it; settingsMessage = "" },
@@ -256,19 +259,19 @@ fun MainScreen(
                     settingsMessage = "Renseigne l'adresse du serveur."
                     return@launch
                 }
-                DevicePreferences.saveServerUrl(context, serverUrl)
-                val normalized = DevicePreferences.getServerUrl(context)
-                serverUrl = normalized
-                ApiClient.setBaseUrl(normalized)
-                settingsMessage = "Adresse enregistrée : $normalized"
+                serverUrl = container.deviceRepository.saveServerUrl(serverUrl)
+                settingsMessage = "Adresse enregistrée : $serverUrl"
                 refresh()
             }
         },
         onTestConnection = {
             scope.launch {
-                ApiClient.setBaseUrl(serverUrl)
-                settingsMessage = if (ApiClient.pingServer()) {
-                    "Serveur joignable : ${ApiClient.baseUrl}"
+                if (serverUrl.isBlank()) {
+                    settingsMessage = "Renseigne l'adresse du serveur."
+                    return@launch
+                }
+                settingsMessage = if (container.deviceRepository.ping(serverUrl)) {
+                    "Serveur joignable : $serverUrl"
                 } else {
                     "Serveur injoignable : vérifie l'IP et que « npm run dev » tourne."
                 }
@@ -281,14 +284,14 @@ fun MainScreen(
                     settingsMessage = "Donne un nom à l'appareil."
                     return@launch
                 }
-                DevicePreferences.saveDeviceName(context, clean)
+                container.deviceRepository.saveDeviceName(clean)
                 deviceName = clean
                 settingsMessage = "Nom enregistré : $clean (appliqué au prochain enregistrement)"
             }
         },
         onResetDevice = {
             scope.launch {
-                DevicePreferences.clear(context)
+                container.deviceRepository.clearCredentials()
                 deviceToken = null
                 settingsMessage = "Appareil réinitialisé : redémarre le service pour le ré-enregistrer."
                 refresh()

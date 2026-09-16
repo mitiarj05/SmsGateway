@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import { markStaleDevicesOffline } from '@/lib/device-status'
+import { getDeviceUsage } from '@/lib/select-device'
 
 export async function GET() {
   try {
@@ -15,7 +16,13 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ devices: data })
+    // Compteur live : la colonne est persistée à chaque SENT mais peut dater
+    // de plus d'1 h — on recalcule sur la fenêtre glissante pour l'affichage.
+    const devices = await Promise.all(
+      (data ?? []).map(async (d) => ({ ...d, sms_last_hour: await getDeviceUsage(d.id) }))
+    )
+
+    return NextResponse.json({ devices })
   } catch (err) {
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }

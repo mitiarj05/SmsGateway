@@ -1,4 +1,4 @@
-package com.mitia.smsgateway.ui.screens
+package com.mitia.smsgateway.ui.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -20,10 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mitia.smsgateway.EventLog
-import com.mitia.smsgateway.EventItem
+import com.mitia.smsgateway.domain.model.EventItem
 import com.mitia.smsgateway.ui.components.LogRow
 import com.mitia.smsgateway.ui.components.logLevelOf
+import com.mitia.smsgateway.util.TimeUtils
 import com.mitia.smsgateway.ui.theme.CardBg
 import com.mitia.smsgateway.ui.theme.DarkBg
 import com.mitia.smsgateway.ui.theme.TextMuted
@@ -94,7 +94,7 @@ fun LogScreen(
                     items(events, key = { it.t to it.msg }) { event ->
                         LogRow(
                             entry = com.mitia.smsgateway.ui.components.LogEntry(
-                                time = EventLog.formatTime(event.t),
+                                time = TimeUtils.formatTime(event.t),
                                 message = event.msg,
                                 level = logLevelOf(event.msg),
                             )

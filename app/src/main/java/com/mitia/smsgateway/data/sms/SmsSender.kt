@@ -1,4 +1,4 @@
-package com.mitia.smsgateway
+package com.mitia.smsgateway.data.sms
 
 import android.Manifest
 import android.app.Activity

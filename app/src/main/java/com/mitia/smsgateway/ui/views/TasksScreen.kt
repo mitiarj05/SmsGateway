@@ -1,4 +1,4 @@
-package com.mitia.smsgateway.ui.screens
+package com.mitia.smsgateway.ui.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mitia.smsgateway.HistoryTask
+import com.mitia.smsgateway.domain.model.HistoryTask
 import com.mitia.smsgateway.ui.components.TaskRow
 import com.mitia.smsgateway.ui.components.taskStatusOf
 import com.mitia.smsgateway.ui.theme.BorderColor

@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.SEND_SMS" />
 
     <application
+        android:name=".SmsGatewayApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -37,11 +38,11 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".SmsGatewayService"
+            android:name=".service.SmsGatewayService"
             android:foregroundServiceType="dataSync"
             android:exported="false" />
         <receiver
-            android:name=".BootReceiver"
+            android:name=".service.BootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -52,7 +53,7 @@
             </intent-filter>
         </receiver>
         <service
-            android:name=".FcmService"
+            android:name=".service.FcmService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
