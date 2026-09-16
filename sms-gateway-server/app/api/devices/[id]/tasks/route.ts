@@ -96,14 +96,25 @@ export async function GET(
       })),
     ].slice(0, 5)  // max 5 par polling
 
-    // 5. Mettre le device en ONLINE
-    await supabaseAdmin
-      .from('devices')
-      .update({
-        statut: 'ONLINE',
-        derniere_activite: new Date().toISOString(),
-      })
-      .eq('id', deviceId)
+    // 5. Mettre le device en ONLINE — SAUF s'il est désactivé manuellement
+    // (sinon le polling réactiverait un device DISABLED quelques secondes après)
+    if (device.statut !== 'DISABLED') {
+      await supabaseAdmin
+        .from('devices')
+        .update({
+          statut: 'ONLINE',
+          derniere_activite: new Date().toISOString(),
+        })
+        .eq('id', deviceId)
+    } else {
+      // On met juste à jour l'activité, sans toucher au statut
+      await supabaseAdmin
+        .from('devices')
+        .update({
+          derniere_activite: new Date().toISOString(),
+        })
+        .eq('id', deviceId)
+    }
 
     return NextResponse.json(
       {

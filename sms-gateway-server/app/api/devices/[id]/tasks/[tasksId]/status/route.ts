@@ -134,14 +134,24 @@ export async function POST(
       )
     }
 
+    // Ne jamais réactiver un device DISABLED via le polling/confirmations
     const deviceStatus = statut === 'SENDING' ? 'BUSY' : 'ONLINE'
-    await supabaseAdmin
-      .from('devices')
-      .update({
-        statut: deviceStatus,
-        derniere_activite: new Date().toISOString(),
-      })
-      .eq('id', deviceId)
+    if (device.statut !== 'DISABLED') {
+      await supabaseAdmin
+        .from('devices')
+        .update({
+          statut: deviceStatus,
+          derniere_activite: new Date().toISOString(),
+        })
+        .eq('id', deviceId)
+    } else {
+      await supabaseAdmin
+        .from('devices')
+        .update({
+          derniere_activite: new Date().toISOString(),
+        })
+        .eq('id', deviceId)
+    }
 
     return NextResponse.json(
       {
