@@ -75,4 +75,10 @@ class DeviceRepositoryImpl(private val context: Context) : DeviceRepository {
 
     override suspend fun loadQuotaSnapshot(): Pair<Int, Int> =
         DevicePreferences.loadQuotaSnapshot(context)
+
+    override suspend fun isOnboardingDone(): Boolean =
+        DevicePreferences.isOnboardingDone(context)
+
+    override suspend fun setOnboardingDone(done: Boolean) =
+        DevicePreferences.setOnboardingDone(context, done)
 }

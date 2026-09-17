@@ -14,6 +14,8 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Smartphone
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -40,6 +42,7 @@ enum class DashboardTab(val label: String, val icon: ImageVector) {
 fun BottomNav(
     selected: DashboardTab,
     onSelect: (DashboardTab) -> Unit,
+    badges: Map<DashboardTab, Int> = emptyMap(),
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -58,6 +61,7 @@ fun BottomNav(
                 NavItem(
                     tab = tab,
                     selected = tab == selected,
+                    badgeCount = badges[tab] ?: 0,
                     onClick = { onSelect(tab) },
                 )
             }
@@ -69,6 +73,7 @@ fun BottomNav(
 private fun NavItem(
     tab: DashboardTab,
     selected: Boolean,
+    badgeCount: Int,
     onClick: () -> Unit,
 ) {
     val tint = if (selected) AccentBlue else TextMuted
@@ -79,12 +84,20 @@ private fun NavItem(
             .clickable(onClick = onClick)
             .padding(horizontal = 8.dp),
     ) {
-        Icon(
-            imageVector = tab.icon,
-            contentDescription = tab.label,
-            tint = tint,
-            modifier = Modifier.size(22.dp),
-        )
+        BadgedBox(
+            badge = {
+                if (badgeCount > 0) {
+                    Badge { Text(if (badgeCount > 99) "99+" else "$badgeCount") }
+                }
+            }
+        ) {
+            Icon(
+                imageVector = tab.icon,
+                contentDescription = tab.label,
+                tint = tint,
+                modifier = Modifier.size(22.dp),
+            )
+        }
         Spacer(Modifier.height(4.dp))
         Text(
             text = tab.label,

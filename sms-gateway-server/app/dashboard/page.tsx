@@ -126,15 +126,24 @@ export default function DashboardPage() {
   async function sendSMS(e: React.FormEvent) {
     e.preventDefault()
     setSending(true)
+    // Un numéro par ligne (virgules et points-virgules acceptés aussi).
+    const recipients = form.to.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean)
     try {
       const res = await fetch('/api/sms/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to: form.to, message: form.message, cle_api: form.cle_api.trim() }),
+        body: JSON.stringify({
+          to: recipients.length > 1 ? recipients : recipients[0] ?? '',
+          message: form.message,
+          cle_api: form.cle_api.trim(),
+        }),
       })
       const data = await res.json().catch(() => null)
       if (res.ok) {
-        showToast('success', `SMS mis en file → ${form.to}`)
+        showToast(
+          'success',
+          recipients.length > 1 ? `${recipients.length} SMS mis en file` : `SMS mis en file → ${form.to.trim()}`
+        )
         setModalOpen(false)
         setForm({ to: '', message: '', cle_api: form.cle_api })
         fetchData()
@@ -369,9 +378,9 @@ export default function DashboardPage() {
       <Modal open={modalOpen} onClose={() => !sending && setModalOpen(false)}
         title="Envoyer un SMS" subtitle="La tâche sera ajoutée à la file d'attente">
         <form onSubmit={sendSMS} className="space-y-4">
-          <input type="tel" required placeholder="+261328725411" value={form.to}
+          <textarea required rows={3} placeholder="+261328725411&#10;+261331298765 (un par ligne)" value={form.to}
             onChange={(e) => setForm({ ...form, to: e.target.value })}
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
+            className="w-full resize-none rounded-lg border border-zinc-200 px-3 py-2 font-mono text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
           <div>
             <textarea required rows={3} maxLength={160} placeholder="Votre message…" value={form.message}
               onChange={(e) => setForm({ ...form, message: e.target.value })}

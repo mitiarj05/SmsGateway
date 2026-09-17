@@ -1,5 +1,6 @@
 package com.mitia.smsgateway.ui.views
 
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -200,6 +202,31 @@ fun SettingsScreen(
                 fontSize = 13.sp,
             )
         }
+
+        Spacer(Modifier.height(24.dp))
+        Text(
+            text = "SMS Gateway ${appVersion()} · passerelle autohébergée",
+            color = TextMuted,
+            fontSize = 11.sp,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
+private fun appVersion(): String {
+    val context = LocalContext.current
+    return try {
+        val pm = context.packageManager
+        val info = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pm.getPackageInfo(context.packageName, PackageManager.PackageInfoFlags.of(0))
+        } else {
+            @Suppress("DEPRECATION")
+            pm.getPackageInfo(context.packageName, 0)
+        }
+        info.versionName ?: "?"
+    } catch (_: Exception) {
+        "?"
     }
 }
 

@@ -27,6 +27,8 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.mitia.smsgateway.service.SmsGatewayService
 import com.mitia.smsgateway.ui.AppNavigation
+import com.mitia.smsgateway.ui.views.OnboardingScreen
+import com.mitia.smsgateway.ui.views.SplashScreen
 import com.mitia.smsgateway.ui.batteryInfo
 import com.mitia.smsgateway.ui.isBatteryUnrestricted
 import com.mitia.smsgateway.ui.isServiceRunning
@@ -184,6 +186,8 @@ fun MainScreen(
     var quota by remember { mutableStateOf(20) }
     var quotaUsage by remember { mutableStateOf(0) }
     var settingsMessage by remember { mutableStateOf("") }
+    var ready by remember { mutableStateOf(false) }
+    var onboardingDone by remember { mutableStateOf(true) }
 
     val history by container.taskRepository.observeHistory().collectAsState(initial = emptyList())
     val events by container.logRepository.observe().collectAsState(initial = emptyList())
@@ -210,6 +214,7 @@ fun MainScreen(
             val (q, u) = container.deviceRepository.loadQuotaSnapshot()
             quota = q
             quotaUsage = u
+            ready = true
         }
     }
 
@@ -219,6 +224,7 @@ fun MainScreen(
             serverUrl = container.deviceRepository.getServerUrl()
             deviceName = container.deviceRepository.getDeviceName()
             deviceToken = container.deviceRepository.getCredentials()?.second
+            onboardingDone = container.deviceRepository.isOnboardingDone()
         }
         refresh()
     }
@@ -235,6 +241,61 @@ fun MainScreen(
     val connected = serviceRunning && lastSync > 0 &&
         System.currentTimeMillis() - lastSync < 90_000
 
+    if (!ready) {
+        SplashScreen(modifier = modifier)
+    } else if (!onboardingDone) {
+        OnboardingScreen(
+            serverUrl = serverUrl,
+            onServerUrlChange = { serverUrl = it; settingsMessage = "" },
+            message = settingsMessage,
+            onSaveServer = {
+                scope.launch {
+                    if (serverUrl.isBlank()) {
+                        settingsMessage = "Renseigne l'adresse du serveur."
+                        return@launch
+                    }
+                    val normalized = container.deviceRepository.saveServerUrl(serverUrl)
+                    settingsMessage = "Adresse enregistrée : $normalized"
+                    refresh()
+                }
+            },
+            onTestConnection = {
+                scope.launch {
+                    if (serverUrl.isBlank()) {
+                        settingsMessage = "Renseigne l'adresse du serveur."
+                        return@launch
+                    }
+                    settingsMessage = if (container.deviceRepository.ping(serverUrl)) {
+                        "Serveur joignable : $serverUrl"
+                    } else {
+                        "Serveur injoignable : vérifie l'IP et que « npm run dev » tourne."
+                    }
+                }
+            },
+            hasSmsPerm = hasSmsPerm,
+            hasNotifPerm = hasNotifPerm,
+            batteryOk = batteryOk,
+            onRequestSmsPermission = onRequestSmsPermission,
+            onRequestNotifPermission = onRequestNotifPermission,
+            onOpenBatterySettings = {
+                try {
+                    context.startActivity(
+                        Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                    )
+                } catch (e: Exception) {
+                    settingsMessage = "Impossible d'ouvrir les réglages batterie."
+                }
+            },
+            onFinish = {
+                scope.launch {
+                    container.deviceRepository.setOnboardingDone(true)
+                    onboardingDone = true
+                    onStartServiceClick()
+                }
+            },
+            modifier = modifier,
+        )
+    } else {
     AppNavigation(
         modifier = modifier,
         deviceName = deviceName,
@@ -253,6 +314,10 @@ fun MainScreen(
                 kotlinx.coroutines.delay(1000)
                 refresh()
             }
+        },
+        onStopService = {
+            onStopServiceClick()
+            refresh()
         },
         tasks = history,
         lastSync = lastSync,
@@ -331,6 +396,7 @@ fun MainScreen(
             }
         },
     )
+    }
 }
 
 @Preview(showBackground = true)

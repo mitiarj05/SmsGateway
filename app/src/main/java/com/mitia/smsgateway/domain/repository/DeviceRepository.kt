@@ -35,4 +35,8 @@ interface DeviceRepository {
     suspend fun loadSync(): Pair<Long, Int>
     suspend fun saveQuotaSnapshot(quota: Int, usage: Int)
     suspend fun loadQuotaSnapshot(): Pair<Int, Int>
+
+    // Onboarding première ouverture
+    suspend fun isOnboardingDone(): Boolean
+    suspend fun setOnboardingDone(done: Boolean)
 }

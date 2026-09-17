@@ -38,7 +38,7 @@ object ApiClient {
      * En émulateur : http://10.0.2.2:3000 — sur téléphone : http://IP_DU_PC:3000
      */
     @Volatile
-    var baseUrl: String = "http://${DevicePreferences.DEFAULT_SERVER_HOST}:${DevicePreferences.DEFAULT_SERVER_PORT}"
+    var baseUrl: String = DevicePreferences.DEFAULT_SERVER_URL
         private set
 
     fun setBaseUrl(url: String) {

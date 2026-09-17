@@ -14,6 +14,8 @@ import com.mitia.smsgateway.domain.model.EventItem
 import com.mitia.smsgateway.domain.model.HistoryTask
 import com.mitia.smsgateway.ui.components.BottomNav
 import com.mitia.smsgateway.ui.components.DashboardTab
+import com.mitia.smsgateway.ui.components.LogLevel
+import com.mitia.smsgateway.ui.components.logLevelOf
 import com.mitia.smsgateway.ui.views.LogScreen
 import com.mitia.smsgateway.ui.views.SettingsScreen
 import com.mitia.smsgateway.ui.views.StatusScreen
@@ -39,6 +41,7 @@ fun AppNavigation(
     smsQuotaUsed: Int,
     smsQuotaTotal: Int,
     onStartService: () -> Unit,
+    onStopService: () -> Unit,
     // Tâches
     tasks: List<HistoryTask>,
     lastSync: Long,
@@ -67,12 +70,19 @@ fun AppNavigation(
 ) {
     var tab by remember { mutableStateOf(DashboardTab.STATUS) }
 
+    val pendingCount = tasks.count { it.statut == "PENDING" || it.statut == "SENDING" }
+    val errorCount = events.count { logLevelOf(it.msg) == LogLevel.ERROR }
+
     Scaffold(
         containerColor = DarkBg,
         bottomBar = {
             BottomNav(
                 selected = tab,
                 onSelect = { tab = it },
+                badges = mapOf(
+                    DashboardTab.TASKS to pendingCount,
+                    DashboardTab.LOG to errorCount,
+                ),
             )
         },
     ) { innerPadding ->
@@ -93,7 +103,9 @@ fun AppNavigation(
                     batteryCharging = batteryCharging,
                     smsQuotaUsed = smsQuotaUsed,
                     smsQuotaTotal = smsQuotaTotal,
+                    lastSyncText = timeAgoText(lastSync),
                     onStartService = onStartService,
+                    onStopService = onStopService,
                 )
                 DashboardTab.TASKS -> TasksScreen(
                     tasks = tasks,

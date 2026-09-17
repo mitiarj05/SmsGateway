@@ -12,15 +12,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitia.smsgateway.domain.model.EventItem
+import com.mitia.smsgateway.ui.components.LogLevel
 import com.mitia.smsgateway.ui.components.LogRow
 import com.mitia.smsgateway.ui.components.logLevelOf
 import com.mitia.smsgateway.util.TimeUtils
@@ -36,6 +42,15 @@ fun LogScreen(
     onClear: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var errorsOnly by remember { mutableStateOf(false) }
+    val errorCount = remember(events) {
+        events.count { logLevelOf(it.msg) == LogLevel.ERROR }
+    }
+    val visibleEvents = remember(events, errorsOnly) {
+        if (errorsOnly) events.filter { logLevelOf(it.msg) == LogLevel.ERROR }
+        else events
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -66,16 +81,29 @@ fun LogScreen(
                 Text("vider")
             }
         }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(
+                selected = !errorsOnly,
+                onClick = { errorsOnly = false },
+                label = { Text("Tous (${events.size})") },
+            )
+            FilterChip(
+                selected = errorsOnly,
+                onClick = { errorsOnly = true },
+                label = { Text("Erreurs ($errorCount)") },
+            )
+        }
         Spacer(Modifier.height(12.dp))
 
-        if (events.isEmpty()) {
+        if (visibleEvents.isEmpty()) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = CardBg,
                 shape = RoundedCornerShape(16.dp),
             ) {
                 Text(
-                    text = "Journal vide — démarre le service pour voir les événements.",
+                    text = if (errorsOnly) "Aucune erreur enregistrée."
+                    else "Journal vide — démarre le service pour voir les événements.",
                     color = TextMuted,
                     fontSize = 13.sp,
                     modifier = Modifier.padding(16.dp),
@@ -91,7 +119,7 @@ fun LogScreen(
                     modifier = Modifier.padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    items(events, key = { it.t to it.msg }) { event ->
+                    items(visibleEvents, key = { it.t to it.msg }) { event ->
                         LogRow(
                             entry = com.mitia.smsgateway.ui.components.LogEntry(
                                 time = TimeUtils.formatTime(event.t),

@@ -2,6 +2,7 @@ package com.mitia.smsgateway.data.local
 
 import android.content.Context
 import android.os.Build
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -31,9 +32,13 @@ object DevicePreferences {
     private val KEY_LAST_COUNT = intPreferencesKey("last_task_count")
     private val KEY_QUOTA = intPreferencesKey("quota")
     private val KEY_QUOTA_USAGE = intPreferencesKey("quota_usage")
+    private val KEY_ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
 
     const val DEFAULT_SERVER_HOST = "192.168.4.147"
     const val DEFAULT_SERVER_PORT = "3000"
+
+    /** Serveur de production : aucune saisie nécessaire par défaut. */
+    const val DEFAULT_SERVER_URL = "https://sms-gateway-omega.vercel.app"
 
     /**
      * URL complète du serveur, exactement telle que saisie
@@ -43,9 +48,11 @@ object DevicePreferences {
     suspend fun getServerUrl(context: Context): String {
         val prefs = context.dataStore.data.first()
         prefs[KEY_SERVER_URL]?.takeIf { it.isNotBlank() }?.let { return it }
-        val host = prefs[KEY_SERVER_HOST] ?: DEFAULT_SERVER_HOST
-        val port = prefs[KEY_SERVER_PORT] ?: DEFAULT_SERVER_PORT
-        return "http://$host:$port"
+        val host = prefs[KEY_SERVER_HOST]
+        val port = prefs[KEY_SERVER_PORT]
+        // Migration anciennes versions (host/port séparés) ; sinon défaut prod.
+        if (host == null && port == null) return DEFAULT_SERVER_URL
+        return "http://${host ?: DEFAULT_SERVER_HOST}:${port ?: DEFAULT_SERVER_PORT}"
     }
 
     /**
@@ -176,6 +183,15 @@ object DevicePreferences {
     suspend fun loadQuotaSnapshot(context: Context): Pair<Int, Int> {
         val prefs = context.dataStore.data.first()
         return (prefs[KEY_QUOTA] ?: 20) to (prefs[KEY_QUOTA_USAGE] ?: 0)
+    }
+
+    /** Onboarding terminé (sinon l'app démarre sur l'assistant). */
+    suspend fun isOnboardingDone(context: Context): Boolean {
+        return context.dataStore.data.first()[KEY_ONBOARDING_DONE] ?: false
+    }
+
+    suspend fun setOnboardingDone(context: Context, done: Boolean) {
+        context.dataStore.edit { prefs -> prefs[KEY_ONBOARDING_DONE] = done }
     }
 
     /**
