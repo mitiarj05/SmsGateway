@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import { expireStalePending } from '@/lib/pending-expiry'
+import { promoteScheduled } from '@/lib/scheduled'
 
 export async function GET() {
   try {
     await expireStalePending()
+    await promoteScheduled()
     const { data, error } = await supabaseAdmin
       .from('sms_tasks')
-      .select('id, numero_destinataire, message, statut, device_id, error_message, created_at, updated_at')
+      .select('id, numero_destinataire, message, statut, device_id, error_message, scheduled_at, created_at, updated_at')
       .order('created_at', { ascending: false })
       .limit(50)
 

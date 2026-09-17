@@ -6,6 +6,7 @@ import {
   MessageSquare, User, Lock, Eye, EyeOff, Loader2,
   AlertTriangle, Moon, Sun, CheckCircle2, ArrowRight,
 } from 'lucide-react'
+import { useTheme } from '../../lib/use-theme'
 
 function safeNext(raw: string | null): string {
   if (raw && raw.startsWith('/') && !raw.startsWith('//')) return raw
@@ -21,27 +22,12 @@ export default function LoginPage() {
   const [remember, setRemember] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [darkMode, setDarkMode] = useState(false)
   const [next, setNext] = useState('/dashboard')
-
-  /* Thème : même logique que le dashboard */
-  useEffect(() => {
-    const saved = localStorage.getItem('sms-gateway-theme')
-    const isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
-    document.documentElement.classList.toggle('dark', isDark)
-    setDarkMode(isDark)
-  }, [])
+  const { darkMode, mounted, toggleTheme } = useTheme()
 
   useEffect(() => {
     setNext(safeNext(new URLSearchParams(window.location.search).get('next')))
   }, [])
-
-  const toggleTheme = () => {
-    const nextMode = !darkMode
-    setDarkMode(nextMode)
-    document.documentElement.classList.toggle('dark', nextMode)
-    localStorage.setItem('sms-gateway-theme', nextMode ? 'dark' : 'light')
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -129,10 +115,10 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={toggleTheme}
-              title={darkMode ? 'Mode clair' : 'Mode sombre'}
+              title={!mounted ? 'Thème' : darkMode ? 'Mode clair' : 'Mode sombre'}
               className="ml-auto rounded-lg border border-zinc-200 bg-white p-2 text-zinc-600 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
-              {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {!mounted || !darkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             </button>
           </div>
 

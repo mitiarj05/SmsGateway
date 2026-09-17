@@ -4,6 +4,7 @@ import { authenticateApiClient } from '@/lib/auth'
 import { sendNewTaskPush } from '@/lib/send-push'
 import { getDeviceAvailability } from '@/lib/select-device'
 import { expireStalePending } from '@/lib/pending-expiry'
+import { promoteScheduled } from '@/lib/scheduled'
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,10 +66,31 @@ export async function POST(request: NextRequest) {
 
     // Expiration des PENDING trop anciennes (ne bloque jamais l'envoi)
     await expireStalePending()
+    await promoteScheduled()
+
+    // Envoi différé : date ISO future (max 1 an). Ni quota ni push :
+    // la tâche attend sa date, promue PENDING à l'heure dite.
+    let scheduledFor: Date | null = null
+    if (body?.scheduled_at) {
+      const d = new Date(body.scheduled_at)
+      if (Number.isNaN(d.getTime()) || d.getTime() <= Date.now()) {
+        return NextResponse.json(
+          { error: 'Le champ "scheduled_at" doit être une date ISO future' },
+          { status: 400 }
+        )
+      }
+      if (d.getTime() - Date.now() > 366 * 24 * 3600_000) {
+        return NextResponse.json(
+          { error: 'Le champ "scheduled_at" est limité à un an maximum' },
+          { status: 400 }
+        )
+      }
+      scheduledFor = d
+    }
 
     // 3. Quota strict : refuser AVANT de créer la task si tout est saturé
-    const availability = await getDeviceAvailability()
-    if (availability.saturated) {
+    const availability = scheduledFor ? null : await getDeviceAvailability()
+    if (availability?.saturated) {
       return NextResponse.json(
         {
           error: `Quota SMS/heure atteint (${availability.quota}/h/device). Réessayez dans ~${availability.retryAfterSeconds}s.`,
@@ -86,11 +108,12 @@ export async function POST(request: NextRequest) {
         numeros.map((numero) => ({
           numero_destinataire: numero,
           message: message.trim(),
-          statut: 'PENDING',
+          statut: scheduledFor ? 'SCHEDULED' : 'PENDING',
+          scheduled_at: scheduledFor ? scheduledFor.toISOString() : null,
           app_client_id: client.id,
         }))
       )
-      .select('id, numero_destinataire, message, statut, created_at')
+      .select('id, numero_destinataire, message, statut, scheduled_at, created_at')
 
     if (error || !createdTasks || createdTasks.length === 0) {
       console.error('Erreur Supabase:', error)
@@ -100,11 +123,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 5. Un seul push : il réveille le téléphone, qui dépile ensuite
+    // 5. Un seul push (sauf différé) : il réveille le téléphone, qui dépile ensuite
     // les tâches une par une au polling (5 par passage).
-    const device = availability.device
+    const device = availability?.device ?? null
     let pushSent = false
-    if (device?.fcm_token) {
+    if (!scheduledFor && device?.fcm_token) {
       try {
         pushSent = await sendNewTaskPush(device.fcm_token, createdTasks[0].id)
         console.log(`Push FCM envoyé au device ${device.id} (${device.sms_last_hour} SMS/heure) : ${pushSent}`)
@@ -119,6 +142,19 @@ export async function POST(request: NextRequest) {
     const deviceSelected = device
       ? { id: device.id, nom: device.nom, sms_last_hour: device.sms_last_hour }
       : null
+    if (scheduledFor) {
+      return NextResponse.json(
+        {
+          message: `SMS programmé pour le ${scheduledFor.toLocaleString('fr-FR')}`,
+          count: createdTasks.length,
+          tasks: createdTasks,
+          scheduled_for: scheduledFor.toISOString(),
+          push_sent: false,
+          client: { id: client.id, nom: client.nom },
+        },
+        { status: 201 }
+      )
+    }
     if (!Array.isArray(to)) {
       return NextResponse.json(
         {

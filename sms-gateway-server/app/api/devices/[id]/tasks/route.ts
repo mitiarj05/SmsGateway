@@ -4,6 +4,7 @@ import { authenticateDevice } from '@/lib/auth'
 import { getIntSetting } from '@/lib/settings'
 import { getDeviceUsage } from '@/lib/select-device'
 import { expireStalePending } from '@/lib/pending-expiry'
+import { promoteScheduled } from '@/lib/scheduled'
 
 // Une task SENDING depuis plus de 5 minutes est considérée abandonnée
 const SENDING_TIMEOUT_MS = 5 * 60 * 1000
@@ -42,6 +43,7 @@ export async function GET(
     }
 
     await expireStalePending()
+    await promoteScheduled()
 
     // 1. Récupérer les tasks PENDING (jamais assignées)
     const { data: pendingTasks, error: err1 } = await supabaseAdmin

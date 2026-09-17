@@ -32,6 +32,13 @@ export default function SettingsPage() {
   const [newClientName, setNewClientName] = useState('')
   const [creating, setCreating] = useState(false)
   const [newlyCreated, setNewlyCreated] = useState<string | null>(null)
+  const [health, setHealth] = useState<{
+    status: string; version: string; uptime_seconds: number
+    checks: {
+      supabase: { ok: boolean; latency_ms: number; error?: string }
+      settings_table: boolean; fcm_configured: boolean
+    }
+  } | null>(null)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [testNumber, setTestNumber] = useState('')
@@ -62,6 +69,13 @@ export default function SettingsPage() {
         if (typeof setData.settings?.max_pending_hours === 'number') {
           setExpireHours(String(setData.settings.max_pending_hours))
         }
+      }
+      try {
+        const hRes = await fetch('/api/health')
+        const hData = await hRes.json()
+        if (hData?.status) setHealth(hData)
+      } catch {
+        setHealth(null)
       }
       setLastRefresh(new Date())
     } finally {
@@ -307,6 +321,48 @@ export default function SettingsPage() {
               {savingExpire ? '…' : 'Enregistrer'}
             </button>
           </form>
+        </section>
+
+        {/* Santé du système */}
+        <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
+          <div className="mb-4 flex items-center gap-2">
+            <span className={`relative flex h-2.5 w-2.5`}>
+              <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-40 ${health?.status === 'ok' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+              <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${health?.status === 'ok' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+            </span>
+            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Santé du système</h2>
+            {health && (
+              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                v{health.version}
+              </span>
+            )}
+          </div>
+          {!health ? (
+            <p className="text-xs text-zinc-400">Chargement…</p>
+          ) : (
+            <dl className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-zinc-500">Supabase</dt>
+                <dd className={`font-semibold ${health.checks.supabase.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {health.checks.supabase.ok ? `OK · ${health.checks.supabase.latency_ms} ms` : `KO${health.checks.supabase.error ? ` · ${health.checks.supabase.error}` : ''}`}
+                </dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-zinc-500">Table settings</dt>
+                <dd className="font-semibold text-zinc-800 dark:text-zinc-200">{health.checks.settings_table ? 'présente' : 'absente'}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-zinc-500">Push FCM</dt>
+                <dd className="font-semibold text-zinc-800 dark:text-zinc-200">{health.checks.fcm_configured ? 'configuré' : 'non configuré'}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-zinc-500">Uptime serveur</dt>
+                <dd className="font-semibold text-zinc-800 dark:text-zinc-200">
+                  {Math.floor(health.uptime_seconds / 3600)} h {Math.floor((health.uptime_seconds % 3600) / 60)} min
+                </dd>
+              </div>
+            </dl>
+          )}
         </section>
 
         {/* Clés API serveur */}

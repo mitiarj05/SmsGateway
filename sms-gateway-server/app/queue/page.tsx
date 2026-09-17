@@ -36,7 +36,7 @@ export default function QueuePage() {
       const devData = await devRes.json()
       const taskData = await taskRes.json()
       if (devData.devices) setDevices(devData.devices)
-      if (taskData.tasks) setTasks((taskData.tasks as Task[]).filter((t) => ['PENDING', 'SENDING'].includes(t.statut)))
+      if (taskData.tasks) setTasks((taskData.tasks as Task[]).filter((t) => ['PENDING', 'SENDING', 'SCHEDULED'].includes(t.statut)))
       setLastRefresh(new Date())
     } finally {
       setLoading(false)
@@ -159,7 +159,7 @@ export default function QueuePage() {
             />
           </div>
           <div className="flex gap-1">
-            {['ALL', 'PENDING', 'SENDING'].map((f) => (
+            {['ALL', 'PENDING', 'SENDING', 'SCHEDULED'].map((f) => (
               <button key={f} onClick={() => setFilter(f)}
                 className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition ${
                   filter === f
@@ -210,7 +210,13 @@ export default function QueuePage() {
                       </select>
                     </td>
                     <td className="px-5 py-3.5 text-xs text-zinc-400">
-                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(t.created_at)}</span>
+                      {t.statut === 'SCHEDULED' && t.scheduled_at ? (
+                        <span className="flex items-center gap-1" title={`Programmé pour le ${new Date(t.scheduled_at).toLocaleString('fr-FR')}`}>
+                          <Clock className="h-3 w-3" />{new Date(t.scheduled_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(t.created_at)}</span>
+                      )}
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       <button onClick={() => cancelTask(t.id)}

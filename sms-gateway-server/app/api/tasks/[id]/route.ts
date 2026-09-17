@@ -17,7 +17,7 @@ export async function DELETE(
     if (!existing) {
       return NextResponse.json({ error: 'Task introuvable' }, { status: 404 })
     }
-    if (existing.statut !== 'PENDING') {
+    if (existing.statut !== 'PENDING' && existing.statut !== 'SCHEDULED') {
       return NextResponse.json(
         { error: `Impossible d'annuler une task ${existing.statut}` },
         { status: 409 }

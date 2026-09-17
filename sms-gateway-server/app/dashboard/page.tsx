@@ -13,6 +13,7 @@ import DashboardShell from '../../components/DashboardShell'
 import {
   DEVICE_STATUS, TASK_STATUS, StatusBadge, Toast, Modal, EmptyState, Progress,
 } from '../../components/ui'
+import { useTheme } from '../../lib/use-theme'
 
 interface Device {
   id: string; nom: string; statut: string; sms_last_hour: number
@@ -46,11 +47,10 @@ export default function DashboardPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [sending, setSending] = useState(false)
   const [detailTask, setDetailTask] = useState<Task | null>(null)
-  const [form, setForm] = useState({ to: '', message: '', cle_api: '' })
+  const [form, setForm] = useState({ to: '', message: '', cle_api: '', scheduled: '' })
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const [darkMode] = useState(
-    () => typeof document !== 'undefined' && document.documentElement.classList.contains('dark')
-  )
+  // Couleurs du graphique : suivent le toggle en direct via le hook partagé.
+  const { darkMode: chartDark } = useTheme()
 
   const showToast = useCallback((type: 'success' | 'error', text: string) => {
     setToast({ type, text })
@@ -128,6 +128,7 @@ export default function DashboardPage() {
     setSending(true)
     // Un numéro par ligne (virgules et points-virgules acceptés aussi).
     const recipients = form.to.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean)
+    const scheduledAt = form.scheduled ? new Date(form.scheduled).toISOString() : undefined
     try {
       const res = await fetch('/api/sms/send', {
         method: 'POST',
@@ -136,16 +137,19 @@ export default function DashboardPage() {
           to: recipients.length > 1 ? recipients : recipients[0] ?? '',
           message: form.message,
           cle_api: form.cle_api.trim(),
+          ...(scheduledAt ? { scheduled_at: scheduledAt } : {}),
         }),
       })
       const data = await res.json().catch(() => null)
       if (res.ok) {
         showToast(
           'success',
-          recipients.length > 1 ? `${recipients.length} SMS mis en file` : `SMS mis en file → ${form.to.trim()}`
+          scheduledAt
+            ? (data?.message ?? 'SMS programmé')
+            : recipients.length > 1 ? `${recipients.length} SMS mis en file` : `SMS mis en file → ${form.to.trim()}`
         )
         setModalOpen(false)
-        setForm({ to: '', message: '', cle_api: form.cle_api })
+        setForm({ to: '', message: '', cle_api: form.cle_api, scheduled: '' })
         fetchData()
       } else {
         showToast('error', data?.error ?? 'Erreur lors de l’envoi')
@@ -168,8 +172,8 @@ export default function DashboardPage() {
   const recentTasks = [...tasks].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 8)
   const feed = recentTasks.slice(0, 6)
   const detailDevice = detailTask?.device_id ? devices.find((d) => d.id === detailTask.device_id) : null
-  const chartGrid = darkMode ? '#3f3f46' : '#e4e4e7'
-  const chartTick = darkMode ? '#a1a1aa' : '#71717a'
+  const chartGrid = chartDark ? '#3f3f46' : '#e4e4e7'
+  const chartTick = chartDark ? '#a1a1aa' : '#71717a'
 
   return (
     <DashboardShell
@@ -390,6 +394,14 @@ export default function DashboardPage() {
           <input type="password" required value={form.cle_api}
             onChange={(e) => setForm({ ...form, cle_api: e.target.value })}
             className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
+          <div>
+            <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              Programmer l&apos;envoi (optionnel)
+            </label>
+            <input type="datetime-local" value={form.scheduled}
+              onChange={(e) => setForm({ ...form, scheduled: e.target.value })}
+              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
+          </div>
           <button type="submit" disabled={sending}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
             {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

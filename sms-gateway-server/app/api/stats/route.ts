@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 import { expireStalePending } from '@/lib/pending-expiry'
+import { promoteScheduled } from '@/lib/scheduled'
 
 export async function GET() {
   try {
     await expireStalePending()
+    await promoteScheduled()
     const { count: onlineDevices } = await supabaseAdmin
       .from('devices').select('*', { count: 'exact', head: true }).eq('statut', 'ONLINE')
     const { count: tasksSent } = await supabaseAdmin

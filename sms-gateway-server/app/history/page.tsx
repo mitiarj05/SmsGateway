@@ -94,17 +94,20 @@ export default function HistoryPage() {
   }
 
   function exportCSV() {
-    const header = 'id;destinataire;message;statut;erreur;date\n'
-    const rows = filteredTasks.map((t) =>
-      [t.id, t.numero_destinataire, `"${(t.message ?? '').replace(/"/g, '""')}"`, t.statut, `"${(t.error_message ?? '').replace(/"/g, '""')}"`, t.created_at].join(';')
-    ).join('\n')
-    const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `sms-historique-${new Date().toISOString().slice(0, 10)}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+    // Export serveur : historique complet (pas limité aux 50 lignes chargées),
+    // mêmes filtres que l'écran. Le cookie de session admin suit automatiquement.
+    const params = new URLSearchParams()
+    params.set('statut', 'SENT,FAILED')
+    if (search.trim()) params.set('q', search.trim())
+    if (dateFilter === 'today') {
+      const d = new Date()
+      d.setHours(0, 0, 0, 0)
+      params.set('from', d.toISOString())
+    } else if (dateFilter === '7d' || dateFilter === '30d') {
+      const days = dateFilter === '7d' ? 7 : 30
+      params.set('from', new Date(Date.now() - days * 86400_000).toISOString())
+    }
+    window.location.href = `/api/tasks/export?${params.toString()}`
   }
 
   const filteredTasks = tasks.filter((t) => {

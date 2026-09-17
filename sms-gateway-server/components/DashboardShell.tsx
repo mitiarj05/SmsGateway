@@ -8,6 +8,7 @@ import {
   Moon, Sun, ChevronRight, Bell, LogOut, Search, AlertTriangle, X, UserPlus,
 } from 'lucide-react'
 import { Modal } from './ui'
+import { useTheme } from '../lib/use-theme'
 
 const NAV = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
@@ -23,32 +24,8 @@ export default function DashboardShell({ title, subtitle, actions, children }: {
 }) {
   const pathname = usePathname()
 
-  /* Thème : source unique = localStorage, lu une fois (jamais réécrit au montage). */
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window === 'undefined') return false
-    const saved = localStorage.getItem('sms-gateway-theme')
-    if (saved) return saved === 'dark'
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-  })
-  /* mounted : évite le mismatch d'hydratation (le serveur rend toujours la version claire). */
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (!mounted) return
-    document.documentElement.classList.toggle('dark', darkMode)
-  }, [darkMode, mounted])
-
-  function toggleTheme() {
-    setDarkMode((prev) => {
-      const next = !prev
-      localStorage.setItem('sms-gateway-theme', next ? 'dark' : 'light')
-      return next
-    })
-  }
+  /* Thème partagé (init paresseuse, suivi OS, theme-color mobile). */
+  const { darkMode, mounted, toggleTheme } = useTheme()
 
   const [pending, setPending] = useState(0)
   const [failed, setFailed] = useState(0)
