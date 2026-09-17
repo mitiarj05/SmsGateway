@@ -1,5 +1,4 @@
 import { getSupabaseAdmin } from './supabase-server'
-import { getAuth } from 'firebase-admin/auth'
 
 /**
  * Vérifie qu'un device existe avec ce token.
@@ -29,10 +28,15 @@ export async function authenticateDevice(deviceId: string, token: string) {
 /**
  * Vérifie un ID token Firebase Auth (connexion anonyme du téléphone).
  * Retourne le UID Firebase si valide, null sinon.
+ *
+ * Import dynamique : `firebase-admin/auth` ne doit pas être bundlé
+ * statiquement (chaîne ESM jose/jwks-rsa incompatible avec le runtime
+ * Next/Vercel) — il est chargé à la première vérification, en Node.js pur.
  */
 export async function verifyFirebaseIdToken(idToken: string): Promise<string | null> {
   if (!idToken) return null
   try {
+    const { getAuth } = await import('firebase-admin/auth')
     const decoded = await getAuth().verifyIdToken(idToken)
     return decoded.uid
   } catch (err) {
