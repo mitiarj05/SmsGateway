@@ -223,6 +223,14 @@ fun MainScreen(
         refresh()
     }
     LaunchedEffect(permissionTick) { if (permissionTick > 0) refresh() }
+    // Rafraîchit en continu tant que l'app est ouverte : l'écran Statut
+    // passe en ligne tout seul après démarrage (sans rouvrir l'app).
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(5000)
+            refresh()
+        }
+    }
 
     val connected = serviceRunning && lastSync > 0 &&
         System.currentTimeMillis() - lastSync < 90_000

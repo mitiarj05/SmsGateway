@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from './supabase-server'
+import { getAuth } from 'firebase-admin/auth'
 
 /**
  * Vérifie qu'un device existe avec ce token.
@@ -23,6 +24,21 @@ export async function authenticateDevice(deviceId: string, token: string) {
     return null
   }
   return data
+}
+
+/**
+ * Vérifie un ID token Firebase Auth (connexion anonyme du téléphone).
+ * Retourne le UID Firebase si valide, null sinon.
+ */
+export async function verifyFirebaseIdToken(idToken: string): Promise<string | null> {
+  if (!idToken) return null
+  try {
+    const decoded = await getAuth().verifyIdToken(idToken)
+    return decoded.uid
+  } catch (err) {
+    console.warn('[auth] ID token Firebase invalide:', (err as Error).message)
+    return null
+  }
 }
 
 /**

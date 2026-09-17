@@ -5,6 +5,7 @@ import com.mitia.smsgateway.data.local.DevicePreferences
 import com.mitia.smsgateway.data.remote.ApiClient
 import com.mitia.smsgateway.domain.model.QuotaDto
 import com.mitia.smsgateway.domain.model.QuotaResult
+import com.mitia.smsgateway.domain.model.RegisterResult
 import com.mitia.smsgateway.domain.repository.DeviceRepository
 
 class DeviceRepositoryImpl(private val context: Context) : DeviceRepository {
@@ -44,9 +45,9 @@ class DeviceRepositoryImpl(private val context: Context) : DeviceRepository {
     override suspend fun saveDeviceName(name: String) =
         DevicePreferences.saveDeviceName(context, name)
 
-    override suspend fun register(deviceName: String): Pair<String, String>? {
+    override suspend fun register(deviceName: String, idToken: String): RegisterResult {
         ApiClient.setBaseUrl(DevicePreferences.getServerUrl(context))
-        return ApiClient.registerDevice(deviceName)
+        return ApiClient.registerDevice(deviceName, idToken)
     }
 
     override suspend fun disconnect(deviceId: String, token: String): Boolean {

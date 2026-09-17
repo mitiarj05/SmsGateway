@@ -73,3 +73,48 @@ export async function PATCH(
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }
 }
+
+/** DELETE /api/devices/[id] — supprime un device (+ détache ses tâches) */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+
+    const { data: existing, error: fetchError } = await supabaseAdmin
+      .from('devices')
+      .select('id, nom')
+      .eq('id', id)
+      .single()
+
+    if (fetchError || !existing) {
+      return NextResponse.json({ error: 'Device introuvable' }, { status: 404 })
+    }
+
+    // Détacher les tâches liées (clé étrangère) en gardant l'historique.
+    // Les PENDING/SENDING seront reprises par un autre device ou expireront ;
+    // les SENT/FAILED gardent leur trace sans attribution.
+    const { error: detachError } = await supabaseAdmin
+      .from('sms_tasks')
+      .update({ device_id: null })
+      .eq('device_id', id)
+
+    if (detachError) {
+      return NextResponse.json({ error: detachError.message }, { status: 500 })
+    }
+
+    const { error } = await supabaseAdmin
+      .from('devices')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ message: 'Device supprimé', id })
+  } catch {
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
+  }
+}

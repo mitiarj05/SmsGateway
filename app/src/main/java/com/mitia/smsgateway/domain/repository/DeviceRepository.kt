@@ -1,6 +1,7 @@
 package com.mitia.smsgateway.domain.repository
 
 import com.mitia.smsgateway.domain.model.QuotaDto
+import com.mitia.smsgateway.domain.model.RegisterResult
 
 /**
  * Device, serveur et état de synchronisation.
@@ -22,7 +23,7 @@ interface DeviceRepository {
     // Appareil
     suspend fun getDeviceName(): String
     suspend fun saveDeviceName(name: String)
-    suspend fun register(deviceName: String): Pair<String, String>?
+    suspend fun register(deviceName: String, idToken: String): RegisterResult
     suspend fun disconnect(deviceId: String, token: String): Boolean
     suspend fun updateFcmToken(deviceId: String, token: String, fcmToken: String): Boolean
 

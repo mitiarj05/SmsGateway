@@ -5,13 +5,14 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 import {
   MessageSquare, Smartphone, Inbox, History, Settings, LayoutDashboard,
-  Moon, Sun, ChevronRight, Bell, LogOut, Search, AlertTriangle, X,
+  Moon, Sun, ChevronRight, Bell, LogOut, Search, AlertTriangle, X, UserPlus,
 } from 'lucide-react'
 import { Modal } from './ui'
 
 const NAV = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
   { href: '/devices', icon: Smartphone, label: 'Appareils' },
+  { href: '/devices/add', icon: UserPlus, label: 'Ajouter' },
   { href: '/queue', icon: Inbox, label: 'File d’attente' },
   { href: '/history', icon: History, label: 'Historique' },
   { href: '/settings', icon: Settings, label: 'Paramètres' },
@@ -156,7 +157,8 @@ export default function DashboardShell({ title, subtitle, actions, children }: {
 
         <nav className="flex-1 space-y-1 p-3">
           {NAV.map((item) => {
-            const active = pathname === item.href || pathname.startsWith(item.href + '/')
+            const active = pathname === item.href ||
+              (item.href !== '/devices' && pathname.startsWith(item.href + '/'))
             return (
               <Link key={item.href} href={item.href}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${

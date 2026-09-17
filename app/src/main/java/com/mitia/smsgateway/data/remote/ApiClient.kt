@@ -9,6 +9,7 @@ import com.mitia.smsgateway.domain.model.GetTasksResponse
 import com.mitia.smsgateway.domain.model.QuotaDto
 import com.mitia.smsgateway.domain.model.QuotaResult
 import com.mitia.smsgateway.domain.model.RegisterResponse
+import com.mitia.smsgateway.domain.model.RegisterResult
 import com.mitia.smsgateway.domain.model.StatusResult
 import com.mitia.smsgateway.domain.model.TaskDto
 import com.mitia.smsgateway.domain.model.TasksResult
@@ -78,32 +79,39 @@ object ApiClient {
 
     /**
      * Enregistre un nouveau device auprès du serveur.
-     * Retourne (deviceId, token) ou null en cas d'erreur.
+     * Exige l'ID token Firebase Auth (connexion anonyme) : le serveur
+     * refuse tout enregistrement non authentifié (401).
      */
-    suspend fun registerDevice(nom: String): Pair<String, String>? = withContext(Dispatchers.IO) {
+    suspend fun registerDevice(nom: String, idToken: String): RegisterResult = withContext(Dispatchers.IO) {
         try {
             val body = gson.toJson(mapOf("nom" to nom))
                 .toRequestBody(JSON)
 
             val request = Request.Builder()
                 .url("$baseUrl/api/devices/register")
+                .header("Authorization", "Bearer $idToken")
                 .post(body)
                 .build()
 
             client.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) {
-                    Log.e(TAG, "Register échoué : ${response.code} ${response.message}")
-                    return@withContext null
+                    val raw = try { response.body?.string() } catch (_: Exception) { null }
+                    val serverMessage = try {
+                        raw?.let { gson.fromJson(it, Map::class.java)["error"] as? String }
+                    } catch (_: Exception) { null }
+                    Log.e(TAG, "Register échoué : ${response.code} $serverMessage")
+                    return@withContext RegisterResult.HttpError(response.code, serverMessage)
                 }
 
-                val responseBody = response.body?.string() ?: return@withContext null
+                val responseBody = response.body?.string()
+                    ?: return@withContext RegisterResult.HttpError(response.code, "réponse vide")
                 val parsed = gson.fromJson(responseBody, RegisterResponse::class.java)
                 Log.d(TAG, "Device enregistré : ${parsed.device.id}")
-                return@withContext parsed.device.id to parsed.device.token
+                return@withContext RegisterResult.Success(parsed.device.id, parsed.device.token)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Erreur registerDevice", e)
-            return@withContext null
+            return@withContext RegisterResult.NetworkError
         }
     }
 

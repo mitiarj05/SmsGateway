@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Smartphone, Signal, Send, Bell, Power, CheckCircle2, AlertTriangle, X, RefreshCw } from 'lucide-react'
+import { Smartphone, Signal, Send, Bell, Power, CheckCircle2, AlertTriangle, X, RefreshCw, Trash2 } from 'lucide-react'
 import DashboardShell from '../../components/DashboardShell'
-import { Device, DEVICE_STATUS, StatusBadge, timeAgo, SMS_QUOTA_PER_HOUR } from '../../components/ui'
+import { Device, DEVICE_STATUS, StatusBadge, timeAgo, SMS_QUOTA_PER_HOUR, ConfirmDialog } from '../../components/ui'
 
 interface DeviceDetails {
   id: string
@@ -25,6 +25,8 @@ export default function DevicesPage() {
 
   const [detailDevice, setDetailDevice] = useState<DeviceDetails | null>(null)
   const [pinging, setPinging] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<Device | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [testNumber, setTestNumber] = useState('')
@@ -99,8 +101,28 @@ export default function DevicesPage() {
     }
   }
 
-  async function pingDevice(id: string) {
-    setPinging(id)
+  async function deleteDevice() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/devices/${deleteTarget.id}`, { method: 'DELETE' })
+      const data = await res.json().catch(() => null)
+      if (res.ok) {
+        showToast('success', `« ${deleteTarget.nom} » supprimé`)
+        setDeleteTarget(null)
+        setDetailDevice(null)
+        fetchData(true)
+      } else {
+        showToast('error', data?.error ?? 'Suppression impossible')
+      }
+    } catch {
+      showToast('error', 'Erreur réseau')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  async function pingDevice(id: string) {    setPinging(id)
     try {
       const res = await fetch(`/api/devices/${id}/ping`, { method: 'POST' })
       const data = await res.json()
@@ -239,6 +261,11 @@ export default function DevicesPage() {
                             className="rounded-lg border border-zinc-200 p-1.5 text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800">
                             <Power className="h-4 w-4" />
                           </button>
+                          <button onClick={() => setDeleteTarget(d)}
+                            title="Supprimer l'appareil"
+                            className="rounded-lg border border-zinc-200 p-1.5 text-zinc-500 hover:bg-red-50 hover:text-red-600 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-red-500/10 dark:hover:text-red-400">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -282,7 +309,17 @@ export default function DevicesPage() {
         </div>
       )}
 
-      {/* Modal nouveau SMS */}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => !deleting && setDeleteTarget(null)}
+        onConfirm={deleteDevice}
+        loading={deleting}
+        title="Supprimer cet appareil ?"
+        message={`« ${deleteTarget?.nom ?? ''} » ne pourra plus envoyer de SMS. Ses tâches en cours seront libérées et son historique conservé sans attribution. Le téléphone devra être réinitialisé côté app.`}
+        confirmLabel="Supprimer"
+      />
+
+      {/* Modale nouveau SMS */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-4 backdrop-blur-sm" onClick={() => !sending && setModalOpen(false)}>
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl dark:bg-zinc-900 dark:ring-1 dark:ring-zinc-800" onClick={(e) => e.stopPropagation()}>
