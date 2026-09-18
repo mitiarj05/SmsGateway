@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Dev uniquement : autorise HTTP en clair vers le serveur local.
-         En prod : passer en HTTPS et supprimer cleartextTrafficPermitted. -->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="false">192.168.4.147</domain>
-        <domain includeSubdomains="false">10.0.2.2</domain>
-    </domain-config>
+    <!-- Par défaut : HTTPS uniquement (prod = Vercel en HTTPS). -->
+    <base-config cleartextTrafficPermitted="false" />
+    <!-- Builds debug : HTTP autorisé (serveur LAN en dev, ex. http://192.168.x.x:3000).
+         Ne s'applique JAMAIS aux builds release. -->
+    <debug-overrides cleartextTrafficPermitted="true" />
 </network-security-config>

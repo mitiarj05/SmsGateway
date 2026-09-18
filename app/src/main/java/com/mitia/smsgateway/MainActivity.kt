@@ -94,14 +94,17 @@ class MainActivity : ComponentActivity() {
                     },
                     onStartServiceClick = { startSmsGatewayService() },
                     onStopServiceClick = { disconnectAndStop() },
+                    onRestartService = {
+                        stopService(Intent(this, SmsGatewayService::class.java))
+                        startSmsGatewayService()
+                    },
                     onExportJournal = { exportJournal() }
                 )
             }
         }
     }
 
-    private fun startSmsGatewayService() {
-        val intent = Intent(this, SmsGatewayService::class.java)
+    private fun startSmsGatewayService() {        val intent = Intent(this, SmsGatewayService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
         } else {
@@ -162,6 +165,7 @@ fun MainScreen(
     onRequestNotifPermission: () -> Unit = {},
     onStartServiceClick: () -> Unit = {},
     onStopServiceClick: () -> Unit = {},
+    onRestartService: () -> Unit = {},
     onExportJournal: () -> Unit = {},
 ) {
     val context = LocalContext.current

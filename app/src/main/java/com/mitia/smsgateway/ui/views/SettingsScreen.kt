@@ -113,7 +113,7 @@ fun SettingsScreen(
                 Text("enregistrer")
             }
             OutlinedButton(onClick = onTestConnection, modifier = Modifier.weight(1f)) {
-                Text("tester la connexion")
+                Text("tester")
             }
         }
         Spacer(Modifier.height(16.dp))

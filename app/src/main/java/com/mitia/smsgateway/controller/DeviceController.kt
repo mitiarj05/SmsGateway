@@ -6,11 +6,11 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.mitia.smsgateway.domain.model.RegisterResult
 import com.mitia.smsgateway.domain.repository.DeviceRepository
 import com.mitia.smsgateway.domain.repository.LogRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-
 /**
  * Authentification et enregistrement du device.
  * Utilisé au démarrage du service (et au boot).
@@ -75,6 +75,10 @@ class DeviceController(
             }
             val user = auth.currentUser ?: return null
             user.getIdToken(true).await().token
+        } catch (e: CancellationException) {
+            // Arrêt du service en cours de connexion : propagation normale,
+            // pas une erreur d'auth (ne rien logger ni mettre en file).
+            throw e
         } catch (e: Exception) {
             Log.e(tag, "signInAnonymously impossible", e)
             logs.log("échec auth Firebase : ${e.message}")
