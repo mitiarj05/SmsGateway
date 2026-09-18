@@ -61,19 +61,27 @@ object ApiClient {
      * Teste la joignabilité du serveur (GET racine, attendue 200).
      * Utilisé par l'écran d'accueil, avant d'enregistrer l'adresse.
      */
-    suspend fun pingServer(): Boolean = withContext(Dispatchers.IO) {
+    suspend fun pingServer(): Boolean = pingLatencyMs() >= 0
+
+    /**
+     * Latence aller-retour vers le serveur en millisecondes (-1 si injoignable).
+     * Utilisé par l'écran Diagnostic.
+     */
+    suspend fun pingLatencyMs(): Long = withContext(Dispatchers.IO) {
         try {
+            val start = android.os.SystemClock.elapsedRealtime()
             val request = Request.Builder()
                 .url(baseUrl)
                 .get()
                 .build()
 
             client.newCall(request).execute().use { response ->
-                return@withContext response.isSuccessful
+                if (!response.isSuccessful) return@withContext -1L
+                return@withContext android.os.SystemClock.elapsedRealtime() - start
             }
         } catch (e: Exception) {
             Log.e(TAG, "pingServer échoué ($baseUrl)", e)
-            return@withContext false
+            return@withContext -1L
         }
     }
 

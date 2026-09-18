@@ -127,7 +127,7 @@ export default function DashboardShell({ title, subtitle, actions, children }: {
             <MessageSquare className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-zinc-900 dark:text-white">SMS Gateway</p>
+            <p className="text-sm font-bold text-zinc-900 dark:text-white">SMSIKA</p>
             <p className="text-xs text-zinc-400">Panneau de contrôle</p>
           </div>
         </div>

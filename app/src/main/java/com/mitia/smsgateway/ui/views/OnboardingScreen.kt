@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -38,6 +39,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -60,6 +64,27 @@ fun SplashScreen(modifier: Modifier = Modifier) {
             .background(DarkBg),
         contentAlignment = Alignment.Center,
     ) {
+        // Halos décoratifs
+        Box(
+            modifier = Modifier
+                .size(320.dp)
+                .offset(x = 120.dp, y = (-260).dp)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(AccentBlue.copy(alpha = 0.28f), Color.Transparent)
+                    )
+                )
+        )
+        Box(
+            modifier = Modifier
+                .size(320.dp)
+                .offset(x = (-140).dp, y = 260.dp)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(AccentBlue.copy(alpha = 0.18f), Color.Transparent)
+                    )
+                )
+        )
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(
                 imageVector = Icons.Filled.Sms,
@@ -69,7 +94,7 @@ fun SplashScreen(modifier: Modifier = Modifier) {
             )
             Spacer(Modifier.height(16.dp))
             Text(
-                text = "SMS Gateway",
+                text = "SMSIKA",
                 color = TextPrimary,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
@@ -195,15 +220,27 @@ fun OnboardingScreen(
 @Composable
 private fun OnboardingWelcome() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(
-            imageVector = Icons.Filled.Sms,
-            contentDescription = null,
-            tint = AccentBlue,
-            modifier = Modifier.size(64.dp),
-        )
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(28.dp))
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(Color(0xFF2563EB), Color(0xFF1E40AF))
+                    )
+                )
+                .padding(24.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Sms,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(44.dp),
+            )
+        }
         Spacer(Modifier.height(24.dp))
         Text(
-            text = "Bienvenue sur SMS Gateway",
+            text = "Bienvenue sur SMSIKA",
             color = TextPrimary,
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,

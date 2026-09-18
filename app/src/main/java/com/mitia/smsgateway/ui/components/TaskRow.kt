@@ -60,18 +60,18 @@ fun TaskRow(
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Icône enveloppe
+        // Icône enveloppe teintée par statut
         Box(
             modifier = Modifier
                 .size(38.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color(0xFF1E2433)),
+                .background(status.color.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = Icons.Filled.Email,
                 contentDescription = null,
-                tint = TextSecondary,
+                tint = status.color,
                 modifier = Modifier.size(18.dp),
             )
         }

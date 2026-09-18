@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SmsGateway"
+rootProject.name = "SMSIKA"
 include(":app")

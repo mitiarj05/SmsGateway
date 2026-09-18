@@ -12,71 +12,96 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitia.smsgateway.ui.theme.AccentGreen
-import com.mitia.smsgateway.ui.theme.CardBg
-import com.mitia.smsgateway.ui.theme.TextMuted
-import com.mitia.smsgateway.ui.theme.TextPrimary
+import kotlinx.coroutines.delay
 
+/**
+ * Carte hero : dégradé bleu nuit, pastille pulsante, badge d'état.
+ * Le pulse est manuel (pas de lib d'animation) : alterne l'alpha.
+ */
 @Composable
 fun StatusCard(
     isOnline: Boolean,
     subtitle: String,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = CardBg,
-        shape = RoundedCornerShape(16.dp),
+    var pulse by remember(isOnline) { mutableStateOf(true) }
+    LaunchedEffect(isOnline) {
+        while (true) {
+            delay(700)
+            pulse = !pulse
+        }
+    }
+
+    val dot = if (isOnline) AccentGreen else Color.Gray
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(
+                Brush.horizontalGradient(
+                    colors = listOf(
+                        Color(0xFF1D4ED8),
+                        Color(0xFF1E3A8A),
+                        Color(0xFF172554)
+                    )
+                )
+            )
+            .padding(18.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Pastille verte
+            // Pastille pulsante
             Box(
                 modifier = Modifier
-                    .size(10.dp)
+                    .size(12.dp)
                     .clip(CircleShape)
-                    .background(if (isOnline) AccentGreen else Color.Gray),
+                    .background(dot.copy(alpha = if (pulse) 1f else 0.35f)),
             )
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = if (isOnline) "en ligne" else "hors ligne",
-                    color = TextPrimary,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
                     text = subtitle,
-                    color = TextMuted,
+                    color = Color.White.copy(alpha = 0.7f),
                     fontSize = 12.sp,
                 )
             }
             // Badge "connecté"
-            Surface(
-                color = (if (isOnline) AccentGreen else Color.Gray).copy(alpha = 0.15f),
-                shape = RoundedCornerShape(8.dp),
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.White.copy(alpha = 0.15f))
+                    .padding(horizontal = 10.dp, vertical = 5.dp),
             ) {
                 Text(
                     text = if (isOnline) "connecté" else "déconnecté",
-                    color = if (isOnline) AccentGreen else TextMuted,
+                    color = Color.White,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                 )
             }
         }

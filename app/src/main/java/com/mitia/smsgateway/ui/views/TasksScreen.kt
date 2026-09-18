@@ -12,8 +12,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +26,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.mitia.smsgateway.ui.components.SectionLabel
+import com.mitia.smsgateway.ui.theme.AccentBlue
+import com.mitia.smsgateway.ui.theme.BorderColor
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,12 +49,19 @@ fun TasksScreen(
     modifier: Modifier = Modifier,
 ) {
     var filter by remember { mutableStateOf<String?>(null) }
-    val visibleTasks = remember(tasks, filter) {
-        when (filter) {
-            "SENT" -> tasks.filter { it.statut == "SENT" }
-            "PENDING" -> tasks.filter { it.statut == "PENDING" || it.statut == "SENDING" }
-            "FAILED" -> tasks.filter { it.statut == "FAILED" }
-            else -> tasks
+    var query by remember { mutableStateOf("") }
+    val visibleTasks = remember(tasks, filter, query) {
+        val q = query.trim().lowercase()
+        tasks.filter { t ->
+            val matchFilter = when (filter) {
+                "SENT" -> t.statut == "SENT"
+                "PENDING" -> t.statut == "PENDING" || t.statut == "SENDING"
+                "FAILED" -> t.statut == "FAILED"
+                else -> true
+            }
+            matchFilter && (q.isEmpty()
+                || t.numero.contains(q, ignoreCase = true)
+                || t.message.lowercase().contains(q))
         }
     }
 
@@ -71,8 +86,7 @@ fun TasksScreen(
         Spacer(Modifier.height(12.dp))
 
         // Filtres par statut
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {            FilterChip(
                 selected = filter == null,
                 onClick = { filter = null },
                 label = { Text("Tous (${tasks.size})") },
@@ -93,7 +107,28 @@ fun TasksScreen(
                 label = { Text("Échecs") },
             )
         }
+        Spacer(Modifier.height(8.dp))
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            placeholder = { Text("Rechercher numéro ou message…") },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = CardBg,
+                unfocusedContainerColor = CardBg,
+                focusedBorderColor = AccentBlue,
+                unfocusedBorderColor = BorderColor,
+                focusedTextColor = TextPrimary,
+                unfocusedTextColor = TextPrimary,
+                cursorColor = AccentBlue,
+            ),
+            shape = RoundedCornerShape(12.dp),
+        )
         Spacer(Modifier.height(12.dp))
+
+        SectionLabel(text = "Résultats (${visibleTasks.size})")
 
         if (visibleTasks.isEmpty()) {
             Surface(

@@ -33,6 +33,9 @@ object DevicePreferences {
     private val KEY_QUOTA = intPreferencesKey("quota")
     private val KEY_QUOTA_USAGE = intPreferencesKey("quota_usage")
     private val KEY_ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
+    private val KEY_SIM_MODE = stringPreferencesKey("sim_mode")
+    private val KEY_SIM_SUB_ID = intPreferencesKey("sim_sub_id")
+    private val KEY_SIM_COUNTER = intPreferencesKey("sim_counter")
 
     const val DEFAULT_SERVER_HOST = "192.168.4.147"
     const val DEFAULT_SERVER_PORT = "3000"
@@ -192,6 +195,38 @@ object DevicePreferences {
 
     suspend fun setOnboardingDone(context: Context, done: Boolean) {
         context.dataStore.edit { prefs -> prefs[KEY_ONBOARDING_DONE] = done }
+    }
+
+    /** Mode SIM : "auto" (rotation tous les 10 envois) ou "manual". */
+    suspend fun getSimMode(context: Context): String {
+        return context.dataStore.data.first()[KEY_SIM_MODE] ?: "auto"
+    }
+
+    suspend fun saveSimMode(context: Context, mode: String) {
+        context.dataStore.edit { prefs -> prefs[KEY_SIM_MODE] = mode }
+    }
+
+    /** SubscriptionId choisi en mode manuel (-1 = aucun). */
+    suspend fun getSimSubId(context: Context): Int {
+        return context.dataStore.data.first()[KEY_SIM_SUB_ID] ?: -1
+    }
+
+    suspend fun saveSimSubId(context: Context, subId: Int) {
+        context.dataStore.edit { prefs -> prefs[KEY_SIM_SUB_ID] = subId }
+    }
+
+    /** Compteur d'envois (rotation auto). Incrémente et retourne la nouvelle valeur. */
+    suspend fun getAndIncrementSimCounter(context: Context): Int {
+        var next = 0
+        context.dataStore.edit { prefs ->
+            next = (prefs[KEY_SIM_COUNTER] ?: 0) + 1
+            prefs[KEY_SIM_COUNTER] = next
+        }
+        return next
+    }
+
+    suspend fun getSimCounter(context: Context): Int {
+        return context.dataStore.data.first()[KEY_SIM_COUNTER] ?: 0
     }
 
     /**

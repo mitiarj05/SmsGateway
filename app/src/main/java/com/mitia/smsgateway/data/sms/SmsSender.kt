@@ -29,7 +29,12 @@ object SmsSender {
     private const val TAG = "SmsSender"
     private const val SENT_TIMEOUT_MS = 30_000L
 
-    suspend fun sendSms(context: Context, numero: String, message: String): Boolean {
+    suspend fun sendSms(
+        context: Context,
+        numero: String,
+        message: String,
+        subscriptionId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID
+    ): Boolean {
         // 0. Permission
         if (ContextCompat.checkSelfPermission(
                 context,
@@ -58,7 +63,13 @@ object SmsSender {
         }
 
         return try {
-            val smsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // SIM explicite (multi-SIM) si fournie et supportée, sinon abonnement par défaut.
+            val smsManager = if (subscriptionId != SubscriptionManager.INVALID_SUBSCRIPTION_ID &&
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
+            ) {
+                Log.d(TAG, "Envoi via abonnement $subscriptionId")
+                SmsManager.getSmsManagerForSubscriptionId(subscriptionId)
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 context.getSystemService(SmsManager::class.java)
             } else {
                 @Suppress("DEPRECATION")

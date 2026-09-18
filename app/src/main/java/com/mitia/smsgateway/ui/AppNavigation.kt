@@ -16,8 +16,10 @@ import com.mitia.smsgateway.ui.components.BottomNav
 import com.mitia.smsgateway.ui.components.DashboardTab
 import com.mitia.smsgateway.ui.components.LogLevel
 import com.mitia.smsgateway.ui.components.logLevelOf
+import com.mitia.smsgateway.ui.views.DiagScreen
 import com.mitia.smsgateway.ui.views.LogScreen
 import com.mitia.smsgateway.ui.views.SettingsScreen
+import com.mitia.smsgateway.ui.views.StatsScreen
 import com.mitia.smsgateway.ui.views.StatusScreen
 import com.mitia.smsgateway.ui.views.TasksScreen
 import com.mitia.smsgateway.ui.theme.DarkBg
@@ -116,6 +118,8 @@ fun AppNavigation(
                     onExport = onExportLog,
                     onClear = onClearLog,
                 )
+                DashboardTab.DIAG -> DiagScreen()
+                DashboardTab.STATS -> StatsScreen()
                 DashboardTab.SETTINGS -> SettingsScreen(
                     serverUrl = serverUrl,
                     onServerUrlChange = onServerUrlChange,

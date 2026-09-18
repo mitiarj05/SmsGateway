@@ -6,12 +6,15 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.mitia.smsgateway.domain.model.DayStat
 import com.mitia.smsgateway.domain.model.HistoryTask
 import com.mitia.smsgateway.domain.model.TaskDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 private val Context.taskHistoryStore by preferencesDataStore(name = "task_history")
 
@@ -86,5 +89,36 @@ object TaskHistoryStore {
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
         return observe(context).first().count { it.statut == "SENT" && it.at >= startOfDay }
+    }
+
+    /** Volume des 7 derniers jours (envoyés + échecs par jour, du plus ancien au plus récent). */
+    suspend fun statsLast7Days(context: Context): List<DayStat> {
+        val list = observe(context).first()
+        val dayFormat = SimpleDateFormat("EEE", Locale.FRANCE)
+        return (6 downTo 0).map { back ->
+            val start = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, -back)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+            val end = start + 86_400_000L
+            val day = list.filter { it.at in start until end }
+            DayStat(
+                label = dayFormat.format(java.util.Date(start)),
+                sent = day.count { it.statut == "SENT" },
+                failed = day.count { it.statut == "FAILED" }
+            )
+        }
+    }
+
+    /** Taux de réussite sur 7 jours (0..100, -1 si aucun SMS). */
+    suspend fun successRate7d(context: Context): Double {
+        val stats = statsLast7Days(context)
+        val sent = stats.sumOf { it.sent }
+        val failed = stats.sumOf { it.failed }
+        if (sent + failed == 0) return -1.0
+        return sent * 100.0 / (sent + failed)
     }
 }

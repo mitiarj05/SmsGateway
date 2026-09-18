@@ -9,8 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Smartphone
@@ -35,6 +38,8 @@ enum class DashboardTab(val label: String, val icon: ImageVector) {
     STATUS("statut", Icons.Filled.Smartphone),
     TASKS("tâches", Icons.Filled.List),
     LOG("journal", Icons.Filled.History),
+    DIAG("diag", Icons.Filled.Info),
+    STATS("stats", Icons.Filled.BarChart),
     SETTINGS("réglages", Icons.Filled.Settings),
 }
 
@@ -91,12 +96,28 @@ private fun NavItem(
                 }
             }
         ) {
-            Icon(
-                imageVector = tab.icon,
-                contentDescription = tab.label,
-                tint = tint,
-                modifier = Modifier.size(22.dp),
-            )
+            if (selected) {
+                Surface(
+                    color = AccentBlue.copy(alpha = 0.18f),
+                    shape = CircleShape,
+                ) {
+                    Icon(
+                        imageVector = tab.icon,
+                        contentDescription = tab.label,
+                        tint = tint,
+                        modifier = Modifier
+                            .padding(7.dp)
+                            .size(20.dp),
+                    )
+                }
+            } else {
+                Icon(
+                    imageVector = tab.icon,
+                    contentDescription = tab.label,
+                    tint = tint,
+                    modifier = Modifier.size(22.dp),
+                )
+            }
         }
         Spacer(Modifier.height(4.dp))
         Text(

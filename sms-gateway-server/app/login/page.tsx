@@ -68,7 +68,7 @@ export default function LoginPage() {
             <MessageSquare className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-white">SMS Gateway</p>
+            <p className="text-sm font-bold text-white">SMSIKA</p>
             <p className="text-xs text-zinc-400">Panneau de contrôle</p>
           </div>
         </div>
@@ -98,7 +98,7 @@ export default function LoginPage() {
           </ul>
         </div>
 
-        <p className="relative text-xs text-zinc-500">© 2026 SMS Gateway — Projet interne</p>
+        <p className="relative text-xs text-zinc-500">© 2026 SMSIKA — Projet interne</p>
       </div>
 
       {/* ========== PANNEAU DROIT : formulaire ========== */}
@@ -110,7 +110,7 @@ export default function LoginPage() {
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600">
                 <MessageSquare className="h-4 w-4 text-white" />
               </div>
-              <p className="text-sm font-bold text-zinc-900 dark:text-white">SMS Gateway</p>
+              <p className="text-sm font-bold text-zinc-900 dark:text-white">SMSIKA</p>
             </div>
             <button
               type="button"

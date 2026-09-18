@@ -30,6 +30,7 @@ import com.mitia.smsgateway.ui.components.LogLevel
 import com.mitia.smsgateway.ui.components.LogRow
 import com.mitia.smsgateway.ui.components.logLevelOf
 import com.mitia.smsgateway.util.TimeUtils
+import com.mitia.smsgateway.ui.theme.AccentRed
 import com.mitia.smsgateway.ui.theme.CardBg
 import com.mitia.smsgateway.ui.theme.DarkBg
 import com.mitia.smsgateway.ui.theme.TextMuted
@@ -43,6 +44,7 @@ fun LogScreen(
     modifier: Modifier = Modifier,
 ) {
     var errorsOnly by remember { mutableStateOf(false) }
+    var confirmClear by remember { mutableStateOf(false) }
     val errorCount = remember(events) {
         events.count { logLevelOf(it.msg) == LogLevel.ERROR }
     }
@@ -77,8 +79,21 @@ fun LogScreen(
             OutlinedButton(onClick = onExport, modifier = Modifier.weight(1f)) {
                 Text("exporter le journal")
             }
-            OutlinedButton(onClick = onClear, modifier = Modifier.weight(1f)) {
-                Text("vider")
+            OutlinedButton(
+                onClick = {
+                    if (confirmClear) {
+                        onClear()
+                        confirmClear = false
+                    } else {
+                        confirmClear = true
+                    }
+                },
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(
+                    if (confirmClear) "confirmer ?" else "vider",
+                    color = if (confirmClear) AccentRed else TextPrimary,
+                )
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

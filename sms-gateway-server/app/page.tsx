@@ -13,12 +13,15 @@ export default function LandingPage() {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
             <MessageSquare className="h-5 w-5 text-white" />
           </div>
-          <span className="text-lg font-bold">SMS Gateway</span>
+          <span className="text-lg font-bold">SMSIKA</span>
         </Link>
         <nav className="hidden items-center gap-10 text-sm text-slate-300 md:flex">
           <a href="#fonctionnement" className="hover:text-white">Fonctionnement</a>
           <a href="#fonctionnalites" className="hover:text-white">Fonctionnalités</a>
           <a href="#faq" className="hover:text-white">FAQ</a>
+          <Link href="/send" className="rounded-full border border-blue-400/40 bg-blue-500/10 px-4 py-1.5 font-medium text-blue-300 hover:bg-blue-500/20">
+            Envoyer un SMS
+          </Link>
         </nav>
         <div className="flex items-center gap-3">
           <Link href="/login"
@@ -68,6 +71,12 @@ export default function LandingPage() {
                 Voir le fonctionnement
               </a>
             </div>
+            <p className="mt-5 text-sm text-slate-400">
+              Partenaire sans intégration ?{' '}
+              <Link href="/send" className="font-semibold text-blue-300 hover:text-white hover:underline">
+                Envoyez via le formulaire →
+              </Link>
+            </p>
             {/* stats */}
             <div className="mt-14 flex gap-14">
               {[
@@ -91,7 +100,7 @@ export default function LandingPage() {
                   <MessageSquare className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold">SMS Gateway</p>
+                    <p className="text-xs font-bold">SMSIKA</p>
                   <p className="text-[10px] text-slate-400">Panneau de contrôle</p>
                 </div>
                 <span className="ml-auto flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10px] font-bold text-emerald-400">
@@ -210,10 +219,18 @@ export default function LandingPage() {
           className="mt-8 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-4 font-bold hover:bg-blue-700">
           Accéder au dashboard <ArrowRight className="h-4 w-4" />
         </Link>
+        <p className="mt-4 text-sm text-slate-400">
+          ou envoyez directement via le{' '}
+          <Link href="/send" className="font-semibold text-blue-300 hover:text-white hover:underline">
+            formulaire partenaire
+          </Link>
+        </p>
       </section>
 
       <footer className="border-t border-white/5 py-8 text-center text-xs text-slate-500">
-        © 2026 SMS Gateway — Projet interne · Passerelle SMS autohébergée
+        © 2026 SMSIKA — Projet interne · Passerelle SMS autohébergée
+        {' · '}
+        <Link href="/send" className="text-slate-400 hover:text-white">Envoi partenaire</Link>
       </footer>
     </div>
   )

@@ -2,6 +2,7 @@ package com.mitia.smsgateway.controller
 
 import android.content.Context
 import android.util.Log
+import com.mitia.smsgateway.data.sms.SimManager
 import com.mitia.smsgateway.data.sms.SmsSender
 import com.mitia.smsgateway.domain.model.StatusResult
 import com.mitia.smsgateway.domain.model.TaskDto
@@ -59,11 +60,14 @@ class TaskController(
                 continue
             }
 
+            val subId = SimManager.resolveSubscriptionId(context)
             val sent = SmsSender.sendSms(
                 context = context,
                 numero = task.numero_destinataire,
-                message = task.message
+                message = task.message,
+                subscriptionId = subId
             )
+            SimManager.noteSend(context)
 
             if (sent) {
                 Log.d(tag, "SMS envoyé à ${task.numero_destinataire}")

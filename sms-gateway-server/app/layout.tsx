@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "SMS Gateway",
+  title: "SMSIKA",
   description: "Panneau de contrôle de la passerelle SMS",
 }
 

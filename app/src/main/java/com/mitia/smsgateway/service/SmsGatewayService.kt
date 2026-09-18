@@ -179,7 +179,7 @@ class SmsGatewayService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 Constants.FOREGROUND_CHANNEL_ID,
-                "SMS Gateway",
+                "SMSIKA",
                 NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(NotificationManager::class.java)
@@ -189,7 +189,7 @@ class SmsGatewayService : Service() {
 
     private fun buildNotification(): Notification {
         return NotificationCompat.Builder(this, Constants.FOREGROUND_CHANNEL_ID)
-            .setContentTitle("SMS-GATEWAY actif")
+            .setContentTitle("SMSIKA actif")
             .setContentText("En attente de tâches...")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setOngoing(true)
@@ -198,7 +198,7 @@ class SmsGatewayService : Service() {
 
     private fun updateNotification(text: String) {
         val notification = NotificationCompat.Builder(this, Constants.FOREGROUND_CHANNEL_ID)
-            .setContentTitle("SMS-GATEWAY actif")
+            .setContentTitle("SMSIKA actif")
             .setContentText(text)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setOngoing(true)
