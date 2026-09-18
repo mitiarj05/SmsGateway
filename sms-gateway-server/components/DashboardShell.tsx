@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 import {
@@ -123,9 +124,7 @@ export default function DashboardShell({ title, subtitle, actions, children }: {
       {/* SIDEBAR */}
       <aside className="hidden w-64 flex-col border-r border-zinc-200 bg-white md:flex dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex h-16 items-center gap-3 border-b border-zinc-100 px-5 dark:border-zinc-800">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600">
-            <MessageSquare className="h-5 w-5 text-white" />
-          </div>
+          <Image src="/smsika.png" alt="SMSIKA" width={36} height={36} className="rounded-xl" />
           <div>
             <p className="text-sm font-bold text-zinc-900 dark:text-white">SMSIKA</p>
             <p className="text-xs text-zinc-400">Panneau de contrôle</p>

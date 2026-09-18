@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   MessageSquare, User, Lock, Eye, EyeOff, Loader2,
@@ -64,9 +65,7 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="relative flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
-            <MessageSquare className="h-5 w-5 text-white" />
-          </div>
+          <Image src="/smsika.png" alt="SMSIKA" width={40} height={40} className="rounded-xl" />
           <div>
             <p className="text-sm font-bold text-white">SMSIKA</p>
             <p className="text-xs text-zinc-400">Panneau de contrôle</p>
@@ -107,9 +106,7 @@ export default function LoginPage() {
           {/* Header mobile + toggle thème */}
           <div className="mb-8 flex items-center justify-between">
             <div className="flex items-center gap-3 lg:hidden">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600">
-                <MessageSquare className="h-4 w-4 text-white" />
-              </div>
+              <Image src="/smsika.png" alt="SMSIKA" width={36} height={36} className="rounded-xl" />
               <p className="text-sm font-bold text-zinc-900 dark:text-white">SMSIKA</p>
             </div>
             <button

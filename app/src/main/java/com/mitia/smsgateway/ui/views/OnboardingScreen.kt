@@ -1,6 +1,7 @@
 package com.mitia.smsgateway.ui.views
 
 import android.os.Build
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import com.mitia.smsgateway.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -86,11 +89,10 @@ fun SplashScreen(modifier: Modifier = Modifier) {
                 )
         )
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                imageVector = Icons.Filled.Sms,
-                contentDescription = null,
-                tint = AccentBlue,
-                modifier = Modifier.size(56.dp),
+            Image(
+                painter = painterResource(id = R.drawable.smsika),
+                contentDescription = "SMSIKA",
+                modifier = Modifier.size(96.dp),
             )
             Spacer(Modifier.height(16.dp))
             Text(
@@ -222,20 +224,13 @@ private fun OnboardingWelcome() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(28.dp))
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(Color(0xFF2563EB), Color(0xFF1E40AF))
-                    )
-                )
-                .padding(24.dp),
+                .clip(RoundedCornerShape(28.dp)),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                imageVector = Icons.Filled.Sms,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(44.dp),
+            Image(
+                painter = painterResource(id = R.drawable.smsika),
+                contentDescription = "SMSIKA",
+                modifier = Modifier.size(88.dp),
             )
         }
         Spacer(Modifier.height(24.dp))

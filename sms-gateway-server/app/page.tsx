@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   MessageSquare, Smartphone, Server, BarChart3, ShieldCheck,
   Zap, ArrowRight, CheckCircle2, Bell, Inbox,
@@ -10,9 +11,7 @@ export default function LandingPage() {
       {/* ================= NAVIGATION ================= */}
       <header className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
-            <MessageSquare className="h-5 w-5 text-white" />
-          </div>
+          <Image src="/smsika.png" alt="SMSIKA" width={40} height={40} className="rounded-xl" />
           <span className="text-lg font-bold">SMSIKA</span>
         </Link>
         <nav className="hidden items-center gap-10 text-sm text-slate-300 md:flex">
@@ -96,8 +95,8 @@ export default function LandingPage() {
           <div className="relative hidden lg:block">
             <div className="rounded-2xl border border-white/10 bg-[#0A1836] p-5 shadow-2xl shadow-blue-900/50">
               <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-                  <MessageSquare className="h-4 w-4 text-white" />
+                <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg">
+                  <Image src="/smsika.png" alt="SMSIKA" width={32} height={32} />
                 </div>
                 <div>
                     <p className="text-xs font-bold">SMSIKA</p>
