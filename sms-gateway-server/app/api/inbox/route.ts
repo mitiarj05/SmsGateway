@@ -26,10 +26,12 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await requete
     if (error) {
+      console.error('[api/inbox] Supabase:', error.message, '| details:', error.details, '| hint:', error.hint)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
     return NextResponse.json({ entrants: data ?? [] })
-  } catch {
+  } catch (erreur) {
+    console.error('[api/inbox] inattendue:', erreur)
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }
 }

@@ -175,7 +175,7 @@ export default function CoquilleTableauDeBord({ titre, sousTitre, actions, child
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-zinc-200 bg-white/80 px-6 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/80">
           <div>
             <h1 className="text-base font-bold text-zinc-900 dark:text-white">{titre}</h1>
-            {sousTitre && <p className="text-xs text-zinc-400">{sousTitre}</p>}
+            {sousTitre && <p className="text-xs text-zinc-400" suppressHydrationWarning>{sousTitre}</p>}
           </div>
 
           <div className="flex items-center gap-2">

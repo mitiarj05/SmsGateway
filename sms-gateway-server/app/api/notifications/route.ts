@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const limite = Math.min(100, Math.max(1, Number(parametres.get('limit')) || 20))
 
     let requete = supabaseAdmin
-      .from('rappels')
+      .from('notifications')
       .select(
         'id, id_application, type_evenement, statut, tentatives, ' +
         'dernier_code_http, prochaine_tentative, date_creation, applications(nom)'
@@ -25,10 +25,12 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await requete
     if (error) {
+      console.error('[api/notifications] Supabase:', error.message, '| details:', error.details, '| hint:', error.hint)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
     return NextResponse.json({ envois: data ?? [] })
-  } catch {
+  } catch (erreur) {
+    console.error('[api/notifications] inattendue:', erreur)
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }
 }
