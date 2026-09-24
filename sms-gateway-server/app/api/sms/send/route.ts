@@ -109,7 +109,9 @@ export async function POST(request: NextRequest) {
     // Contrat JSON inchangé : les clés restent message/device_id/created_at
     // (+ liens : [{ numero_destinataire, url }] quand un lien est généré).
     const avecLien = message.includes('{LIEN}') || corps?.lien_intelligent === true
-    const baseUrl = urlPublique()
+    const baseUrl = urlPublique(
+      request.headers.get('x-forwarded-host') ?? request.headers.get('host')
+    )
 
     type LigneCree = {
       id: string; numero_destinataire: string; contenu: string
