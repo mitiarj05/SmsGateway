@@ -15,7 +15,8 @@ export default function PageEnvoiExterne() {
   const [message, setMessage] = useState('')
   const [programme, setProgramme] = useState('')
   const [envoiEnCours, setEnvoiEnCours] = useState(false)
-  const [resultat, setResultat] = useState<{ reussi: boolean; texte: string } | null>(null)
+  const [resultat, setResultat] = useState<{ reussi: boolean; texte: string; liens?: { numero_destinataire: string; url: string }[] } | null>(null)
+  const [lienIntelligent, setLienIntelligent] = useState(false)
 
   async function soumettre(e: React.FormEvent) {
     e.preventDefault()
@@ -31,11 +32,16 @@ export default function PageEnvoiExterne() {
           message,
           cle_api: cleApi.trim(),
           ...(programme ? { scheduled_at: new Date(programme).toISOString() } : {}),
+          ...(lienIntelligent ? { lien_intelligent: true } : {}),
         }),
       })
       const donnees = await reponse.json().catch(() => null)
       if (reponse.ok) {
-        setResultat({ reussi: true, texte: donnees?.message ?? 'SMS mis en file d\u2019attente' })
+        setResultat({
+          reussi: true,
+          texte: donnees?.message ?? 'SMS mis en file d\u2019attente',
+          ...(Array.isArray(donnees?.liens) && donnees.liens.length > 0 ? { liens: donnees.liens } : {}),
+        })
         setNumeros('')
         setMessage('')
       } else {
@@ -70,6 +76,21 @@ export default function PageEnvoiExterne() {
             {resultat.reussi ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertTriangle className="h-4 w-4 shrink-0" />}
             {resultat.texte}
           </p>
+        )}
+        {resultat?.reussi && resultat.liens && resultat.liens.length > 0 && (
+          <div className="mt-4 rounded-lg bg-zinc-50 p-3 ring-1 ring-zinc-200/60 dark:bg-zinc-800/60 dark:ring-zinc-800">
+            <p className="text-xs font-bold text-zinc-700 dark:text-zinc-200">
+              {resultat.liens.length} lien(s) généré(s) :
+            </p>
+            <ul className="mt-2 max-h-48 space-y-2 overflow-y-auto">
+              {resultat.liens.map((l) => (
+                <li key={l.url}>
+                  <p className="font-mono text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">{l.numero_destinataire}</p>
+                  <code className="block truncate font-mono text-[11px] text-blue-600 dark:text-blue-400">{l.url}</code>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         <form onSubmit={soumettre} className="mt-4 space-y-4">
@@ -106,6 +127,15 @@ export default function PageEnvoiExterne() {
               onChange={(e) => setProgramme(e.target.value)}
               className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
           </div>
+          <label className="flex cursor-pointer items-start gap-2.5">
+            <input type="checkbox" checked={lienIntelligent}
+              onChange={(e) => setLienIntelligent(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500/20" />
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              Lien intelligent : génère une URL courte de suivi par destinataire.
+              Placez <code className="font-mono">{'{LIEN}'}</code> dans le message pour choisir sa position.
+            </span>
+          </label>
           <button type="submit" disabled={envoiEnCours}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
             {envoiEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

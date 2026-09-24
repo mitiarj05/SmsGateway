@@ -49,6 +49,8 @@ export default function DashboardPage() {
   const [tacheDetaillee, setTacheDetaillee] = useState<Tache | null>(null)
   const [formulaire, setFormulaire] = useState({ to: '', message: '', cle_api: '', programme: '' })
   const [notification, setNotification] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
+  const [lienIntelligent, setLienIntelligent] = useState(false)
+  const [liensGeneres, setLiensGeneres] = useState<{ numero_destinataire: string; url: string }[]>([])
   // Couleurs du graphique : suivent le toggle en direct via le hook partagé.
   const { modeSombre: graphiqueSombre } = useTheme()
 
@@ -126,6 +128,7 @@ export default function DashboardPage() {
   async function envoyerSms(e: React.FormEvent) {
     e.preventDefault()
     setEnvoiEnCours(true)
+    setLiensGeneres([])
     // Un numéro par ligne (virgules et points-virgules acceptés aussi).
     const destinataires = formulaire.to.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean)
     const programmeA = formulaire.programme ? new Date(formulaire.programme).toISOString() : undefined
@@ -138,6 +141,7 @@ export default function DashboardPage() {
           message: formulaire.message,
           cle_api: formulaire.cle_api.trim(),
           ...(programmeA ? { scheduled_at: programmeA } : {}),
+          ...(lienIntelligent ? { lien_intelligent: true } : {}),
         }),
       })
       const donnees = await reponse.json().catch(() => null)
@@ -148,7 +152,11 @@ export default function DashboardPage() {
             ? (donnees?.message ?? 'SMS programmé')
             : destinataires.length > 1 ? `${destinataires.length} SMS mis en file` : `SMS mis en file → ${formulaire.to.trim()}`
         )
-        setModaleOuverte(false)
+        if (Array.isArray(donnees?.liens) && donnees.liens.length > 0) {
+          setLiensGeneres(donnees.liens)
+        } else {
+          setModaleOuverte(false)
+        }
         setFormulaire({ to: '', message: '', cle_api: formulaire.cle_api, programme: '' })
         chargerDonnees()
       } else {
@@ -185,7 +193,7 @@ export default function DashboardPage() {
             className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-600 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700">
             <RefreshCw className="h-4 w-4" /> Actualiser
           </button>
-          <button onClick={() => setModaleOuverte(true)}
+          <button onClick={() => { setLiensGeneres([]); setModaleOuverte(true) }}
             className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
             <Send className="h-4 w-4" /> Nouveau SMS
           </button>
@@ -379,8 +387,33 @@ export default function DashboardPage() {
       </Modale>
 
       {/* ===== MODALE : envoi ===== */}
-      <Modale ouvert={modaleOuverte} onFermer={() => !envoiEnCours && setModaleOuverte(false)}
+      <Modale ouvert={modaleOuverte} onFermer={() => { if (!envoiEnCours) { setModaleOuverte(false); setLiensGeneres([]) } }}
         titre="Envoyer un SMS" sousTitre="La tâche sera ajoutée à la file d'attente">
+        {liensGeneres.length > 0 ? (
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+              {liensGeneres.length} lien(s) généré(s) — copiez-les :
+            </p>
+            <ul className="max-h-64 space-y-2 overflow-y-auto">
+              {liensGeneres.map((l) => (
+                <li key={l.url} className="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800/60">
+                  <p className="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">{l.numero_destinataire}</p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <code className="flex-1 truncate font-mono text-xs text-blue-600 dark:text-blue-400">{l.url}</code>
+                    <button type="button" onClick={() => navigator.clipboard?.writeText(l.url)}
+                      className="rounded-lg border border-zinc-200 px-2 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-700">
+                      Copier
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <button type="button" onClick={() => { setModaleOuverte(false); setLiensGeneres([]) }}
+              className="w-full rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700">
+              Fermer
+            </button>
+          </div>
+        ) : (
         <form onSubmit={envoyerSms} className="space-y-4">
           <textarea required rows={3} placeholder="+261328725411&#10;+261331298765 (un par ligne)" value={formulaire.to}
             onChange={(e) => setFormulaire({ ...formulaire, to: e.target.value })}
@@ -402,12 +435,22 @@ export default function DashboardPage() {
               onChange={(e) => setFormulaire({ ...formulaire, programme: e.target.value })}
               className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
           </div>
+          <label className="flex cursor-pointer items-start gap-2.5">
+            <input type="checkbox" checked={lienIntelligent}
+              onChange={(e) => setLienIntelligent(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500/20" />
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              Lien intelligent : génère une URL courte de suivi par destinataire.
+              Placez <code className="font-mono">{'{LIEN}'}</code> dans le message pour choisir sa position (sinon ajouté à la fin) — les liens s&apos;affichent après l&apos;envoi.
+            </span>
+          </label>
           <button type="submit" disabled={envoiEnCours}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
             {envoiEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             {envoiEnCours ? 'Envoi…' : 'Envoyer'}
           </button>
         </form>
+        )}
       </Modale>
 
       <Toast notification={notification} />

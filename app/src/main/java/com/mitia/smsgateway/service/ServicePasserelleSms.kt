@@ -19,10 +19,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 class ServicePasserelleSms : Service() {
 
@@ -30,6 +31,13 @@ class ServicePasserelleSms : Service() {
 
     private val porteeService = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var tacheScrutation: Job? = null
+
+    /**
+     * Signal de réveil : un push FCM (nouvelle tâche) interrompt l'attente
+     * des 30 s pour scruter immédiatement. CONFLATED : les réveils en rafale
+     * fusionnent en un seul (pas d'accumulation).
+     */
+    private val reveil = Channel<Unit>(Channel.CONFLATED)
 
     private fun conteneur(): ConteneurApp =
         (application as AppPasserelleSms).conteneurApp
@@ -40,9 +48,15 @@ class ServicePasserelleSms : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(ETIQUETTE, "onStartCommand appelé")
+        Log.d(ETIQUETTE, "onStartCommand appelé (action=${intent?.action})")
         val notification = construireNotification()
         startForeground(Constantes.ID_NOTIFICATION_PREMIER_PLAN, notification)
+
+        // Push FCM "nouvelle tâche" : réveille la boucle immédiatement
+        // au lieu d'attendre la fin des 30 s.
+        if (intent?.action == "ACTION_POLL_NOW") {
+            reveil.trySend(Unit)
+        }
 
         // Évite de lancer 2 boucles si onStartCommand est rappelé
         if (tacheScrutation?.isActive != true) {
@@ -171,7 +185,11 @@ class ServicePasserelleSms : Service() {
             } catch (e: Exception) {
                 Log.e(ETIQUETTE, "Erreur inattendue dans la boucle de scrutation", e)
             }
-            delay(Constantes.INTERVALLE_SCRUTATION_MS)
+            // Attente 30 s max, interrompue aussitôt qu'un push FCM signale
+            // une nouvelle tâche (réveil immédiat, cible ~5 s de bout en bout).
+            withTimeoutOrNull(Constantes.INTERVALLE_SCRUTATION_MS) {
+                reveil.receive()
+            }
         }
     }
 

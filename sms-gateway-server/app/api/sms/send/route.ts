@@ -103,10 +103,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Créer une tâche par destinataire.
-    // Raccourcis : si le message contient {LIEN} (ou option
+    // Liens : si le message contient {LIEN} (ou option
     // lien_intelligent: true), un code court distinct par destinataire
     // est généré et substitué (une ligne par destinataire, sinon bulk).
-    // Contrat JSON inchangé : les clés restent message/device_id/created_at.
+    // Contrat JSON inchangé : les clés restent message/device_id/created_at
+    // (+ liens : [{ numero_destinataire, url }] quand un lien est généré).
     const avecLien = message.includes('{LIEN}') || corps?.lien_intelligent === true
     const baseUrl = urlPublique()
 
@@ -115,6 +116,7 @@ export async function POST(request: NextRequest) {
       statut: string; programme_a: string | null; date_creation: string
     }
     let lignesCreees: LigneCree[] = []
+    const liensCrees: { numero_destinataire: string; url: string }[] = []
     if (!avecLien) {
       const { data, error } = await supabaseAdmin
         .from('taches')
@@ -175,6 +177,7 @@ export async function POST(request: NextRequest) {
           )
         }
         lignesCreees.push(ligne)
+        liensCrees.push({ numero_destinataire: numero, url: `${baseUrl}/c/${code}` })
       }
     }
 
@@ -212,6 +215,7 @@ export async function POST(request: NextRequest) {
           message: `SMS programmé pour le ${programmePour.toLocaleString('fr-FR')}`,
           count: tachesCreees.length,
           tasks: tachesCreees,
+          ...(avecLien ? { liens: liensCrees } : {}),
           scheduled_for: programmePour.toISOString(),
           push_sent: false,
           client: { id: client.id, nom: client.nom },
@@ -224,6 +228,7 @@ export async function POST(request: NextRequest) {
         {
           message: 'SMS mis en file d\'attente',
           task: tachesCreees[0],
+          ...(avecLien ? { liens: liensCrees } : {}),
           push_sent: pushEnvoye,
           device_selected: appareilSelectionne,
           client: { id: client.id, nom: client.nom },
@@ -236,6 +241,7 @@ export async function POST(request: NextRequest) {
         message: `${tachesCreees.length} SMS mis en file d'attente`,
         count: tachesCreees.length,
         tasks: tachesCreees,
+        ...(avecLien ? { liens: liensCrees } : {}),
         push_sent: pushEnvoye,
         device_selected: appareilSelectionne,
         client: { id: client.id, nom: client.nom },
