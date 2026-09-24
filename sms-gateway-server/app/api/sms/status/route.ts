@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     const since = params.get('since')
 
     let requete = supabaseAdmin
-      .from('messages')
+      .from('taches')
       .select('id, numero_destinataire, contenu, statut, message_erreur, id_appareil, date_creation, date_modification')
       .eq('id_application', client.id)
       .order('date_creation', { ascending: false })

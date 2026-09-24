@@ -57,6 +57,13 @@ class MainActivity : ComponentActivity() {
         compteurPermissions++
     }
 
+    private val demandePermissionReceptionSms = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { accorde ->
+        Log.d("MainActivity", "Permission RECEIVE_SMS accordée=$accorde")
+        compteurPermissions++
+    }
+
     private val lanceurExportDocument = registerForActivityResult(
         ActivityResultContracts.CreateDocument("text/plain")
     ) { uri ->
@@ -78,6 +85,12 @@ class MainActivity : ComponentActivity() {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             demandePermissionSms.launch(Manifest.permission.SEND_SMS)
+        }
+        if (ContextCompat.checkSelfPermission(
+                this, Manifest.permission.RECEIVE_SMS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            demandePermissionReceptionSms.launch(Manifest.permission.RECEIVE_SMS)
         }
         enableEdgeToEdge()
         setContent {

@@ -1,5 +1,6 @@
 package com.mitia.smsgateway.data.remote
 
+import android.content.Context
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonObject
@@ -334,6 +335,51 @@ object ClientApi {
      *
      * @return true si le serveur a confirmé (ou avait déjà confirmé).
      */
+    /**
+     * Transfère un SMS reçu sur la SIM (voir RecepteurSms).
+     * Le serveur enregistre + route vers le client (corrélation, SIM dédiée).
+     */
+    suspend fun envoyerEntrant(
+        context: Context,
+        appareilId: String,
+        jeton: String,
+        expediteur: String,
+        contenu: String,
+        dateReception: Long
+    ): Boolean = withContext(Dispatchers.IO) {
+        try {
+            definirUrlBase(PreferencesAppareil.obtenirUrlServeur(context))
+            val formatIso = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US).apply {
+                timeZone = java.util.TimeZone.getTimeZone("UTC")
+            }
+            val corps = gson.toJson(
+                mapOf(
+                    "expediteur" to expediteur,
+                    "contenu" to contenu,
+                    "date_reception" to formatIso.format(java.util.Date(dateReception))
+                )
+            ).toRequestBody(TYPE_JSON)
+
+            val requete = Request.Builder()
+                .url("$urlBase/api/devices/$appareilId/inbox")
+                .header("Authorization", "Bearer $jeton")
+                .post(corps)
+                .build()
+
+            clientHttp.newCall(requete).execute().use { reponse ->
+                if (!reponse.isSuccessful) {
+                    Log.e(ETIQUETTE, "envoyerEntrant échoué : ${reponse.code}")
+                    return@withContext false
+                }
+                Log.d(ETIQUETTE, "Entrant transféré : $expediteur")
+                return@withContext true
+            }
+        } catch (e: Exception) {
+            Log.e(ETIQUETTE, "Erreur envoyerEntrant (réseau coupé ?)", e)
+            return@withContext false
+        }
+    }
+
     suspend fun confirmerAvecReessai(
         appareilId: String,
         jeton: String,

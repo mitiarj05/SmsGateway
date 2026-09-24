@@ -1,5 +1,5 @@
 import { supabaseAdmin } from './supabase-serveur'
-import { STATUT_MESSAGE } from './statuts'
+import { STATUT_TACHE } from './statuts'
 import { obtenirParametreEntier } from './parametres'
 
 /**
@@ -16,13 +16,13 @@ export async function expirerEnAttentePerimees(): Promise<number> {
   const limite = new Date(Date.now() - heuresMax * 3600_000).toISOString()
 
   const { data, error } = await supabaseAdmin
-    .from('messages')
+      .from('taches')
     .update({
-      statut: STATUT_MESSAGE.ECHOUE,
+      statut: STATUT_TACHE.ECHOUE,
       message_erreur: `Aucun appareil disponible sous ${heuresMax}h`,
       date_modification: new Date().toISOString(),
     })
-    .eq('statut', STATUT_MESSAGE.EN_ATTENTE)
+    .eq('statut', STATUT_TACHE.EN_ATTENTE)
     .is('id_appareil', null)
     .lt('date_creation', limite)
     .select('id')

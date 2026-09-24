@@ -1,7 +1,7 @@
 import { supabaseAdmin } from './supabase-serveur'
 import { obtenirParametreEntier } from './parametres'
 import { marquerAppareilsInactifs } from './statut-appareil'
-import { STATUT_APPAREIL, STATUT_MESSAGE } from './statuts'
+import { STATUT_APPAREIL, STATUT_TACHE } from './statuts'
 
 export interface AppareilCandidat {
   id: string
@@ -31,10 +31,10 @@ function ilYaUneHeureIso(): string {
  */
 export async function obtenirUsageAppareil(idAppareil: string): Promise<number> {
   const { count } = await supabaseAdmin
-    .from('messages')
+    .from('taches')
     .select('id', { count: 'exact', head: true })
     .eq('id_appareil', idAppareil)
-    .in('statut', [STATUT_MESSAGE.ENVOYE, STATUT_MESSAGE.RECLAME])
+    .in('statut', [STATUT_TACHE.ENVOYE, STATUT_TACHE.RECLAME])
     .gte('date_modification', ilYaUneHeureIso())
 
   return count ?? 0
@@ -43,10 +43,10 @@ export async function obtenirUsageAppareil(idAppareil: string): Promise<number> 
 /** Délai avant libération d'une place pour UN appareil (0 si sous le quota). */
 export async function obtenirDelaiAttenteSecondes(idAppareil: string): Promise<number> {
   const { data } = await supabaseAdmin
-    .from('messages')
+    .from('taches')
     .select('date_modification')
     .eq('id_appareil', idAppareil)
-    .in('statut', [STATUT_MESSAGE.ENVOYE, STATUT_MESSAGE.RECLAME])
+    .in('statut', [STATUT_TACHE.ENVOYE, STATUT_TACHE.RECLAME])
     .gte('date_modification', ilYaUneHeureIso())
     .order('date_modification', { ascending: true })
     .limit(1)
@@ -60,10 +60,10 @@ async function calculerDelaiAttente(idsAppareils: string[], extraIso: string | n
   let plusAncien: string | null = extraIso
   if (idsAppareils.length > 0) {
     const { data } = await supabaseAdmin
-      .from('messages')
+      .from('taches')
       .select('date_modification')
       .in('id_appareil', idsAppareils)
-      .in('statut', [STATUT_MESSAGE.ENVOYE, STATUT_MESSAGE.RECLAME])
+      .in('statut', [STATUT_TACHE.ENVOYE, STATUT_TACHE.RECLAME])
       .gte('date_modification', ilYaUneHeureIso())
       .order('date_modification', { ascending: true })
       .limit(1)
@@ -93,9 +93,9 @@ export async function obtenirDisponibiliteAppareil(): Promise<DisponibiliteAppar
   // Pression globale : les EN_ATTENTE non assignés consommeront du quota sous peu.
   // Hypothèse conservative : elles iront à l'appareil le moins chargé.
   const { data: enAttente } = await supabaseAdmin
-    .from('messages')
+    .from('taches')
     .select('date_creation')
-    .eq('statut', STATUT_MESSAGE.EN_ATTENTE)
+    .eq('statut', STATUT_TACHE.EN_ATTENTE)
     .is('id_appareil', null)
   const compteEnAttente = enAttente?.length ?? 0
   const plusAncienneEnAttente = (enAttente ?? []).reduce<string | null>(

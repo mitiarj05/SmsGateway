@@ -13,7 +13,7 @@ export async function GET() {
     const debutJourneeIso = debutJournee.toISOString()
 
     const { data, error } = await supabaseAdmin
-      .from('messages')
+      .from('taches')
       .select('date_creation, statut')
       .gte('date_creation', debutJourneeIso)
       .lte('date_creation', maintenant.toISOString())

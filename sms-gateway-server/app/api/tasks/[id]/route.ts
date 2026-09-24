@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
-import { STATUT_MESSAGE } from '@/lib/statuts'
+import { STATUT_TACHE } from '@/lib/statuts'
 
 /** DELETE /api/tasks/[id] — annule une tâche EN_ATTENTE ou PROGRAMME */
 export async function DELETE(
@@ -10,7 +10,7 @@ export async function DELETE(
   try {
     const { id } = await params
     const { data: existant } = await supabaseAdmin
-      .from('messages')
+      .from('taches')
       .select('id, statut')
       .eq('id', id)
       .single()
@@ -18,7 +18,7 @@ export async function DELETE(
     if (!existant) {
       return NextResponse.json({ error: 'Tâche introuvable' }, { status: 404 })
     }
-    if (existant.statut !== STATUT_MESSAGE.EN_ATTENTE && existant.statut !== STATUT_MESSAGE.PROGRAMME) {
+    if (existant.statut !== STATUT_TACHE.EN_ATTENTE && existant.statut !== STATUT_TACHE.PROGRAMME) {
       return NextResponse.json(
         { error: `Impossible d'annuler une tâche ${existant.statut}` },
         { status: 409 }
@@ -26,7 +26,7 @@ export async function DELETE(
     }
 
     const { error } = await supabaseAdmin
-      .from('messages')
+      .from('taches')
       .delete()
       .eq('id', id)
 
@@ -65,16 +65,16 @@ export async function PATCH(
         return NextResponse.json({ error: 'Appareil introuvable' }, { status: 404 })
       }
       donneesMaj.id_appareil = device_id
-      donneesMaj.statut = STATUT_MESSAGE.RECLAME
+      donneesMaj.statut = STATUT_TACHE.RECLAME
       donneesMaj.reclave_a = new Date().toISOString()
     } else {
       donneesMaj.id_appareil = null
-      donneesMaj.statut = STATUT_MESSAGE.EN_ATTENTE
+      donneesMaj.statut = STATUT_TACHE.EN_ATTENTE
       donneesMaj.reclave_a = null
     }
 
     const { data, error } = await supabaseAdmin
-      .from('messages')
+      .from('taches')
       .update(donneesMaj)
       .eq('id', id)
       .select('id, numero_destinataire, contenu, statut, id_appareil')
@@ -98,7 +98,7 @@ export async function POST(
   try {
     const { id } = await params
     const { data: existant, error: erreurRecup } = await supabaseAdmin
-      .from('messages')
+      .from('taches')
       .select('id, numero_destinataire, contenu, statut, id_application')
       .eq('id', id)
       .single()
@@ -106,7 +106,7 @@ export async function POST(
     if (erreurRecup || !existant) {
       return NextResponse.json({ error: 'Tâche introuvable' }, { status: 404 })
     }
-    if (existant.statut !== STATUT_MESSAGE.ECHOUE) {
+    if (existant.statut !== STATUT_TACHE.ECHOUE) {
       return NextResponse.json(
         { error: `Seules les tâches ECHOUE peuvent être relancées (${existant.statut})` },
         { status: 409 }
@@ -114,11 +114,11 @@ export async function POST(
     }
 
     const { data: cree, error } = await supabaseAdmin
-      .from('messages')
+      .from('taches')
       .insert({
         numero_destinataire: existant.numero_destinataire,
         contenu: existant.contenu,
-        statut: STATUT_MESSAGE.EN_ATTENTE,
+        statut: STATUT_TACHE.EN_ATTENTE,
         id_application: existant.id_application,
       })
       .select('id, numero_destinataire, contenu, statut, date_creation')

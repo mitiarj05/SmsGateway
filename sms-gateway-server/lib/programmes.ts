@@ -1,5 +1,5 @@
 import { supabaseAdmin } from './supabase-serveur'
-import { STATUT_MESSAGE } from './statuts'
+import { STATUT_TACHE } from './statuts'
 
 /**
  * Promotion des envois différés : un PROGRAMME dont l'heure est arrivée
@@ -10,9 +10,9 @@ import { STATUT_MESSAGE } from './statuts'
 export async function promouvoirProgrammes(): Promise<number> {
   try {
     const { data, error } = await supabaseAdmin
-      .from('messages')
-      .update({ statut: STATUT_MESSAGE.EN_ATTENTE, date_modification: new Date().toISOString() })
-      .eq('statut', STATUT_MESSAGE.PROGRAMME)
+      .from('taches')
+      .update({ statut: STATUT_TACHE.EN_ATTENTE, date_modification: new Date().toISOString() })
+      .eq('statut', STATUT_TACHE.PROGRAMME)
       .lte('programme_a', new Date().toISOString())
       .select('id')
 

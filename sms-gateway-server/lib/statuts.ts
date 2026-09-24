@@ -1,7 +1,7 @@
 /**
  * Statuts centralisés — miroir EXACT des enums Supabase :
  *   - statut_appareil (table appareils)
- *   - statut_message (table messages)
+ *   - statut_message (table taches — seul le nom de la table change, l'enum reste)
  *
  * Confirmés en base (erreurs prod si valeur absente) :
  * appareils = EN_LIGNE, HORS_LIGNE, DESACTIVE (OCCUPE absent → retiré) ;
@@ -20,7 +20,7 @@ export const STATUT_APPAREIL = {
 export type StatutAppareil =
   (typeof STATUT_APPAREIL)[keyof typeof STATUT_APPAREIL]
 
-export const STATUT_MESSAGE = {
+export const STATUT_TACHE = {
   EN_ATTENTE: 'EN_ATTENTE',
   RECLAME: 'RECLAME',
   ENVOYE: 'ENVOYE',
@@ -28,5 +28,5 @@ export const STATUT_MESSAGE = {
   PROGRAMME: 'PROGRAMME',
   ASSIGNE: 'ASSIGNE',
 } as const
-export type StatutMessage =
-  (typeof STATUT_MESSAGE)[keyof typeof STATUT_MESSAGE]
+export type StatutTache =
+  (typeof STATUT_TACHE)[keyof typeof STATUT_TACHE]

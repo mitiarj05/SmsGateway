@@ -16,6 +16,7 @@ const NAVIGATION = [
   { href: '/devices', icone: Smartphone, etiquette: 'Appareils' },
   { href: '/devices/add', icone: UserPlus, etiquette: 'Ajouter' },
   { href: '/queue', icone: Inbox, etiquette: 'File d’attente' },
+  { href: '/inbox', icone: MessageSquare, etiquette: 'Réception' },
   { href: '/history', icone: History, etiquette: 'Historique' },
   { href: '/settings', icone: Settings, etiquette: 'Paramètres' },
 ]

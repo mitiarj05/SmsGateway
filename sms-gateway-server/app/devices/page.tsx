@@ -14,10 +14,17 @@ interface DetailsAppareil {
   sms_last_hour: number
   derniere_activite: string | null
   created_at: string
+  id_application: string | null
+}
+
+interface ClientApi {
+  id: string
+  nom: string
 }
 
 export default function AppareilsPage() {
   const [appareils, setAppareils] = useState<Appareil[]>([])
+  const [clients, setClients] = useState<ClientApi[]>([])
   const [derniereActualisation, setDerniereActualisation] = useState<Date>(new Date())
   const [actualisationEnCours, setActualisationEnCours] = useState(false)
   const [chargement, setChargement] = useState(true)
@@ -43,12 +50,15 @@ export default function AppareilsPage() {
   const chargerDonnees = async (silencieux = false) => {
     if (!silencieux) setActualisationEnCours(true)
     try {
-      const [reponse, reponseParams] = await Promise.all([
+      const [reponse, reponseParams, reponseClients] = await Promise.all([
         fetch('/api/devices'),
         fetch('/api/settings'),
+        fetch('/api/api-clients'),
       ])
       const donnees = await reponse.json()
       if (donnees.devices) setAppareils(donnees.devices)
+      const donneesClients = await reponseClients.json().catch(() => null)
+      if (donneesClients?.clients) setClients(donneesClients.clients)
       if (reponseParams.ok) {
         const donneesParams = await reponseParams.json()
         if (typeof donneesParams.settings?.sms_quota_per_hour === 'number') {
@@ -92,6 +102,26 @@ export default function AppareilsPage() {
       if (reponse.ok) {
         afficherNotification('succes', next === 'DESACTIVE' ? 'Appareil désactivé' : 'Appareil réactivé')
         setAppareilDetaille(null)
+        chargerDonnees(true)
+      } else {
+        afficherNotification('erreur', donnees.error ?? 'Erreur')
+      }
+    } catch {
+      afficherNotification('erreur', 'Erreur réseau')
+    }
+  }
+
+  async function affecterClient(id: string, idApplication: string | null) {
+    try {
+      const reponse = await fetch(`/api/devices/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_application: idApplication }),
+      })
+      const donnees = await reponse.json()
+      if (reponse.ok) {
+        afficherNotification('succes', idApplication ? 'SIM dédiée affectée' : 'Affectation retirée')
+        await ouvrirDetails(id)
         chargerDonnees(true)
       } else {
         afficherNotification('erreur', donnees.error ?? 'Erreur')
@@ -291,6 +321,21 @@ export default function AppareilsPage() {
               <div className="flex justify-between"><dt className="text-zinc-500">ID</dt><dd className="font-mono text-xs text-zinc-800 dark:text-zinc-200">{appareilDetaille.id}</dd></div>
               <div className="flex justify-between"><dt className="text-zinc-500">Statut</dt><dd><BadgeStatut statut={appareilDetaille.statut} config={STATUTS_APPAREILS} /></dd></div>
               <div className="flex justify-between"><dt className="text-zinc-500">Token FCM</dt><dd className="font-mono text-xs text-zinc-800 dark:text-zinc-200">{appareilDetaille.fcm_token ?? 'absent'}</dd></div>
+              <div className="flex items-center justify-between gap-2">
+                <dt className="text-sm text-zinc-500">SIM dédiée (entrants)</dt>
+                <dd>
+                  <select
+                    value={appareilDetaille.id_application ?? ''}
+                    onChange={(e) => affecterClient(appareilDetaille.id, e.target.value || null)}
+                    className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  >
+                    <option value="">Aucune (auto)</option>
+                    {clients.map((c) => (
+                      <option key={c.id} value={c.id}>{c.nom}</option>
+                    ))}
+                  </select>
+                </dd>
+              </div>
               <div className="flex justify-between"><dt className="text-zinc-500">SMS dernière heure</dt><dd className="font-semibold text-zinc-800 dark:text-zinc-200">{appareilDetaille.sms_last_hour ?? 0}</dd></div>
               <div className="flex justify-between"><dt className="text-zinc-500">Dernière activité</dt><dd className="text-zinc-800 dark:text-zinc-200">{tempsEcoule(appareilDetaille.derniere_activite)}</dd></div>
               <div className="flex justify-between"><dt className="text-zinc-500">Enregistré le</dt><dd className="text-zinc-800 dark:text-zinc-200">{new Date(appareilDetaille.created_at).toLocaleString('fr-FR')}</dd></div>

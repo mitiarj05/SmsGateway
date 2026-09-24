@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
 import { authentifierAppareil } from '@/lib/authentification'
 import { obtenirUsageAppareil } from '@/lib/selection-appareil'
-import { STATUT_APPAREIL, STATUT_MESSAGE } from '@/lib/statuts'
+import { STATUT_APPAREIL, STATUT_TACHE } from '@/lib/statuts'
 
 export async function POST(
   request: NextRequest,
@@ -40,7 +40,7 @@ export async function POST(
     const corps = await request.json()
     const { statut, error_message } = corps
 
-    const statutsValides = [STATUT_MESSAGE.RECLAME, STATUT_MESSAGE.ENVOYE, STATUT_MESSAGE.ECHOUE]
+    const statutsValides = [STATUT_TACHE.RECLAME, STATUT_TACHE.ENVOYE, STATUT_TACHE.ECHOUE]
     if (!statut || !statutsValides.includes(statut)) {
       return NextResponse.json(
         { error: `Statut invalide. Valeurs acceptées : ${statutsValides.join(', ')}` },
@@ -50,7 +50,7 @@ export async function POST(
 
     // Vérifier que la tâche n'appartient pas déjà à un autre appareil
     const { data: existant, error: erreurRecup } = await supabaseAdmin
-      .from('messages')
+      .from('taches')
       .select('id, id_appareil, statut')
       .eq('id', tacheId)
       .single()
@@ -66,7 +66,7 @@ export async function POST(
     // - retry du même statut (cas Piège 3 : le SMS est parti, la 1re
     //   confirmation a été perdue à cause du WiFi, le téléphone retry) → 200 OK
     // - tentative de CHANGER un état final → 409 Conflict
-    if (existant.statut === STATUT_MESSAGE.ENVOYE || existant.statut === STATUT_MESSAGE.ECHOUE) {
+    if (existant.statut === STATUT_TACHE.ENVOYE || existant.statut === STATUT_TACHE.ECHOUE) {
       if (existant.statut === statut) {
         return NextResponse.json(
           {
@@ -102,7 +102,7 @@ export async function POST(
       date_modification: new Date().toISOString(),
     }
 
-    if (statut === STATUT_MESSAGE.RECLAME) {
+    if (statut === STATUT_TACHE.RECLAME) {
       donneesMaj.id_appareil = idAppareil
       donneesMaj.reclave_a = new Date().toISOString()
     } else {
@@ -115,12 +115,12 @@ export async function POST(
       }
     }
 
-    if (statut === STATUT_MESSAGE.ECHOUE && error_message) {
+    if (statut === STATUT_TACHE.ECHOUE && error_message) {
       donneesMaj.message_erreur = error_message
     }
 
     const { data, error } = await supabaseAdmin
-      .from('messages')
+      .from('taches')
       .update(donneesMaj)
       .eq('id', tacheId)
       .select('id, numero_destinataire, contenu, statut, id_appareil, reclame_a, date_modification')
@@ -137,7 +137,7 @@ export async function POST(
     // Compteurs horaires de l'appareil : recalculés sur la dernière heure glissante
     // (pas d'incrément simple, sinon ils ne redescendraient jamais).
     // Seul un passage en ENVOYE les fait bouger ; les lectures les calculent en live.
-    if (statut === STATUT_MESSAGE.ENVOYE) {
+    if (statut === STATUT_TACHE.ENVOYE) {
       const usage = await obtenirUsageAppareil(idAppareil)
       await supabaseAdmin
         .from('appareils')

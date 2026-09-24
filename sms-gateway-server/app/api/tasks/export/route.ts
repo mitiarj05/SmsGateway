@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
-import { STATUT_MESSAGE } from '@/lib/statuts'
+import { STATUT_TACHE } from '@/lib/statuts'
 
 const CONNUS = [
-  STATUT_MESSAGE.EN_ATTENTE,
-  STATUT_MESSAGE.ASSIGNE,
-  STATUT_MESSAGE.RECLAME,
-  STATUT_MESSAGE.ENVOYE,
-  STATUT_MESSAGE.ECHOUE,
-  STATUT_MESSAGE.PROGRAMME,
+  STATUT_TACHE.EN_ATTENTE,
+  STATUT_TACHE.ASSIGNE,
+  STATUT_TACHE.RECLAME,
+  STATUT_TACHE.ENVOYE,
+  STATUT_TACHE.ECHOUE,
+  STATUT_TACHE.PROGRAMME,
 ];
 
 /**
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       .filter((s) => (CONNUS as readonly string[]).includes(s))
 
     let requete = supabaseAdmin
-      .from('messages')
+      .from('taches')
       .select('id, numero_destinataire, contenu, statut, message_erreur, id_appareil, date_creation, date_modification')
       .order('date_creation', { ascending: false })
       .limit(limit)

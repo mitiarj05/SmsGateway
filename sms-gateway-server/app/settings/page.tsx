@@ -4,12 +4,17 @@ import { useState, useEffect } from 'react'
 import { Settings as IconeParametres, Send, Loader2, X, KeyRound, Trash2, Bell, Clock, RefreshCw } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 import { Appareil, Toast } from '../../composants/interface'
+import EditeurNotifications from '../../composants/EditeurNotifications'
 
 interface ClientApi {
   id: string
   nom: string
   cle_api: string
   created_at: string
+  url_notification: string | null
+  evenements_notification: string[]
+  notifications_actives: boolean
+  secret_defini: boolean
 }
 
 export default function PageParametres() {
@@ -389,15 +394,18 @@ export default function PageParametres() {
           )}
           <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
             {clients.map((c) => (
-              <li key={c.id} className="flex items-center justify-between py-2.5">
-                <div>
-                  <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{c.nom}</p>
-                  <p className="font-mono text-xs text-zinc-400">{c.cle_api}</p>
+              <li key={c.id} className="py-2.5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{c.nom}</p>
+                    <p className="font-mono text-xs text-zinc-400">{c.cle_api}</p>
+                  </div>
+                  <button onClick={() => revoquerClient(c.id, c.nom)} title="Révoquer"
+                    className="rounded-lg border border-zinc-200 p-1.5 text-zinc-500 hover:bg-red-50 hover:text-red-600 dark:border-zinc-700 dark:text-zinc-400">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
-                <button onClick={() => revoquerClient(c.id, c.nom)} title="Révoquer"
-                  className="rounded-lg border border-zinc-200 p-1.5 text-zinc-500 hover:bg-red-50 hover:text-red-600 dark:border-zinc-700 dark:text-zinc-400">
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                <EditeurNotifications client={c} notifier={afficherNotification} rafraichir={() => chargerDonnees()} />
               </li>
             ))}
             {clients.length === 0 && <p className="py-4 text-center text-xs text-zinc-400">Aucune clé API.</p>}

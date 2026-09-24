@@ -5,7 +5,8 @@ import { envoyerPushNouvelleTache } from '@/lib/envoi-push'
 import { obtenirDisponibiliteAppareil } from '@/lib/selection-appareil'
 import { expirerEnAttentePerimees } from '@/lib/expiration-attente'
 import { promouvoirProgrammes } from '@/lib/programmes'
-import { STATUT_MESSAGE } from '@/lib/statuts'
+import { genererCode, urlPublique } from '@/lib/liens'
+import { STATUT_TACHE } from '@/lib/statuts'
 
 export async function POST(request: NextRequest) {
   try {
@@ -101,27 +102,80 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 4. Créer une tâche par destinataire (une seule requête).
+    // 4. Créer une tâche par destinataire.
+    // Raccourcis : si le message contient {LIEN} (ou option
+    // lien_intelligent: true), un code court distinct par destinataire
+    // est généré et substitué (une ligne par destinataire, sinon bulk).
     // Contrat JSON inchangé : les clés restent message/device_id/created_at.
-    const { data: lignesCreees, error } = await supabaseAdmin
-      .from('messages')
-      .insert(
-        numeros.map((numero) => ({
-          numero_destinataire: numero,
-          contenu: message.trim(),
-          statut: programmePour ? STATUT_MESSAGE.PROGRAMME : STATUT_MESSAGE.EN_ATTENTE,
-          programme_a: programmePour ? programmePour.toISOString() : null,
-          id_application: client.id,
-        }))
-      )
-      .select('id, numero_destinataire, contenu, statut, programme_a, date_creation')
+    const avecLien = message.includes('{LIEN}') || corps?.lien_intelligent === true
+    const baseUrl = urlPublique()
 
-    if (error || !lignesCreees || lignesCreees.length === 0) {
-      console.error('Erreur Supabase:', error)
-      return NextResponse.json(
-        { error: 'Erreur lors de la création des tâches', details: error?.message },
-        { status: 500 }
-      )
+    type LigneCree = {
+      id: string; numero_destinataire: string; contenu: string
+      statut: string; programme_a: string | null; date_creation: string
+    }
+    let lignesCreees: LigneCree[] = []
+    if (!avecLien) {
+      const { data, error } = await supabaseAdmin
+        .from('taches')
+        .insert(
+          numeros.map((numero) => ({
+            numero_destinataire: numero,
+            contenu: message.trim(),
+            statut: programmePour ? STATUT_TACHE.PROGRAMME : STATUT_TACHE.EN_ATTENTE,
+            programme_a: programmePour ? programmePour.toISOString() : null,
+            id_application: client.id,
+          }))
+        )
+        .select('id, numero_destinataire, contenu, statut, programme_a, date_creation')
+      if (error || !data || data.length === 0) {
+        console.error('Erreur Supabase:', error)
+        return NextResponse.json(
+          { error: 'Erreur lors de la création des tâches', details: error?.message },
+          { status: 500 }
+        )
+      }
+      lignesCreees = data
+    } else {
+      for (const numero of numeros) {
+        const code = await genererCode()
+        const gabarit = message.includes('{LIEN}') ? message : `${message}\n{LIEN}`
+        const contenu = gabarit.replaceAll('{LIEN}', `${baseUrl}/c/${code}`)
+        const { data: ligne, error: erreurInsert } = await supabaseAdmin
+          .from('taches')
+          .insert({
+            numero_destinataire: numero,
+            contenu: contenu.trim(),
+            statut: programmePour ? STATUT_TACHE.PROGRAMME : STATUT_TACHE.EN_ATTENTE,
+            programme_a: programmePour ? programmePour.toISOString() : null,
+            id_application: client.id,
+          })
+          .select('id, numero_destinataire, contenu, statut, programme_a, date_creation')
+          .single()
+        if (erreurInsert || !ligne) {
+          console.error('Erreur Supabase (lien):', erreurInsert)
+          return NextResponse.json(
+            { error: 'Erreur lors de la création des tâches', details: erreurInsert?.message },
+            { status: 500 }
+          )
+        }
+        const { error: erreurLien } = await supabaseAdmin
+          .from('liens')
+          .insert({
+            id: code,
+            id_tache: ligne.id,
+            id_application: client.id,
+            numero_destinataire: numero,
+          })
+        if (erreurLien) {
+          console.error('Erreur Supabase (liens):', erreurLien)
+          return NextResponse.json(
+            { error: 'Erreur lors de la création du raccourci', details: erreurLien.message },
+            { status: 500 }
+          )
+        }
+        lignesCreees.push(ligne)
+      }
     }
 
     const tachesCreees = lignesCreees.map((t) => ({

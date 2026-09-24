@@ -70,7 +70,7 @@ function estApiPublique(pathname: string): boolean {
   if (pathname === '/api/devices/register' || pathname.startsWith('/api/devices/register/')) {
     return true
   }
-  if (/\/api\/devices\/[^/]+\/(tasks|ping|fcm-token|quota|offline)/.test(pathname)) {
+  if (/\/api\/devices\/[^/]+\/(tasks|ping|fcm-token|quota|offline|inbox)/.test(pathname)) {
     return true
   }
   return false
@@ -128,6 +128,12 @@ export const config = {
     '/api/stats/:path*',
     '/api/api-clients',
     '/api/api-clients/:path*',
+    '/api/inbox',
+    '/api/inbox/:path*',
+    '/api/notifications',
+    '/api/notifications/:path*',
+    '/inbox',
+    '/inbox/:path*',
     '/api/settings',
     '/api/settings/:path*',
   ],

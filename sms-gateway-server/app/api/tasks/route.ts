@@ -28,7 +28,7 @@ export async function GET() {
     await expirerEnAttentePerimees()
     await promouvoirProgrammes()
     const { data, error } = await supabaseAdmin
-      .from('messages')
+      .from('taches')
       .select('id, numero_destinataire, contenu, statut, id_appareil, message_erreur, programme_a, date_creation, date_modification')
       .order('date_creation', { ascending: false })
       .limit(50)

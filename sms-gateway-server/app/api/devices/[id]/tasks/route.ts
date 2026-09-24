@@ -5,7 +5,7 @@ import { obtenirParametreEntier } from '@/lib/parametres'
 import { obtenirUsageAppareil } from '@/lib/selection-appareil'
 import { expirerEnAttentePerimees } from '@/lib/expiration-attente'
 import { promouvoirProgrammes } from '@/lib/programmes'
-import { STATUT_APPAREIL, STATUT_MESSAGE } from '@/lib/statuts'
+import { STATUT_APPAREIL, STATUT_TACHE } from '@/lib/statuts'
 
 // Un message RECLAME depuis plus de 5 minutes est considéré abandonné
 const DELAI_RECLAMATION_MS = 5 * 60 * 1000
@@ -48,9 +48,9 @@ export async function GET(
 
     // 1. Récupérer les tâches EN_ATTENTE (jamais assignées)
     const { data: tachesEnAttente, error: erreur1 } = await supabaseAdmin
-      .from('messages')
+      .from('taches')
       .select('id, numero_destinataire, contenu, statut, date_creation')
-      .eq('statut', STATUT_MESSAGE.EN_ATTENTE)
+      .eq('statut', STATUT_TACHE.EN_ATTENTE)
       .is('id_appareil', null)
       .order('date_creation', { ascending: true })
       .limit(5)
@@ -71,9 +71,9 @@ export async function GET(
     // On inclut aussi reclame_a NULL (anciennes tâches sans lease).
     const seuilDelai = new Date(Date.now() - DELAI_RECLAMATION_MS).toISOString()
     const { data: tachesExpirees, error: erreur2 } = await supabaseAdmin
-      .from('messages')
+      .from('taches')
       .select('id, numero_destinataire, contenu, statut, date_creation, id_appareil')
-      .eq('statut', STATUT_MESSAGE.RECLAME)
+      .eq('statut', STATUT_TACHE.RECLAME)
       .or(`reclave_a.is.null,reclave_a.lt.${seuilDelai}`)
       .order('date_creation', { ascending: true })
       .limit(5)
@@ -90,15 +90,15 @@ export async function GET(
     const idsExpirees = (tachesExpirees || []).map(t => t.id)
     if (idsExpirees.length > 0) {
       await supabaseAdmin
-        .from('messages')
+        .from('taches')
         .update({
-          statut: STATUT_MESSAGE.EN_ATTENTE,
+          statut: STATUT_TACHE.EN_ATTENTE,
           id_appareil: null,
           reclame_a: null,
           date_modification: new Date().toISOString(),
         })
         .in('id', idsExpirees)
-        .eq('statut', STATUT_MESSAGE.RECLAME)
+        .eq('statut', STATUT_TACHE.RECLAME)
     }
 
     // 4. Fusionner les deux listes (vide si quota atteint)
@@ -117,7 +117,7 @@ export async function GET(
       ...(tachesEnAttente || []).map(versContrat),
       ...(tachesExpirees || []).map(t => ({
         ...versContrat(t),
-        statut: STATUT_MESSAGE.EN_ATTENTE,  // désormais réassignable
+        statut: STATUT_TACHE.EN_ATTENTE,  // désormais réassignable
       })),
     ]
     const tachesVisibles = quotaAtteint ? [] : toutesTaches.slice(0, 5)  // max 5 par scrutation

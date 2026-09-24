@@ -14,7 +14,7 @@ export async function GET(
     const { id } = await params
     const { data, error } = await supabaseAdmin
       .from('appareils')
-      .select('id, nom, statut, jeton_fcm, sms_envoyes_heure, derniere_activite, date_creation')
+      .select('id, nom, statut, jeton_fcm, sms_envoyes_heure, derniere_activite, date_creation, id_application')
       .eq('id', id)
       .single()
 
@@ -45,13 +45,15 @@ export async function GET(
       fcm_present: !!data.jeton_fcm,
       derniere_activite: data.derniere_activite,
       created_at: data.date_creation,
+      id_application: data.id_application,
     } })
   } catch {
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }
 }
 
-/** PATCH /api/devices/[id] — activer/désactiver (corps: { statut: "DESACTIVE" | "HORS_LIGNE" }) */
+/** PATCH /api/devices/[id] — activer/désactiver + SIM dédiée.
+ *  Corps: { statut?: "DESACTIVE" | "HORS_LIGNE", id_application?: string | null } */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -59,17 +61,38 @@ export async function PATCH(
   try {
     const { id } = await params
     const corps = await request.json()
-    const { statut } = corps
+    const { statut, id_application } = corps
 
-    if (![STATUT_APPAREIL.DESACTIVE, STATUT_APPAREIL.HORS_LIGNE].includes(statut)) {
-      return NextResponse.json({ error: 'Statut invalide (DESACTIVE | HORS_LIGNE)' }, { status: 400 })
+    const donneesMaj: Record<string, unknown> = {}
+    if (statut !== undefined) {
+      if (![STATUT_APPAREIL.DESACTIVE, STATUT_APPAREIL.HORS_LIGNE].includes(statut)) {
+        return NextResponse.json({ error: 'Statut invalide (DESACTIVE | HORS_LIGNE)' }, { status: 400 })
+      }
+      donneesMaj.statut = statut
+    }
+    if (id_application !== undefined) {
+      if (id_application !== null) {
+        // Vérifier que le client existe (SIM dédiée).
+        const { data: application } = await supabaseAdmin
+          .from('applications')
+          .select('id')
+          .eq('id', id_application)
+          .single()
+        if (!application) {
+          return NextResponse.json({ error: 'Client introuvable' }, { status: 404 })
+        }
+      }
+      donneesMaj.id_application = id_application
+    }
+    if (Object.keys(donneesMaj).length === 0) {
+      return NextResponse.json({ error: 'Rien à mettre à jour' }, { status: 400 })
     }
 
     const { data, error } = await supabaseAdmin
       .from('appareils')
-      .update({ statut })
+      .update(donneesMaj)
       .eq('id', id)
-      .select('id, nom, statut')
+      .select('id, nom, statut, id_application')
       .single()
 
     if (error) {
@@ -106,7 +129,7 @@ export async function DELETE(
 
     // Détacher les tâches liées (clé étrangère) en gardant l'historique.
     const { error: erreurDetachement } = await supabaseAdmin
-      .from('messages')
+      .from('taches')
       .update({ id_appareil: null })
       .eq('id_appareil', id)
 
