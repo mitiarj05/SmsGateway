@@ -74,7 +74,7 @@ export async function GET(
       .from('taches')
       .select('id, numero_destinataire, contenu, statut, date_creation, id_appareil')
       .eq('statut', STATUT_TACHE.RECLAME)
-      .or(`reclave_a.is.null,reclave_a.lt.${seuilDelai}`)
+      .or(`reclame_a.is.null,reclame_a.lt.${seuilDelai}`)
       .order('date_creation', { ascending: true })
       .limit(5)
 

@@ -104,14 +104,14 @@ export async function POST(
 
     if (statut === STATUT_TACHE.RECLAME) {
       donneesMaj.id_appareil = idAppareil
-      donneesMaj.reclave_a = new Date().toISOString()
+      donneesMaj.reclame_a = new Date().toISOString()
     } else {
       // ENVOYE / ECHOUE : on garde la traçabilité de l'appareil qui a fait le travail.
       // Si la tâche vient de EN_ATTENTE (id_appareil NULL), on l'attribue.
       // Si elle est déjà réclamée par cet appareil, on ne touche pas au lease.
       if (!existant.id_appareil) {
         donneesMaj.id_appareil = idAppareil
-        donneesMaj.reclave_a = new Date().toISOString()
+        donneesMaj.reclame_a = new Date().toISOString()
       }
     }
 

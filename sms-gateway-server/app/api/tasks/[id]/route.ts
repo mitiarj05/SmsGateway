@@ -66,11 +66,11 @@ export async function PATCH(
       }
       donneesMaj.id_appareil = device_id
       donneesMaj.statut = STATUT_TACHE.RECLAME
-      donneesMaj.reclave_a = new Date().toISOString()
+      donneesMaj.reclame_a = new Date().toISOString()
     } else {
       donneesMaj.id_appareil = null
       donneesMaj.statut = STATUT_TACHE.EN_ATTENTE
-      donneesMaj.reclave_a = null
+      donneesMaj.reclame_a = null
     }
 
     const { data, error } = await supabaseAdmin
