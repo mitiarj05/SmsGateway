@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const limite = Math.min(200, Math.max(1, Number(parametres.get('limit')) || 100))
 
     let requete = supabaseAdmin
-      .from('entrants')
+      .from('reponses')
       .select(
         'id, expediteur, contenu, date_reception, statut_notification, ' +
         'tentatives_notification, date_creation, id_application, id_appareil, ' +

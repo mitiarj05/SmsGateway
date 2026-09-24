@@ -53,7 +53,11 @@ export default function PageBoiteReception() {
       ])
       const donneesEntrants = await reponseEntrants.json()
       const donneesClients = await reponseClients.json()
-      if (donneesEntrants.entrants) setEntrants(donneesEntrants.entrants)
+      if (donneesEntrants.entrants) {
+        setEntrants(donneesEntrants.entrants)
+      } else if (donneesEntrants.error) {
+        afficherNotification('erreur', `Inbox : ${donneesEntrants.error}`)
+      }
       if (donneesClients.clients) setClients(donneesClients.clients)
       setDerniereActualisation(new Date())
     } finally {

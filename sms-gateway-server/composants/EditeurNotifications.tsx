@@ -40,15 +40,19 @@ export default function EditeurNotifications({ client, notifier, rafraichir }: {
   const [envois, setEnvois] = useState<Envoi[]>([])
   const [enregistrement, setEnregistrement] = useState(false)
 
-  async function chargerLivraisons() {
+  async function chargerEnvois() {
     try {
       const reponse = await fetch(`/api/notifications?application=${client.id}&limit=5`)
       const donnees = await reponse.json()
-      if (donnees.envois) setEnvois(donnees.envois)
+      if (donnees.envois) {
+        setEnvois(donnees.envois)
+      } else if (donnees.error) {
+        notifier('erreur', `Journal : ${donnees.error}`)
+      }
     } catch { /* silencieux */ }
   }
 
-  useEffect(() => { chargerLivraisons() }, [client.id])
+  useEffect(() => { chargerEnvois() }, [client.id])
 
   async function appeler(patch: Record<string, unknown>) {
     const reponse = await fetch(`/api/api-clients/${client.id}`, {
@@ -104,7 +108,7 @@ export default function EditeurNotifications({ client, notifier, rafraichir }: {
       if (reponse.ok) {
         const t = donnees?.test as { en_file?: boolean; envoyes?: number; echecs?: number } | undefined
         setResultatTest(t?.en_file ? `Livré (${t?.envoyes ?? 0} ok)` : 'Mis en file — vérifiez le journal')
-        chargerLivraisons()
+        chargerEnvois()
       } else {
         setResultatTest(donnees?.error ?? 'Échec')
       }

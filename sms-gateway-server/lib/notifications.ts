@@ -84,14 +84,14 @@ export async function enfilerNotification(
   return charge.id as string
 }
 
-/** Miroir du statut sur entrants quand la charge y fait référence. */
+/** Miroir du statut sur reponses quand la charge y fait référence. */
 async function miroirStatutNotification(charge: Record<string, unknown>, statut: string, tentatives: number) {
   const idEntrant = charge?.donnees && typeof charge.donnees === 'object'
     ? (charge.donnees as Record<string, unknown>).id_reponse
     : null
   if (typeof idEntrant !== 'string' || !idEntrant) return
   await supabaseAdmin
-    .from('entrants')
+      .from('reponses')
     .update({ statut_notification: statut, tentatives_notification: tentatives })
     .eq('id', idEntrant)
 }
