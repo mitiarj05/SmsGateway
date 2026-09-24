@@ -1,33 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
-import { authenticateDevice } from '@/lib/auth'
+import { supabaseAdmin } from '@/lib/supabase-serveur'
+import { authentifierAppareil } from '@/lib/authentification'
 
+/** POST /api/appareils/[id]/fcm-token — met à jour le token FCM (auth appareil). */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: deviceId } = await params
+    const { id: idAppareil } = await params
 
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
-        { error: 'Header Authorization manquant' },
+        { error: 'Header Authorization manquant ou mal formé' },
         { status: 401 }
       )
     }
-    const token = authHeader.substring(7)
+    const jeton = authHeader.substring(7)
 
-    const device = await authenticateDevice(deviceId, token)
-    if (!device) {
+    const appareil = await authentifierAppareil(idAppareil, jeton)
+    if (!appareil) {
       return NextResponse.json(
-        { error: 'Device inconnu ou token invalide' },
+        { error: 'Appareil inconnu ou token invalide' },
         { status: 401 }
       )
     }
 
-    const body = await request.json()
-    const { fcm_token } = body
+    const corps = await request.json()
+    const { fcm_token } = corps
 
     if (!fcm_token || typeof fcm_token !== 'string') {
       return NextResponse.json(
@@ -36,26 +37,21 @@ export async function POST(
       )
     }
 
-    // Mettre à jour le token FCM du device
+    // Mettre à jour le token FCM de l'appareil
     const { error } = await supabaseAdmin
-      .from('devices')
-      .update({ fcm_token: fcm_token })
-      .eq('id', deviceId)
+      .from('appareils')
+      .update({ jeton_fcm: fcm_token })
+      .eq('id', idAppareil)
 
     if (error) {
-      console.error('Erreur Supabase:', error)
-      return NextResponse.json(
-        { error: 'Erreur mise à jour', details: error.message },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json(
       { message: 'Token FCM mis à jour' },
       { status: 200 }
     )
-  } catch (err) {
-    console.error('Erreur inattendue:', err)
+  } catch {
     return NextResponse.json(
       { error: 'Erreur interne du serveur' },
       { status: 500 }

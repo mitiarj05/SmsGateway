@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
+import { supabaseAdmin } from '@/lib/supabase-serveur'
+import { STATUT_MESSAGE } from '@/lib/statuts'
 
-const KNOWN = ['PENDING', 'ASSIGNED', 'SENDING', 'SENT', 'FAILED', 'SCHEDULED'];
+const CONNUS = [
+  STATUT_MESSAGE.EN_ATTENTE,
+  STATUT_MESSAGE.ASSIGNE,
+  STATUT_MESSAGE.RECLAME,
+  STATUT_MESSAGE.ENVOYE,
+  STATUT_MESSAGE.ECHOUE,
+  STATUT_MESSAGE.PROGRAMME,
+];
 
 /**
- * GET /api/tasks/export?statut=SENT,FAILED&q=...&from=ISO&to=ISO&limit=1000
+ * GET /api/tasks/export?statut=ENVOYE,ECHOUE&q=...&from=ISO&to=ISO&limit=1000
  * Exporte l'historique en CSV (séparateur ; + BOM, compatible Excel FR).
  * Protégé par le proxy (admin uniquement).
  */
@@ -18,62 +26,62 @@ export async function GET(request: NextRequest) {
     const statuts = (params.get('statut') ?? '')
       .split(',')
       .map((s) => s.trim().toUpperCase())
-      .filter((s) => KNOWN.includes(s))
+      .filter((s) => (CONNUS as readonly string[]).includes(s))
 
-    let query = supabaseAdmin
-      .from('sms_tasks')
-      .select('id, numero_destinataire, message, statut, error_message, device_id, created_at, updated_at')
-      .order('created_at', { ascending: false })
+    let requete = supabaseAdmin
+      .from('messages')
+      .select('id, numero_destinataire, contenu, statut, message_erreur, id_appareil, date_creation, date_modification')
+      .order('date_creation', { ascending: false })
       .limit(limit)
 
     if (statuts.length > 0) {
-      query = query.in('statut', statuts)
+      requete = requete.in('statut', statuts)
     }
     if (q) {
-      const escaped = q.replace(/[%_,]/g, (c) => `\\${c}`)
-      query = query.or(`numero_destinataire.ilike.%${escaped}%,message.ilike.%${escaped}%`)
+      const echappe = q.replace(/[%_,]/g, (c) => `\\${c}`)
+      requete = requete.or(`numero_destinataire.ilike.%${echappe}%,contenu.ilike.%${echappe}%`)
     }
     if (from) {
       const d = new Date(from)
       if (Number.isNaN(d.getTime())) {
         return NextResponse.json({ error: 'Paramètre "from" invalide (ISO attendu)' }, { status: 400 })
       }
-      query = query.gte('created_at', d.toISOString())
+      requete = requete.gte('date_creation', d.toISOString())
     }
     if (to) {
       const d = new Date(to)
       if (Number.isNaN(d.getTime())) {
         return NextResponse.json({ error: 'Paramètre "to" invalide (ISO attendu)' }, { status: 400 })
       }
-      query = query.lte('created_at', d.toISOString())
+      requete = requete.lte('date_creation', d.toISOString())
     }
 
-    const { data, error } = await query
+    const { data, error } = await requete
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    const cell = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`
-    const header = 'id;destinataire;message;statut;erreur;device_id;cree_le;mis_a_jour\n'
-    const rows = (data ?? [])
+    const cellule = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`
+    const entete = 'id;destinataire;message;statut;erreur;appareil_id;cree_le;mis_a_jour\n'
+    const lignes = (data ?? [])
       .map((t) => [
         t.id,
         t.numero_destinataire,
-        cell(t.message),
+        cellule(t.contenu),
         t.statut,
-        cell(t.error_message),
-        t.device_id ?? '',
-        t.created_at,
-        t.updated_at,
+        cellule(t.message_erreur),
+        t.id_appareil ?? '',
+        t.date_creation,
+        t.date_modification,
       ].join(';'))
       .join('\n')
 
-    const stamp = new Date().toISOString().slice(0, 10)
-    return new NextResponse('\uFEFF' + header + rows, {
+    const horodatage = new Date().toISOString().slice(0, 10)
+    return new NextResponse('\uFEFF' + entete + lignes, {
       status: 200,
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="sms-historique-${stamp}.csv"`,
+        'Content-Disposition': `attachment; filename="sms-historique-${horodatage}.csv"`,
       },
     })
   } catch {

@@ -14,21 +14,21 @@ import type { NextRequest } from 'next/server'
 // le proxy s'exécute hors runtime applicatif (cf. docs Next "proxy"),
 // on évite donc les modules partagés. Doit rester en sync avec
 // lib/admin-session.ts (format `v1.<exp>.<sig_hex>`).
-async function hmacHex(secret: string, data: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
+async function hmacHex(secret: string, donnees: string): Promise<string> {
+  const cle = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign']
   )
-  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data))
-  return Array.from(new Uint8Array(sig))
+  const signature = await crypto.subtle.sign('HMAC', cle, new TextEncoder().encode(donnees))
+  return Array.from(new Uint8Array(signature))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
 }
 
-function safeEqual(a: string, b: string): boolean {
+function comparaisonSure(a: string, b: string): boolean {
   if (a.length !== b.length) return false
   let diff = 0
   for (let i = 0; i < a.length; i++) {
@@ -37,33 +37,33 @@ function safeEqual(a: string, b: string): boolean {
   return diff === 0
 }
 
-async function hasValidSession(request: NextRequest, secret: string): Promise<boolean> {
+async function sessionValide(request: NextRequest, secret: string): Promise<boolean> {
   const value = request.cookies.get('sms_admin')?.value
   if (!value) return false
   const parts = value.split('.')
   if (parts.length !== 3 || parts[0] !== 'v1') return false
   const exp = Number(parts[1])
   if (!Number.isFinite(exp) || exp <= Math.floor(Date.now() / 1000)) return false
-  const expectedSig = await hmacHex(secret, `${parts[0]}.${parts[1]}`)
-  return safeEqual(parts[2], expectedSig)
+  const sigAttendue = await hmacHex(secret, `${parts[0]}.${parts[1]}`)
+  return comparaisonSure(parts[2], sigAttendue)
 }
 
-function hasValidBasic(request: NextRequest, user: string, pass: string): boolean {
-  const header = request.headers.get('authorization')
-  if (!header || !header.startsWith('Basic ')) return false
-  let decoded = ''
+function basicValide(request: NextRequest, utilisateur: string, motDePasse: string): boolean {
+  const entete = request.headers.get('authorization')
+  if (!entete || !entete.startsWith('Basic ')) return false
+  let chaineDecodee = ''
   try {
-    decoded = Buffer.from(header.slice(6), 'base64').toString('utf-8')
+    chaineDecodee = Buffer.from(entete.slice(6), 'base64').toString('utf-8')
   } catch {
     return false
   }
-  const sep = decoded.indexOf(':')
-  const u = sep >= 0 ? decoded.slice(0, sep) : decoded
-  const p = sep >= 0 ? decoded.slice(sep + 1) : ''
-  return safeEqual(u, user) && safeEqual(p, pass)
+  const separateur = chaineDecodee.indexOf(':')
+  const nomRecu = separateur >= 0 ? chaineDecodee.slice(0, separateur) : chaineDecodee
+  const secretRecu = separateur >= 0 ? chaineDecodee.slice(separateur + 1) : ''
+  return comparaisonSure(nomRecu, utilisateur) && comparaisonSure(secretRecu, motDePasse)
 }
 
-function isPublicApi(pathname: string): boolean {
+function estApiPublique(pathname: string): boolean {
   if (pathname === '/api/auth/login' || pathname.startsWith('/api/auth/login/')) return true
   if (pathname === '/api/auth/logout' || pathname.startsWith('/api/auth/logout/')) return true
   if (pathname === '/api/sms/send' || pathname.startsWith('/api/sms/send/')) return true
@@ -79,24 +79,24 @@ function isPublicApi(pathname: string): boolean {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  if (isPublicApi(pathname)) {
+  if (estApiPublique(pathname)) {
     return NextResponse.next()
   }
 
-  const user = process.env.ADMIN_USER
-  const pass = process.env.ADMIN_PASSWORD
+  const utilisateur = process.env.ADMIN_USER
+  const motDePasse = process.env.ADMIN_PASSWORD
 
   // Garde-fou dev local : si non configuré, on laisse passer (avec warning).
   // En prod (Vercel), définir ADMIN_USER + ADMIN_PASSWORD.
-  if (!user || !pass) {
+  if (!utilisateur || !motDePasse) {
     console.warn('[proxy] ADMIN_USER/ADMIN_PASSWORD non configurés — accès dashboard non protégé')
     return NextResponse.next()
   }
 
-  if (await hasValidSession(request, pass)) {
+  if (await sessionValide(request, motDePasse)) {
     return NextResponse.next()
   }
-  if (hasValidBasic(request, user, pass)) {
+  if (basicValide(request, utilisateur, motDePasse)) {
     return NextResponse.next()
   }
 

@@ -9,14 +9,14 @@ import fs from 'fs'
  * - en prod (Vercel, fichier absent) : variable FIREBASE_SERVICE_ACCOUNT_JSON
  *   contenant le JSON complet du compte de service.
  */
-function loadCredential() {
-  const filePath = path.join(process.cwd(), 'firebase-service-account.json')
-  if (fs.existsSync(filePath)) {
-    return cert(filePath)
+function chargerIdentifiants() {
+  const cheminFichier = path.join(process.cwd(), 'firebase-service-account.json')
+  if (fs.existsSync(cheminFichier)) {
+    return cert(cheminFichier)
   }
-  const inline = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
-  if (inline) {
-    return cert(JSON.parse(inline))
+  const integree = process.env.FIREBASE_SERVICE_ACCOUNT_JSON
+  if (integree) {
+    return cert(JSON.parse(integree))
   }
   throw new Error(
     'Firebase Admin non configuré : ajoutez firebase-service-account.json ' +
@@ -26,7 +26,7 @@ function loadCredential() {
 
 if (!getApps().length) {
   try {
-    initializeApp({ credential: loadCredential() })
+    initializeApp({ credential: chargerIdentifiants() })
   } catch (e) {
     // Build/Vercel sans credentials : on n'échoue pas à l'import.
     // L'erreur sera levée seulement à l'envoi réel d'un push.
@@ -34,16 +34,16 @@ if (!getApps().length) {
   }
 }
 
-export function getMessagingAdmin() {
+export function obtenirMessagerieAdmin() {
   if (!getApps().length) {
-    initializeApp({ credential: loadCredential() })
+    initializeApp({ credential: chargerIdentifiants() })
   }
   return getMessaging()
 }
 
-export const messaging = new Proxy({} as ReturnType<typeof getMessaging>, {
+export const messagerie = new Proxy({} as ReturnType<typeof getMessaging>, {
   get(_target, prop) {
-    const m = getMessagingAdmin() as unknown as Record<PropertyKey, unknown>
+    const m = obtenirMessagerieAdmin() as unknown as Record<PropertyKey, unknown>
     const value = m[prop]
     return typeof value === 'function' ? value.bind(m) : value
   },

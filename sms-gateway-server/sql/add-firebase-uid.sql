@@ -1,4 +1,4 @@
--- Lie chaque device à une identité Firebase Auth (inscription anonyme).
+-- Lie chaque appareil à une identité Firebase Auth (inscription anonyme).
 -- À exécuter UNE FOIS dans l'éditeur SQL Supabase.
 
-ALTER TABLE devices ADD COLUMN IF NOT EXISTS firebase_uid TEXT UNIQUE;
+ALTER TABLE appareils ADD COLUMN IF NOT EXISTS uid_firebase TEXT UNIQUE;

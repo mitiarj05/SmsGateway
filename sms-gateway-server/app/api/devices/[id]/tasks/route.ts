@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
-import { authenticateDevice } from '@/lib/auth'
-import { getIntSetting } from '@/lib/settings'
-import { getDeviceUsage } from '@/lib/select-device'
-import { expireStalePending } from '@/lib/pending-expiry'
-import { promoteScheduled } from '@/lib/scheduled'
+import { supabaseAdmin } from '@/lib/supabase-serveur'
+import { authentifierAppareil } from '@/lib/authentification'
+import { obtenirParametreEntier } from '@/lib/parametres'
+import { obtenirUsageAppareil } from '@/lib/selection-appareil'
+import { expirerEnAttentePerimees } from '@/lib/expiration-attente'
+import { promouvoirProgrammes } from '@/lib/programmes'
+import { STATUT_APPAREIL, STATUT_MESSAGE } from '@/lib/statuts'
 
-// Une task SENDING depuis plus de 5 minutes est considérée abandonnée
-const SENDING_TIMEOUT_MS = 5 * 60 * 1000
+// Un message RECLAME depuis plus de 5 minutes est considéré abandonné
+const DELAI_RECLAMATION_MS = 5 * 60 * 1000
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: deviceId } = await params
+    const { id: idAppareil } = await params
 
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -23,128 +24,136 @@ export async function GET(
         { status: 401 }
       )
     }
-    const token = authHeader.substring(7)
+    const jeton = authHeader.substring(7)
 
-    const device = await authenticateDevice(deviceId, token)
-    if (!device) {
+    const appareil = await authentifierAppareil(idAppareil, jeton)
+    if (!appareil) {
       return NextResponse.json(
-        { error: 'Device inconnu ou token invalide' },
+        { error: 'Appareil inconnu ou token invalide' },
         { status: 401 }
       )
     }
 
-    // Quota strict : un device au quota ne reçoit plus de tasks pendant 1 h.
-    // Les PENDING restent en file pour plus tard ou un autre device.
-    const quota = await getIntSetting('sms_quota_per_hour')
-    const usage = await getDeviceUsage(deviceId)
-    const quotaReached = usage >= quota
-    if (quotaReached) {
-      console.warn(`quota: ${deviceId} au quota (${usage}/${quota}), polling sans tasks`)
+    // Quota strict : un appareil au quota ne reçoit plus de tâches pendant 1 h.
+    // Les EN_ATTENTE restent en file pour plus tard ou un autre appareil.
+    const quota = await obtenirParametreEntier('sms_quota_per_hour')
+    const usage = await obtenirUsageAppareil(idAppareil)
+    const quotaAtteint = usage >= quota
+    if (quotaAtteint) {
+      console.warn(`quota: ${idAppareil} au quota (${usage}/${quota}), scrutation sans tâches`)
     }
 
-    await expireStalePending()
-    await promoteScheduled()
+    await expirerEnAttentePerimees()
+    await promouvoirProgrammes()
 
-    // 1. Récupérer les tasks PENDING (jamais assignées)
-    const { data: pendingTasks, error: err1 } = await supabaseAdmin
-      .from('sms_tasks')
-      .select('id, numero_destinataire, message, statut, created_at')
-      .eq('statut', 'PENDING')
-      .is('device_id', null)
-      .order('created_at', { ascending: true })
+    // 1. Récupérer les tâches EN_ATTENTE (jamais assignées)
+    const { data: tachesEnAttente, error: erreur1 } = await supabaseAdmin
+      .from('messages')
+      .select('id, numero_destinataire, contenu, statut, date_creation')
+      .eq('statut', STATUT_MESSAGE.EN_ATTENTE)
+      .is('id_appareil', null)
+      .order('date_creation', { ascending: true })
       .limit(5)
 
-    if (err1) {
-      console.error('Erreur Supabase (pending):', err1)
+    if (erreur1) {
+      console.error('Erreur Supabase (en-attente):', erreur1)
       return NextResponse.json(
-        { error: 'Erreur récupération tasks', details: err1.message },
+        { error: 'Erreur récupération tâches', details: erreur1.message },
         { status: 500 }
       )
     }
 
-    // 2. Récupérer les tasks SENDING expirées (abandonnées)
-    // Anti-doublon : une task SENDING n'est réassignée QUE si son
-    // claimed_at dépasse le timeout (> 5 min). Avant ça, elle reste
-    // la propriété exclusive du device qui l'a claimée, même si ce
-    // device est temporairement hors-ligne (retry côté téléphone).
-    // On inclut aussi claimed_at NULL (anciennes tasks sans lease).
-    const timeoutThreshold = new Date(Date.now() - SENDING_TIMEOUT_MS).toISOString()
-    const { data: expiredTasks, error: err2 } = await supabaseAdmin
-      .from('sms_tasks')
-      .select('id, numero_destinataire, message, statut, created_at, device_id')
-      .eq('statut', 'SENDING')
-      .or(`claimed_at.is.null,claimed_at.lt.${timeoutThreshold}`)
-      .order('created_at', { ascending: true })
+    // 2. Récupérer les tâches RECLAME expirées (abandonnées)
+    // Anti-doublon : une tâche RECLAME n'est réassignée QUE si son
+    // reclame_a dépasse le timeout (> 5 min). Avant ça, elle reste
+    // la propriété exclusive de l'appareil qui l'a réclamée, même si cet
+    // appareil est temporairement hors-ligne (retry côté téléphone).
+    // On inclut aussi reclame_a NULL (anciennes tâches sans lease).
+    const seuilDelai = new Date(Date.now() - DELAI_RECLAMATION_MS).toISOString()
+    const { data: tachesExpirees, error: erreur2 } = await supabaseAdmin
+      .from('messages')
+      .select('id, numero_destinataire, contenu, statut, date_creation, id_appareil')
+      .eq('statut', STATUT_MESSAGE.RECLAME)
+      .or(`reclave_a.is.null,reclave_a.lt.${seuilDelai}`)
+      .order('date_creation', { ascending: true })
       .limit(5)
 
-    if (err2) {
-      console.error('Erreur Supabase (expired):', err2)
-      // On ne bloque pas : les PENDING restent utilisables
+    if (erreur2) {
+      console.error('Erreur Supabase (expirées):', erreur2)
+      // On ne bloque pas : les EN_ATTENTE restent utilisables
     }
 
-    // 3. Marquer les tasks expirées comme PENDING pour réassignation
-    // Garde-fou atomique : on ne reset QUE les tasks encore en SENDING.
-    // Si le device d'origine a confirmé SENT/FAILED entre le SELECT et
+    // 3. Marquer les tâches expirées comme EN_ATTENTE pour réassignation
+    // Garde-fou atomique : on ne reset QUE les tâches encore en RECLAME.
+    // Si l'appareil d'origine a confirmé ENVOYE/ECHOUE entre le SELECT et
     // l'UPDATE (retry réseau qui finit par passer), on ne l'écrase pas.
-    const expiredIds = (expiredTasks || []).map(t => t.id)
-    if (expiredIds.length > 0) {
+    const idsExpirees = (tachesExpirees || []).map(t => t.id)
+    if (idsExpirees.length > 0) {
       await supabaseAdmin
-        .from('sms_tasks')
+        .from('messages')
         .update({
-          statut: 'PENDING',
-          device_id: null,
-          claimed_at: null,
-          updated_at: new Date().toISOString(),
+          statut: STATUT_MESSAGE.EN_ATTENTE,
+          id_appareil: null,
+          reclame_a: null,
+          date_modification: new Date().toISOString(),
         })
-        .in('id', expiredIds)
-        .eq('statut', 'SENDING')
+        .in('id', idsExpirees)
+        .eq('statut', STATUT_MESSAGE.RECLAME)
     }
 
     // 4. Fusionner les deux listes (vide si quota atteint)
-    const allTasks = [
-      ...(pendingTasks || []),
-      ...(expiredTasks || []).map(t => ({
-        id: t.id,
-        numero_destinataire: t.numero_destinataire,
-        message: t.message,
-        statut: 'PENDING',  // désormais réassignable
-        created_at: t.created_at,
+    // Contrat JSON inchangé : les champs restent message/statut/appareil_id.
+    const versContrat = (t: {
+      id: string; numero_destinataire: string; contenu: string;
+      statut: string; date_creation: string
+    }) => ({
+      id: t.id,
+      numero_destinataire: t.numero_destinataire,
+      message: t.contenu,
+      statut: t.statut,
+      created_at: t.date_creation,
+    })
+    const toutesTaches = [
+      ...(tachesEnAttente || []).map(versContrat),
+      ...(tachesExpirees || []).map(t => ({
+        ...versContrat(t),
+        statut: STATUT_MESSAGE.EN_ATTENTE,  // désormais réassignable
       })),
     ]
-    const visibleTasks = quotaReached ? [] : allTasks.slice(0, 5)  // max 5 par polling
+    const tachesVisibles = quotaAtteint ? [] : toutesTaches.slice(0, 5)  // max 5 par scrutation
 
-    // 5. Mettre le device en ONLINE — SAUF s'il est désactivé manuellement
-    // (sinon le polling réactiverait un device DISABLED quelques secondes après)
-    if (device.statut !== 'DISABLED') {
+    // 5. Mettre l'appareil en EN_LIGNE — SAUF s'il est désactivé manuellement
+    // (sinon la scrutation réactiverait un appareil DESACTIVE quelques secondes après)
+    if (appareil.statut !== STATUT_APPAREIL.DESACTIVE) {
       await supabaseAdmin
-        .from('devices')
+        .from('appareils')
         .update({
-          statut: 'ONLINE',
+          statut: STATUT_APPAREIL.EN_LIGNE,
           derniere_activite: new Date().toISOString(),
         })
-        .eq('id', deviceId)
+        .eq('id', idAppareil)
     } else {
       // On met juste à jour l'activité, sans toucher au statut
       await supabaseAdmin
-        .from('devices')
+        .from('appareils')
         .update({
           derniere_activite: new Date().toISOString(),
         })
-        .eq('id', deviceId)
+        .eq('id', idAppareil)
     }
 
     return NextResponse.json(
       {
-        device: { id: device.id, nom: device.nom },
-        tasks: visibleTasks,
-        count: visibleTasks.length,
-        quota_reached: quotaReached,
+        device: { id: appareil.id, nom: appareil.nom },
+        tasks: tachesVisibles,
+        count: tachesVisibles.length,
+        quota_reached: quotaAtteint,
         quota,
       },
       { status: 200 }
     )
-  } catch (err) {
-    console.error('Erreur inattendue:', err)
+  } catch (erreur) {
+    console.error('Erreur inattendue:', erreur)
     return NextResponse.json(
       { error: 'Erreur interne du serveur' },
       { status: 500 }

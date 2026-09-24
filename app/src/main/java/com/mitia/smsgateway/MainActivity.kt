@@ -25,45 +25,45 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.mitia.smsgateway.service.SmsGatewayService
-import com.mitia.smsgateway.ui.AppNavigation
-import com.mitia.smsgateway.ui.views.OnboardingScreen
-import com.mitia.smsgateway.ui.views.SplashScreen
-import com.mitia.smsgateway.ui.batteryInfo
-import com.mitia.smsgateway.ui.isBatteryUnrestricted
-import com.mitia.smsgateway.ui.isServiceRunning
-import com.mitia.smsgateway.ui.networkType
-import com.mitia.smsgateway.ui.theme.SmsGatewayTheme
+import com.mitia.smsgateway.service.ServicePasserelleSms
+import com.mitia.smsgateway.ui.NavigationApp
+import com.mitia.smsgateway.ui.views.EcranIntegration
+import com.mitia.smsgateway.ui.views.EcranDemarrage
+import com.mitia.smsgateway.ui.infosBatterie
+import com.mitia.smsgateway.ui.batterieSansRestriction
+import com.mitia.smsgateway.ui.serviceEnCoursExecution
+import com.mitia.smsgateway.ui.typeReseau
+import com.mitia.smsgateway.ui.theme.ThemePasserelleSms
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
     /** Incrémenté à chaque retour de demande de permission → rafraîchit l'écran. */
-    private var permissionTick by mutableStateOf(0)
+    private var compteurPermissions by mutableStateOf(0)
 
-    private var pendingExport: String? = null
+    private var exportEnAttente: String? = null
 
-    private val requestSendSmsPermission = registerForActivityResult(
+    private val demandePermissionSms = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        Log.d("MainActivity", "Permission SEND_SMS accordée=$granted")
-        permissionTick++
+    ) { accorde ->
+        Log.d("MainActivity", "Permission SEND_SMS accordée=$accorde")
+        compteurPermissions++
     }
 
-    private val requestNotifPermission = registerForActivityResult(
+    private val demandePermissionNotifications = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        Log.d("MainActivity", "Permission POST_NOTIFICATIONS accordée=$granted")
-        permissionTick++
+    ) { accorde ->
+        Log.d("MainActivity", "Permission POST_NOTIFICATIONS accordée=$accorde")
+        compteurPermissions++
     }
 
-    private val exportDocLauncher = registerForActivityResult(
+    private val lanceurExportDocument = registerForActivityResult(
         ActivityResultContracts.CreateDocument("text/plain")
     ) { uri ->
         if (uri == null) return@registerForActivityResult
-        val text = pendingExport ?: return@registerForActivityResult
+        val texte = exportEnAttente ?: return@registerForActivityResult
         try {
-            contentResolver.openOutputStream(uri)?.use { it.write(text.toByteArray()) }
+            contentResolver.openOutputStream(uri)?.use { it.write(texte.toByteArray()) }
             Toast.makeText(this, "Journal exporté.", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Log.w("MainActivity", "Export journal impossible", e)
@@ -77,326 +77,326 @@ class MainActivity : ComponentActivity() {
                 this, Manifest.permission.SEND_SMS
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            requestSendSmsPermission.launch(Manifest.permission.SEND_SMS)
+            demandePermissionSms.launch(Manifest.permission.SEND_SMS)
         }
         enableEdgeToEdge()
         setContent {
-            SmsGatewayTheme {
-                MainScreen(
-                    permissionTick = permissionTick,
-                    onRequestSmsPermission = {
-                        requestSendSmsPermission.launch(Manifest.permission.SEND_SMS)
+            ThemePasserelleSms {
+                EcranPrincipal(
+                    compteurPermissions = compteurPermissions,
+                    aDemanderPermissionSms = {
+                        demandePermissionSms.launch(Manifest.permission.SEND_SMS)
                     },
-                    onRequestNotifPermission = {
+                    aDemanderPermissionNotifications = {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            requestNotifPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            demandePermissionNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                         }
                     },
-                    onStartServiceClick = { startSmsGatewayService() },
-                    onStopServiceClick = { disconnectAndStop() },
-                    onRestartService = {
-                        stopService(Intent(this, SmsGatewayService::class.java))
-                        startSmsGatewayService()
+                    auDemarrageService = { demarrerServicePasserelle() },
+                    aArretService = { deconnecterEtArreter() },
+                    auRedemarrageService = {
+                        stopService(Intent(this, ServicePasserelleSms::class.java))
+                        demarrerServicePasserelle()
                     },
-                    onExportJournal = { exportJournal() }
+                    aExporterJournal = { exporterJournal() }
                 )
             }
         }
     }
 
-    private fun startSmsGatewayService() {        val intent = Intent(this, SmsGatewayService::class.java)
+    private fun demarrerServicePasserelle() {        val intention = Intent(this, ServicePasserelleSms::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent)
+            startForegroundService(intention)
         } else {
-            startService(intent)
+            startService(intention)
         }
     }
 
     /**
-     * Déconnexion propre : prévient le serveur (statut OFFLINE immédiat),
+     * Déconnexion propre : prévient le serveur (statut HORS_LIGNE immédiat),
      * puis coupe le foreground service. Les identifiants sont conservés :
-     * redémarrer réutilise le même device.
+     * redémarrer réutilise le même appareil.
      */
-    private fun disconnectAndStop() {
+    private fun deconnecterEtArreter() {
         lifecycleScope.launch {
-            val container = (application as SmsGatewayApp).appContainer
-            val creds = container.deviceRepository.getCredentials()
-            var signaled = false
-            if (creds != null) {
-                signaled = container.deviceRepository.disconnect(creds.first, creds.second)
-                Log.d("MainActivity", "Signalement offline au serveur : $signaled")
-                container.logRepository.log(
-                    if (signaled) "signalement offline ok"
+            val conteneur = (application as AppPasserelleSms).conteneurApp
+            val identifiants = conteneur.depotAppareils.obtenirIdentifiants()
+            var signale = false
+            if (identifiants != null) {
+                signale = conteneur.depotAppareils.deconnecter(identifiants.first, identifiants.second)
+                Log.d("MainActivity", "Signalement offline au serveur : $signale")
+                conteneur.depotJournaux.journaliser(
+                    if (signale) "signalement offline ok"
                     else "signalement offline impossible, sweep 90s"
                 )
             } else {
-                container.logRepository.log("déconnexion sans identifiants (rien à signaler)")
+                conteneur.depotJournaux.journaliser("déconnexion sans identifiants (rien à signaler)")
             }
-            stopService(Intent(this@MainActivity, SmsGatewayService::class.java))
-            permissionTick++
+            stopService(Intent(this@MainActivity, ServicePasserelleSms::class.java))
+            compteurPermissions++
             Toast.makeText(
                 this@MainActivity,
-                if (signaled) "Déconnecté : serveur prévenu (OFFLINE immédiat)."
-                else "Service arrêté : le serveur marquera OFFLINE sous 90 s.",
+                if (signale) "Déconnecté : serveur prévenu (HORS_LIGNE immédiat)."
+                else "Service arrêté : le serveur marquera HORS_LIGNE sous 90 s.",
                 Toast.LENGTH_LONG
             ).show()
         }
     }
 
-    private fun exportJournal() {
+    private fun exporterJournal() {
         lifecycleScope.launch {
-            val logs = (application as SmsGatewayApp).appContainer.logRepository
-            val events = logs.snapshot()
-            if (events.isEmpty()) {
+            val journaux = (application as AppPasserelleSms).conteneurApp.depotJournaux
+            val evenements = journaux.instantane()
+            if (evenements.isEmpty()) {
                 Toast.makeText(this@MainActivity, "Journal vide.", Toast.LENGTH_SHORT).show()
                 return@launch
             }
-            pendingExport = logs.toText(events)
-            exportDocLauncher.launch("smsgateway-journal.txt")
+            exportEnAttente = journaux.versTexte(evenements)
+            lanceurExportDocument.launch("smsika-journal.txt")
         }
     }
 }
 
 @Composable
-fun MainScreen(
+fun EcranPrincipal(
     modifier: Modifier = Modifier,
-    permissionTick: Int = 0,
-    onRequestSmsPermission: () -> Unit = {},
-    onRequestNotifPermission: () -> Unit = {},
-    onStartServiceClick: () -> Unit = {},
-    onStopServiceClick: () -> Unit = {},
-    onRestartService: () -> Unit = {},
-    onExportJournal: () -> Unit = {},
+    compteurPermissions: Int = 0,
+    aDemanderPermissionSms: () -> Unit = {},
+    aDemanderPermissionNotifications: () -> Unit = {},
+    auDemarrageService: () -> Unit = {},
+    aArretService: () -> Unit = {},
+    auRedemarrageService: () -> Unit = {},
+    aExporterJournal: () -> Unit = {},
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val container = remember(context) {
-        (context.applicationContext as SmsGatewayApp).appContainer
+    val portee = rememberCoroutineScope()
+    val conteneur = remember(context) {
+        (context.applicationContext as AppPasserelleSms).conteneurApp
     }
 
-    var serverUrl by remember { mutableStateOf("") }
-    var deviceName by remember { mutableStateOf("") }
-    var deviceToken by remember { mutableStateOf<String?>(null) }
-    var serviceRunning by remember { mutableStateOf(false) }
-    var hasSmsPerm by remember { mutableStateOf(false) }
-    var hasNotifPerm by remember { mutableStateOf(false) }
-    var batteryOk by remember { mutableStateOf(false) }
-    var batteryPercent by remember { mutableStateOf(-1) }
-    var batteryCharging by remember { mutableStateOf(false) }
-    var netType by remember { mutableStateOf("…") }
-    var lastSync by remember { mutableStateOf(0L) }
-    var lastCount by remember { mutableStateOf(0) }
-    var sentToday by remember { mutableStateOf(0) }
+    var urlServeur by remember { mutableStateOf("") }
+    var nomAppareil by remember { mutableStateOf("") }
+    var jetonAppareil by remember { mutableStateOf<String?>(null) }
+    var serviceActif by remember { mutableStateOf(false) }
+    var permissionSms by remember { mutableStateOf(false) }
+    var permissionNotifications by remember { mutableStateOf(false) }
+    var batterieOk by remember { mutableStateOf(false) }
+    var pourcentageBatterie by remember { mutableStateOf(-1) }
+    var batterieEnCharge by remember { mutableStateOf(false) }
+    var reseau by remember { mutableStateOf("…") }
+    var derniereSynchro by remember { mutableStateOf(0L) }
+    var dernierCompteur by remember { mutableStateOf(0) }
+    var envoyesAujourdhui by remember { mutableStateOf(0) }
     var quota by remember { mutableStateOf(20) }
-    var quotaUsage by remember { mutableStateOf(0) }
-    var settingsMessage by remember { mutableStateOf("") }
-    var ready by remember { mutableStateOf(false) }
-    var onboardingDone by remember { mutableStateOf(true) }
+    var usageQuota by remember { mutableStateOf(0) }
+    var messageParametres by remember { mutableStateOf("") }
+    var pret by remember { mutableStateOf(false) }
+    var integrationTerminee by remember { mutableStateOf(true) }
 
-    val history by container.taskRepository.observeHistory().collectAsState(initial = emptyList())
-    val events by container.logRepository.observe().collectAsState(initial = emptyList())
+    val historique by conteneur.depotTaches.observerHistorique().collectAsState(initial = emptyList())
+    val evenements by conteneur.depotJournaux.observer().collectAsState(initial = emptyList())
 
-    fun refresh() {
-        hasSmsPerm = ContextCompat.checkSelfPermission(
+    fun actualiser() {
+        permissionSms = ContextCompat.checkSelfPermission(
             context, Manifest.permission.SEND_SMS
         ) == PackageManager.PERMISSION_GRANTED
-        hasNotifPerm = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+        permissionNotifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
             ContextCompat.checkSelfPermission(
                 context, Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
-        batteryOk = isBatteryUnrestricted(context)
-        val batt = batteryInfo(context)
-        batteryPercent = batt.percent
-        batteryCharging = batt.charging
-        netType = networkType(context)
-        serviceRunning = isServiceRunning(context)
-        scope.launch {
-            val (sync, count) = container.deviceRepository.loadSync()
-            lastSync = sync
-            lastCount = count
-            sentToday = container.taskRepository.countSentToday()
-            val (q, u) = container.deviceRepository.loadQuotaSnapshot()
-            quota = q
-            quotaUsage = u
-            ready = true
+        batterieOk = batterieSansRestriction(context)
+        val batterie = infosBatterie(context)
+        pourcentageBatterie = batterie.pourcentage
+        batterieEnCharge = batterie.enCharge
+        reseau = typeReseau(context)
+        serviceActif = serviceEnCoursExecution(context)
+        portee.launch {
+            val (synchro, compteur) = conteneur.depotAppareils.chargerSynchro()
+            derniereSynchro = synchro
+            dernierCompteur = compteur
+            envoyesAujourdhui = conteneur.depotTaches.compterEnvoyesAujourdhui()
+            val (quotaLu, usageLu) = conteneur.depotAppareils.chargerInstantaneQuota()
+            quota = quotaLu
+            usageQuota = usageLu
+            pret = true
         }
     }
 
     LaunchedEffect(Unit) {
         // Chargement initial uniquement : ensuite les champs gardent la frappe.
-        scope.launch {
-            serverUrl = container.deviceRepository.getServerUrl()
-            deviceName = container.deviceRepository.getDeviceName()
-            deviceToken = container.deviceRepository.getCredentials()?.second
-            onboardingDone = container.deviceRepository.isOnboardingDone()
+        portee.launch {
+            urlServeur = conteneur.depotAppareils.obtenirUrlServeur()
+            nomAppareil = conteneur.depotAppareils.obtenirNomAppareil()
+            jetonAppareil = conteneur.depotAppareils.obtenirIdentifiants()?.second
+            integrationTerminee = conteneur.depotAppareils.estIntegrationTerminee()
         }
-        refresh()
+        actualiser()
     }
-    LaunchedEffect(permissionTick) { if (permissionTick > 0) refresh() }
+    LaunchedEffect(compteurPermissions) { if (compteurPermissions > 0) actualiser() }
     // Rafraîchit en continu tant que l'app est ouverte : l'écran Statut
     // passe en ligne tout seul après démarrage (sans rouvrir l'app).
     LaunchedEffect(Unit) {
         while (true) {
             kotlinx.coroutines.delay(5000)
-            refresh()
+            actualiser()
         }
     }
 
-    val connected = serviceRunning && lastSync > 0 &&
-        System.currentTimeMillis() - lastSync < 90_000
+    val connecte = serviceActif && derniereSynchro > 0 &&
+        System.currentTimeMillis() - derniereSynchro < 90_000
 
-    if (!ready) {
-        SplashScreen(modifier = modifier)
-    } else if (!onboardingDone) {
-        OnboardingScreen(
-            serverUrl = serverUrl,
-            onServerUrlChange = { serverUrl = it; settingsMessage = "" },
-            message = settingsMessage,
-            onSaveServer = {
-                scope.launch {
-                    if (serverUrl.isBlank()) {
-                        settingsMessage = "Renseigne l'adresse du serveur."
+    if (!pret) {
+        EcranDemarrage(modifier = modifier)
+    } else if (!integrationTerminee) {
+        EcranIntegration(
+            urlServeur = urlServeur,
+            auChangementUrlServeur = { urlServeur = it; messageParametres = "" },
+            message = messageParametres,
+            aEnregistrerServeur = {
+                portee.launch {
+                    if (urlServeur.isBlank()) {
+                        messageParametres = "Renseigne l'adresse du serveur."
                         return@launch
                     }
-                    val normalized = container.deviceRepository.saveServerUrl(serverUrl)
-                    settingsMessage = "Adresse enregistrée : $normalized"
-                    refresh()
+                    val normalise = conteneur.depotAppareils.enregistrerUrlServeur(urlServeur)
+                    messageParametres = "Adresse enregistrée : $normalise"
+                    actualiser()
                 }
             },
-            onTestConnection = {
-                scope.launch {
-                    if (serverUrl.isBlank()) {
-                        settingsMessage = "Renseigne l'adresse du serveur."
+            aTesterConnexion = {
+                portee.launch {
+                    if (urlServeur.isBlank()) {
+                        messageParametres = "Renseigne l'adresse du serveur."
                         return@launch
                     }
-                    settingsMessage = if (container.deviceRepository.ping(serverUrl)) {
-                        "Serveur joignable : $serverUrl"
+                    messageParametres = if (conteneur.depotAppareils.ping(urlServeur)) {
+                        "Serveur joignable : $urlServeur"
                     } else {
                         "Serveur injoignable : vérifie l'IP et que « npm run dev » tourne."
                     }
                 }
             },
-            hasSmsPerm = hasSmsPerm,
-            hasNotifPerm = hasNotifPerm,
-            batteryOk = batteryOk,
-            onRequestSmsPermission = onRequestSmsPermission,
-            onRequestNotifPermission = onRequestNotifPermission,
-            onOpenBatterySettings = {
+            permissionSms = permissionSms,
+            permissionNotifications = permissionNotifications,
+            batterieOk = batterieOk,
+            aDemanderPermissionSms = aDemanderPermissionSms,
+            aDemanderPermissionNotifications = aDemanderPermissionNotifications,
+            aOuvrirReglagesBatterie = {
                 try {
                     context.startActivity(
                         Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
                     )
                 } catch (e: Exception) {
-                    settingsMessage = "Impossible d'ouvrir les réglages batterie."
+                    messageParametres = "Impossible d'ouvrir les réglages batterie."
                 }
             },
-            onFinish = {
-                scope.launch {
-                    container.deviceRepository.setOnboardingDone(true)
-                    onboardingDone = true
-                    onStartServiceClick()
+            aTerminer = {
+                portee.launch {
+                    conteneur.depotAppareils.marquerIntegrationTerminee(true)
+                    integrationTerminee = true
+                    auDemarrageService()
                 }
             },
             modifier = modifier,
         )
     } else {
-    AppNavigation(
+    NavigationApp(
         modifier = modifier,
-        deviceName = deviceName,
-        isOnline = connected,
-        serviceRunning = serviceRunning,
-        smsSentToday = sentToday,
-        smsPending = lastCount,
-        network = netType,
-        batteryPercent = batteryPercent,
-        batteryCharging = batteryCharging,
-        smsQuotaUsed = quotaUsage,
-        smsQuotaTotal = quota,
-        onStartService = {
-            onStartServiceClick()
-            scope.launch {
+        nomAppareil = nomAppareil,
+        estEnLigne = connecte,
+        serviceActif = serviceActif,
+        smsEnvoyesAujourdhui = envoyesAujourdhui,
+        smsEnAttente = dernierCompteur,
+        reseau = reseau,
+        pourcentageBatterie = pourcentageBatterie,
+        batterieEnCharge = batterieEnCharge,
+        quotaSmsUtilise = usageQuota,
+        quotaSmsTotal = quota,
+        auDemarrageService = {
+            auDemarrageService()
+            portee.launch {
                 kotlinx.coroutines.delay(1000)
-                refresh()
+                actualiser()
             }
         },
-        onStopService = {
-            onStopServiceClick()
-            refresh()
+        aArretService = {
+            aArretService()
+            actualiser()
         },
-        tasks = history,
-        lastSync = lastSync,
-        events = events,
-        onExportLog = onExportJournal,
-        onClearLog = {
-            scope.launch { container.logRepository.clear() }
+        taches = historique,
+        derniereSynchro = derniereSynchro,
+        evenements = evenements,
+        aExporterJournal = aExporterJournal,
+        aViderJournal = {
+            portee.launch { conteneur.depotJournaux.effacer() }
         },
-        serverUrl = serverUrl,
-        onServerUrlChange = { serverUrl = it; settingsMessage = "" },
-        deviceToken = deviceToken,
-        onDeviceNameChange = { deviceName = it; settingsMessage = "" },
-        settingsMessage = settingsMessage,
-        onSaveServer = {
-            scope.launch {
-                if (serverUrl.isBlank()) {
-                    settingsMessage = "Renseigne l'adresse du serveur."
+        urlServeur = urlServeur,
+        auChangementUrlServeur = { urlServeur = it; messageParametres = "" },
+        jetonAppareil = jetonAppareil,
+        auChangementNomAppareil = { nomAppareil = it; messageParametres = "" },
+        messageParametres = messageParametres,
+        aEnregistrerServeur = {
+            portee.launch {
+                if (urlServeur.isBlank()) {
+                    messageParametres = "Renseigne l'adresse du serveur."
                     return@launch
                 }
                 // On ne réécrit pas le champ : il garde la frappe, le message
                 // affiche la forme normalisée réellement enregistrée.
-                val normalized = container.deviceRepository.saveServerUrl(serverUrl)
-                settingsMessage = "Adresse enregistrée : $normalized"
-                refresh()
+                val normalise = conteneur.depotAppareils.enregistrerUrlServeur(urlServeur)
+                messageParametres = "Adresse enregistrée : $normalise"
+                actualiser()
             }
         },
-        onTestConnection = {
-            scope.launch {
-                if (serverUrl.isBlank()) {
-                    settingsMessage = "Renseigne l'adresse du serveur."
+        aTesterConnexion = {
+            portee.launch {
+                if (urlServeur.isBlank()) {
+                    messageParametres = "Renseigne l'adresse du serveur."
                     return@launch
                 }
-                settingsMessage = if (container.deviceRepository.ping(serverUrl)) {
-                    "Serveur joignable : $serverUrl"
+                messageParametres = if (conteneur.depotAppareils.ping(urlServeur)) {
+                    "Serveur joignable : $urlServeur"
                 } else {
                     "Serveur injoignable : vérifie l'IP et que « npm run dev » tourne."
                 }
             }
         },
-        onSaveName = {
-            scope.launch {
-                val clean = deviceName.trim()
-                if (clean.isEmpty()) {
-                    settingsMessage = "Donne un nom à l'appareil."
+        aEnregistrerNom = {
+            portee.launch {
+                val nettoye = nomAppareil.trim()
+                if (nettoye.isEmpty()) {
+                    messageParametres = "Donne un nom à l'appareil."
                     return@launch
                 }
-                container.deviceRepository.saveDeviceName(clean)
-                deviceName = clean
-                settingsMessage = "Nom enregistré : $clean (appliqué au prochain enregistrement)"
+                conteneur.depotAppareils.enregistrerNomAppareil(nettoye)
+                nomAppareil = nettoye
+                messageParametres = "Nom enregistré : $nettoye (appliqué au prochain enregistrement)"
             }
         },
-        onResetDevice = {
-            scope.launch {
-                container.deviceRepository.clearCredentials()
-                deviceToken = null
-                settingsMessage = "Appareil réinitialisé : redémarre le service pour le ré-enregistrer."
-                refresh()
+        aReinitialiserAppareil = {
+            portee.launch {
+                conteneur.depotAppareils.effacerIdentifiants()
+                jetonAppareil = null
+                messageParametres = "Appareil réinitialisé : redémarre le service pour le ré-enregistrer."
+                actualiser()
             }
         },
-        onDisconnect = {
-            onStopServiceClick()
-            settingsMessage = "Service arrêté : l'appareil n'envoie plus de SMS."
+        aDeconnecter = {
+            aArretService()
+            messageParametres = "Service arrêté : l'appareil n'envoie plus de SMS."
         },
-        hasSmsPerm = hasSmsPerm,
-        hasNotifPerm = hasNotifPerm,
-        batteryOk = batteryOk,
-        onRequestSmsPermission = onRequestSmsPermission,
-        onRequestNotifPermission = onRequestNotifPermission,
-        onOpenBatterySettings = {
+        permissionSms = permissionSms,
+        permissionNotifications = permissionNotifications,
+        batterieOk = batterieOk,
+        aDemanderPermissionSms = aDemanderPermissionSms,
+        aDemanderPermissionNotifications = aDemanderPermissionNotifications,
+        aOuvrirReglagesBatterie = {
             try {
                 context.startActivity(
                     Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
                 )
             } catch (e: Exception) {
-                settingsMessage = "Impossible d'ouvrir les réglages batterie."
+                messageParametres = "Impossible d'ouvrir les réglages batterie."
             }
         },
     )
@@ -405,8 +405,8 @@ fun MainScreen(
 
 @Preview(showBackground = true)
 @Composable
-fun MainScreenPreview() {
-    SmsGatewayTheme {
-        MainScreen()
+fun ApercuEcranPrincipal() {
+    ThemePasserelleSms {
+        EcranPrincipal()
     }
 }

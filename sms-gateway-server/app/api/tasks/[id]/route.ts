@@ -1,31 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
+import { supabaseAdmin } from '@/lib/supabase-serveur'
+import { STATUT_MESSAGE } from '@/lib/statuts'
 
-/** DELETE /api/tasks/[id] — annule une task PENDING */
+/** DELETE /api/tasks/[id] — annule une tâche EN_ATTENTE ou PROGRAMME */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
-    const { data: existing } = await supabaseAdmin
-      .from('sms_tasks')
+    const { data: existant } = await supabaseAdmin
+      .from('messages')
       .select('id, statut')
       .eq('id', id)
       .single()
 
-    if (!existing) {
-      return NextResponse.json({ error: 'Task introuvable' }, { status: 404 })
+    if (!existant) {
+      return NextResponse.json({ error: 'Tâche introuvable' }, { status: 404 })
     }
-    if (existing.statut !== 'PENDING' && existing.statut !== 'SCHEDULED') {
+    if (existant.statut !== STATUT_MESSAGE.EN_ATTENTE && existant.statut !== STATUT_MESSAGE.PROGRAMME) {
       return NextResponse.json(
-        { error: `Impossible d'annuler une task ${existing.statut}` },
+        { error: `Impossible d'annuler une tâche ${existant.statut}` },
         { status: 409 }
       )
     }
 
     const { error } = await supabaseAdmin
-      .from('sms_tasks')
+      .from('messages')
       .delete()
       .eq('id', id)
 
@@ -33,101 +34,101 @@ export async function DELETE(
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ message: 'Task annulée', id })
+    return NextResponse.json({ message: 'Tâche annulée', id })
   } catch {
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }
 }
 
-/** PATCH /api/tasks/[id] — assignation manuelle (body: { device_id: string | null }) */
+/** PATCH /api/tasks/[id] — assignation manuelle (corps: { device_id: string | null }) */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
-    const body = await request.json()
-    const { device_id } = body
+    const corps = await request.json()
+    const { device_id } = corps
 
-    const updateData: Record<string, unknown> = {
-      updated_at: new Date().toISOString(),
+    const donneesMaj: Record<string, unknown> = {
+      date_modification: new Date().toISOString(),
     }
 
     if (device_id) {
-      // Vérifier que le device existe
-      const { data: dev } = await supabaseAdmin
-        .from('devices')
+      // Vérifier que l'appareil existe
+      const { data: appareil } = await supabaseAdmin
+        .from('appareils')
         .select('id')
         .eq('id', device_id)
         .single()
-      if (!dev) {
-        return NextResponse.json({ error: 'Device introuvable' }, { status: 404 })
+      if (!appareil) {
+        return NextResponse.json({ error: 'Appareil introuvable' }, { status: 404 })
       }
-      updateData.device_id = device_id
-      updateData.statut = 'SENDING'
-      updateData.claimed_at = new Date().toISOString()
+      donneesMaj.id_appareil = device_id
+      donneesMaj.statut = STATUT_MESSAGE.RECLAME
+      donneesMaj.reclave_a = new Date().toISOString()
     } else {
-      updateData.device_id = null
-      updateData.statut = 'PENDING'
-      updateData.claimed_at = null
+      donneesMaj.id_appareil = null
+      donneesMaj.statut = STATUT_MESSAGE.EN_ATTENTE
+      donneesMaj.reclave_a = null
     }
 
     const { data, error } = await supabaseAdmin
-      .from('sms_tasks')
-      .update(updateData)
+      .from('messages')
+      .update(donneesMaj)
       .eq('id', id)
-      .select('id, numero_destinataire, message, statut, device_id')
+      .select('id, numero_destinataire, contenu, statut, id_appareil')
       .single()
 
     if (error || !data) {
-      return NextResponse.json({ error: 'Task introuvable' }, { status: 404 })
+      return NextResponse.json({ error: 'Tâche introuvable' }, { status: 404 })
     }
 
-    return NextResponse.json({ message: 'Task assignée', task: data })
+    return NextResponse.json({ message: 'Tâche assignée', task: data })
   } catch {
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }
 }
 
-/** POST /api/tasks/[id]/retry — recrée une task PENDING depuis une FAILED */
+/** POST /api/tasks/[id]/retry — recrée une tâche EN_ATTENTE depuis une ECHOUE */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params
-    const { data: existing, error: fetchErr } = await supabaseAdmin
-      .from('sms_tasks')
-      .select('id, numero_destinataire, message, statut, app_client_id')
+    const { data: existant, error: erreurRecup } = await supabaseAdmin
+      .from('messages')
+      .select('id, numero_destinataire, contenu, statut, id_application')
       .eq('id', id)
       .single()
 
-    if (fetchErr || !existing) {
-      return NextResponse.json({ error: 'Task introuvable' }, { status: 404 })
+    if (erreurRecup || !existant) {
+      return NextResponse.json({ error: 'Tâche introuvable' }, { status: 404 })
     }
-    if (existing.statut !== 'FAILED') {
+    if (existant.statut !== STATUT_MESSAGE.ECHOUE) {
       return NextResponse.json(
-        { error: `Seules les tasks FAILED peuvent être relancées (${existing.statut})` },
+        { error: `Seules les tâches ECHOUE peuvent être relancées (${existant.statut})` },
         { status: 409 }
       )
     }
 
-    const { data: created, error } = await supabaseAdmin
-      .from('sms_tasks')
+    const { data: cree, error } = await supabaseAdmin
+      .from('messages')
       .insert({
-        numero_destinataire: existing.numero_destinataire,
-        message: existing.message,
-        statut: 'PENDING',
-        app_client_id: existing.app_client_id,
+        numero_destinataire: existant.numero_destinataire,
+        contenu: existant.contenu,
+        statut: STATUT_MESSAGE.EN_ATTENTE,
+        id_application: existant.id_application,
       })
-      .select('id, numero_destinataire, message, statut, created_at')
+      .select('id, numero_destinataire, contenu, statut, date_creation')
       .single()
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ message: 'Task relancée', task: created }, { status: 201 })
+    return NextResponse.json({ message: 'Tâche relancée', task: cree }, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }

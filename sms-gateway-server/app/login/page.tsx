@@ -9,49 +9,49 @@ import {
 } from 'lucide-react'
 import { useTheme } from '../../lib/use-theme'
 
-function safeNext(raw: string | null): string {
-  if (raw && raw.startsWith('/') && !raw.startsWith('//')) return raw
+function destinationSure(brute: string | null): string {
+  if (brute && brute.startsWith('/') && !brute.startsWith('//')) return brute
   return '/dashboard'
 }
 
-export default function LoginPage() {
-  const router = useRouter()
+export default function PageConnexion() {
+  const routeur = useRouter()
 
-  const [user, setUser] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [remember, setRemember] = useState(true)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [next, setNext] = useState('/dashboard')
-  const { darkMode, mounted, toggleTheme } = useTheme()
+  const [utilisateur, setUtilisateur] = useState('')
+  const [motDePasse, setMotDePasse] = useState('')
+  const [afficherMotDePasse, setAfficherMotDePasse] = useState(false)
+  const [seSouvenir, setSeSouvenir] = useState(true)
+  const [chargement, setChargement] = useState(false)
+  const [erreur, setErreur] = useState<string | null>(null)
+  const [destination, setDestination] = useState('/dashboard')
+  const { modeSombre, monte, basculerTheme } = useTheme()
 
   useEffect(() => {
-    setNext(safeNext(new URLSearchParams(window.location.search).get('next')))
+    setDestination(destinationSure(new URLSearchParams(window.location.search).get('next')))
   }, [])
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function gererSoumission(e: React.FormEvent) {
     e.preventDefault()
-    setError(null)
-    setLoading(true)
+    setErreur(null)
+    setChargement(true)
     try {
       // La session est posée en cookie httpOnly par le serveur :
       // rien à stocker côté client.
-      const res = await fetch('/api/auth/login', {
+      const reponse = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user, pass: password, remember }),
+        body: JSON.stringify({ utilisateur, mot_de_passe: motDePasse, se_souvenir: seSouvenir }),
       })
-      const data = await res.json().catch(() => null)
-      if (!res.ok) {
-        setError(data?.error ?? 'Identifiants incorrects')
+      const donnees = await reponse.json().catch(() => null)
+      if (!reponse.ok) {
+        setErreur(donnees?.error ?? 'Identifiants incorrects')
         return
       }
-      router.replace(next)
+      routeur.replace(destination)
     } catch {
-      setError('Impossible de joindre le serveur')
+      setErreur('Impossible de joindre le serveur')
     } finally {
-      setLoading(false)
+      setChargement(false)
     }
   }
 
@@ -86,12 +86,12 @@ export default function LoginPage() {
               'File d\u2019attente avec gestion multi-appareils',
               'Notifications push en temps réel',
               'Dashboard de supervision 24/7',
-            ].map((item) => (
-              <li key={item} className="flex items-center gap-3 text-sm text-zinc-300">
+            ].map((element) => (
+              <li key={element} className="flex items-center gap-3 text-sm text-zinc-300">
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600/20">
                   <CheckCircle2 className="h-3 w-3 text-blue-400" />
                 </span>
-                {item}
+                {element}
               </li>
             ))}
           </ul>
@@ -111,11 +111,11 @@ export default function LoginPage() {
             </div>
             <button
               type="button"
-              onClick={toggleTheme}
-              title={!mounted ? 'Thème' : darkMode ? 'Mode clair' : 'Mode sombre'}
+              onClick={basculerTheme}
+              title={!monte ? 'Thème' : modeSombre ? 'Mode clair' : 'Mode sombre'}
               className="ml-auto rounded-lg border border-zinc-200 bg-white p-2 text-zinc-600 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
-              {!mounted || !darkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              {!monte || !modeSombre ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
             </button>
           </div>
 
@@ -127,29 +127,29 @@ export default function LoginPage() {
           </p>
 
           {/* Erreur */}
-          {error && (
+          {erreur && (
             <div className="mt-5 flex items-center gap-2.5 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 ring-1 ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-400/20">
               <AlertTriangle className="h-4 w-4 shrink-0" />
-              {error}
+              {erreur}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={gererSoumission} className="mt-6 space-y-4">
             {/* Identifiant */}
             <div>
-              <label htmlFor="user" className="mb-1.5 block text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+              <label htmlFor="utilisateur" className="mb-1.5 block text-xs font-semibold text-zinc-600 dark:text-zinc-400">
                 Identifiant
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                 <input
-                  id="user"
+                  id="utilisateur"
                   type="text"
                   required
                   autoComplete="username"
                   placeholder="admin"
-                  value={user}
-                  onChange={(e) => setUser(e.target.value)}
+                  value={utilisateur}
+                  onChange={(e) => setUtilisateur(e.target.value)}
                   className="w-full rounded-lg border border-zinc-200 bg-white py-2.5 pl-10 pr-3 text-sm text-zinc-900 placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
                 />
               </div>
@@ -157,27 +157,27 @@ export default function LoginPage() {
 
             {/* Mot de passe */}
             <div>
-              <label htmlFor="password" className="mb-1.5 block text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+              <label htmlFor="motDePasse" className="mb-1.5 block text-xs font-semibold text-zinc-600 dark:text-zinc-400">
                 Mot de passe
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
                 <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  id="motDePasse"
+                  type={afficherMotDePasse ? 'text' : 'password'}
                   required
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={motDePasse}
+                  onChange={(e) => setMotDePasse(e.target.value)}
                   className="w-full rounded-lg border border-zinc-200 bg-white py-2.5 pl-10 pr-10 text-sm text-zinc-900 placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setAfficherMotDePasse(!afficherMotDePasse)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {afficherMotDePasse ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
@@ -186,8 +186,8 @@ export default function LoginPage() {
             <label className="flex cursor-pointer items-center gap-2.5">
               <input
                 type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
+                checked={seSouvenir}
+                onChange={(e) => setSeSouvenir(e.target.checked)}
                 className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500/20"
               />
               <span className="text-xs text-zinc-500 dark:text-zinc-400">Rester connecté sur cet appareil (7 jours)</span>
@@ -196,10 +196,10 @@ export default function LoginPage() {
             {/* Bouton */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={chargement}
               className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-60"
             >
-              {loading ? (
+              {chargement ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>

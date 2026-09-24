@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
+import { supabaseAdmin } from '@/lib/supabase-serveur'
 
 /** DELETE /api/api-clients/[id] — révoque une clé API */
 export async function DELETE(
@@ -9,28 +9,28 @@ export async function DELETE(
   try {
     const { id } = await params
 
-    const { data: existing, error: fetchError } = await supabaseAdmin
-      .from('api_clients')
+    const { data: existant, error: erreurRecup } = await supabaseAdmin
+      .from('applications')
       .select('id')
       .eq('id', id)
       .single()
 
-    if (fetchError || !existing) {
+    if (erreurRecup || !existant) {
       return NextResponse.json({ error: 'Clé introuvable' }, { status: 404 })
     }
 
     // Détacher les tâches liées (clé étrangère) en gardant l'historique.
-    const { error: detachError } = await supabaseAdmin
-      .from('sms_tasks')
-      .update({ app_client_id: null })
-      .eq('app_client_id', id)
+    const { error: erreurDetachement } = await supabaseAdmin
+      .from('messages')
+      .update({ id_application: null })
+      .eq('id_application', id)
 
-    if (detachError) {
-      return NextResponse.json({ error: detachError.message }, { status: 500 })
+    if (erreurDetachement) {
+      return NextResponse.json({ error: erreurDetachement.message }, { status: 500 })
     }
 
     const { error } = await supabaseAdmin
-      .from('api_clients')
+      .from('applications')
       .delete()
       .eq('id', id)
 

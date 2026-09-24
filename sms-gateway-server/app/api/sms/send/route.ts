@@ -1,36 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
-import { authenticateApiClient } from '@/lib/auth'
-import { sendNewTaskPush } from '@/lib/send-push'
-import { getDeviceAvailability } from '@/lib/select-device'
-import { expireStalePending } from '@/lib/pending-expiry'
-import { promoteScheduled } from '@/lib/scheduled'
+import { supabaseAdmin } from '@/lib/supabase-serveur'
+import { authentifierClientApi } from '@/lib/authentification'
+import { envoyerPushNouvelleTache } from '@/lib/envoi-push'
+import { obtenirDisponibiliteAppareil } from '@/lib/selection-appareil'
+import { expirerEnAttentePerimees } from '@/lib/expiration-attente'
+import { promouvoirProgrammes } from '@/lib/programmes'
+import { STATUT_MESSAGE } from '@/lib/statuts'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { to, message, cle_api } = body
+    const corps = await request.json()
+    const { to, message, cle_api } = corps
 
     // 1. Validation — `to` : un numéro ou une liste (envoi groupé).
     const MAX_DESTINATAIRES = 100
-    const rawRecipients = Array.isArray(to) ? to : [to]
-    if (rawRecipients.length === 0 || rawRecipients.length > MAX_DESTINATAIRES) {
+    const destinatairesBruts = Array.isArray(to) ? to : [to]
+    if (destinatairesBruts.length === 0 || destinatairesBruts.length > MAX_DESTINATAIRES) {
       return NextResponse.json(
         { error: `Le champ "to" doit contenir entre 1 et ${MAX_DESTINATAIRES} destinataire(s)` },
         { status: 400 }
       )
     }
-    const invalidIndexes: number[] = []
-    const numeros = rawRecipients.map((r, i) => {
+    const indexInvalides: number[] = []
+    const numeros = destinatairesBruts.map((r, i) => {
       if (typeof r !== 'string' || r.trim().length === 0) {
-        invalidIndexes.push(i)
+        indexInvalides.push(i)
         return ''
       }
       return r.trim()
     })
-    if (invalidIndexes.length > 0) {
+    if (indexInvalides.length > 0) {
       return NextResponse.json(
-        { error: `Numéro(s) invalide(s) aux position(s) : ${invalidIndexes.join(', ')}` },
+        { error: `Numéro(s) invalide(s) aux position(s) : ${indexInvalides.join(', ')}` },
         { status: 400 }
       )
     }
@@ -50,13 +51,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Authentification du client API
-    const trimmedKey = cle_api.trim()
-    const client = await authenticateApiClient(trimmedKey)
+    const cleNettoyee = cle_api.trim()
+    const client = await authentifierClientApi(cleNettoyee)
     if (!client) {
-      // Diagnostic sans exposer la clé : longueur 36 = clé complète,
-      // ~15 + "…" = clé masquée copiée depuis la liste.
       console.warn(
-        `[sms/send] cle_api rejetée (longueur=${trimmedKey.length}, préfixe=${trimmedKey.slice(0, 8)}…, suffixe=${trimmedKey.slice(-3)})`
+        `[sms/send] cle_api rejetée (longueur=${cleNettoyee.length}, préfixe=${cleNettoyee.slice(0, 8)}…, suffixe=${cleNettoyee.slice(-3)})`
       )
       return NextResponse.json(
         { error: 'Clé API invalide' },
@@ -64,15 +63,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Expiration des PENDING trop anciennes (ne bloque jamais l'envoi)
-    await expireStalePending()
-    await promoteScheduled()
+    // Expiration des EN_ATTENTE trop anciens + promotion des PROGRAMME
+    // (ne bloquent jamais l'envoi)
+    await expirerEnAttentePerimees()
+    await promouvoirProgrammes()
 
     // Envoi différé : date ISO future (max 1 an). Ni quota ni push :
-    // la tâche attend sa date, promue PENDING à l'heure dite.
-    let scheduledFor: Date | null = null
-    if (body?.scheduled_at) {
-      const d = new Date(body.scheduled_at)
+    // la tâche attend sa date, promue EN_ATTENTE à l'heure dite.
+    let programmePour: Date | null = null
+    if (corps?.scheduled_at) {
+      const d = new Date(corps.scheduled_at)
       if (Number.isNaN(d.getTime()) || d.getTime() <= Date.now()) {
         return NextResponse.json(
           { error: 'Le champ "scheduled_at" doit être une date ISO future' },
@@ -85,37 +85,38 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
       }
-      scheduledFor = d
+      programmePour = d
     }
 
-    // 3. Quota strict : refuser AVANT de créer la task si tout est saturé
-    const availability = scheduledFor ? null : await getDeviceAvailability()
-    if (availability?.saturated) {
+    // 3. Quota strict : refuser AVANT de créer la tâche si tout est saturé
+    const disponibilite = programmePour ? null : await obtenirDisponibiliteAppareil()
+    if (disponibilite?.sature) {
       return NextResponse.json(
         {
-          error: `Quota SMS/heure atteint (${availability.quota}/h/device). Réessayez dans ~${availability.retryAfterSeconds}s.`,
-          quota: availability.quota,
-          retry_after_seconds: availability.retryAfterSeconds,
+          error: `Quota SMS/heure atteint (${disponibilite.quota}/h/appareil). Réessayez dans ~${disponibilite.delaiAttenteSecondes}s.`,
+          quota: disponibilite.quota,
+          retry_after_seconds: disponibilite.delaiAttenteSecondes,
         },
         { status: 429 }
       )
     }
 
-    // 4. Créer une task par destinataire (une seule requête)
-    const { data: createdTasks, error } = await supabaseAdmin
-      .from('sms_tasks')
+    // 4. Créer une tâche par destinataire (une seule requête).
+    // Contrat JSON inchangé : les clés restent message/device_id/created_at.
+    const { data: lignesCreees, error } = await supabaseAdmin
+      .from('messages')
       .insert(
         numeros.map((numero) => ({
           numero_destinataire: numero,
-          message: message.trim(),
-          statut: scheduledFor ? 'SCHEDULED' : 'PENDING',
-          scheduled_at: scheduledFor ? scheduledFor.toISOString() : null,
-          app_client_id: client.id,
+          contenu: message.trim(),
+          statut: programmePour ? STATUT_MESSAGE.PROGRAMME : STATUT_MESSAGE.EN_ATTENTE,
+          programme_a: programmePour ? programmePour.toISOString() : null,
+          id_application: client.id,
         }))
       )
-      .select('id, numero_destinataire, message, statut, scheduled_at, created_at')
+      .select('id, numero_destinataire, contenu, statut, programme_a, date_creation')
 
-    if (error || !createdTasks || createdTasks.length === 0) {
+    if (error || !lignesCreees || lignesCreees.length === 0) {
       console.error('Erreur Supabase:', error)
       return NextResponse.json(
         { error: 'Erreur lors de la création des tâches', details: error?.message },
@@ -123,32 +124,41 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const tachesCreees = lignesCreees.map((t) => ({
+      id: t.id,
+      numero_destinataire: t.numero_destinataire,
+      message: t.contenu,
+      statut: t.statut,
+      scheduled_at: t.programme_a,
+      created_at: t.date_creation,
+    }))
+
     // 5. Un seul push (sauf différé) : il réveille le téléphone, qui dépile ensuite
-    // les tâches une par une au polling (5 par passage).
-    const device = availability?.device ?? null
-    let pushSent = false
-    if (!scheduledFor && device?.fcm_token) {
+    // les tâches une par une à la scrutation (5 par passage).
+    const appareil = disponibilite?.appareil ?? null
+    let pushEnvoye = false
+    if (!programmePour && appareil?.jeton_fcm) {
       try {
-        pushSent = await sendNewTaskPush(device.fcm_token, createdTasks[0].id)
-        console.log(`Push FCM envoyé au device ${device.id} (${device.sms_last_hour} SMS/heure) : ${pushSent}`)
-      } catch (pushErr) {
-        console.error('Erreur push FCM (non bloquant):', pushErr)
+        pushEnvoye = await envoyerPushNouvelleTache(appareil.jeton_fcm, tachesCreees[0].id)
+        console.log(`Push FCM envoyé à l'appareil ${appareil.id} (${appareil.sms_derniere_heure} SMS/heure) : ${pushEnvoye}`)
+      } catch (erreurPush) {
+        console.error('Erreur push FCM (non bloquant):', erreurPush)
       }
-    } else {
-      console.warn('Aucun device disponible — pas de push')
+    } else if (!programmePour) {
+      console.warn('Aucun appareil disponible — pas de push')
     }
 
     // 6. Réponse (forme simple pour 1 numéro, détaillée pour un groupe)
-    const deviceSelected = device
-      ? { id: device.id, nom: device.nom, sms_last_hour: device.sms_last_hour }
+    const appareilSelectionne = appareil
+      ? { id: appareil.id, nom: appareil.nom, sms_last_hour: appareil.sms_derniere_heure }
       : null
-    if (scheduledFor) {
+    if (programmePour) {
       return NextResponse.json(
         {
-          message: `SMS programmé pour le ${scheduledFor.toLocaleString('fr-FR')}`,
-          count: createdTasks.length,
-          tasks: createdTasks,
-          scheduled_for: scheduledFor.toISOString(),
+          message: `SMS programmé pour le ${programmePour.toLocaleString('fr-FR')}`,
+          count: tachesCreees.length,
+          tasks: tachesCreees,
+          scheduled_for: programmePour.toISOString(),
           push_sent: false,
           client: { id: client.id, nom: client.nom },
         },
@@ -159,9 +169,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           message: 'SMS mis en file d\'attente',
-          task: createdTasks[0],
-          push_sent: pushSent,
-          device_selected: deviceSelected,
+          task: tachesCreees[0],
+          push_sent: pushEnvoye,
+          device_selected: appareilSelectionne,
           client: { id: client.id, nom: client.nom },
         },
         { status: 201 }
@@ -169,17 +179,17 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json(
       {
-        message: `${createdTasks.length} SMS mis en file d'attente`,
-        count: createdTasks.length,
-        tasks: createdTasks,
-        push_sent: pushSent,
-        device_selected: deviceSelected,
+        message: `${tachesCreees.length} SMS mis en file d'attente`,
+        count: tachesCreees.length,
+        tasks: tachesCreees,
+        push_sent: pushEnvoye,
+        device_selected: appareilSelectionne,
         client: { id: client.id, nom: client.nom },
       },
       { status: 201 }
     )
-  } catch (err) {
-    console.error('Erreur inattendue:', err)
+  } catch (erreur) {
+    console.error('Erreur inattendue:', erreur)
     return NextResponse.json(
       { error: 'Erreur interne du serveur' },
       { status: 500 }

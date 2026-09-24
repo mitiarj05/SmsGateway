@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateDevice } from '@/lib/auth'
-import { getIntSetting } from '@/lib/settings'
-import { getDeviceUsage, getRetryAfterSeconds } from '@/lib/select-device'
+import { authentifierAppareil } from '@/lib/authentification'
+import { obtenirParametreEntier } from '@/lib/parametres'
+import { obtenirUsageAppareil, obtenirDelaiAttenteSecondes } from '@/lib/selection-appareil'
 
 /**
- * GET /api/devices/[id]/quota — quota et usage horaire du device.
- * Auth : Bearer token du device (comme le polling).
+ * GET /api/appareils/[id]/quota — quota et usage horaire de l'appareil.
+ * Auth : Bearer token de l'appareil (comme la scrutation).
  * Utilisé par l'app Android (écran Statut / Réglages, quota imposé par le serveur).
  */
 export async function GET(
@@ -13,7 +13,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: deviceId } = await params
+    const { id: appareilId } = await params
 
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -22,27 +22,27 @@ export async function GET(
         { status: 401 }
       )
     }
-    const token = authHeader.substring(7)
+    const jeton = authHeader.substring(7)
 
-    const device = await authenticateDevice(deviceId, token)
-    if (!device) {
+    const appareil = await authentifierAppareil(appareilId, jeton)
+    if (!appareil) {
       return NextResponse.json(
-        { error: 'Device inconnu ou token invalide' },
+        { error: 'Appareil inconnu ou token invalide' },
         { status: 401 }
       )
     }
 
-    const quota = await getIntSetting('sms_quota_per_hour')
-    const usage = await getDeviceUsage(deviceId)
-    const quotaReached = usage >= quota
+    const quota = await obtenirParametreEntier('sms_quota_per_hour')
+    const usage = await obtenirUsageAppareil(appareilId)
+    const quotaAtteint = usage >= quota
 
     return NextResponse.json(
       {
         quota,
         usage,
         remaining: Math.max(0, quota - usage),
-        quota_reached: quotaReached,
-        retry_after_seconds: quotaReached ? await getRetryAfterSeconds(deviceId) : 0,
+        quota_reached: quotaAtteint,
+        retry_after_seconds: quotaAtteint ? await obtenirDelaiAttenteSecondes(appareilId) : 0,
       },
       { status: 200 }
     )

@@ -9,42 +9,42 @@ import { MessageSquare, Send, Loader2, CheckCircle2, AlertTriangle } from 'lucid
  * même moteur que POST /api/sms/send, la clé API fait foi.
  * Pas de session admin requise (le proxy ne protège pas /send).
  */
-export default function ExternalSendPage() {
+export default function PageEnvoiExterne() {
   const [cleApi, setCleApi] = useState('')
-  const [numbers, setNumbers] = useState('')
+  const [numeros, setNumeros] = useState('')
   const [message, setMessage] = useState('')
-  const [scheduled, setScheduled] = useState('')
-  const [sending, setSending] = useState(false)
-  const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null)
+  const [programme, setProgramme] = useState('')
+  const [envoiEnCours, setEnvoiEnCours] = useState(false)
+  const [resultat, setResultat] = useState<{ reussi: boolean; texte: string } | null>(null)
 
-  async function onSubmit(e: React.FormEvent) {
+  async function soumettre(e: React.FormEvent) {
     e.preventDefault()
-    setSending(true)
-    setResult(null)
-    const recipients = numbers.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean)
+    setEnvoiEnCours(true)
+    setResultat(null)
+    const destinataires = numeros.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean)
     try {
-      const res = await fetch('/api/sms/send', {
+      const reponse = await fetch('/api/sms/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: recipients.length > 1 ? recipients : recipients[0] ?? '',
+          to: destinataires.length > 1 ? destinataires : destinataires[0] ?? '',
           message,
           cle_api: cleApi.trim(),
-          ...(scheduled ? { scheduled_at: new Date(scheduled).toISOString() } : {}),
+          ...(programme ? { scheduled_at: new Date(programme).toISOString() } : {}),
         }),
       })
-      const data = await res.json().catch(() => null)
-      if (res.ok) {
-        setResult({ ok: true, text: data?.message ?? 'SMS mis en file d\u2019attente' })
-        setNumbers('')
+      const donnees = await reponse.json().catch(() => null)
+      if (reponse.ok) {
+        setResultat({ reussi: true, texte: donnees?.message ?? 'SMS mis en file d\u2019attente' })
+        setNumeros('')
         setMessage('')
       } else {
-        setResult({ ok: false, text: data?.error ?? 'Erreur lors de l\u2019envoi' })
+        setResultat({ reussi: false, texte: donnees?.error ?? 'Erreur lors de l\u2019envoi' })
       }
     } catch {
-      setResult({ ok: false, text: 'Serveur injoignable' })
+        setResultat({ reussi: false, texte: 'Serveur injoignable' })
     } finally {
-      setSending(false)
+      setEnvoiEnCours(false)
     }
   }
 
@@ -61,18 +61,18 @@ export default function ExternalSendPage() {
           </div>
         </div>
 
-        {result && (
+        {resultat && (
           <p className={`mt-4 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium ring-1 ${
-            result.ok
+            resultat.reussi
               ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-400/20'
               : 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-400/20'
           }`}>
-            {result.ok ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertTriangle className="h-4 w-4 shrink-0" />}
-            {result.text}
+            {resultat.reussi ? <CheckCircle2 className="h-4 w-4 shrink-0" /> : <AlertTriangle className="h-4 w-4 shrink-0" />}
+            {resultat.texte}
           </p>
         )}
 
-        <form onSubmit={onSubmit} className="mt-4 space-y-4">
+        <form onSubmit={soumettre} className="mt-4 space-y-4">
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
               Clé API (fournie par l&apos;administrateur)
@@ -86,8 +86,8 @@ export default function ExternalSendPage() {
             <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
               Destinataires (un par ligne)
             </label>
-            <textarea required rows={4} value={numbers}
-              onChange={(e) => setNumbers(e.target.value)}
+            <textarea required rows={4} value={numeros}
+              onChange={(e) => setNumeros(e.target.value)}
               placeholder="+261340512345&#10;+261331298765"
               className="w-full resize-y rounded-lg border border-zinc-200 px-3 py-2 font-mono text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
           </div>
@@ -102,14 +102,14 @@ export default function ExternalSendPage() {
             <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
               Programmer l&apos;envoi (optionnel)
             </label>
-            <input type="datetime-local" value={scheduled}
-              onChange={(e) => setScheduled(e.target.value)}
+            <input type="datetime-local" value={programme}
+              onChange={(e) => setProgramme(e.target.value)}
               className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
           </div>
-          <button type="submit" disabled={sending}
+          <button type="submit" disabled={envoiEnCours}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
-            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            {sending ? 'Envoi…' : 'Envoyer'}
+            {envoiEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            {envoiEnCours ? 'Envoi…' : 'Envoyer'}
           </button>
         </form>
 

@@ -5,7 +5,7 @@ import {
   Zap, ArrowRight, CheckCircle2, Bell, Inbox,
 } from 'lucide-react'
 
-export default function LandingPage() {
+export default function PageAccueil() {
   return (
     <div className="min-h-screen bg-[#08122E] text-white">
       {/* ================= NAVIGATION ================= */}
@@ -79,13 +79,13 @@ export default function LandingPage() {
             {/* stats */}
             <div className="mt-14 flex gap-14">
               {[
-                { v: 'Multi', l: 'Appareils en parallèle' },
-                { v: 'FCM', l: 'Déclenchement instantané' },
-                { v: '0 Ar', l: "D'abonnement (crédit SIM requis)" },
-              ].map((s) => (
-                <div key={s.l}>
-                  <p className="text-2xl font-bold">{s.v}</p>
-                  <p className="mt-1 text-sm text-slate-400">{s.l}</p>
+                { valeur: 'Multi', etiquette: 'Appareils en parallèle' },
+                { valeur: 'FCM', etiquette: 'Déclenchement instantané' },
+                { valeur: '0 Ar', etiquette: "D'abonnement (crédit SIM requis)" },
+              ].map((stat) => (
+                <div key={stat.etiquette}>
+                  <p className="text-2xl font-bold">{stat.valeur}</p>
+                  <p className="mt-1 text-sm text-slate-400">{stat.etiquette}</p>
                 </div>
               ))}
             </div>
@@ -108,24 +108,24 @@ export default function LandingPage() {
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { v: '128', l: 'envoyés' },
-                  { v: '3', l: 'en attente' },
-                  { v: '18/50', l: 'quota /h' },
-                ].map((k) => (
-                  <div key={k.l} className="rounded-xl bg-white/5 p-3">
-                    <p className="text-lg font-bold">{k.v}</p>
-                    <p className="text-[10px] text-slate-400">{k.l}</p>
+                  { valeur: '128', etiquette: 'envoyés' },
+                  { valeur: '3', etiquette: 'en attente' },
+                  { valeur: '18/50', etiquette: 'quota /h' },
+                ].map((kpi) => (
+                  <div key={kpi.etiquette} className="rounded-xl bg-white/5 p-3">
+                    <p className="text-lg font-bold">{kpi.valeur}</p>
+                    <p className="text-[10px] text-slate-400">{kpi.etiquette}</p>
                   </div>
                 ))}
               </div>
               <div className="mt-3 space-y-2.5 rounded-xl bg-white/5 p-4">
                 {[
-                  { icon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />, t: '+261 34 05 123 45 · envoyé' },
-                  { icon: <Inbox className="h-3.5 w-3.5 text-amber-400" />, t: '+261 33 12 987 65 · en attente' },
-                  { icon: <Bell className="h-3.5 w-3.5 text-blue-400" />, t: 'push instantané · écran éteint' },
-                ].map((r) => (
-                  <div key={r.t} className="flex items-center gap-2.5 text-xs text-slate-300">
-                    {r.icon} {r.t}
+                  { icone: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />, texte: '+261 34 05 123 45 · envoyé' },
+                  { icone: <Inbox className="h-3.5 w-3.5 text-amber-400" />, texte: '+261 33 12 987 65 · en attente' },
+                  { icone: <Bell className="h-3.5 w-3.5 text-blue-400" />, texte: 'push instantané · écran éteint' },
+                ].map((ligne) => (
+                  <div key={ligne.texte} className="flex items-center gap-2.5 text-xs text-slate-300">
+                    {ligne.icone} {ligne.texte}
                   </div>
                 ))}
               </div>
@@ -141,14 +141,14 @@ export default function LandingPage() {
           <p className="mt-3 text-center text-slate-400">Trois briques simples, un système complet.</p>
           <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3">
             {[
-              { icon: <Server className="h-6 w-6" />, t: '1. Votre serveur', d: 'Reçoit les demandes via une API REST sécurisée par clé, gère la file d\u2019attente, les quotas et l\u2019historique. C\u2019est le cerveau du système.' },
-              { icon: <Smartphone className="h-6 w-6" />, t: '2. Vos téléphones Android', d: 'Inscrits via Firebase Auth, actifs en arrière-plan. Chaque téléphone envoie via sa vraie carte SIM, même écran éteint.' },
-              { icon: <BarChart3 className="h-6 w-6" />, t: '3. Votre dashboard', d: 'Supervisez tout : appareils en ligne, SMS en attente, échecs, activité 24 h. Un clic pour envoyer un test.' },
-            ].map((c) => (
-              <div key={c.t} className="rounded-2xl border border-white/10 bg-white/5 p-8 hover:border-blue-400/40">
-                <div className="mb-4 inline-flex rounded-xl bg-blue-600/20 p-3 text-blue-400">{c.icon}</div>
-                <h3 className="text-lg font-bold">{c.t}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{c.d}</p>
+              { icone: <Server className="h-6 w-6" />, titre: '1. Votre serveur', description: 'Reçoit les demandes via une API REST sécurisée par clé, gère la file d\u2019attente, les quotas et l\u2019historique. C\u2019est le cerveau du système.' },
+              { icone: <Smartphone className="h-6 w-6" />, titre: '2. Vos téléphones Android', description: 'Inscrits via Firebase Auth, actifs en arrière-plan. Chaque téléphone envoie via sa vraie carte SIM, même écran éteint.' },
+              { icone: <BarChart3 className="h-6 w-6" />, titre: '3. Votre dashboard', description: 'Supervisez tout : appareils en ligne, SMS en attente, échecs, activité 24 h. Un clic pour envoyer un test.' },
+            ].map((carte) => (
+              <div key={carte.titre} className="rounded-2xl border border-white/10 bg-white/5 p-8 hover:border-blue-400/40">
+                <div className="mb-4 inline-flex rounded-xl bg-blue-600/20 p-3 text-blue-400">{carte.icone}</div>
+                <h3 className="text-lg font-bold">{carte.titre}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">{carte.description}</p>
               </div>
             ))}
           </div>
@@ -161,16 +161,16 @@ export default function LandingPage() {
           <h2 className="text-center text-3xl font-bold">Pensé pour la fiabilité</h2>
           <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2">
             {[
-              { icon: <Zap className="h-5 w-5" />, t: 'Notifications push', d: 'Firebase Cloud Messaging réveille les téléphones instantanément quand une tâche arrive.' },
-              { icon: <ShieldCheck className="h-5 w-5" />, t: 'Anti-double envoi', d: 'Identifiants uniques et accusés idempotents : une re-délivrance ne provoque jamais deux SMS.' },
-              { icon: <Smartphone className="h-5 w-5" />, t: 'Multi-appareils', d: 'Répartition intelligente entre vos téléphones avec quota par SIM pour éviter le blocage opérateur.' },
-              { icon: <CheckCircle2 className="h-5 w-5" />, t: 'Résilient aux pannes', d: 'Coupure internet, SIM indisponible, redémarrage : le système reprend seul où il s\u2019était arrêté.' },
-            ].map((f) => (
-              <div key={f.t} className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 p-6">
-                <div className="h-fit rounded-lg bg-blue-600/20 p-2.5 text-blue-400">{f.icon}</div>
+              { icone: <Zap className="h-5 w-5" />, titre: 'Notifications push', description: 'Firebase Cloud Messaging réveille les téléphones instantanément quand une tâche arrive.' },
+              { icone: <ShieldCheck className="h-5 w-5" />, titre: 'Anti-double envoi', description: 'Identifiants uniques et accusés idempotents : une re-délivrance ne provoque jamais deux SMS.' },
+              { icone: <Smartphone className="h-5 w-5" />, titre: 'Multi-appareils', description: 'Répartition intelligente entre vos téléphones avec quota par SIM pour éviter le blocage opérateur.' },
+              { icone: <CheckCircle2 className="h-5 w-5" />, titre: 'Résilient aux pannes', description: 'Coupure internet, SIM indisponible, redémarrage : le système reprend seul où il s\u2019était arrêté.' },
+            ].map((fonctionnalite) => (
+              <div key={fonctionnalite.titre} className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 p-6">
+                <div className="h-fit rounded-lg bg-blue-600/20 p-2.5 text-blue-400">{fonctionnalite.icone}</div>
                 <div>
-                  <h3 className="font-bold">{f.t}</h3>
-                  <p className="mt-1 text-sm text-slate-400">{f.d}</p>
+                  <h3 className="font-bold">{fonctionnalite.titre}</h3>
+                  <p className="mt-1 text-sm text-slate-400">{fonctionnalite.description}</p>
                 </div>
               </div>
             ))}
@@ -185,25 +185,25 @@ export default function LandingPage() {
           <div className="mt-12 space-y-4">
             {[
               {
-                q: 'Faut-il être sur le même WiFi ?',
-                r: 'Non. Le serveur est en ligne et les téléphones communiquent via internet (4G ou WiFi) + notifications push. Ils peuvent être n\u2019importe où dans le monde.',
+                question: 'Faut-il être sur le même WiFi ?',
+                reponse: 'Non. Le serveur est en ligne et les téléphones communiquent via internet (4G ou WiFi) + notifications push. Ils peuvent être n\u2019importe où dans le monde.',
               },
               {
-                q: 'Combien ça coûte ?',
-                r: 'Aucun abonnement. Seul le crédit SMS de vos cartes SIM est consommé, au tarif de votre opérateur.',
+                question: 'Combien ça coûte ?',
+                reponse: 'Aucun abonnement. Seul le crédit SMS de vos cartes SIM est consommé, au tarif de votre opérateur.',
               },
               {
-                q: 'Que se passe-t-il si un téléphone est éteint ?',
-                r: 'Les SMS restent en file d\u2019attente, puis expirent en échec après le délai configuré. Au retour du téléphone, il reprend les tâches restantes tout seul.',
+                question: 'Que se passe-t-il si un téléphone est éteint ?',
+                reponse: 'Les SMS restent en file d\u2019attente, puis expirent en échec après le délai configuré. Au retour du téléphone, il reprend les tâches restantes tout seul.',
               },
               {
-                q: 'Comment ajouter un téléphone ?',
-                r: 'Installez l\u2019app Android, renseignez l\u2019adresse du serveur et démarrez le service : il s\u2019inscrit via Firebase Auth et apparaît OFFLINE, puis ONLINE au premier polling.',
+                question: 'Comment ajouter un téléphone ?',
+                reponse: 'Installez l\u2019app Android, renseignez l\u2019adresse du serveur et démarrez le service : il s\u2019inscrit via Firebase Auth et apparaît HORS_LIGNE, puis EN_LIGNE à la première scrutation.',
               },
-            ].map((f) => (
-              <div key={f.q} className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                <h3 className="font-bold">{f.q}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{f.r}</p>
+            ].map((faq) => (
+              <div key={faq.question} className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                <h3 className="font-bold">{faq.question}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">{faq.reponse}</p>
               </div>
             ))}
           </div>

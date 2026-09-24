@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
+import { supabaseAdmin } from '@/lib/supabase-serveur'
 import fs from 'fs'
 import path from 'path'
 
@@ -10,35 +10,35 @@ const VERSION = '0.1.0'
  * 200 si la base répond, 503 sinon. N'expose aucun secret.
  */
 export async function GET() {
-  const started = Date.now()
+  const debut = Date.now()
 
   let supabase: { ok: boolean; latency_ms: number; error?: string } = {
     ok: false,
     latency_ms: 0,
   }
   try {
-    const t0 = Date.now()
+    const debutRequete = Date.now()
     const { error } = await supabaseAdmin
-      .from('devices')
+      .from('appareils')
       .select('id', { count: 'exact', head: true })
     supabase = error
-      ? { ok: false, latency_ms: Date.now() - t0, error: error.message }
-      : { ok: true, latency_ms: Date.now() - t0 }
-  } catch (err) {
-    supabase = { ok: false, latency_ms: Date.now() - started, error: (err as Error).message }
+      ? { ok: false, latency_ms: Date.now() - debutRequete, error: error.message }
+      : { ok: true, latency_ms: Date.now() - debutRequete }
+  } catch (erreur) {
+    supabase = { ok: false, latency_ms: Date.now() - debut, error: (erreur as Error).message }
   }
 
-  let settingsTable = false
+  let tableParametres = false
   try {
     const { error } = await supabaseAdmin
-      .from('settings')
+      .from('parametres')
       .select('cle', { count: 'exact', head: true })
-    settingsTable = !error
+    tableParametres = !error
   } catch {
-    settingsTable = false
+    tableParametres = false
   }
 
-  const fcmConfigured =
+  const fcmEstConfigure =
     fs.existsSync(path.join(process.cwd(), 'firebase-service-account.json')) ||
     !!process.env.FIREBASE_SERVICE_ACCOUNT_JSON
 
@@ -51,8 +51,8 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       checks: {
         supabase,
-        settings_table: settingsTable,
-        fcm_configured: fcmConfigured,
+        settings_table: tableParametres,
+        fcm_configured: fcmEstConfigure,
       },
     },
     { status: ok ? 200 : 503 }

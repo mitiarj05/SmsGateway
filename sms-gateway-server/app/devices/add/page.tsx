@@ -3,46 +3,46 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Smartphone, ShieldCheck, Loader2, ChevronRight } from 'lucide-react'
-import DashboardShell from '../../../components/DashboardShell'
-import { Device } from '../../../components/ui'
+import CoquilleTableauDeBord from '../../../composants/CoquilleTableauDeBord'
+import { Appareil } from '../../../composants/interface'
 
 /**
  * Ajouter un téléphone : l'inscription est initiée PAR le téléphone
- * (connexion anonyme Firebase Auth), le serveur crée le device OFFLINE
+ * (connexion anonyme Firebase Auth), le serveur crée l'appareil HORS_LIGNE
  * lié au compte Firebase. Cette page guide l'ajout et liste les
  * téléphones en attente de première connexion.
  */
-export default function AddDevicePage() {
-  const [devices, setDevices] = useState<Device[]>([])
-  const [loading, setLoading] = useState(true)
-  const [lastRefresh, setLastRefresh] = useState(new Date())
-  const [refreshing, setRefreshing] = useState(false)
+export default function AjouterAppareilPage() {
+  const [appareils, setAppareils] = useState<Appareil[]>([])
+  const [chargement, setChargement] = useState(true)
+  const [derniereActualisation, setDerniereActualisation] = useState(new Date())
+  const [actualisationEnCours, setActualisationEnCours] = useState(false)
 
-  const fetchData = useCallback(async (silent = false) => {
-    if (!silent) setRefreshing(true)
+  const chargerDonnees = useCallback(async (silencieux = false) => {
+    if (!silencieux) setActualisationEnCours(true)
     try {
-      const res = await fetch('/api/devices')
-      const data = await res.json()
-      if (data.devices) setDevices(data.devices)
-      setLastRefresh(new Date())
+      const reponse = await fetch('/api/devices')
+      const donnees = await reponse.json()
+      if (donnees.devices) setAppareils(donnees.devices)
+      setDerniereActualisation(new Date())
     } finally {
-      setLoading(false)
-      setRefreshing(false)
+      setChargement(false)
+      setActualisationEnCours(false)
     }
   }, [])
 
   useEffect(() => {
-    fetchData(true)
-    const i = setInterval(() => fetchData(true), 10000)
+    chargerDonnees(true)
+    const i = setInterval(() => chargerDonnees(true), 10000)
     return () => clearInterval(i)
-  }, [fetchData])
+  }, [chargerDonnees])
 
-  const pending = devices
-    .filter((d) => d.statut === 'OFFLINE')
+  const enAttente = appareils
+    .filter((d) => d.statut === 'HORS_LIGNE')
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
     .slice(0, 10)
 
-  if (loading) {
+  if (chargement) {
     return (
       <div className="flex h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-950">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -51,9 +51,9 @@ export default function AddDevicePage() {
   }
 
   return (
-    <DashboardShell
-      title="Ajouter un téléphone"
-      subtitle={`actualisé à ${lastRefresh.toLocaleTimeString('fr-FR')}`}
+    <CoquilleTableauDeBord
+      titre="Ajouter un téléphone"
+      sousTitre={`actualisé à ${derniereActualisation.toLocaleTimeString('fr-FR')}`}
       actions={
         <Link href="/devices"
           className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
@@ -72,8 +72,8 @@ export default function AddDevicePage() {
             <li>Installez l&apos;app Android sur le téléphone.</li>
             <li>Renseignez l&apos;adresse du serveur et démarrez le service.</li>
             <li>L&apos;app se connecte anonymement via Firebase Auth et s&apos;enregistre.</li>
-            <li>Le serveur crée le device <b>OFFLINE</b> lié au compte Firebase.</li>
-            <li>Au premier polling, il passe <b>ONLINE</b> automatiquement.</li>
+            <li>Le serveur crée l&apos;appareil <b>HORS_LIGNE</b> lié au compte Firebase.</li>
+            <li>À la première scrutation, il passe <b>EN_LIGNE</b> automatiquement.</li>
           </ol>
           <p className="mt-4 rounded-lg bg-amber-50 p-3 text-xs text-amber-800 ring-1 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/20">
             Prérequis : méthode « Anonyme » activée dans Firebase Console → Authentication → Sign-in method (projet gateway).
@@ -86,16 +86,16 @@ export default function AddDevicePage() {
             <Smartphone className="h-4 w-4 text-zinc-400" />
             <h2 className="text-sm font-bold text-zinc-900 dark:text-white">En attente de première connexion</h2>
             <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-              {pending.length}
+              {enAttente.length}
             </span>
           </div>
-          {pending.length === 0 ? (
+          {enAttente.length === 0 ? (
             <p className="py-4 text-center text-xs text-zinc-400">
               Aucun téléphone en attente — démarrez le service sur un téléphone pour le voir ici.
             </p>
           ) : (
             <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {pending.map((d) => (
+              {enAttente.map((d) => (
                 <li key={d.id} className="flex items-center justify-between py-2.5">
                   <div>
                     <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{d.nom}</p>
@@ -113,6 +113,6 @@ export default function AddDevicePage() {
           )}
         </section>
       </div>
-    </DashboardShell>
+    </CoquilleTableauDeBord>
   )
 }

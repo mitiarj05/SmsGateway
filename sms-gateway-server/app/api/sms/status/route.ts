@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
-import { authenticateApiClient } from '@/lib/auth'
+import { supabaseAdmin } from '@/lib/supabase-serveur'
+import { authentifierClientApi } from '@/lib/authentification'
 
 /**
  * GET /api/sms/status — suivi des envois pour une app externe.
@@ -12,6 +12,8 @@ import { authenticateApiClient } from '@/lib/auth'
  * - ids=id1,id2 (optionnel : restreint aux IDs donnés, max 200)
  * - since=ISO (optionnel : créées après cette date)
  * - limit (défaut 50, max 200)
+ *
+ * Contrat JSON inchangé (message, device_id, error_message…).
  */
 export async function GET(request: NextRequest) {
   try {
@@ -24,7 +26,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const client = await authenticateApiClient(cleApi)
+    const client = await authentifierClientApi(cleApi)
     if (!client) {
       return NextResponse.json(
         { error: 'Clé API invalide' },
@@ -43,15 +45,15 @@ export async function GET(request: NextRequest) {
       .slice(0, 200)
     const since = params.get('since')
 
-    let query = supabaseAdmin
-      .from('sms_tasks')
-      .select('id, numero_destinataire, statut, error_message, device_id, created_at, updated_at')
-      .eq('app_client_id', client.id)
-      .order('created_at', { ascending: false })
+    let requete = supabaseAdmin
+      .from('messages')
+      .select('id, numero_destinataire, contenu, statut, message_erreur, id_appareil, date_creation, date_modification')
+      .eq('id_application', client.id)
+      .order('date_creation', { ascending: false })
       .limit(limit)
 
     if (ids.length > 0) {
-      query = query.in('id', ids)
+      requete = requete.in('id', ids)
     }
     if (since) {
       const date = new Date(since)
@@ -61,16 +63,27 @@ export async function GET(request: NextRequest) {
           { status: 400 }
         )
       }
-      query = query.gte('created_at', date.toISOString())
+      requete = requete.gte('date_creation', date.toISOString())
     }
 
-    const { data, error } = await query
+    const { data, error } = await requete
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    const taches = (data ?? []).map((t) => ({
+      id: t.id,
+      numero_destinataire: t.numero_destinataire,
+      message: t.contenu,
+      statut: t.statut,
+      error_message: t.message_erreur,
+      device_id: t.id_appareil,
+      created_at: t.date_creation,
+      updated_at: t.date_modification,
+    }))
+
     return NextResponse.json(
-      { tasks: data ?? [], count: data?.length ?? 0 },
+      { tasks: taches, count: taches.length },
       { status: 200 }
     )
   } catch {

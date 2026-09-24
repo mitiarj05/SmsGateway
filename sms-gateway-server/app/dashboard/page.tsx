@@ -9,62 +9,62 @@ import {
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts'
-import DashboardShell from '../../components/DashboardShell'
+import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 import {
-  DEVICE_STATUS, TASK_STATUS, StatusBadge, Toast, Modal, EmptyState, Progress,
-} from '../../components/ui'
+  STATUTS_APPAREILS, STATUTS_TACHES, BadgeStatut, Toast, Modale, EtatVide, Progression,
+} from '../../composants/interface'
 import { useTheme } from '../../lib/use-theme'
 
-interface Device {
+interface Appareil {
   id: string; nom: string; statut: string; sms_last_hour: number
   derniere_activite: string | null
 }
-interface Task {
+interface Tache {
   id: string; numero_destinataire: string; message: string; statut: string
   device_id: string | null; created_at: string; updated_at: string
   error_message?: string | null; erreur?: string | null
 }
-interface Stats {
+interface Statistiques {
   online_devices: number; tasks_sent: number; tasks_pending: number; tasks_failed: number
 }
-interface HourlyPoint { hour: string; count: number }
+interface PointHoraire { hour: string; count: number }
 
-const FEED_ICONS: Record<string, React.ReactNode> = {
-  SENT: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />,
-  FAILED: <XCircle className="h-3.5 w-3.5 text-red-500" />,
-  SENDING: <Clock className="h-3.5 w-3.5 text-blue-500" />,
-  PENDING: <Clock className="h-3.5 w-3.5 text-amber-500" />,
+const ICONES_FIL: Record<string, React.ReactNode> = {
+  ENVOYE: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />,
+  ECHOUE: <XCircle className="h-3.5 w-3.5 text-red-500" />,
+  RECLAME: <Clock className="h-3.5 w-3.5 text-blue-500" />,
+  EN_ATTENTE: <Clock className="h-3.5 w-3.5 text-amber-500" />,
 }
 
 export default function DashboardPage() {
-  const [devices, setDevices] = useState<Device[]>([])
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [stats, setStats] = useState<Stats | null>(null)
-  const [hourly, setHourly] = useState<HourlyPoint[]>([])
+  const [appareils, setAppareils] = useState<Appareil[]>([])
+  const [taches, setTaches] = useState<Tache[]>([])
+  const [statistiques, setStatistiques] = useState<Statistiques | null>(null)
+  const [parHeure, setParHeure] = useState<PointHoraire[]>([])
   const [quota, setQuota] = useState(50)
-  const [loading, setLoading] = useState(true)
-  const [lastRefresh, setLastRefresh] = useState(new Date())
-  const [modalOpen, setModalOpen] = useState(false)
-  const [sending, setSending] = useState(false)
-  const [detailTask, setDetailTask] = useState<Task | null>(null)
-  const [form, setForm] = useState({ to: '', message: '', cle_api: '', scheduled: '' })
-  const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [chargement, setChargement] = useState(true)
+  const [derniereActualisation, setDerniereActualisation] = useState(new Date())
+  const [modaleOuverte, setModaleOuverte] = useState(false)
+  const [envoiEnCours, setEnvoiEnCours] = useState(false)
+  const [tacheDetaillee, setTacheDetaillee] = useState<Tache | null>(null)
+  const [formulaire, setFormulaire] = useState({ to: '', message: '', cle_api: '', programme: '' })
+  const [notification, setNotification] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
   // Couleurs du graphique : suivent le toggle en direct via le hook partagé.
-  const { darkMode: chartDark } = useTheme()
+  const { modeSombre: graphiqueSombre } = useTheme()
 
-  const showToast = useCallback((type: 'success' | 'error', text: string) => {
-    setToast({ type, text })
-    setTimeout(() => setToast(null), 4000)
+  const afficherNotification = useCallback((type: 'succes' | 'erreur', texte: string) => {
+    setNotification({ type, texte })
+    setTimeout(() => setNotification(null), 4000)
   }, [])
 
-  const computeHourly = useCallback((list: Task[]): HourlyPoint[] => {
+  const calculerParHeure = useCallback((liste: Tache[]): PointHoraire[] => {
     const buckets = new Map<string, number>()
     const now = new Date()
     for (let i = 23; i >= 0; i--) {
       const d = new Date(now.getTime() - i * 3600_000)
       buckets.set(`${d.getHours()}h`, 0)
     }
-    list.forEach((t) => {
+    liste.forEach((t) => {
       const d = new Date(t.created_at)
       if (now.getTime() - d.getTime() <= 24 * 3600_000) {
         const k = `${d.getHours()}h`
@@ -74,19 +74,19 @@ export default function DashboardPage() {
     return Array.from(buckets, ([hour, count]) => ({ hour, count }))
   }, [])
 
-  const fetchData = useCallback(async () => {
+  const chargerDonnees = useCallback(async () => {
     try {
       const [d, t, s, q] = await Promise.all([
         fetch('/api/devices'), fetch('/api/tasks'), fetch('/api/stats'), fetch('/api/settings'),
       ])
       const [dd, td, sd] = [await d.json(), await t.json(), await s.json()]
-      if (dd.devices) setDevices(dd.devices)
+      if (dd.devices) setAppareils(dd.devices)
       // Le serveur renvoie error_message : on l'expose aussi en `erreur`.
-      const taskList: Task[] = (td.tasks ?? []).map((task: Task) => ({
-        ...task, erreur: task.erreur ?? task.error_message ?? null,
+      const listeTaches: Tache[] = (td.tasks ?? []).map((tache: Tache) => ({
+        ...tache, erreur: tache.erreur ?? tache.error_message ?? null,
       }))
-      if (td.tasks) setTasks(taskList)
-      if (sd.stats) setStats(sd.stats)
+      if (td.tasks) setTaches(listeTaches)
+      if (sd.stats) setStatistiques(sd.stats)
       if (q.ok) {
         const qd = await q.json()
         if (typeof qd.settings?.sms_quota_per_hour === 'number') {
@@ -98,70 +98,70 @@ export default function DashboardPage() {
         if (hr.ok) {
           const hd = await hr.json()
           if (hd.hourly) {
-            setHourly(hd.hourly)
-            setLastRefresh(new Date())
+            setParHeure(hd.hourly)
+            setDerniereActualisation(new Date())
             return
           }
         }
-        setHourly(computeHourly(taskList))
+        setParHeure(calculerParHeure(listeTaches))
       } catch {
-        setHourly(computeHourly(taskList))
+        setParHeure(calculerParHeure(listeTaches))
       }
-      setLastRefresh(new Date())
+      setDerniereActualisation(new Date())
     } catch {
-      showToast('error', 'Serveur injoignable')
+      afficherNotification('erreur', 'Serveur injoignable')
     } finally {
-      setLoading(false)
+      setChargement(false)
     }
-  }, [computeHourly, showToast])
+  }, [calculerParHeure, afficherNotification])
 
   useEffect(() => {
-    const savedKey = localStorage.getItem('sms-gateway-api-key')
-    if (savedKey) setForm((f) => ({ ...f, cle_api: savedKey }))
-    fetchData()
-    const i = setInterval(() => fetchData(), 3000)
+    const savedKey = localStorage.getItem('smsika-cle-api')
+    if (savedKey) setFormulaire((f) => ({ ...f, cle_api: savedKey }))
+    chargerDonnees()
+    const i = setInterval(() => chargerDonnees(), 3000)
     return () => clearInterval(i)
-  }, [fetchData])
+  }, [chargerDonnees])
 
-  async function sendSMS(e: React.FormEvent) {
+  async function envoyerSms(e: React.FormEvent) {
     e.preventDefault()
-    setSending(true)
+    setEnvoiEnCours(true)
     // Un numéro par ligne (virgules et points-virgules acceptés aussi).
-    const recipients = form.to.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean)
-    const scheduledAt = form.scheduled ? new Date(form.scheduled).toISOString() : undefined
+    const destinataires = formulaire.to.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean)
+    const programmeA = formulaire.programme ? new Date(formulaire.programme).toISOString() : undefined
     try {
-      const res = await fetch('/api/sms/send', {
+      const reponse = await fetch('/api/sms/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: recipients.length > 1 ? recipients : recipients[0] ?? '',
-          message: form.message,
-          cle_api: form.cle_api.trim(),
-          ...(scheduledAt ? { scheduled_at: scheduledAt } : {}),
+          to: destinataires.length > 1 ? destinataires : destinataires[0] ?? '',
+          message: formulaire.message,
+          cle_api: formulaire.cle_api.trim(),
+          ...(programmeA ? { scheduled_at: programmeA } : {}),
         }),
       })
-      const data = await res.json().catch(() => null)
-      if (res.ok) {
-        showToast(
-          'success',
-          scheduledAt
-            ? (data?.message ?? 'SMS programmé')
-            : recipients.length > 1 ? `${recipients.length} SMS mis en file` : `SMS mis en file → ${form.to.trim()}`
+      const donnees = await reponse.json().catch(() => null)
+      if (reponse.ok) {
+        afficherNotification(
+          'succes',
+          programmeA
+            ? (donnees?.message ?? 'SMS programmé')
+            : destinataires.length > 1 ? `${destinataires.length} SMS mis en file` : `SMS mis en file → ${formulaire.to.trim()}`
         )
-        setModalOpen(false)
-        setForm({ to: '', message: '', cle_api: form.cle_api, scheduled: '' })
-        fetchData()
+        setModaleOuverte(false)
+        setFormulaire({ to: '', message: '', cle_api: formulaire.cle_api, programme: '' })
+        chargerDonnees()
       } else {
-        showToast('error', data?.error ?? 'Erreur lors de l’envoi')
+        afficherNotification('erreur', donnees?.error ?? 'Erreur lors de l’envoi')
       }
     } catch {
-      showToast('error', 'Erreur réseau')
+      afficherNotification('erreur', 'Erreur réseau')
     } finally {
-      setSending(false)
+      setEnvoiEnCours(false)
     }
   }
 
-  if (loading) {
+  if (chargement) {
     return (
       <div className="flex h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-950">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
@@ -169,23 +169,23 @@ export default function DashboardPage() {
     )
   }
 
-  const recentTasks = [...tasks].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 8)
-  const feed = recentTasks.slice(0, 6)
-  const detailDevice = detailTask?.device_id ? devices.find((d) => d.id === detailTask.device_id) : null
-  const chartGrid = chartDark ? '#3f3f46' : '#e4e4e7'
-  const chartTick = chartDark ? '#a1a1aa' : '#71717a'
+  const tachesRecentes = [...taches].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 8)
+  const fil = tachesRecentes.slice(0, 6)
+  const appareilDetaille = tacheDetaillee?.device_id ? appareils.find((d) => d.id === tacheDetaillee.device_id) : null
+  const grilleGraphique = graphiqueSombre ? '#3f3f46' : '#e4e4e7'
+  const graduationGraphique = graphiqueSombre ? '#a1a1aa' : '#71717a'
 
   return (
-    <DashboardShell
-      title="Tableau de bord"
-      subtitle={`Actualisé à ${lastRefresh.toLocaleTimeString('fr-FR')} · auto 3 s`}
+    <CoquilleTableauDeBord
+      titre="Tableau de bord"
+      sousTitre={`Actualisé à ${derniereActualisation.toLocaleTimeString('fr-FR')} · auto 3 s`}
       actions={
         <>
-          <button onClick={() => fetchData()}
+          <button onClick={() => chargerDonnees()}
             className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-600 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700">
             <RefreshCw className="h-4 w-4" /> Actualiser
           </button>
-          <button onClick={() => setModalOpen(true)}
+          <button onClick={() => setModaleOuverte(true)}
             className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
             <Send className="h-4 w-4" /> Nouveau SMS
           </button>
@@ -195,10 +195,10 @@ export default function DashboardPage() {
       {/* KPI */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
-          { icon: <Smartphone className="h-5 w-5 text-emerald-600" />, label: 'Appareils en ligne', value: stats?.online_devices ?? 0, sub: `sur ${devices.length} enregistré(s)`, accent: 'bg-emerald-50 dark:bg-emerald-500/10' },
-          { icon: <CheckCircle2 className="h-5 w-5 text-blue-600" />, label: 'SMS envoyés', value: stats?.tasks_sent ?? 0, sub: 'toutes périodes', accent: 'bg-blue-50 dark:bg-blue-500/10' },
-          { icon: <Clock className="h-5 w-5 text-amber-600" />, label: 'En file d’attente', value: stats?.tasks_pending ?? 0, sub: 'en attente d’assignation', accent: 'bg-amber-50 dark:bg-amber-500/10' },
-          { icon: <XCircle className="h-5 w-5 text-red-600" />, label: 'Échecs', value: stats?.tasks_failed ?? 0, sub: 'à traiter', accent: 'bg-red-50 dark:bg-red-500/10' },
+          { icon: <Smartphone className="h-5 w-5 text-emerald-600" />, label: 'Appareils en ligne', value: statistiques?.online_devices ?? 0, sub: `sur ${appareils.length} enregistré(s)`, accent: 'bg-emerald-50 dark:bg-emerald-500/10' },
+          { icon: <CheckCircle2 className="h-5 w-5 text-blue-600" />, label: 'SMS envoyés', value: statistiques?.tasks_sent ?? 0, sub: 'toutes périodes', accent: 'bg-blue-50 dark:bg-blue-500/10' },
+          { icon: <Clock className="h-5 w-5 text-amber-600" />, label: 'En file d’attente', value: statistiques?.tasks_pending ?? 0, sub: 'en attente d’assignation', accent: 'bg-amber-50 dark:bg-amber-500/10' },
+          { icon: <XCircle className="h-5 w-5 text-red-600" />, label: 'Échecs', value: statistiques?.tasks_failed ?? 0, sub: 'à traiter', accent: 'bg-red-50 dark:bg-red-500/10' },
         ].map((k) => (
           <div key={k.label} className={`rounded-2xl bg-white p-5 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800 ${k.accent}`}>
             <div className="flex items-start justify-between">
@@ -220,21 +220,21 @@ export default function DashboardPage() {
             <BarChart3 className="h-4 w-4 text-zinc-400" /> Activité SMS — dernières 24 h
           </h2>
           <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-            {hourly.reduce((a, p) => a + p.count, 0)} SMS
+            {parHeure.reduce((a, p) => a + p.count, 0)} SMS
           </span>
         </div>
         <div className="h-56 w-full" suppressHydrationWarning>
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={hourly} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
+            <AreaChart data={parHeure} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
               <defs>
                 <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#2563eb" stopOpacity={0.35} />
                   <stop offset="100%" stopColor="#2563eb" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke={chartGrid} vertical={false} />
-              <XAxis dataKey="hour" tick={{ fill: chartTick, fontSize: 11 }} tickLine={false} axisLine={{ stroke: chartGrid }} interval="preserveStartEnd" />
-              <YAxis allowDecimals={false} tick={{ fill: chartTick, fontSize: 11 }} tickLine={false} axisLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={grilleGraphique} vertical={false} />
+              <XAxis dataKey="hour" tick={{ fill: graduationGraphique, fontSize: 11 }} tickLine={false} axisLine={{ stroke: grilleGraphique }} interval="preserveStartEnd" />
+              <YAxis allowDecimals={false} tick={{ fill: graduationGraphique, fontSize: 11 }} tickLine={false} axisLine={false} />
               <Tooltip formatter={(v) => [`${v ?? 0} SMS`, 'Envoyés']} />
               <Area type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} fill="url(#g)" />
             </AreaChart>
@@ -242,16 +242,16 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Devices + Activité */}
+      {/* Appareils + Activité */}
       <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
         <section className="rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800 xl:col-span-2">
           <div className="flex items-center gap-2 border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
             <Signal className="h-4 w-4 text-zinc-400" />
             <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Appareils connectés</h2>
-            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{devices.length}</span>
+            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{appareils.length}</span>
           </div>
-          {devices.length === 0 ? (
-            <EmptyState icon={<Smartphone className="h-9 w-9" />} title="Aucun appareil" hint="Installez l'app Android et associez-la au serveur." />
+          {appareils.length === 0 ? (
+            <EtatVide icone={<Smartphone className="h-9 w-9" />} titre="Aucun appareil" indice="Installez l'app Android et associez-la au serveur." />
           ) : (
             <table className="w-full text-sm">
               <thead>
@@ -261,7 +261,7 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/60">
-                {devices.map((d) => (
+                {appareils.map((d) => (
                   <tr key={d.id} className="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
@@ -271,9 +271,9 @@ export default function DashboardPage() {
                         <p className="font-medium text-zinc-800 dark:text-zinc-200">{d.nom}</p>
                       </div>
                     </td>
-                    <td className="px-5 py-3.5"><StatusBadge status={d.statut} config={DEVICE_STATUS} /></td>
+                    <td className="px-5 py-3.5"><BadgeStatut statut={d.statut} config={STATUTS_APPAREILS} /></td>
                     <td className="px-5 py-3.5">
-                      <Progress value={d.sms_last_hour} max={quota} showValue />
+                      <Progression valeur={d.sms_last_hour} max={quota} afficherValeur />
                     </td>
                     <td className="px-5 py-3.5 text-xs text-zinc-400">
                       {d.derniere_activite ? new Date(d.derniere_activite).toLocaleTimeString('fr-FR') : '—'}
@@ -292,15 +292,15 @@ export default function DashboardPage() {
             <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Flux d&apos;activité</h2>
           </div>
           <div className="p-3">
-            {feed.length === 0 ? (
-              <EmptyState icon={<Inbox className="h-8 w-8" />} title="Aucune activité" />
-            ) : feed.map((t) => (
-              <button key={t.id} onClick={() => setDetailTask(t)}
+            {fil.length === 0 ? (
+              <EtatVide icone={<Inbox className="h-8 w-8" />} titre="Aucune activité" />
+            ) : fil.map((t) => (
+              <button key={t.id} onClick={() => setTacheDetaillee(t)}
                 className="flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                {FEED_ICONS[t.statut] ?? <Clock className="h-3.5 w-3.5 text-zinc-400" />}
+                {ICONES_FIL[t.statut] ?? <Clock className="h-3.5 w-3.5 text-zinc-400" />}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-medium text-zinc-800 dark:text-zinc-200">{t.numero_destinataire}</p>
-                  <p className="truncate text-[11px] text-zinc-400">{TASK_STATUS[t.statut]?.label ?? t.statut}</p>
+                  <p className="truncate text-[11px] text-zinc-400">{STATUTS_TACHES[t.statut]?.label ?? t.statut}</p>
                 </div>
                 <span className="text-[11px] text-zinc-400">{new Date(t.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
               </button>
@@ -319,15 +319,15 @@ export default function DashboardPage() {
           </Link>
         </div>
         <div className="divide-y divide-zinc-50 dark:divide-zinc-800/60">
-          {recentTasks.map((t) => (
-            <button key={t.id} onClick={() => setDetailTask(t)}
+          {tachesRecentes.map((t) => (
+            <button key={t.id} onClick={() => setTacheDetaillee(t)}
               className="flex w-full items-center gap-4 px-5 py-3 text-left hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40">
               <span className="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t.numero_destinataire}</span>
               <span className="min-w-0 flex-1 truncate text-xs text-zinc-500 dark:text-zinc-400">{t.message}</span>
               {t.erreur && (
                 <span className="hidden max-w-40 truncate text-[11px] text-red-500 md:inline" title={t.erreur}>{t.erreur}</span>
               )}
-              <StatusBadge status={t.statut} config={TASK_STATUS} />
+              <BadgeStatut statut={t.statut} config={STATUTS_TACHES} />
               <span className="text-xs text-zinc-400">{new Date(t.created_at).toLocaleTimeString('fr-FR')}</span>
             </button>
           ))}
@@ -335,28 +335,28 @@ export default function DashboardPage() {
       </section>
 
       {/* ===== MODALE : fiche tâche (inspection) ===== */}
-      <Modal open={!!detailTask} onClose={() => setDetailTask(null)} wide
-        title="Détail de la tâche" subtitle="Traçabilité complète pour l'audit et le debug anti-doublon">
-        {detailTask && (
+      <Modale ouvert={!!tacheDetaillee} onFermer={() => setTacheDetaillee(null)} large
+        titre="Détail de la tâche" sousTitre="Traçabilité complète pour l'audit et le debug anti-doublon">
+        {tacheDetaillee && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <StatusBadge status={detailTask.statut} config={TASK_STATUS} />
-              {detailTask.erreur && (
+              <BadgeStatut statut={tacheDetaillee.statut} config={STATUTS_TACHES} />
+              {tacheDetaillee.erreur && (
                 <span className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
-                  {detailTask.erreur}
+                  {tacheDetaillee.erreur}
                 </span>
               )}
             </div>
             <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800/60">
-              <p className="text-lg font-bold text-zinc-900 dark:text-white">{detailTask.numero_destinataire}</p>
-              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{detailTask.message}</p>
+              <p className="text-lg font-bold text-zinc-900 dark:text-white">{tacheDetaillee.numero_destinataire}</p>
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{tacheDetaillee.message}</p>
             </div>
             <dl className="grid grid-cols-2 gap-3 text-xs">
               {[
-                ['Créée le', new Date(detailTask.created_at).toLocaleString('fr-FR')],
-                ['Mise à jour', new Date(detailTask.updated_at).toLocaleString('fr-FR')],
-                ['Appareil assigné', detailDevice?.nom ?? (detailTask.device_id ? 'inconnu' : '—')],
-                ['Statut serveur', detailTask.statut],
+                ['Créée le', new Date(tacheDetaillee.created_at).toLocaleString('fr-FR')],
+                ['Mise à jour', new Date(tacheDetaillee.updated_at).toLocaleString('fr-FR')],
+                ['Appareil assigné', appareilDetaille?.nom ?? (tacheDetaillee.device_id ? 'inconnu' : '—')],
+                ['Statut serveur', tacheDetaillee.statut],
               ].map(([k, v]) => (
                 <div key={k} className="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800/60">
                   <dt className="text-zinc-400">{k}</dt>
@@ -368,7 +368,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2 rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-700">
               <Hash className="h-3.5 w-3.5 text-zinc-400" />
               <span className="text-[11px] text-zinc-400">ID unique (idempotence) :</span>
-              <code className="flex-1 truncate font-mono text-[11px] text-zinc-600 dark:text-zinc-300">{detailTask.id}</code>
+              <code className="flex-1 truncate font-mono text-[11px] text-zinc-600 dark:text-zinc-300">{tacheDetaillee.id}</code>
             </div>
             <p className="text-[11px] leading-relaxed text-zinc-400">
               Cet identifiant garantit qu&apos;une re-délivrance (coupure réseau, redémarrage) ne provoque
@@ -376,41 +376,41 @@ export default function DashboardPage() {
             </p>
           </div>
         )}
-      </Modal>
+      </Modale>
 
       {/* ===== MODALE : envoi ===== */}
-      <Modal open={modalOpen} onClose={() => !sending && setModalOpen(false)}
-        title="Envoyer un SMS" subtitle="La tâche sera ajoutée à la file d'attente">
-        <form onSubmit={sendSMS} className="space-y-4">
-          <textarea required rows={3} placeholder="+261328725411&#10;+261331298765 (un par ligne)" value={form.to}
-            onChange={(e) => setForm({ ...form, to: e.target.value })}
+      <Modale ouvert={modaleOuverte} onFermer={() => !envoiEnCours && setModaleOuverte(false)}
+        titre="Envoyer un SMS" sousTitre="La tâche sera ajoutée à la file d'attente">
+        <form onSubmit={envoyerSms} className="space-y-4">
+          <textarea required rows={3} placeholder="+261328725411&#10;+261331298765 (un par ligne)" value={formulaire.to}
+            onChange={(e) => setFormulaire({ ...formulaire, to: e.target.value })}
             className="w-full resize-none rounded-lg border border-zinc-200 px-3 py-2 font-mono text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
           <div>
-            <textarea required rows={3} maxLength={160} placeholder="Votre message…" value={form.message}
-              onChange={(e) => setForm({ ...form, message: e.target.value })}
+            <textarea required rows={3} maxLength={160} placeholder="Votre message…" value={formulaire.message}
+              onChange={(e) => setFormulaire({ ...formulaire, message: e.target.value })}
               className="w-full resize-none rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
-            <p className="mt-1 text-right text-[11px] text-zinc-400">{form.message.length}/160</p>
+            <p className="mt-1 text-right text-[11px] text-zinc-400">{formulaire.message.length}/160</p>
           </div>
-          <input type="password" required value={form.cle_api}
-            onChange={(e) => setForm({ ...form, cle_api: e.target.value })}
+          <input type="password" required value={formulaire.cle_api}
+            onChange={(e) => setFormulaire({ ...formulaire, cle_api: e.target.value })}
             className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
           <div>
             <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
               Programmer l&apos;envoi (optionnel)
             </label>
-            <input type="datetime-local" value={form.scheduled}
-              onChange={(e) => setForm({ ...form, scheduled: e.target.value })}
+            <input type="datetime-local" value={formulaire.programme}
+              onChange={(e) => setFormulaire({ ...formulaire, programme: e.target.value })}
               className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
           </div>
-          <button type="submit" disabled={sending}
+          <button type="submit" disabled={envoiEnCours}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
-            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            {sending ? 'Envoi…' : 'Envoyer'}
+            {envoiEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            {envoiEnCours ? 'Envoi…' : 'Envoyer'}
           </button>
         </form>
-      </Modal>
+      </Modale>
 
-      <Toast toast={toast} />
-    </DashboardShell>
+      <Toast notification={notification} />
+    </CoquilleTableauDeBord>
   )
 }

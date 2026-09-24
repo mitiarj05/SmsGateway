@@ -4,26 +4,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 
-private val DarkColorScheme = darkColorScheme(
-    primary = AccentBlue,
-    secondary = AccentGreen,
-    tertiary = AccentAmber,
-    background = DarkBg,
-    surface = CardBg,
-    onPrimary = TextPrimary,
-    onSecondary = TextPrimary,
-    onBackground = TextPrimary,
-    onSurface = TextPrimary,
+private val SchemeCouleursSombres = darkColorScheme(
+    primary = BleuAccent,
+    secondary = VertAccent,
+    tertiary = AmbreAccent,
+    background = FondSombre,
+    surface = FondCarte,
+    onPrimary = TextePrincipal,
+    onSecondary = TextePrincipal,
+    onBackground = TextePrincipal,
+    onSurface = TextePrincipal,
 )
 
 @Composable
-fun SmsGatewayTheme(
-    darkTheme: Boolean = true, // interface forcée en sombre (dashboard)
-    content: @Composable () -> Unit
+fun ThemePasserelleSms(
+    themeSombre: Boolean = true, // interface forcée en sombre (tableau de bord)
+    contenu: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colorScheme = DarkColorScheme,
+        colorScheme = SchemeCouleursSombres,
         typography = Typography,
-        content = content
+        content = contenu
     )
 }

@@ -19,9 +19,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
       {/* Pas de script inline ici : Next 16 le refuse dans le layout.
-          Le thème s'initialise au montage (DashboardShell, /login) depuis
+           Le thème s'initialise au montage (CoquilleTableauDeBord, /login) depuis
           localStorage — persistant en navigation SPA. */}
       <body className="min-h-full flex flex-col">
         {children}
