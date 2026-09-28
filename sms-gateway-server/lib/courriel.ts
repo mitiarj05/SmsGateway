@@ -15,14 +15,17 @@ function obtenirTransporteur(): ReturnType<typeof nodemailer.createTransport> | 
   if (transporteur) return transporteur
   const hote = process.env.SMTP_HOST?.trim()
   const utilisateur = process.env.SMTP_USER?.trim()
-  const motDePasse = process.env.SMTP_PASS ?? ''
-  if (!hote || !utilisateur) return null
+  // Le mot de passe d'application Gmail s'affiche avec des espaces : on les retire.
+  const motDePasse = (process.env.SMTP_PASS ?? '').replace(/\s+/g, '')
+  if (!hote || !utilisateur || !motDePasse) return null
   const port = Number(process.env.SMTP_PORT ?? '587')
   const securise = (process.env.SMTP_SECURE ?? 'false').toLowerCase() === 'true'
   transporteur = nodemailer.createTransport({
     host: hote,
     port,
     secure: securise || port === 465,
+    // Gmail refuse souvent le greeting en IPv6 (421 Server busy) : on force IPv4.
+    family: 4,
     auth: { user: utilisateur, pass: motDePasse },
   })
   return transporteur
@@ -47,12 +50,20 @@ export async function envoyerCourriel(
   sujet: string,
   texte: string
 ): Promise<boolean> {
+  return (await envoyerCourrielDetaille(destinataire, sujet, texte)).ok
+}
+
+/** Version détaillée pour le bouton de test (renvoie la cause d'échec). */
+export async function envoyerCourrielDetaille(
+  destinataire: string,
+  sujet: string,
+  texte: string
+): Promise<{ ok: boolean; message: string }> {
   try {
     const transport = obtenirTransporteur()
     const expediteur = process.env.SMTP_FROM?.trim() || process.env.SMTP_USER?.trim() || ''
     if (!transport || !expediteur) {
-      console.warn('[courriel] SMTP non configuré — envoi ignoré')
-      return false
+      return { ok: false, message: 'SMTP non configuré (SMTP_HOST / SMTP_USER / SMTP_PASS manquants)' }
     }
     const html = texte
       .replace(/&/g, '&amp;')
@@ -67,10 +78,11 @@ export async function envoyerCourriel(
       text: texte,
       html: `<!DOCTYPE html><html lang="fr"><body style="font-family:system-ui,sans-serif">${html}</body></html>`,
     })
-    return true
+    return { ok: true, message: `E-mail accepté par ${process.env.SMTP_HOST} — vérifiez la boîte (et les spams)` }
   } catch (erreur) {
-    console.error('[courriel] échec envoi:', (erreur as Error).message)
-    return false
+    const message = (erreur as Error).message
+    console.error('[courriel] échec envoi:', message)
+    return { ok: false, message }
   }
 }
 

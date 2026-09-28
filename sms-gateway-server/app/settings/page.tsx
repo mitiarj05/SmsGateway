@@ -63,6 +63,9 @@ export default function PageParametres() {
   const [demandes, setDemandes] = useState<DemandeAcces[]>([])
   const [cleValidation, setCleValidation] = useState<string | null>(null)
   const [courrielValidation, setCourrielValidation] = useState(false)
+  const [emailTest, setEmailTest] = useState('')
+  const [resultatEmailTest, setResultatEmailTest] = useState<string | null>(null)
+  const [envoiTestEnCours, setEnvoiTestEnCours] = useState(false)
 
   const chargerDonnees = async () => {
     setActualisationEnCours(true)
@@ -253,6 +256,29 @@ export default function PageParametres() {
       }
     } catch {
       afficherNotification('erreur', 'Erreur réseau')
+    }
+  }
+
+  async function testerEmail(e: React.FormEvent) {
+    e.preventDefault()
+    setEnvoiTestEnCours(true)
+    setResultatEmailTest(null)
+    try {
+      const reponse = await fetch('/api/settings/test-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: emailTest.trim() }),
+      })
+      const donnees = await reponse.json().catch(() => null)
+      if (reponse.ok) {
+        setResultatEmailTest(`OK — ${donnees?.message ?? 'envoyé'}`)
+      } else {
+        setResultatEmailTest(`ÉCHEC — ${donnees?.error ?? 'erreur'}${donnees?.details ? ` : ${donnees.details}` : ''}`)
+      }
+    } catch {
+      setResultatEmailTest('ÉCHEC — erreur réseau')
+    } finally {
+      setEnvoiTestEnCours(false)
     }
   }
 
@@ -463,6 +489,29 @@ export default function PageParametres() {
                 </li>
               ))}
             </ul>
+          )}
+        </section>
+
+        {/* E-mail transactionnel */}
+        <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
+          <div className="mb-1 flex items-center gap-2">
+            <Send className="h-4 w-4 text-zinc-400" />
+            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">E-mail transactionnel (clés API)</h2>
+          </div>
+          <p className="mb-4 text-xs text-zinc-400">Requiert SMTP_HOST / SMTP_USER / SMTP_PASS (redémarrage ou redéploiement après ajout).</p>
+          <form onSubmit={testerEmail} className="flex gap-2">
+            <input type="email" required placeholder="vous@exemple.mg" value={emailTest}
+              onChange={(e) => setEmailTest(e.target.value)}
+              className="flex-1 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
+            <button type="submit" disabled={envoiTestEnCours}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
+              {envoiTestEnCours ? '…' : 'Tester'}
+            </button>
+          </form>
+          {resultatEmailTest && (
+            <p className={`mt-2 text-xs font-medium ${resultatEmailTest.startsWith('OK') ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+              {resultatEmailTest}
+            </p>
           )}
         </section>
 
