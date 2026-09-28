@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   MessageSquare, User, Lock, Eye, EyeOff, Loader2,
@@ -123,7 +124,7 @@ export default function PageConnexion() {
             Connexion
           </h1>
           <p className="mt-1 text-sm text-zinc-400">
-            Accédez au panneau de contrôle de votre passerelle SMS.
+            Espace <span className="font-semibold text-zinc-600 dark:text-zinc-300">administrateur</span> — accédez au panneau de contrôle de votre passerelle SMS.
           </p>
 
           {/* Erreur */}
@@ -210,7 +211,17 @@ export default function PageConnexion() {
           </form>
 
           <p className="mt-8 text-center text-xs text-zinc-400">
-            Accès réservé — contactez votre administrateur pour obtenir un compte.
+            Vous êtes client ?{' '}
+            <Link href="/espace/login" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+              Accédez à votre espace
+            </Link>
+            <br />
+            <span className="mt-1 inline-block">
+              Pas encore de compte ?{' '}
+              <Link href="/demande-acces" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+                Demandez l&apos;accès
+              </Link>
+            </span>
           </p>
         </div>
       </div>

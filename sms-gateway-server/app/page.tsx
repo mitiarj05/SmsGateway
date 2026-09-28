@@ -23,6 +23,10 @@ export default function PageAccueil() {
           </Link>
         </nav>
         <div className="flex items-center gap-3">
+          <Link href="/espace/login"
+            className="hidden rounded-lg border border-slate-500/50 px-4 py-2 text-sm text-slate-200 hover:bg-white/5 sm:block">
+            Espace client
+          </Link>
           <Link href="/login"
             className="rounded-lg border border-slate-500/50 px-4 py-2 text-sm text-slate-200 hover:bg-white/5">
             Se connecter
@@ -74,6 +78,17 @@ export default function PageAccueil() {
               Partenaire sans intégration ?{' '}
               <Link href="/send" className="font-semibold text-blue-300 hover:text-white hover:underline">
                 Envoyez via le formulaire →
+              </Link>
+            </p>
+            <p className="mt-2 text-sm text-slate-400">
+              Déjà client ?{' '}
+              <Link href="/espace/login" className="font-semibold text-blue-300 hover:text-white hover:underline">
+                Accédez à votre espace →
+              </Link>
+              {' · '}
+              Pas encore client ?{' '}
+              <Link href="/demande-acces" className="font-semibold text-blue-300 hover:text-white hover:underline">
+                Demandez l&apos;accès →
               </Link>
             </p>
             {/* stats */}
@@ -230,6 +245,10 @@ export default function PageAccueil() {
         © 2026 SMSIKA — Projet interne · Passerelle SMS autohébergée
         {' · '}
         <Link href="/send" className="text-slate-400 hover:text-white">Envoi partenaire</Link>
+        {' · '}
+        <Link href="/espace/login" className="text-slate-400 hover:text-white">Espace client</Link>
+        {' · '}
+        <Link href="/demande-acces" className="text-slate-400 hover:text-white">Demander l&apos;accès</Link>
       </footer>
     </div>
   )

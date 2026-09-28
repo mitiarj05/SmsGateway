@@ -76,6 +76,23 @@ function estApiPublique(pathname: string): boolean {
   return false
 }
 
+/**
+ * Session client (cookie sms_client, format v1.<idApplication>.<exp>.<sig>).
+ * Dupliquée ici en Web Crypto car le proxy tourne hors runtime Node
+ * (même raison que sessionValide). Retourne l'id_application ou null.
+ */
+async function sessionClientValide(request: NextRequest, secret: string): Promise<string | null> {
+  const valeur = request.cookies.get('sms_client')?.value
+  if (!valeur) return null
+  const parties = valeur.split('.')
+  if (parties.length !== 4 || parties[0] !== 'v1') return null
+  const expiration = Number(parties[2])
+  if (!Number.isFinite(expiration) || expiration <= Math.floor(Date.now() / 1000)) return null
+  const sigAttendue = await hmacHex(secret, `${parties[0]}.${parties[1]}.${parties[2]}`)
+  if (parties[3].length !== sigAttendue.length) return null
+  return comparaisonSure(parties[3], sigAttendue) ? parties[1] : null
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -90,6 +107,27 @@ export async function proxy(request: NextRequest) {
   // En prod (Vercel), définir ADMIN_USER + ADMIN_PASSWORD.
   if (!utilisateur || !motDePasse) {
     console.warn('[proxy] ADMIN_USER/ADMIN_PASSWORD non configurés — accès dashboard non protégé')
+    return NextResponse.next()
+  }
+
+  // Espace client : login public, reste cloisonné par session client.
+  if (pathname === '/espace/login' || pathname === '/api/espace/auth/login') {
+    return NextResponse.next()
+  }
+  if (pathname === '/espace' || pathname.startsWith('/espace/')) {
+    const appId = await sessionClientValide(request, motDePasse)
+    if (!appId) {
+      const loginUrl = new URL('/espace/login', request.url)
+      loginUrl.searchParams.set('next', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+    return NextResponse.next()
+  }
+  if (pathname.startsWith('/api/espace/')) {
+    const appId = await sessionClientValide(request, motDePasse)
+    if (!appId) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
     return NextResponse.next()
   }
 
@@ -146,5 +184,9 @@ export const config = {
     '/automatismes/:path*',
     '/api/settings',
     '/api/settings/:path*',
+    '/espace',
+    '/espace/:path*',
+    '/api/espace',
+    '/api/espace/:path*',
   ],
 }

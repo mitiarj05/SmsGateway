@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Settings as IconeParametres, Send, Loader2, X, KeyRound, Trash2, Bell, Clock, RefreshCw } from 'lucide-react'
+import { Settings as IconeParametres, Send, Loader2, X, KeyRound, Trash2, Bell, Clock, RefreshCw, UserPlus } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 import { Appareil, Toast } from '../../composants/interface'
 import EditeurNotifications from '../../composants/EditeurNotifications'
@@ -15,6 +15,15 @@ interface ClientApi {
   evenements_notification: string[]
   notifications_actives: boolean
   secret_defini: boolean
+}
+
+interface DemandeAcces {
+  id: string
+  nom: string
+  contact: string
+  usage_prevu: string
+  statut: string
+  date_creation: string
 }
 
 export default function PageParametres() {
@@ -51,18 +60,25 @@ export default function PageParametres() {
   const [cleApiTest, setCleApiTest] = useState('')
   const [envoiEnCours, setEnvoiEnCours] = useState(false)
 
+  const [demandes, setDemandes] = useState<DemandeAcces[]>([])
+  const [cleValidation, setCleValidation] = useState<string | null>(null)
+  const [courrielValidation, setCourrielValidation] = useState(false)
+
   const chargerDonnees = async () => {
     setActualisationEnCours(true)
     try {
-      const [reponseAppareils, reponseClients, reponseParams] = await Promise.all([
+      const [reponseAppareils, reponseClients, reponseParams, reponseDemandes] = await Promise.all([
         fetch('/api/devices'),
         fetch('/api/api-clients'),
         fetch('/api/settings'),
+        fetch('/api/demandes?statut=EN_ATTENTE'),
       ])
       const donneesAppareils = await reponseAppareils.json()
       const donneesClients = await reponseClients.json()
+      const donneesDemandes = await reponseDemandes.json().catch(() => null)
       if (donneesAppareils.devices) setAppareils(donneesAppareils.devices)
       if (donneesClients.clients) setClients(donneesClients.clients)
+      if (donneesDemandes?.demandes) setDemandes(donneesDemandes.demandes)
       if (reponseParams.ok) {
         const donneesParams = await reponseParams.json()
         if (typeof donneesParams.settings?.sms_quota_per_hour === 'number') {
@@ -205,8 +221,42 @@ export default function PageParametres() {
     }
   }
 
-  async function revoquerClient(id: string, nom: string) {
-    if (!confirm(`Révoquer la clé « ${nom} » ?`)) return
+  async function validerDemande(id: string, nom: string) {
+    if (!confirm(`Valider « ${nom} » ? Une clé API sera créée (quota 100/mois).`)) return
+    setCleValidation(null)
+    setCourrielValidation(false)
+    try {
+      const reponse = await fetch(`/api/demandes/${id}/valider`, { method: 'POST' })
+      const donnees = await reponse.json().catch(() => null)
+      if (reponse.ok && donnees?.client?.cle_api) {
+        setCleValidation(`${donnees.client.nom} : ${donnees.client.cle_api}`)
+        setCourrielValidation(donnees.courriel_envoye === true)
+        afficherNotification('succes', donnees.message ?? 'Client créé')
+        chargerDonnees()
+      } else {
+        afficherNotification('erreur', donnees?.error ?? 'Validation impossible')
+      }
+    } catch {
+      afficherNotification('erreur', 'Erreur réseau')
+    }
+  }
+
+  async function refuserDemande(id: string, nom: string) {
+    if (!confirm(`Refuser « ${nom} » ?`)) return
+    try {
+      const reponse = await fetch(`/api/demandes/${id}/refuser`, { method: 'POST' })
+      if (reponse.ok) {
+        afficherNotification('succes', 'Demande refusée')
+        chargerDonnees()
+      } else {
+        afficherNotification('erreur', 'Refus impossible')
+      }
+    } catch {
+      afficherNotification('erreur', 'Erreur réseau')
+    }
+  }
+
+  async function revoquerClient(id: string, nom: string) {    if (!confirm(`Révoquer la clé « ${nom} » ?`)) return
     try {
       const reponse = await fetch(`/api/api-clients/${id}`, { method: 'DELETE' })
       if (reponse.ok) {
@@ -367,6 +417,52 @@ export default function PageParametres() {
                 </dd>
               </div>
             </dl>
+          )}
+        </section>
+
+        {/* Demandes d'accès */}
+        <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
+          <div className="mb-4 flex items-center gap-2">
+            <UserPlus className="h-4 w-4 text-zinc-400" />
+            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Demandes d&apos;accès</h2>
+            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{demandes.length}</span>
+          </div>
+          {cleValidation && (
+            <div className="mb-4 rounded-lg bg-amber-50 p-3 ring-1 ring-amber-600/20 dark:bg-amber-500/10">
+              <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                {courrielValidation
+                  ? 'Clé envoyée par e-mail au client (copie de secours, affichée une seule fois) :'
+                  : 'Copiez cette clé maintenant (affichée une seule fois) :'}
+              </p>
+              <code className="mt-1 block break-all font-mono text-xs text-amber-900 dark:text-amber-200">{cleValidation}</code>
+            </div>
+          )}
+          {demandes.length === 0 ? (
+            <p className="py-2 text-center text-xs text-zinc-400">Aucune demande en attente.</p>
+          ) : (
+            <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              {demandes.map((d) => (
+                <li key={d.id} className="py-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{d.nom}</p>
+                      <p className="truncate text-xs text-zinc-400">{d.contact} · {new Date(d.date_creation).toLocaleDateString('fr-FR')}</p>
+                    </div>
+                    <div className="flex shrink-0 gap-1.5">
+                      <button onClick={() => validerDemande(d.id, d.nom)}
+                        className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700">
+                        Valider
+                      </button>
+                      <button onClick={() => refuserDemande(d.id, d.nom)}
+                        className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs text-zinc-500 hover:bg-red-50 hover:text-red-600 dark:border-zinc-700 dark:text-zinc-400">
+                        Refuser
+                      </button>
+                    </div>
+                  </div>
+                  <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{d.usage_prevu}</p>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
 
