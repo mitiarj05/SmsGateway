@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { promises as dns } from 'dns'
 
 /**
  * Envoi d'e-mails transactionnels (clé API après validation, etc.).
@@ -11,7 +12,7 @@ import nodemailer from 'nodemailer'
 
 let transporteur: ReturnType<typeof nodemailer.createTransport> | null = null
 
-function obtenirTransporteur(): ReturnType<typeof nodemailer.createTransport> | null {
+async function obtenirTransporteur(): Promise<ReturnType<typeof nodemailer.createTransport> | null> {
   if (transporteur) return transporteur
   const hote = process.env.SMTP_HOST?.trim()
   const utilisateur = process.env.SMTP_USER?.trim()
@@ -20,20 +21,31 @@ function obtenirTransporteur(): ReturnType<typeof nodemailer.createTransport> | 
   if (!hote || !utilisateur || !motDePasse) return null
   const port = Number(process.env.SMTP_PORT ?? '587')
   const securise = (process.env.SMTP_SECURE ?? 'false').toLowerCase() === 'true'
+  // Gmail refuse souvent le greeting en IPv6 (421 Server busy) : on résout
+  // en IPv4 d'abord, en gardant le nom pour SNI/vérification du certificat.
+  let hoteConnexion = hote
+  try {
+    const ips = await dns.resolve4(hote)
+    if (ips.length > 0) hoteConnexion = ips[0]
+  } catch {
+    // Pas d'IPv4 résoluble : on garde le nom d'hôte tel quel.
+  }
   transporteur = nodemailer.createTransport({
-    host: hote,
+    host: hoteConnexion,
     port,
     secure: securise || port === 465,
-    // Gmail refuse souvent le greeting en IPv6 (421 Server busy) : on force IPv4.
-    family: 4,
+    tls: { servername: hote },
     auth: { user: utilisateur, pass: motDePasse },
   })
   return transporteur
 }
 
-/** Configure (true) ou non ? */
+/** Config présent (true) ou non ? (sans construire le transporteur) */
 export function courrielConfigure(): boolean {
-  return obtenirTransporteur() !== null
+  const hote = process.env.SMTP_HOST?.trim()
+  const utilisateur = process.env.SMTP_USER?.trim()
+  const motDePasse = (process.env.SMTP_PASS ?? '').replace(/\s+/g, '')
+  return !!(hote && utilisateur && motDePasse)
 }
 
 /** Adresse e-mail plausible (le contact peut aussi être un téléphone). */
@@ -60,7 +72,7 @@ export async function envoyerCourrielDetaille(
   texte: string
 ): Promise<{ ok: boolean; message: string }> {
   try {
-    const transport = obtenirTransporteur()
+    const transport = await obtenirTransporteur()
     const expediteur = process.env.SMTP_FROM?.trim() || process.env.SMTP_USER?.trim() || ''
     if (!transport || !expediteur) {
       return { ok: false, message: 'SMTP non configuré (SMTP_HOST / SMTP_USER / SMTP_PASS manquants)' }
