@@ -7,6 +7,7 @@ const versContrat = (c: {
   id: string; nom: string; cle_api: string; date_creation: string
   url_notification?: string | null; secret_notification?: string | null
   evenements_notification?: string[] | null; notifications_actives?: boolean | null
+  quota_mensuel?: number | null
 }) => ({
   id: c.id,
   nom: c.nom,
@@ -16,6 +17,7 @@ const versContrat = (c: {
   evenements_notification: c.evenements_notification ?? [],
   notifications_actives: c.notifications_actives ?? true,
   secret_defini: !!c.secret_notification,
+  quota_mensuel: c.quota_mensuel ?? null,
 })
 
 /** GET /api/api-clients — liste les clés API */
@@ -23,7 +25,7 @@ export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
       .from('applications')
-      .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives')
+      .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives, quota_mensuel')
       .order('date_creation', { ascending: false })
 
     if (error) {
@@ -57,7 +59,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabaseAdmin
       .from('applications')
       .insert({ nom: nom.trim(), cle_api })
-      .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives')
+      .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives, quota_mensuel')
       .single()
 
     if (error) {

@@ -16,7 +16,7 @@ export async function GET(
   const { code } = await params
 
   const { data: lien } = await supabaseAdmin
-      .from('liens')
+    .from('liens')
     .select('id, id_application, numero_destinataire, statut, date_clic')
     .eq('id', code)
     .single()

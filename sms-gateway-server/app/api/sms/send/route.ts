@@ -6,6 +6,8 @@ import { obtenirDisponibiliteAppareil } from '@/lib/selection-appareil'
 import { expirerEnAttentePerimees } from '@/lib/expiration-attente'
 import { promouvoirProgrammes } from '@/lib/programmes'
 import { genererCode, urlPublique } from '@/lib/liens'
+import { compterEnvoisMois, moisActuel } from '@/lib/facturation'
+import { numeroBloque } from '@/lib/automatismes'
 import { STATUT_TACHE } from '@/lib/statuts'
 
 export async function POST(request: NextRequest) {
@@ -23,7 +25,7 @@ export async function POST(request: NextRequest) {
       )
     }
     const indexInvalides: number[] = []
-    const numeros = destinatairesBruts.map((r, i) => {
+    let numeros = destinatairesBruts.map((r, i) => {
       if (typeof r !== 'string' || r.trim().length === 0) {
         indexInvalides.push(i)
         return ''
@@ -63,6 +65,44 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       )
     }
+
+    // 2bis. Quota mensuel du client (facturation) : refusé AVANT toute création.
+    const { data: ficheClient } = await supabaseAdmin
+      .from('applications')
+      .select('quota_mensuel')
+      .eq('id', client.id)
+      .single()
+    const quotaMensuel = (ficheClient as { quota_mensuel: number | null } | null)?.quota_mensuel ?? null
+    if (quotaMensuel !== null) {
+      const utiliseMois = await compterEnvoisMois(client.id, moisActuel())
+      if (utiliseMois >= quotaMensuel) {
+        return NextResponse.json(
+          {
+            error: `Quota mensuel atteint (${utiliseMois}/${quotaMensuel} SMS). Contactez l'administrateur.`,
+            quota_mensuel: quotaMensuel,
+            utilise_mois: utiliseMois,
+          },
+          { status: 429 }
+        )
+      }
+    }
+
+    // 2ter. Désinscriptions STOP : numéros bloqués ignorés (jamais d'envoi).
+    const numerosBloques: string[] = []
+    for (const numero of numeros) {
+      if (await numeroBloque(numero, client.id)) numerosBloques.push(numero)
+    }
+    if (numerosBloques.length > 0) {
+      numeros = numeros.filter((n) => !numerosBloques.includes(n))
+      console.log(`[sms/send] ${numerosBloques.length} destinataire(s) désinscrit(s) ignoré(s)`)
+    }
+    if (numeros.length === 0) {
+      return NextResponse.json(
+        { error: 'Tous les destinataires sont désinscrits (STOP)', bloques: numerosBloques },
+        { status: 403 }
+      )
+    }
+    const bloques = numerosBloques
 
     // Expiration des EN_ATTENTE trop anciens + promotion des PROGRAMME
     // (ne bloquent jamais l'envoi)
@@ -218,6 +258,7 @@ export async function POST(request: NextRequest) {
           count: tachesCreees.length,
           tasks: tachesCreees,
           ...(avecLien ? { liens: liensCrees } : {}),
+          ...(bloques.length > 0 ? { bloques } : {}),
           scheduled_for: programmePour.toISOString(),
           push_sent: false,
           client: { id: client.id, nom: client.nom },
@@ -231,6 +272,7 @@ export async function POST(request: NextRequest) {
           message: 'SMS mis en file d\'attente',
           task: tachesCreees[0],
           ...(avecLien ? { liens: liensCrees } : {}),
+          ...(bloques.length > 0 ? { bloques } : {}),
           push_sent: pushEnvoye,
           device_selected: appareilSelectionne,
           client: { id: client.id, nom: client.nom },
@@ -244,6 +286,7 @@ export async function POST(request: NextRequest) {
         count: tachesCreees.length,
         tasks: tachesCreees,
         ...(avecLien ? { liens: liensCrees } : {}),
+        ...(bloques.length > 0 ? { bloques } : {}),
         push_sent: pushEnvoye,
         device_selected: appareilSelectionne,
         client: { id: client.id, nom: client.nom },

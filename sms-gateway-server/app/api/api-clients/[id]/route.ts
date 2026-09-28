@@ -48,7 +48,8 @@ export async function DELETE(
 /**
  * PATCH /api/api-clients/[id] — configuration webhooks.
  * Corps: { url_notification?: string | null, evenements_notification?: string[],
- *   notifications_actives?: boolean, regenerer_secret?: boolean, tester?: boolean }
+ *   notifications_actives?: boolean, quota_mensuel?: number | null,
+ *   regenerer_secret?: boolean, tester?: boolean }
  * Le secret n'est renvoyé en clair QU'À sa (re)génération.
  */
 export async function PATCH(
@@ -97,6 +98,13 @@ export async function PATCH(
         return NextResponse.json({ error: 'Le champ "notifications_actives" doit être un booléen' }, { status: 400 })
       }
       maj.notifications_actives = corps.notifications_actives
+    }
+    if ('quota_mensuel' in corps) {
+      const quota = corps.quota_mensuel
+      if (quota !== null && (!Number.isInteger(quota) || (quota as number) < 1)) {
+        return NextResponse.json({ error: 'Le champ "quota_mensuel" doit être un entier ≥ 1 ou null (illimité)' }, { status: 400 })
+      }
+      maj.quota_mensuel = quota
     }
 
     let secretVisible: string | null = null

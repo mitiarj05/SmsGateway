@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 import {
   MessageSquare, Smartphone, Inbox, History, Settings, LayoutDashboard,
-  Moon, Sun, ChevronRight, Bell, LogOut, Search, AlertTriangle, X, UserPlus,
+  Moon, Sun, ChevronRight, Bell, LogOut, Search, AlertTriangle, X, UserPlus, Receipt, Bot,
 } from 'lucide-react'
 import { Modale } from './interface'
 import { useTheme } from '../lib/use-theme'
@@ -17,6 +17,8 @@ const NAVIGATION = [
   { href: '/devices/add', icone: UserPlus, etiquette: 'Ajouter' },
   { href: '/queue', icone: Inbox, etiquette: 'File d’attente' },
   { href: '/inbox', icone: MessageSquare, etiquette: 'Réception' },
+  { href: '/facturation', icone: Receipt, etiquette: 'Facturation' },
+  { href: '/automatismes', icone: Bot, etiquette: 'Automatismes' },
   { href: '/history', icone: History, etiquette: 'Historique' },
   { href: '/settings', icone: Settings, etiquette: 'Paramètres' },
 ]
