@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Bot, Trash2, Plus } from 'lucide-react'
+import { Bot, Trash2, Plus, Ban } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import { Toast } from '../../../composants/interface'
 
@@ -15,6 +15,7 @@ interface Regle {
 
 export default function PageAutomatismesEspace() {
   const [regles, setRegles] = useState<Regle[]>([])
+  const [blocages, setBlocages] = useState<{ id: string; numero_destinataire: string; motif: string; date_creation: string }[]>([])
   const [chargement, setChargement] = useState(true)
   const [motCle, setMotCle] = useState('')
   const [reponseRegle, setReponseRegle] = useState('')
@@ -28,9 +29,14 @@ export default function PageAutomatismesEspace() {
 
   const chargerDonnees = useCallback(async () => {
     try {
-      const reponse = await fetch('/api/espace/automatismes')
-      const donnees = await reponse.json()
-      if (donnees.regles) setRegles(donnees.regles)
+      const [reponseRegles, reponseBlocages] = await Promise.all([
+        fetch('/api/espace/automatismes'),
+        fetch('/api/espace/blocages'),
+      ])
+      const donneesRegles = await reponseRegles.json()
+      const donneesBlocages = await reponseBlocages.json()
+      if (donneesRegles.regles) setRegles(donneesRegles.regles)
+      if (donneesBlocages.blocages) setBlocages(donneesBlocages.blocages)
     } finally {
       setChargement(false)
     }
@@ -101,7 +107,8 @@ export default function PageAutomatismesEspace() {
       titre="Automatismes"
       sousTitre={`${regles.length} règle(s) · STOP / START gérés par le système`}
     >
-      <section className="max-w-3xl rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
         <div className="mb-4 flex items-center gap-2">
           <Bot className="h-4 w-4 text-zinc-400" />
           <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Mes réponses automatiques</h2>
@@ -149,6 +156,30 @@ export default function PageAutomatismesEspace() {
           {regles.length === 0 && <p className="py-4 text-center text-xs text-zinc-400">Aucune règle.</p>}
         </ul>
       </section>
+
+      <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
+        <div className="mb-2 flex items-center gap-2">
+          <Ban className="h-4 w-4 text-zinc-400" />
+          <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Numéros désinscrits vous concernant</h2>
+          <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{blocages.length}</span>
+        </div>
+        <p className="mb-3 text-xs text-zinc-400">
+          Ils ne reçoivent plus vos SMS (STOP). Pour réinscrire un numéro, contactez votre administrateur.
+        </p>
+        {blocages.length === 0 ? (
+          <p className="py-2 text-center text-xs text-zinc-400">Aucun numéro bloqué.</p>
+        ) : (
+          <ul className="max-h-96 divide-y divide-zinc-100 overflow-y-auto dark:divide-zinc-800">
+            {blocages.map((b) => (
+              <li key={b.id} className="flex items-center justify-between py-2">
+                <span className="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">{b.numero_destinataire}</span>
+                <span className="text-[11px] text-zinc-400">{b.motif} · {new Date(b.date_creation).toLocaleDateString('fr-FR')}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+      </div>
 
       <Toast notification={notification} />
     </CoquilleEspace>

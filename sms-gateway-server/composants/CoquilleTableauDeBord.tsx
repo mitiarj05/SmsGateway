@@ -271,6 +271,25 @@ export default function CoquilleTableauDeBord({ titre, sousTitre, actions, child
           </div>
         </header>
 
+        {/* Navigation mobile (la sidebar est masquée sous md) */}
+        <nav className="flex gap-1 overflow-x-auto border-b border-zinc-200 bg-white px-3 py-2 md:hidden dark:border-zinc-800 dark:bg-zinc-900">
+          {NAVIGATION.map((item) => {
+            const actif = chemin === item.href ||
+              (item.href !== '/devices' && chemin.startsWith(item.href + '/'))
+            return (
+              <Link key={item.href} href={item.href}
+                className={`flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium ${
+                  actif
+                    ? 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400'
+                    : 'text-zinc-500 dark:text-zinc-400'
+                }`}>
+                <item.icone className="h-3.5 w-3.5" />
+                {item.etiquette}
+              </Link>
+            )
+          })}
+        </nav>
+
         {/* Bannière alerte file */}
         {afficherBanniere && (
           <div className="flex items-center gap-3 border-b border-amber-200 bg-amber-50 px-6 py-2.5 text-sm text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300">

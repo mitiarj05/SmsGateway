@@ -337,7 +337,7 @@ export default function PageParametres() {
         </>
       }
     >
-      <div className="grid max-w-4xl grid-cols-1 gap-4 xl:grid-cols-2">
+      <div className="grid max-w-6xl grid-cols-1 gap-4 xl:grid-cols-2">
         {/* Clé API locale */}
         <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
           <div className="mb-4 flex items-center gap-2">

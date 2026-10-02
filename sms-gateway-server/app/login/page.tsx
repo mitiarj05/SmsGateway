@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
-  MessageSquare, User, Lock, Eye, EyeOff, Loader2,
+  MessageSquare, User, Lock, Eye, EyeOff, Loader2, KeyRound,
   AlertTriangle, Moon, Sun, CheckCircle2, ArrowRight,
 } from 'lucide-react'
 import { useTheme } from '../../lib/use-theme'
@@ -18,10 +18,12 @@ function destinationSure(brute: string | null): string {
 export default function PageConnexion() {
   const routeur = useRouter()
 
+  const [onglet, setOnglet] = useState<'admin' | 'client'>('admin')
   const [utilisateur, setUtilisateur] = useState('')
   const [motDePasse, setMotDePasse] = useState('')
   const [afficherMotDePasse, setAfficherMotDePasse] = useState(false)
   const [seSouvenir, setSeSouvenir] = useState(true)
+  const [cleApi, setCleApi] = useState('')
   const [chargement, setChargement] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
   const [destination, setDestination] = useState('/dashboard')
@@ -31,6 +33,12 @@ export default function PageConnexion() {
     setDestination(destinationSure(new URLSearchParams(window.location.search).get('next')))
   }, [])
 
+  function changerOnglet(prochain: 'admin' | 'client') {
+    setOnglet(prochain)
+    setErreur(null)
+    setDestination(prochain === 'client' ? '/espace' : '/dashboard')
+  }
+
   async function gererSoumission(e: React.FormEvent) {
     e.preventDefault()
     setErreur(null)
@@ -38,17 +46,31 @@ export default function PageConnexion() {
     try {
       // La session est posée en cookie httpOnly par le serveur :
       // rien à stocker côté client.
-      const reponse = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ utilisateur, mot_de_passe: motDePasse, se_souvenir: seSouvenir }),
-      })
-      const donnees = await reponse.json().catch(() => null)
-      if (!reponse.ok) {
-        setErreur(donnees?.error ?? 'Identifiants incorrects')
-        return
+      if (onglet === 'admin') {
+        const reponse = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ utilisateur, mot_de_passe: motDePasse, se_souvenir: seSouvenir }),
+        })
+        const donnees = await reponse.json().catch(() => null)
+        if (!reponse.ok) {
+          setErreur(donnees?.error ?? 'Identifiants incorrects')
+          return
+        }
+        routeur.replace(destination.startsWith('/espace') ? '/dashboard' : destination)
+      } else {
+        const reponse = await fetch('/api/espace/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cle_api: cleApi.trim() }),
+        })
+        const donnees = await reponse.json().catch(() => null)
+        if (!reponse.ok) {
+          setErreur(donnees?.error ?? 'Clé API invalide')
+          return
+        }
+        routeur.replace(destination.startsWith('/espace') ? destination : '/espace')
       }
-      routeur.replace(destination)
     } catch {
       setErreur('Impossible de joindre le serveur')
     } finally {
@@ -124,8 +146,27 @@ export default function PageConnexion() {
             Connexion
           </h1>
           <p className="mt-1 text-sm text-zinc-400">
-            Espace <span className="font-semibold text-zinc-600 dark:text-zinc-300">administrateur</span> — accédez au panneau de contrôle de votre passerelle SMS.
+            {onglet === 'admin'
+              ? <>Espace <span className="font-semibold text-zinc-600 dark:text-zinc-300">administrateur</span> — panneau de contrôle de la passerelle.</>
+              : <>Espace <span className="font-semibold text-zinc-600 dark:text-zinc-300">client</span> — votre clé API suffit.</>}
           </p>
+
+          {/* Onglets admin / client */}
+          <div className="mt-5 grid grid-cols-2 gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-800">
+            {(['admin', 'client'] as const).map((o) => (
+              <button
+                key={o}
+                type="button"
+                onClick={() => changerOnglet(o)}
+                className={`rounded-lg py-2 text-sm font-semibold transition ${
+                  onglet === o
+                    ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-white'
+                    : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200'
+                }`}>
+                {o === 'admin' ? 'Administrateur' : 'Client'}
+              </button>
+            ))}
+          </div>
 
           {/* Erreur */}
           {erreur && (
@@ -136,6 +177,8 @@ export default function PageConnexion() {
           )}
 
           <form onSubmit={gererSoumission} className="mt-6 space-y-4">
+            {onglet === 'admin' ? (
+              <>
             {/* Identifiant */}
             <div>
               <label htmlFor="utilisateur" className="mb-1.5 block text-xs font-semibold text-zinc-600 dark:text-zinc-400">
@@ -193,6 +236,28 @@ export default function PageConnexion() {
               />
               <span className="text-xs text-zinc-500 dark:text-zinc-400">Rester connecté sur cet appareil (7 jours)</span>
             </label>
+              </>
+            ) : (
+              <div>
+                <label htmlFor="cleApi" className="mb-1.5 block text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                  Clé API
+                </label>
+                <div className="relative">
+                  <KeyRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                  <input
+                    id="cleApi"
+                    type="password"
+                    required
+                    autoComplete="off"
+                    placeholder="cle_…"
+                    value={cleApi}
+                    onChange={(e) => setCleApi(e.target.value)}
+                    className="w-full rounded-lg border border-zinc-200 bg-white py-2.5 pl-10 pr-3 font-mono text-sm text-zinc-900 placeholder-zinc-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  />
+                </div>
+                <p className="mt-1.5 text-xs text-zinc-400">Transmise par votre administrateur après validation de votre demande.</p>
+              </div>
+            )}
 
             {/* Bouton */}
             <button
@@ -211,17 +276,10 @@ export default function PageConnexion() {
           </form>
 
           <p className="mt-8 text-center text-xs text-zinc-400">
-            Vous êtes client ?{' '}
-            <Link href="/espace/login" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
-              Accédez à votre espace
+            Pas encore de compte ?{' '}
+            <Link href="/demande-acces" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
+              Demandez l&apos;accès
             </Link>
-            <br />
-            <span className="mt-1 inline-block">
-              Pas encore de compte ?{' '}
-              <Link href="/demande-acces" className="font-medium text-blue-600 hover:underline dark:text-blue-400">
-                Demandez l&apos;accès
-              </Link>
-            </span>
           </p>
         </div>
       </div>

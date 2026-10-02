@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle2, XCircle, Clock, Inbox } from 'lucide-react'
+import { CheckCircle2, XCircle, Clock, Inbox, Send, List, Link2, Bot, BookOpen, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
 import CoquilleEspace from '../../composants/CoquilleEspace'
 
 interface Moi {
@@ -79,6 +80,27 @@ export default function PageEspace() {
           <p className="mt-2 text-xs text-zinc-400">Aucune limite configurée.</p>
         )}
       </section>
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        {[
+          { href: '/espace/envoyer', icone: <Send className="h-5 w-5 text-blue-600" />, titre: 'Envoyer', texte: 'Nouveau SMS' },
+          { href: '/espace/envois', icone: <List className="h-5 w-5 text-zinc-500" />, titre: 'Envois', texte: 'Historique' },
+          { href: '/espace/entrees', icone: <Inbox className="h-5 w-5 text-emerald-600" />, titre: 'Entrées', texte: 'SMS reçus' },
+          { href: '/espace/liens', icone: <Link2 className="h-5 w-5 text-violet-600" />, titre: 'Liens', texte: 'Suivi des clics' },
+          { href: '/espace/automatismes', icone: <Bot className="h-5 w-5 text-amber-600" />, titre: 'Automatismes', texte: 'Réponses auto' },
+          { href: '/espace/api', icone: <BookOpen className="h-5 w-5 text-zinc-500" />, titre: 'Doc API', texte: 'Intégration' },
+        ].map((l) => (
+          <Link key={l.href} href={l.href}
+            className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-zinc-200/60 transition hover:ring-blue-400/50 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:ring-blue-400/30">
+            {l.icone}
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-bold text-zinc-900 dark:text-white">{l.titre}</span>
+              <span className="block truncate text-xs text-zinc-400">{l.texte}</span>
+            </span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-zinc-300 dark:text-zinc-600" />
+          </Link>
+        ))}
+      </div>
     </CoquilleEspace>
   )
 }

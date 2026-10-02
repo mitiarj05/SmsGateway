@@ -138,7 +138,7 @@ export default function PageNotificationsEspace() {
 
   return (
     <CoquilleEspace titre="Notifications" sousTitre="Rappels HTTP vers votre système">
-      <section className="max-w-3xl rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
+      <section className="max-w-5xl rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
         <div className="mb-2 flex items-center gap-1.5">
           <Webhook className="h-4 w-4 text-zinc-400" />
           <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Mon URL de rappel</h2>

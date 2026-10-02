@@ -18,22 +18,11 @@ export default function PageAccueil() {
           <a href="#fonctionnement" className="hover:text-white">Fonctionnement</a>
           <a href="#fonctionnalites" className="hover:text-white">Fonctionnalités</a>
           <a href="#faq" className="hover:text-white">FAQ</a>
-          <Link href="/send" className="rounded-full border border-blue-400/40 bg-blue-500/10 px-4 py-1.5 font-medium text-blue-300 hover:bg-blue-500/20">
-            Envoyer un SMS
-          </Link>
         </nav>
         <div className="flex items-center gap-3">
-          <Link href="/espace/login"
-            className="hidden rounded-lg border border-slate-500/50 px-4 py-2 text-sm text-slate-200 hover:bg-white/5 sm:block">
-            Espace client
-          </Link>
           <Link href="/login"
-            className="rounded-lg border border-slate-500/50 px-4 py-2 text-sm text-slate-200 hover:bg-white/5">
-            Se connecter
-          </Link>
-          <Link href="/dashboard"
             className="rounded-lg bg-white px-5 py-2 text-sm font-bold text-blue-700 hover:bg-slate-100">
-            Dashboard
+            Se connecter
           </Link>
         </div>
       </header>
@@ -75,14 +64,8 @@ export default function PageAccueil() {
               </a>
             </div>
             <p className="mt-5 text-sm text-slate-400">
-              Partenaire sans intégration ?{' '}
-              <Link href="/send" className="font-semibold text-blue-300 hover:text-white hover:underline">
-                Envoyez via le formulaire →
-              </Link>
-            </p>
-            <p className="mt-2 text-sm text-slate-400">
               Déjà client ?{' '}
-              <Link href="/espace/login" className="font-semibold text-blue-300 hover:text-white hover:underline">
+              <Link href="/login" className="font-semibold text-blue-300 hover:text-white hover:underline">
                 Accédez à votre espace →
               </Link>
               {' · '}
@@ -234,19 +217,18 @@ export default function PageAccueil() {
           Accéder au dashboard <ArrowRight className="h-4 w-4" />
         </Link>
         <p className="mt-4 text-sm text-slate-400">
-          ou envoyez directement via le{' '}
-          <Link href="/send" className="font-semibold text-blue-300 hover:text-white hover:underline">
-            formulaire partenaire
+          ou{' '}
+          <Link href="/demande-acces" className="font-semibold text-blue-300 hover:text-white hover:underline">
+            demandez l&apos;accès
           </Link>
+          {' '}pour obtenir une clé API.
         </p>
       </section>
 
       <footer className="border-t border-white/5 py-8 text-center text-xs text-slate-500">
         © 2026 SMSIKA — Projet interne · Passerelle SMS autohébergée
         {' · '}
-        <Link href="/send" className="text-slate-400 hover:text-white">Envoi partenaire</Link>
-        {' · '}
-        <Link href="/espace/login" className="text-slate-400 hover:text-white">Espace client</Link>
+        <Link href="/login" className="text-slate-400 hover:text-white">Espace client</Link>
         {' · '}
         <Link href="/demande-acces" className="text-slate-400 hover:text-white">Demander l&apos;accès</Link>
       </footer>
