@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Smartphone, Wifi, WifiOff, Plus, RefreshCw, SlidersHorizontal,
-  Check, MoreHorizontal, Loader2,
+  Check, MoreHorizontal, Loader2, QrCode
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 import { Appareil, Toast, DialogueConfirmation, QUOTA_SMS_PAR_HEURE } from '../../composants/interface'
+import ModalAjouterAppareil from '../../composants/ModalAjouterAppareil'
 
 interface TacheFile {
   id: string
@@ -25,6 +26,7 @@ export default function AppareilsPage() {
   const [notification, setNotification] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
   const [cibleSuppression, setCibleSuppression] = useState<Appareil | null>(null)
   const [suppressionEnCours, setSuppressionEnCours] = useState(false)
+  const [modalAjoutOuverte, setModalAjoutOuverte] = useState(false)
 
   function afficherNotification(type: 'succes' | 'erreur', texte: string) {
     setNotification({ type, texte })
@@ -111,12 +113,12 @@ export default function AppareilsPage() {
             Gérez les téléphones Android connectés à votre passerelle SMS.
           </p>
         </div>
-        <Link
-          href="/devices/add"
+        <button
+          onClick={() => setModalAjoutOuverte(true)}
           className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition"
         >
-          <Plus className="h-4 w-4" /> Ajouter un téléphone
-        </Link>
+          <QrCode className="h-4 w-4" /> Ajouter un téléphone (QR Code)
+        </button>
       </div>
 
       {/* 3 KPI Cards */}
@@ -213,10 +215,12 @@ export default function AppareilsPage() {
                       <p className="mt-1 text-xs text-slate-400 dark:text-zinc-500 max-w-xs">
                         Ajoutez un téléphone pour commencer à envoyer des SMS.
                       </p>
-                      <Link href="/devices/add"
-                        className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700">
-                        <Plus className="h-3.5 w-3.5" /> Ajouter un téléphone
-                      </Link>
+                      <button
+                        onClick={() => setModalAjoutOuverte(true)}
+                        className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700"
+                      >
+                        <Plus className="h-3.5 w-3.5" /> Ajouter un téléphone (QR Code)
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -295,6 +299,11 @@ export default function AppareilsPage() {
           <span>Les appareils hors ligne ne peuvent pas envoyer de SMS.</span>
         </div>
       </div>
+
+      <ModalAjouterAppareil
+        ouvert={modalAjoutOuverte}
+        onFermer={() => setModalAjoutOuverte(false)}
+      />
 
       <DialogueConfirmation
         ouvert={!!cibleSuppression}

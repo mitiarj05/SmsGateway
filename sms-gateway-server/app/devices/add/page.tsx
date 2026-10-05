@@ -3,9 +3,10 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import {
-  Download, ShieldCheck, Link2, AlertTriangle, Copy, Check, RefreshCw, ArrowLeft, Loader2,
+  Download, ShieldCheck, Link2, AlertTriangle, Copy, Check, RefreshCw, ArrowLeft, Loader2, QrCode, Smartphone
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../../composants/CoquilleTableauDeBord'
+import QrCodeSvg from '../../../composants/QrCodeSvg'
 
 interface Appareil {
   id: string
@@ -14,12 +15,6 @@ interface Appareil {
   created_at: string
 }
 
-/**
- * Ajouter un téléphone : l'inscription est initiée PAR le téléphone
- * (connexion anonyme Firebase Auth), le serveur crée l'appareil HORS_LIGNE.
- * Cette page guide l'ajout et liste les téléphones en attente de
- * première connexion (scrutés toutes les 10 s).
- */
 export default function AjouterAppareilPage() {
   const [enAttente, setEnAttente] = useState<Appareil[]>([])
   const [urlServeur, setUrlServeur] = useState('')
@@ -58,6 +53,7 @@ export default function AjouterAppareilPage() {
   }
 
   const connecte = enAttente.length === 0
+  const urlApk = `${urlServeur || 'https://sms-gateway-omega.vercel.app'}/smsika.apk`
 
   return (
     <CoquilleTableauDeBord>
@@ -66,7 +62,7 @@ export default function AjouterAppareilPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Ajouter un téléphone</h1>
           <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-            Associez un nouvel appareil Android à votre espace SMSIKA.
+            Scannez le QR Code pour installer l'application et lier l'appareil Android à SMSIKA.
           </p>
         </div>
         <Link
@@ -78,76 +74,56 @@ export default function AjouterAppareilPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        {/* Carte gauche : Téléphone secondaire */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800 flex flex-col justify-between">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Téléphone secondaire</h2>
-            <p className="mt-1 text-xs text-slate-400 dark:text-zinc-500">
-              Installez puis configurez l'application Smsika Relay App sur le téléphone.
-            </p>
 
-            <div className="mt-6 space-y-6">
-              {/* Étape 1 */}
-              <div className="flex items-start gap-4">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 font-bold text-xs text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-                  1
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Download className="h-4 w-4 text-slate-600 dark:text-zinc-300" />
-                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">Installer l'application</p>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-                    Installez l'application Android SMSIKA sur le téléphone à associer.
-                  </p>
-                </div>
-              </div>
+        {/* Carte gauche : QR Code & Étapes */}
+        <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800 space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+              <Smartphone className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white">Associer un téléphone Android</h2>
+              <p className="text-xs text-slate-400 dark:text-zinc-500">Scanner le QR Code avec l'appareil photo du smartphone</p>
+            </div>
+          </div>
 
-              {/* Étape 2 */}
-              <div className="flex items-start gap-4">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 font-bold text-xs text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-                  2
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="h-4 w-4 text-slate-600 dark:text-zinc-300" />
-                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">Autoriser les permissions</p>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-                    Accordez les permissions SMS, téléphone et notifications pour permettre l'envoi et la réception.
-                  </p>
-                </div>
-              </div>
+          {/* Zone des 2 QR Codes */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 dark:bg-zinc-800/50 dark:border-zinc-700/80">
+            <div className="flex flex-col items-center text-center space-y-2">
+              <QrCodeSvg valeur={urlApk} taille={150} />
+              <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">1. QR Code APK</p>
+              <p className="text-[11px] text-slate-500 dark:text-zinc-400">
+                Scannez avec la caméra du téléphone pour télécharger l'application.
+              </p>
+            </div>
 
-              {/* Étape 3 */}
-              <div className="flex items-start gap-4">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-50 font-bold text-xs text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-                  3
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <Link2 className="h-4 w-4 text-slate-600 dark:text-zinc-300" />
-                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">Renseigner le serveur</p>
-                  </div>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-                    Dans l'application, saisissez l'URL du serveur ci-dessous puis démarrez le service. Le téléphone s'enregistre seul.
-                  </p>
-                  <div className="mt-2 flex items-center gap-2 rounded-xl bg-slate-50 p-3 border border-slate-200/80 dark:bg-zinc-800/60 dark:border-zinc-700">
-                    <code className="flex-1 truncate font-mono text-xs font-bold text-slate-800 dark:text-zinc-200">{urlServeur || '…'}</code>
-                    <button onClick={copierUrl} className="text-blue-600 hover:text-blue-700 dark:text-blue-400" title="Copier">
-                      {copie ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
+            <div className="flex flex-col items-center text-center space-y-2">
+              <QrCodeSvg valeur={urlServeur || 'https://sms-gateway-omega.vercel.app'} taille={150} />
+              <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">2. QR Code Serveur</p>
+              <p className="text-[11px] text-slate-500 dark:text-zinc-400">
+                Scannez dans l'application SMSIKA pour appairer le serveur en 1s.
+              </p>
+            </div>
+          </div>
+
+          {/* Saisie manuelle URL */}
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
+              URL du serveur (Saisie manuelle) :
+            </label>
+            <div className="flex items-center gap-2 rounded-xl bg-slate-50 p-3 border border-slate-200/80 dark:bg-zinc-800/60 dark:border-zinc-700">
+              <code className="flex-1 truncate font-mono text-xs font-bold text-slate-800 dark:text-zinc-200">{urlServeur || '…'}</code>
+              <button onClick={copierUrl} className="text-blue-600 hover:text-blue-700 dark:text-blue-400" title="Copier">
+                {copie ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+              </button>
             </div>
           </div>
 
           {/* Warning Banner */}
-          <div className="mt-8 rounded-xl bg-amber-50/80 p-4 border border-amber-200/80 text-xs text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-300 flex items-start gap-3">
+          <div className="rounded-xl bg-amber-50/80 p-4 border border-amber-200/80 text-xs text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-300 flex items-start gap-3">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
             <p>
-              L'application n'est pas distribuée via le Google Play Store. Autorisez temporairement l'installation d'applications inconnues.
+              Autorisez l'installation d'applications inconnues et accordez les permissions SMS et Batterie sans restriction.
             </p>
           </div>
         </div>
@@ -206,6 +182,7 @@ export default function AjouterAppareilPage() {
             </button>
           </div>
         </div>
+
       </div>
     </CoquilleTableauDeBord>
   )
