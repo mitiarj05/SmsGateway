@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Smartphone, Inbox, History, Settings, LayoutGrid,
+  Smartphone, Inbox, History, Settings, LayoutGrid, Users,
   Moon, Sun, Bell, Search, AlertTriangle, X, Receipt, MoreHorizontal, HelpCircle,
 } from 'lucide-react'
 import { Modale } from './interface'
@@ -16,6 +16,7 @@ const NAVIGATION = [
   { href: '/devices', icone: Smartphone, etiquette: 'Appareils' },
   { href: '/queue', icone: Inbox, etiquette: 'File d’attente' },
   { href: '/inbox', icone: Inbox, etiquette: 'Réception' },
+  { href: '/clients', icone: Users, etiquette: 'Clients' },
   { href: '/facturation', icone: Receipt, etiquette: 'Facturation' },
   { href: '/history', icone: History, etiquette: 'Historique' },
   { href: '/settings', icone: Settings, etiquette: 'Paramètres' },

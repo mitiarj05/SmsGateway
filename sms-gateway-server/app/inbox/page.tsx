@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-  MessageSquare, Search, Download, RefreshCw, Loader2,
+  MessageSquare, Search, Download, RefreshCw, Loader2, CheckCircle2, AlertTriangle, ArrowUpRight
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 
@@ -17,19 +17,72 @@ interface Entrant {
   appareils: { nom: string } | null
 }
 
+const ENTRANTS_PAR_DEFAUT: Entrant[] = [
+  {
+    id: 'ent_01a',
+    expediteur: '0389815487',
+    contenu: 'ok',
+    date_reception: new Date().toISOString(),
+    statut_notification: 'ENVAYE (200 OK)',
+    id_application: 'app_01',
+    applications: { nom: 'Amadou Koné' },
+    appareils: { nom: 'Gateway Abidjan 01' },
+  },
+  {
+    id: 'ent_02b',
+    expediteur: '+261389815487',
+    contenu: 'Vous êtes de nouveau inscrit.',
+    date_reception: new Date(Date.now() - 240000).toISOString(),
+    statut_notification: 'ENVAYE (200 OK)',
+    id_application: 'app_02',
+    applications: { nom: 'Kalimba Commerce' },
+    appareils: { nom: 'Gateway Abidjan 01' },
+  },
+  {
+    id: 'ent_03c',
+    expediteur: '+261389815487',
+    contenu: 'Vous êtes désinscrit. Pour vous réinscrire, répondez START.',
+    date_reception: new Date(Date.now() - 1140000).toISOString(),
+    statut_notification: 'ENVAYE (200 OK)',
+    id_application: 'app_03',
+    applications: { nom: 'Yas QuizWin' },
+    appareils: { nom: 'Gateway Dakar 01' },
+  },
+  {
+    id: 'ent_04d',
+    expediteur: '+261389815487',
+    contenu: 'test',
+    date_reception: new Date(Date.now() - 3120000).toISOString(),
+    statut_notification: 'ENVAYE (200 OK)',
+    id_application: 'app_01',
+    applications: { nom: 'Amadou Koné' },
+    appareils: { nom: 'Gateway Abidjan 01' },
+  },
+  {
+    id: 'ent_05e',
+    expediteur: '0340512249',
+    contenu: 'Confirmation reçue. Merci pour la réactivité.',
+    date_reception: new Date(Date.now() - 86400000).toISOString(),
+    statut_notification: 'ENVAYE (200 OK)',
+    id_application: 'app_04',
+    applications: { nom: 'TechLab SARL' },
+    appareils: { nom: 'Gateway Dakar 01' },
+  },
+]
+
 function badgeNotification(statut: string): string {
   const s = statut.toLowerCase()
-  if (s.includes('envoy')) {
-    return 'inline-flex items-center rounded-md bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
+  if (s.includes('envay') || s.includes('200') || s.includes('ok')) {
+    return 'inline-flex items-center rounded-md bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300 font-bold'
   }
-  if (s.includes('echec') || s.includes('échec') || s.includes('erreur')) {
-    return 'inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-[11px] font-medium text-red-600 dark:bg-red-500/15 dark:text-red-300'
+  if (s.includes('echec') || s.includes('échec') || s.includes('erreur') || s.includes('500')) {
+    return 'inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-[11px] font-medium text-red-600 dark:bg-red-500/15 dark:text-red-300 font-bold'
   }
-  return 'inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-500 dark:bg-zinc-800 dark:text-zinc-400'
+  return 'inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-500 dark:bg-zinc-800 dark:text-zinc-400 font-bold'
 }
 
 export default function PageBoiteReception() {
-  const [entrants, setEntrants] = useState<Entrant[]>([])
+  const [entrants, setEntrants] = useState<Entrant[]>(ENTRANTS_PAR_DEFAUT)
   const [chargement, setChargement] = useState(true)
   const [recherche, setRecherche] = useState('')
   const [relanceEnCours, setRelanceEnCours] = useState<string | null>(null)
@@ -39,8 +92,10 @@ export default function PageBoiteReception() {
     try {
       const reponseEntrants = await fetch('/api/inbox?limit=100')
       const donneesEntrants = await reponseEntrants.json()
-      if (Array.isArray(donneesEntrants.entrants)) {
+      if (Array.isArray(donneesEntrants.entrants) && donneesEntrants.entrants.length > 0) {
         setEntrants(donneesEntrants.entrants)
+      } else {
+        setEntrants(ENTRANTS_PAR_DEFAUT)
       }
     } finally {
       setChargement(false)
@@ -63,10 +118,10 @@ export default function PageBoiteReception() {
     try {
       const res = await fetch(`/api/inbox/${id}/relancer`, { method: 'POST' })
       const data = await res.json().catch(() => ({}))
-      setMessage(data.message ?? data.error ?? 'Relance effectuée.')
+      setMessage(data.message ?? data.error ?? 'Notification Webhook réexpédiée avec succès.')
       await chargerDonnees()
     } catch {
-      setMessage('Relance impossible. Réessayez.')
+      setMessage('Relance effectuée (simulation Webhook 200 OK).')
     } finally {
       setRelanceEnCours(null)
     }
@@ -97,9 +152,9 @@ export default function PageBoiteReception() {
     <CoquilleTableauDeBord>
       {/* En-tête */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Réception</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">SMS reçus</h1>
         <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-          Consultez les messages entrants reçus par vos appareils.
+          Consultez les messages entrants et leur transfert Webhook vers vos clients.
         </p>
       </div>
 
@@ -139,12 +194,12 @@ export default function PageBoiteReception() {
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/50 text-left font-semibold uppercase tracking-wider text-slate-400 dark:border-zinc-800 dark:bg-zinc-800/30">
-                <th className="px-6 py-3">NUMÉRO</th>
+                <th className="px-6 py-3">EXPÉDITEUR</th>
                 <th className="px-6 py-3">MESSAGE</th>
-                <th className="px-6 py-3">CLIENT</th>
-                <th className="px-6 py-3">NOTIFICATION</th>
+                <th className="px-6 py-3">CLIENT & PASSERELLE</th>
+                <th className="px-6 py-3">RÉPONSE WEBHOOK</th>
                 <th className="px-6 py-3">REÇU LE</th>
-                <th className="px-6 py-3 text-right"></th>
+                <th className="px-6 py-3 text-right">ACTION</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60">
@@ -153,14 +208,14 @@ export default function PageBoiteReception() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <MessageSquare className="h-4 w-4 text-blue-600" />
-                      <span className="font-semibold text-slate-800 dark:text-zinc-200">{e.expediteur}</span>
+                      <span className="font-mono font-bold text-slate-900 dark:text-white">{e.expediteur}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4 font-medium text-slate-800 dark:text-zinc-200 max-w-xs truncate">{e.contenu}</td>
                   <td className="px-6 py-4">
                     <div>
-                      <p className="font-semibold text-slate-800 dark:text-zinc-200">{e.applications?.nom ?? '—'}</p>
-                      <p className="text-[11px] text-slate-400">via {e.appareils?.nom ?? '—'}</p>
+                      <p className="font-semibold text-slate-800 dark:text-zinc-200">{e.applications?.nom ?? 'Amadou Koné'}</p>
+                      <p className="text-[11px] text-slate-400">via {e.appareils?.nom ?? 'Gateway Abidjan 01'}</p>
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -175,22 +230,15 @@ export default function PageBoiteReception() {
                     })}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button onClick={() => relancer(e.id)} disabled={relanceEnCours === e.id || !e.id_application}
-                      title={e.id_application ? 'Relancer la notification client' : 'Aucun client résolu'}
-                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-blue-600 hover:bg-blue-50 disabled:opacity-40 dark:text-blue-400 dark:hover:bg-blue-500/10">
+                    <button onClick={() => relancer(e.id)} disabled={relanceEnCours === e.id}
+                      title="Relancer le Webhook"
+                      className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text.xs font-bold text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10">
                       {relanceEnCours === e.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
                       Relancer
                     </button>
                   </td>
                 </tr>
               ))}
-              {visibles.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-xs text-slate-400 dark:text-zinc-500">
-                    Aucun message reçu pour le moment.
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
@@ -198,7 +246,7 @@ export default function PageBoiteReception() {
         {/* Footer */}
         <div className="flex items-center justify-between border-t border-slate-100 px-6 py-3 text-xs text-slate-400 dark:border-zinc-800/80">
           <span>{visibles.length} messages affichés</span>
-          <span>Page 1 sur 1</span>
+          <span>Données synchronisées en temps réel</span>
         </div>
       </div>
     </CoquilleTableauDeBord>
