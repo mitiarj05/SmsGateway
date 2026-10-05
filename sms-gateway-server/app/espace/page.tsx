@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CheckCircle2, XCircle, Clock, Inbox, Send, List, Link2, Bot, BookOpen, ChevronRight, Loader2 } from 'lucide-react'
+import { CheckCircle2, XCircle, Clock, Inbox, Send, List, Link2, BookOpen, ChevronRight, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import CoquilleEspace from '../../composants/CoquilleEspace'
 
@@ -143,7 +143,6 @@ export default function PageEspace() {
           { href: '/espace/envois', icone: <List className="h-5 w-5 text-slate-600 dark:text-zinc-300" />, titre: 'Mes envois', texte: 'Suivre le statut des SMS expédiés' },
           { href: '/espace/entrees', icone: <Inbox className="h-5 w-5 text-emerald-600" />, titre: 'SMS reçus', texte: 'Consulter les réponses de vos clients' },
           { href: '/espace/liens', icone: <Link2 className="h-5 w-5 text-indigo-600" />, titre: 'Liens intelligents', texte: 'Suivre les clics sur vos liens courts' },
-          { href: '/espace/automatismes', icone: <Bot className="h-5 w-5 text-amber-600" />, titre: 'Automatismes', texte: 'Définir vos mots-clés et réponses auto' },
           { href: '/espace/api', icone: <BookOpen className="h-5 w-5 text-slate-600 dark:text-zinc-300" />, titre: 'Documentation API', texte: 'Guide d\'intégration cURL & Webhooks' },
         ].map((item) => (
           <Link
