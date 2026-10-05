@@ -3,6 +3,7 @@ package com.mitia.smsgateway.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,11 +24,9 @@ import com.mitia.smsgateway.ui.views.EcranParametres
 import com.mitia.smsgateway.ui.views.EcranStats
 import com.mitia.smsgateway.ui.views.EcranStatut
 import com.mitia.smsgateway.ui.views.EcranTaches
-import com.mitia.smsgateway.ui.theme.FondSombre
-import com.mitia.smsgateway.ui.texteTempsEcoule
 
 /**
- * Conteneur des 4 écrans avec navigation basse.
+ * Conteneur des 6 écrans avec navigation basse.
  * Toute la donnée vient de MainActivity (temps réel) : aucun mock ici.
  */
 @Composable
@@ -45,9 +44,11 @@ fun NavigationApp(
     quotaSmsTotal: Int,
     auDemarrageService: () -> Unit,
     aArretService: () -> Unit,
+    aActualiserStatut: () -> Unit = {},
     // Tâches
     taches: List<TacheHistorique>,
     derniereSynchro: Long,
+    aViderTaches: () -> Unit,
     // Journal
     evenements: List<ElementEvenement>,
     aExporterJournal: () -> Unit,
@@ -69,6 +70,8 @@ fun NavigationApp(
     aDemanderPermissionSms: () -> Unit,
     aDemanderPermissionNotifications: () -> Unit,
     aOuvrirReglagesBatterie: () -> Unit,
+    themeSombre: Boolean = true,
+    auChangementTheme: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var onglet by remember { mutableStateOf(OngletTableauDeBord.STATUT) }
@@ -77,7 +80,7 @@ fun NavigationApp(
     val compteurErreurs = evenements.count { niveauJournalDe(it.message) == NiveauJournal.ERREUR }
 
     Scaffold(
-        containerColor = FondSombre,
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             BarreNavigationBasse(
                 selectionne = onglet,
@@ -109,10 +112,15 @@ fun NavigationApp(
                     texteDerniereSynchro = texteTempsEcoule(derniereSynchro),
                     auDemarrageService = auDemarrageService,
                     aArretService = aArretService,
+                    aActualiser = aActualiserStatut,
+                    permissionSms = permissionSms,
+                    themeSombre = themeSombre,
+                    auChangementTheme = auChangementTheme,
                 )
                 OngletTableauDeBord.TACHES -> EcranTaches(
                     taches = taches,
                     texteDerniereSynchro = texteTempsEcoule(derniereSynchro),
+                    aVider = aViderTaches,
                 )
                 OngletTableauDeBord.JOURNAL -> EcranJournal(
                     evenements = evenements,
@@ -141,6 +149,8 @@ fun NavigationApp(
                     aDemanderPermissionSms = aDemanderPermissionSms,
                     aDemanderPermissionNotifications = aDemanderPermissionNotifications,
                     aOuvrirReglagesBatterie = aOuvrirReglagesBatterie,
+                    themeSombre = themeSombre,
+                    auChangementTheme = auChangementTheme,
                 )
             }
         }

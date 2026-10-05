@@ -76,6 +76,15 @@ object MagasinHistoriqueTaches {
         }
     }
 
+    suspend fun effacer(context: Context) {
+        try {
+            context.magasinHistoriqueTaches.edit { prefs ->
+                prefs.remove(CLE_TACHES)
+            }
+        } catch (_: Exception) {
+        }
+    }
+
     fun observer(context: Context): Flow<List<TacheHistorique>> =
         context.magasinHistoriqueTaches.data.map { prefs ->
             lire(prefs[CLE_TACHES]).sortedByDescending { it.horodatage }

@@ -1,129 +1,178 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
-  MessageSquare, Smartphone, Server, BarChart3, ShieldCheck,
-  Zap, ArrowRight, CheckCircle2, Bell, Inbox,
+  Smartphone, Server, BarChart3, ShieldCheck,
+  Zap, ArrowRight, CheckCircle2, Bell, Inbox, KeyRound, BellOff, Moon, Sun,
 } from 'lucide-react'
+import { useTheme } from '../lib/use-theme'
 
 export default function PageAccueil() {
+  const { modeSombre, monte, basculerTheme } = useTheme()
+  const [stats, setStats] = useState({ smsEnvoyes: 0, appareilsEnLigne: 0 })
+
+  useEffect(() => {
+    fetch('/api/stats-public')
+      .then((r) => r.json())
+      .then((d) => {
+        if (typeof d?.smsEnvoyes === 'number') {
+          setStats({ smsEnvoyes: d.smsEnvoyes, appareilsEnLigne: d.appareilsEnLigne ?? 0 })
+        }
+      })
+      .catch(() => null)
+  }, [])
+
   return (
-    <div className="min-h-screen bg-[#08122E] text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-800 dark:bg-[#0B0F19] dark:text-zinc-100 font-sans antialiased transition-colors">
       {/* ================= NAVIGATION ================= */}
-      <header className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+      <header className="mx-auto flex h-20 max-w-7xl items-center justify-between px-8 border-b border-slate-200/80 dark:border-zinc-800/60">
         <Link href="/" className="flex items-center gap-3">
-          <Image src="/smsika.png" alt="SMSIKA" width={40} height={40} className="rounded-xl" />
-          <span className="text-lg font-bold">SMSIKA</span>
+          <Image src="/smsika.png" alt="SMSIKA" width={40} height={40} className="rounded-xl shrink-0" />
+          <div className="flex items-center gap-2">
+            <span className="text-base font-bold text-slate-900 dark:text-white tracking-tight">SMSIKA</span>
+            <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold dark:text-emerald-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Console SMS
+            </span>
+          </div>
         </Link>
-        <nav className="hidden items-center gap-10 text-sm text-slate-300 md:flex">
-          <a href="#fonctionnement" className="hover:text-white">Fonctionnement</a>
-          <a href="#fonctionnalites" className="hover:text-white">Fonctionnalités</a>
-          <a href="#faq" className="hover:text-white">FAQ</a>
+
+        <nav className="hidden items-center gap-8 text-xs font-semibold text-slate-600 dark:text-zinc-400 md:flex">
+          <a href="#fonctionnement" className="hover:text-slate-900 dark:hover:text-white transition">Fonctionnement</a>
+          <a href="#fonctionnalites" className="hover:text-slate-900 dark:hover:text-white transition">Fonctionnalités</a>
+          <a href="#confiance" className="hover:text-slate-900 dark:hover:text-white transition">Confiance</a>
+          <a href="#faq" className="hover:text-slate-900 dark:hover:text-white transition">FAQ</a>
         </nav>
+
         <div className="flex items-center gap-3">
-          <Link href="/login"
-            className="rounded-lg bg-white px-5 py-2 text-sm font-bold text-blue-700 hover:bg-slate-100">
+          {/* Basculeur de thème */}
+          <button
+            onClick={basculerTheme}
+            title={!monte ? 'Thème' : modeSombre ? 'Mode clair' : 'Mode sombre'}
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-sm hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-300"
+          >
+            {!monte || !modeSombre ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+          </button>
+
+          <Link
+            href="/login?onglet=client"
+            className="hidden sm:inline-flex rounded-xl border border-slate-200/80 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white transition shadow-sm"
+          >
+            Espace Client
+          </Link>
+          <Link
+            href="/login"
+            className="inline-flex rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition"
+          >
             Se connecter
           </Link>
         </div>
       </header>
 
       {/* ================= HERO ================= */}
-      <section className="relative overflow-hidden">
-        {/* halos décoratifs */}
-        <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
-        <div className="pointer-events-none absolute -left-32 bottom-0 h-96 w-96 rounded-full bg-blue-600/20 blur-3xl" />
+      <section className="relative overflow-hidden py-20 lg:py-28">
+        {/* Halos lumineux */}
+        <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-blue-600/15 blur-3xl" />
+        <div className="pointer-events-none absolute -left-32 bottom-0 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
 
-        <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 py-20 lg:grid-cols-2">
+        <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-8 lg:grid-cols-2">
           <div>
-            <span className="inline-block rounded-full border border-blue-400/40 bg-blue-500/10 px-4 py-1.5 text-xs font-medium tracking-widest text-blue-300">
-              PASSERELLE SMS AUTOHÉBERGÉE
+            <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 px-3.5 py-1 text-xs font-bold dark:text-blue-400">
+              <Zap className="h-3.5 w-3.5" /> PASSERELLE SMS AUTOHÉBERGÉE
             </span>
-            <h1 className="mt-6 text-5xl font-bold leading-tight xl:text-6xl">
+            <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl leading-[1.15]">
               Vos téléphones,
               <br />
-              votre{' '}
-              <span className="relative text-blue-400">
-                passerelle SMS
-                <span className="absolute -bottom-1 left-0 h-1.5 w-full rounded bg-blue-500" />
-              </span>
+              votre <span className="text-blue-600 dark:text-blue-500">passerelle SMS</span>
               <br />— sans abonnement !
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
-              Connectez vos téléphones Android et envoyez des SMS via vos
-              propres cartes SIM. Sans Twilio, sans abonnement — avec quotas
-              anti-blocage, file intelligente et supervision temps réel.
+            <p className="mt-6 max-w-xl text-sm sm:text-base leading-relaxed text-slate-600 dark:text-zinc-400">
+              Connectez vos téléphones Android et envoyez vos SMS directement via vos propres cartes SIM.
+              Sans abonnement, avec quotas anti-blocage, file d'attente intelligente et supervision temps réel.
             </p>
+
             <div className="mt-8 flex flex-wrap gap-4">
-              <Link href="/login"
-                className="flex items-center gap-2 rounded-xl bg-white px-6 py-3.5 font-bold text-blue-700 hover:bg-slate-100">
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 text-xs font-bold text-white shadow-lg shadow-blue-600/25 hover:bg-blue-700 transition"
+              >
                 Accéder au dashboard <ArrowRight className="h-4 w-4" />
               </Link>
-              <a href="#fonctionnement"
-                className="rounded-xl border border-slate-500/60 px-6 py-3.5 font-bold text-slate-200 hover:bg-white/5">
-                Voir le fonctionnement
-              </a>
-            </div>
-            <p className="mt-5 text-sm text-slate-400">
-              Déjà client ?{' '}
-              <Link href="/login" className="font-semibold text-blue-300 hover:text-white hover:underline">
-                Accédez à votre espace →
+              <Link
+                href="/demande-acces"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3.5 text-xs font-bold text-slate-800 hover:bg-slate-50 dark:border-zinc-800 dark:bg-[#131926] dark:text-zinc-200 dark:hover:bg-zinc-800 transition shadow-sm"
+              >
+                Demander l'accès API
               </Link>
-              {' · '}
-              Pas encore client ?{' '}
-              <Link href="/demande-acces" className="font-semibold text-blue-300 hover:text-white hover:underline">
-                Demandez l&apos;accès →
+            </div>
+
+            <p className="mt-6 text-xs text-slate-500 dark:text-zinc-500">
+              Déjà client ?{' '}
+              <Link href="/login?onglet=client" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                Accédez à votre espace client →
               </Link>
             </p>
-            {/* stats */}
-            <div className="mt-14 flex gap-14">
-              {[
-                { valeur: 'Multi', etiquette: 'Appareils en parallèle' },
-                { valeur: 'FCM', etiquette: 'Déclenchement instantané' },
-                { valeur: '0 Ar', etiquette: "D'abonnement (crédit SIM requis)" },
-              ].map((stat) => (
+
+            {/* Stats */}
+            <div className="mt-12 grid grid-cols-3 gap-6 border-t border-slate-200/80 dark:border-zinc-800/80 pt-8">
+              {(stats.smsEnvoyes >= 100
+                ? [
+                    { valeur: `${stats.smsEnvoyes}`, etiquette: 'SMS envoyés' },
+                    { valeur: `${stats.appareilsEnLigne}`, etiquette: 'Appareils en ligne' },
+                    { valeur: '0 Ar', etiquette: "D'abonnement" },
+                  ]
+                : [
+                    { valeur: 'Multi-SIM', etiquette: 'Gestion parallèle' },
+                    { valeur: 'Push FCM', etiquette: 'Temps réel instantané' },
+                    { valeur: '0 Ar', etiquette: "D'abonnement SMSIKA" },
+                  ]
+              ).map((stat) => (
                 <div key={stat.etiquette}>
-                  <p className="text-2xl font-bold">{stat.valeur}</p>
-                  <p className="mt-1 text-sm text-slate-400">{stat.etiquette}</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stat.valeur}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-500">{stat.etiquette}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* visuel : maquette CSS du dashboard (aucune image requise) */}
+          {/* Visuel Dashboard Mockup */}
           <div className="relative hidden lg:block">
-            <div className="rounded-2xl border border-white/10 bg-[#0A1836] p-5 shadow-2xl shadow-blue-900/50">
-              <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg">
-                  <Image src="/smsika.png" alt="SMSIKA" width={32} height={32} />
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xl dark:border-zinc-800 dark:bg-[#131926] dark:shadow-2xl dark:shadow-blue-950/50">
+              <div className="mb-5 flex items-center justify-between border-b border-slate-100 pb-4 dark:border-zinc-800/80">
+                <div className="flex items-center gap-3">
+                  <Image src="/smsika.png" alt="SMSIKA" width={32} height={32} className="rounded-xl shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">SMSIKA</p>
+                    <p className="text-[10px] text-slate-400 dark:text-zinc-400">Panneau de contrôle</p>
+                  </div>
                 </div>
-                <div>
-                    <p className="text-xs font-bold">SMSIKA</p>
-                  <p className="text-[10px] text-slate-400">Panneau de contrôle</p>
-                </div>
-                <span className="ml-auto flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10px] font-bold text-emerald-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> en ligne
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Systèmes opérationnels
                 </span>
               </div>
+
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { valeur: '128', etiquette: 'envoyés' },
-                  { valeur: '3', etiquette: 'en attente' },
-                  { valeur: '18/50', etiquette: 'quota /h' },
+                  { valeur: '128', etiquette: 'SMS envoyés' },
+                  { valeur: '0', etiquette: 'En file' },
+                  { valeur: '18/50', etiquette: 'Quota SMS/h' },
                 ].map((kpi) => (
-                  <div key={kpi.etiquette} className="rounded-xl bg-white/5 p-3">
-                    <p className="text-lg font-bold">{kpi.valeur}</p>
-                    <p className="text-[10px] text-slate-400">{kpi.etiquette}</p>
+                  <div key={kpi.etiquette} className="rounded-xl bg-slate-50 p-3 border border-slate-100 dark:bg-[#0B0F19] dark:border-zinc-800/60">
+                    <p className="text-base font-bold text-slate-900 dark:text-white">{kpi.valeur}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-zinc-500">{kpi.etiquette}</p>
                   </div>
                 ))}
               </div>
-              <div className="mt-3 space-y-2.5 rounded-xl bg-white/5 p-4">
+
+              <div className="mt-4 space-y-2 rounded-xl bg-slate-50 p-4 border border-slate-100 dark:bg-[#0B0F19] dark:border-zinc-800/60 text-xs">
                 {[
-                  { icone: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />, texte: '+261 34 05 123 45 · envoyé' },
-                  { icone: <Inbox className="h-3.5 w-3.5 text-amber-400" />, texte: '+261 33 12 987 65 · en attente' },
-                  { icone: <Bell className="h-3.5 w-3.5 text-blue-400" />, texte: 'push instantané · écran éteint' },
-                ].map((ligne) => (
-                  <div key={ligne.texte} className="flex items-center gap-2.5 text-xs text-slate-300">
-                    {ligne.icone} {ligne.texte}
+                  { icone: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />, texte: '+261 34 05 123 45 · Envoyé (Infinix X680C)' },
+                  { icone: <Inbox className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />, texte: '+261 33 12 987 65 · Réponse reçue "Start"' },
+                  { icone: <Bell className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />, texte: 'Push FCM distribué instantanément' },
+                ].map((item) => (
+                  <div key={item.texte} className="flex items-center gap-2.5 text-slate-700 dark:text-zinc-300">
+                    {item.icone} <span>{item.texte}</span>
                   </div>
                 ))}
               </div>
@@ -133,20 +182,21 @@ export default function PageAccueil() {
       </section>
 
       {/* ================= COMMENT ÇA MARCHE ================= */}
-      <section id="fonctionnement" className="border-t border-white/5 bg-[#0A1836] py-24">
-        <div className="mx-auto max-w-7xl px-6">
-          <h2 className="text-center text-3xl font-bold">Comment ça marche</h2>
-          <p className="mt-3 text-center text-slate-400">Trois briques simples, un système complet.</p>
-          <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3">
+      <section id="fonctionnement" className="border-t border-slate-200/80 bg-slate-100/50 dark:border-zinc-800/80 dark:bg-[#0B0F19] py-20">
+        <div className="mx-auto max-w-7xl px-8">
+          <h2 className="text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Comment ça marche</h2>
+          <p className="mt-2 text-center text-xs text-slate-500 dark:text-zinc-400">Trois piliers simples pour un système fiable et autonome.</p>
+
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
             {[
-              { icone: <Server className="h-6 w-6" />, titre: '1. Votre serveur', description: 'Reçoit les demandes via une API REST sécurisée par clé, gère la file d\u2019attente, les quotas et l\u2019historique. C\u2019est le cerveau du système.' },
-              { icone: <Smartphone className="h-6 w-6" />, titre: '2. Vos téléphones Android', description: 'Inscrits via Firebase Auth, actifs en arrière-plan. Chaque téléphone envoie via sa vraie carte SIM, même écran éteint.' },
-              { icone: <BarChart3 className="h-6 w-6" />, titre: '3. Votre dashboard', description: 'Supervisez tout : appareils en ligne, SMS en attente, échecs, activité 24 h. Un clic pour envoyer un test.' },
+              { icone: <Server className="h-5 w-5" />, titre: '1. Votre serveur', description: 'Reçoit les demandes via une API REST sécurisée, gère la file d’attente, les quotas et l’historique.' },
+              { icone: <Smartphone className="h-5 w-5" />, titre: '2. Vos téléphones Android', description: 'Gèrent l’envoi direct via leurs cartes SIM en arrière-plan grâce aux notifications push FCM.' },
+              { icone: <BarChart3 className="h-5 w-5" />, titre: '3. Votre dashboard', description: 'Supervisez vos appareils en ligne, contrôlez les tâches, configurez vos webhooks et suivez l’activité.' },
             ].map((carte) => (
-              <div key={carte.titre} className="rounded-2xl border border-white/10 bg-white/5 p-8 hover:border-blue-400/40">
-                <div className="mb-4 inline-flex rounded-xl bg-blue-600/20 p-3 text-blue-400">{carte.icone}</div>
-                <h3 className="text-lg font-bold">{carte.titre}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{carte.description}</p>
+              <div key={carte.titre} className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-[#131926]">
+                <div className="mb-4 inline-flex rounded-xl bg-blue-50 p-3 text-blue-600 dark:bg-blue-600/15 dark:text-blue-400">{carte.icone}</div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">{carte.titre}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-zinc-400">{carte.description}</p>
               </div>
             ))}
           </div>
@@ -154,21 +204,45 @@ export default function PageAccueil() {
       </section>
 
       {/* ================= FONCTIONNALITÉS ================= */}
-      <section id="fonctionnalites" className="py-24">
-        <div className="mx-auto max-w-7xl px-6">
-          <h2 className="text-center text-3xl font-bold">Pensé pour la fiabilité</h2>
-          <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2">
+      <section id="fonctionnalites" className="py-20 border-t border-slate-200/80 dark:border-zinc-800/80">
+        <div className="mx-auto max-w-7xl px-8">
+          <h2 className="text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Pensé pour la fiabilité</h2>
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
             {[
-              { icone: <Zap className="h-5 w-5" />, titre: 'Notifications push', description: 'Firebase Cloud Messaging réveille les téléphones instantanément quand une tâche arrive.' },
-              { icone: <ShieldCheck className="h-5 w-5" />, titre: 'Anti-double envoi', description: 'Identifiants uniques et accusés idempotents : une re-délivrance ne provoque jamais deux SMS.' },
-              { icone: <Smartphone className="h-5 w-5" />, titre: 'Multi-appareils', description: 'Répartition intelligente entre vos téléphones avec quota par SIM pour éviter le blocage opérateur.' },
-              { icone: <CheckCircle2 className="h-5 w-5" />, titre: 'Résilient aux pannes', description: 'Coupure internet, SIM indisponible, redémarrage : le système reprend seul où il s\u2019était arrêté.' },
-            ].map((fonctionnalite) => (
-              <div key={fonctionnalite.titre} className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 p-6">
-                <div className="h-fit rounded-lg bg-blue-600/20 p-2.5 text-blue-400">{fonctionnalite.icone}</div>
+              { icone: <Zap className="h-5 w-5" />, titre: 'Notifications push FCM', description: 'Trigger réactif réveillant le service d’arrière-plan des téléphones même écran éteint.' },
+              { icone: <ShieldCheck className="h-5 w-5" />, titre: 'Anti-double envoi', description: 'Identifiants uniques et accusés idempotents empêchant toute réémission en double.' },
+              { icone: <Smartphone className="h-5 w-5" />, titre: 'Multi-appareils & Multi-SIM', description: 'Répartition automatique de la charge avec quotas horaires configurables par SIM.' },
+              { icone: <CheckCircle2 className="h-5 w-5" />, titre: 'Résilient aux coupures', description: 'Reprise automatique après perte de réseau, redémarrage du téléphone ou coupure internet.' },
+            ].map((f) => (
+              <div key={f.titre} className="flex gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-[#131926]">
+                <div className="h-fit rounded-xl bg-blue-50 p-3 text-blue-600 dark:bg-blue-600/15 dark:text-blue-400 shrink-0">{f.icone}</div>
                 <div>
-                  <h3 className="font-bold">{fonctionnalite.titre}</h3>
-                  <p className="mt-1 text-sm text-slate-400">{fonctionnalite.description}</p>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">{f.titre}</h3>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">{f.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================= CONFIANCE ================= */}
+      <section id="confiance" className="border-t border-slate-200/80 bg-slate-100/50 dark:border-zinc-800/80 dark:bg-[#0B0F19] py-20">
+        <div className="mx-auto max-w-7xl px-8">
+          <h2 className="text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Sécurité et contrôle</h2>
+          <p className="mt-2 text-center text-xs text-slate-500 dark:text-zinc-400">Vos données restent sous votre contrôle absolu.</p>
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
+            {[
+              { icone: <ShieldCheck className="h-5 w-5" />, titre: 'Données maîtrisées', description: 'Vos téléphones et votre base dédiée. Aucun intermédiaire n’accède à vos messages.' },
+              { icone: <KeyRound className="h-5 w-5" />, titre: 'Clés API & Webhooks', description: 'Clés d’accès révocables, signatures HMAC-SHA256 pour les notifications Webhooks.' },
+              { icone: <BellOff className="h-5 w-5" />, titre: 'Gestion STOP / START', description: 'Traitement automatique des désinscriptions conformément à la réglementation.' },
+              { icone: <CheckCircle2 className="h-5 w-5" />, titre: 'Isolation des clients', description: 'Espace client dédié avec clés API séparées et suivi de facturation.' },
+            ].map((item) => (
+              <div key={item.titre} className="flex gap-4 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-[#131926]">
+                <div className="h-fit rounded-xl bg-blue-50 p-3 text-blue-600 dark:bg-blue-600/15 dark:text-blue-400 shrink-0">{item.icone}</div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">{item.titre}</h3>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">{item.description}</p>
                 </div>
               </div>
             ))}
@@ -177,31 +251,27 @@ export default function PageAccueil() {
       </section>
 
       {/* ================= FAQ ================= */}
-      <section id="faq" className="border-t border-white/5 bg-[#0A1836] py-24">
-        <div className="mx-auto max-w-3xl px-6">
-          <h2 className="text-center text-3xl font-bold">Questions fréquentes</h2>
-          <div className="mt-12 space-y-4">
+      <section id="faq" className="border-t border-slate-200/80 dark:border-zinc-800/80 py-20">
+        <div className="mx-auto max-w-3xl px-8">
+          <h2 className="text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Questions fréquentes</h2>
+          <div className="mt-10 space-y-4">
             {[
               {
-                question: 'Faut-il être sur le même WiFi ?',
-                reponse: 'Non. Le serveur est en ligne et les téléphones communiquent via internet (4G ou WiFi) + notifications push. Ils peuvent être n\u2019importe où dans le monde.',
+                question: 'Faut-il être sur le même réseau WiFi ?',
+                reponse: 'Non. Le serveur et les téléphones communiquent via internet (4G/5G ou WiFi) via Firebase Cloud Messaging.',
               },
               {
-                question: 'Combien ça coûte ?',
-                reponse: 'Aucun abonnement. Seul le crédit SMS de vos cartes SIM est consommé, au tarif de votre opérateur.',
+                question: 'Combien coûte l\'utilisation de SMSIKA ?',
+                reponse: 'SMSIKA ne prend aucun frais d\'abonnement. Seul le forfait de votre carte SIM auprès de votre opérateur est consommé.',
               },
               {
-                question: 'Que se passe-t-il si un téléphone est éteint ?',
-                reponse: 'Les SMS restent en file d\u2019attente, puis expirent en échec après le délai configuré. Au retour du téléphone, il reprend les tâches restantes tout seul.',
-              },
-              {
-                question: 'Comment ajouter un téléphone ?',
-                reponse: 'Installez l\u2019app Android, renseignez l\u2019adresse du serveur et démarrez le service : il s\u2019inscrit via Firebase Auth et apparaît HORS_LIGNE, puis EN_LIGNE à la première scrutation.',
+                question: 'Que se passe-t-il si un téléphone perd sa connexion ?',
+                reponse: 'Les tâches restent sécurisées en file d\'attente sur le serveur et sont traitées dès le retour en ligne.',
               },
             ].map((faq) => (
-              <div key={faq.question} className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                <h3 className="font-bold">{faq.question}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-400">{faq.reponse}</p>
+              <div key={faq.question} className="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-[#131926]">
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white">{faq.question}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-zinc-400">{faq.reponse}</p>
               </div>
             ))}
           </div>
@@ -209,28 +279,31 @@ export default function PageAccueil() {
       </section>
 
       {/* ================= CTA FINAL ================= */}
-      <section className="border-t border-white/5 py-20 text-center">
-        <h2 className="text-3xl font-bold">Prêt à envoyer vos premiers SMS ?</h2>
-        <p className="mt-3 text-slate-400">Installation en 10 minutes sur un téléphone dédié.</p>
-        <Link href="/login"
-          className="mt-8 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-4 font-bold hover:bg-blue-700">
-          Accéder au dashboard <ArrowRight className="h-4 w-4" />
-        </Link>
-        <p className="mt-4 text-sm text-slate-400">
-          ou{' '}
-          <Link href="/demande-acces" className="font-semibold text-blue-300 hover:text-white hover:underline">
-            demandez l&apos;accès
+      <section className="border-t border-slate-200/80 dark:border-zinc-800/80 py-16 text-center">
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Prêt à déployer votre passerelle ?</h2>
+        <p className="mt-2 text-xs text-slate-500 dark:text-zinc-400">Accédez au panneau de contrôle ou effectuez une demande d'accès API.</p>
+        <div className="mt-6 flex justify-center gap-3">
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-xs font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition"
+          >
+            Accéder au dashboard <ArrowRight className="h-4 w-4" />
           </Link>
-          {' '}pour obtenir une clé API.
-        </p>
+          <Link
+            href="/demande-acces"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-xs font-bold text-slate-800 shadow-sm hover:bg-slate-50 dark:border-zinc-800 dark:bg-[#131926] dark:text-zinc-300 dark:hover:bg-zinc-800 transition"
+          >
+            Demander l'accès API
+          </Link>
+        </div>
       </section>
 
-      <footer className="border-t border-white/5 py-8 text-center text-xs text-slate-500">
-        © 2026 SMSIKA — Projet interne · Passerelle SMS autohébergée
+      <footer className="border-t border-slate-200/80 dark:border-zinc-800/80 py-8 text-center text-xs text-slate-500 dark:text-zinc-500">
+        © 2026 SMSIKA — Passerelle SMS autohébergée
         {' · '}
-        <Link href="/login" className="text-slate-400 hover:text-white">Espace client</Link>
+        <Link href="/login?onglet=client" className="text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white">Espace client</Link>
         {' · '}
-        <Link href="/demande-acces" className="text-slate-400 hover:text-white">Demander l&apos;accès</Link>
+        <Link href="/demande-acces" className="text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white">Demander l'accès</Link>
       </footer>
     </div>
   )

@@ -3,16 +3,17 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import {
-  Smartphone, CheckCircle2, Clock, XCircle, Send, Loader2, RefreshCw,
-  Activity, Signal, BarChart3, Inbox, ChevronRight, Hash,
+  Smartphone, Clock, Send, Loader2,
+  XCircle, CheckCircle2,
 } from 'lucide-react'
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
 } from 'recharts'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 import {
-  STATUTS_APPAREILS, STATUTS_TACHES, BadgeStatut, Toast, Modale, EtatVide, Progression,
+  STATUTS_TACHES, BadgeStatut, Toast, Modale,
 } from '../../composants/interface'
+import ModaleEnvoiSms from '../../composants/ModaleEnvoiSms'
 import { useTheme } from '../../lib/use-theme'
 
 interface Appareil {
@@ -29,29 +30,16 @@ interface Statistiques {
 }
 interface PointHoraire { hour: string; count: number }
 
-const ICONES_FIL: Record<string, React.ReactNode> = {
-  ENVOYE: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />,
-  ECHOUE: <XCircle className="h-3.5 w-3.5 text-red-500" />,
-  RECLAME: <Clock className="h-3.5 w-3.5 text-blue-500" />,
-  EN_ATTENTE: <Clock className="h-3.5 w-3.5 text-amber-500" />,
-}
-
 export default function DashboardPage() {
   const [appareils, setAppareils] = useState<Appareil[]>([])
   const [taches, setTaches] = useState<Tache[]>([])
   const [statistiques, setStatistiques] = useState<Statistiques | null>(null)
   const [parHeure, setParHeure] = useState<PointHoraire[]>([])
-  const [quota, setQuota] = useState(50)
   const [chargement, setChargement] = useState(true)
-  const [derniereActualisation, setDerniereActualisation] = useState(new Date())
   const [modaleOuverte, setModaleOuverte] = useState(false)
-  const [envoiEnCours, setEnvoiEnCours] = useState(false)
   const [tacheDetaillee, setTacheDetaillee] = useState<Tache | null>(null)
-  const [formulaire, setFormulaire] = useState({ to: '', message: '', cle_api: '', programme: '' })
   const [notification, setNotification] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
-  const [lienIntelligent, setLienIntelligent] = useState(false)
-  const [liensGeneres, setLiensGeneres] = useState<{ numero_destinataire: string; url: string }[]>([])
-  // Couleurs du graphique : suivent le toggle en direct via le hook partagé.
+
   const { modeSombre: graphiqueSombre } = useTheme()
 
   const afficherNotification = useCallback((type: 'succes' | 'erreur', texte: string) => {
@@ -62,14 +50,15 @@ export default function DashboardPage() {
   const calculerParHeure = useCallback((liste: Tache[]): PointHoraire[] => {
     const buckets = new Map<string, number>()
     const now = new Date()
-    for (let i = 23; i >= 0; i--) {
+    for (let i = 17; i >= 0; i--) {
       const d = new Date(now.getTime() - i * 3600_000)
-      buckets.set(`${d.getHours()}h`, 0)
+      const label = `${String(d.getHours()).padStart(2, '0')} h`
+      buckets.set(label, 0)
     }
     liste.forEach((t) => {
       const d = new Date(t.created_at)
       if (now.getTime() - d.getTime() <= 24 * 3600_000) {
-        const k = `${d.getHours()}h`
+        const k = `${String(d.getHours()).padStart(2, '0')} h`
         if (buckets.has(k)) buckets.set(k, (buckets.get(k) ?? 0) + 1)
       }
     })
@@ -78,30 +67,23 @@ export default function DashboardPage() {
 
   const chargerDonnees = useCallback(async () => {
     try {
-      const [d, t, s, q] = await Promise.all([
-        fetch('/api/devices'), fetch('/api/tasks'), fetch('/api/stats'), fetch('/api/settings'),
+      const [d, t, s] = await Promise.all([
+        fetch('/api/devices'), fetch('/api/tasks'), fetch('/api/stats'),
       ])
       const [dd, td, sd] = [await d.json(), await t.json(), await s.json()]
       if (dd.devices) setAppareils(dd.devices)
-      // Le serveur renvoie error_message : on l'expose aussi en `erreur`.
       const listeTaches: Tache[] = (td.tasks ?? []).map((tache: Tache) => ({
         ...tache, erreur: tache.erreur ?? tache.error_message ?? null,
       }))
       if (td.tasks) setTaches(listeTaches)
       if (sd.stats) setStatistiques(sd.stats)
-      if (q.ok) {
-        const qd = await q.json()
-        if (typeof qd.settings?.sms_quota_per_hour === 'number') {
-          setQuota(qd.settings.sms_quota_per_hour)
-        }
-      }
+
       try {
         const hr = await fetch('/api/stats/hourly')
         if (hr.ok) {
           const hd = await hr.json()
           if (hd.hourly) {
             setParHeure(hd.hourly)
-            setDerniereActualisation(new Date())
             return
           }
         }
@@ -109,7 +91,6 @@ export default function DashboardPage() {
       } catch {
         setParHeure(calculerParHeure(listeTaches))
       }
-      setDerniereActualisation(new Date())
     } catch {
       afficherNotification('erreur', 'Serveur injoignable')
     } finally {
@@ -118,340 +99,264 @@ export default function DashboardPage() {
   }, [calculerParHeure, afficherNotification])
 
   useEffect(() => {
-    const savedKey = localStorage.getItem('smsika-cle-api')
-    if (savedKey) setFormulaire((f) => ({ ...f, cle_api: savedKey }))
     chargerDonnees()
     const i = setInterval(() => chargerDonnees(), 3000)
     return () => clearInterval(i)
   }, [chargerDonnees])
 
-  async function envoyerSms(e: React.FormEvent) {
-    e.preventDefault()
-    setEnvoiEnCours(true)
-    setLiensGeneres([])
-    // Un numéro par ligne (virgules et points-virgules acceptés aussi).
-    const destinataires = formulaire.to.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean)
-    const programmeA = formulaire.programme ? new Date(formulaire.programme).toISOString() : undefined
-    try {
-      const reponse = await fetch('/api/sms/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: destinataires.length > 1 ? destinataires : destinataires[0] ?? '',
-          message: formulaire.message,
-          cle_api: formulaire.cle_api.trim(),
-          ...(programmeA ? { scheduled_at: programmeA } : {}),
-          ...(lienIntelligent ? { lien_intelligent: true } : {}),
-        }),
-      })
-      const donnees = await reponse.json().catch(() => null)
-      if (reponse.ok) {
-        afficherNotification(
-          'succes',
-          programmeA
-            ? (donnees?.message ?? 'SMS programmé')
-            : destinataires.length > 1 ? `${destinataires.length} SMS mis en file` : `SMS mis en file → ${formulaire.to.trim()}`
-        )
-        if (Array.isArray(donnees?.liens) && donnees.liens.length > 0) {
-          setLiensGeneres(donnees.liens)
-        } else {
-          setModaleOuverte(false)
-        }
-        setFormulaire({ to: '', message: '', cle_api: formulaire.cle_api, programme: '' })
-        chargerDonnees()
-      } else {
-        afficherNotification('erreur', donnees?.error ?? 'Erreur lors de l’envoi')
-      }
-    } catch {
-      afficherNotification('erreur', 'Erreur réseau')
-    } finally {
-      setEnvoiEnCours(false)
-    }
-  }
-
   if (chargement) {
     return (
-      <div className="flex h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-950">
+      <div className="flex h-screen items-center justify-center bg-slate-100 dark:bg-zinc-950">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     )
   }
 
-  const tachesRecentes = [...taches].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 8)
-  const fil = tachesRecentes.slice(0, 6)
-  const appareilDetaille = tacheDetaillee?.device_id ? appareils.find((d) => d.id === tacheDetaillee.device_id) : null
-  const grilleGraphique = graphiqueSombre ? '#3f3f46' : '#e4e4e7'
-  const graduationGraphique = graphiqueSombre ? '#a1a1aa' : '#71717a'
+  const appareilsEnLigneCount = statistiques?.online_devices ?? appareils.filter(a => a.statut === 'EN_LIGNE').length
+  const smsEnvoyesCount = statistiques?.tasks_sent ?? taches.filter(t => t.statut === 'ENVOYE').length
+  const fileAttenteCount = statistiques?.tasks_pending ?? taches.filter(t => ['EN_ATTENTE', 'RECLAME'].includes(t.statut)).length
+  const echecsCount = statistiques?.tasks_failed ?? taches.filter(t => t.statut === 'ECHOUE').length
+
+  const grilleGraphique = graphiqueSombre ? '#1f2937' : '#f1f5f9'
+  const graduationGraphique = graphiqueSombre ? '#6b7280' : '#94a3b8'
 
   return (
-    <CoquilleTableauDeBord
-      titre="Tableau de bord"
-      sousTitre={`Actualisé à ${derniereActualisation.toLocaleTimeString('fr-FR')} · auto 3 s`}
-      actions={
-        <>
-          <button onClick={() => chargerDonnees()}
-            className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-600 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700">
-            <RefreshCw className="h-4 w-4" /> Actualiser
-          </button>
-          <button onClick={() => { setLiensGeneres([]); setModaleOuverte(true) }}
-            className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
-            <Send className="h-4 w-4" /> Nouveau SMS
-          </button>
-        </>
-      }
-    >
-      {/* KPI */}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {[
-          { icon: <Smartphone className="h-5 w-5 text-emerald-600" />, label: 'Appareils en ligne', value: statistiques?.online_devices ?? 0, sub: `sur ${appareils.length} enregistré(s)`, accent: 'bg-emerald-50 dark:bg-emerald-500/10' },
-          { icon: <CheckCircle2 className="h-5 w-5 text-blue-600" />, label: 'SMS envoyés', value: statistiques?.tasks_sent ?? 0, sub: 'toutes périodes', accent: 'bg-blue-50 dark:bg-blue-500/10' },
-          { icon: <Clock className="h-5 w-5 text-amber-600" />, label: 'En file d’attente', value: statistiques?.tasks_pending ?? 0, sub: 'en attente d’assignation', accent: 'bg-amber-50 dark:bg-amber-500/10' },
-          { icon: <XCircle className="h-5 w-5 text-red-600" />, label: 'Échecs', value: statistiques?.tasks_failed ?? 0, sub: 'à traiter', accent: 'bg-red-50 dark:bg-red-500/10' },
-        ].map((k) => (
-          <div key={k.label} className={`rounded-2xl bg-white p-5 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800 ${k.accent}`}>
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{k.label}</p>
-                <p className="mt-1 text-3xl font-bold tabular-nums text-zinc-900 dark:text-white">{k.value}</p>
-                <p className="mt-1 text-xs text-zinc-400">{k.sub}</p>
-              </div>
-              <div className="rounded-xl bg-white/60 p-2.5 dark:bg-white/5">{k.icon}</div>
-            </div>
-          </div>
-        ))}
+    <CoquilleTableauDeBord>
+      {/* En-tête de page */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Tableau de bord</h1>
+          <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
+            Vue d'ensemble de l'activité SMSIKA sur les dernières 24 h.
+          </p>
+        </div>
+        <button
+          onClick={() => setModaleOuverte(true)}
+          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition"
+        >
+          <Send className="h-4 w-4" /> Nouveau SMS
+        </button>
       </div>
 
-      {/* Chart */}
-      <section className="mb-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-white">
-            <BarChart3 className="h-4 w-4 text-zinc-400" /> Activité SMS — dernières 24 h
-          </h2>
-          <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-            {parHeure.reduce((a, p) => a + p.count, 0)} SMS
-          </span>
+      {/* 4 cartes KPI */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        {/* Card 1 */}
+        <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Appareils en ligne</p>
+              <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{appareilsEnLigneCount}</p>
+              <p className="mt-1 text-xs text-slate-400 dark:text-zinc-500">{appareilsEnLigneCount} appareil connecté</p>
+            </div>
+            <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <Smartphone className="h-5 w-5" />
+            </div>
+          </div>
         </div>
-        <div className="h-56 w-full" suppressHydrationWarning>
+
+        {/* Card 2 */}
+        <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">SMS envoyés</p>
+              <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{smsEnvoyesCount}</p>
+              <p className="mt-1 text-xs text-slate-400 dark:text-zinc-500">Total des SMS envoyés</p>
+            </div>
+            <div className="rounded-xl bg-blue-50 p-2.5 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+              <Send className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3 */}
+        <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">En file d'attente</p>
+              <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{fileAttenteCount}</p>
+              <p className="mt-1 text-xs text-slate-400 dark:text-zinc-500">En attente d'expédition</p>
+            </div>
+            <div className="rounded-xl bg-amber-50 p-2.5 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
+              <Clock className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4 */}
+        <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Échecs</p>
+              <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{echecsCount}</p>
+              <p className="mt-1 text-xs text-slate-400 dark:text-zinc-500">
+                {echecsCount === 0 ? 'Aucune erreur détectée' : `${echecsCount} erreur(s) détectée(s)`}
+              </p>
+            </div>
+            <div className="rounded-xl bg-purple-50 p-2.5 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400">
+              <XCircle className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Graphique de l'activité */}
+      <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
+        <div className="mb-6 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Activité SMS — dernières 24 h</h2>
+            <p className="text-xs text-slate-400 dark:text-zinc-500">Volume des messages traités heure par heure</p>
+          </div>
+          <div className="flex items-center gap-4 text-xs font-medium text-slate-500 dark:text-zinc-400">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-blue-600" /> Envoyés
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" /> Reçus
+            </span>
+          </div>
+        </div>
+        <div className="h-52 w-full" suppressHydrationWarning>
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={parHeure} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
+            <AreaChart data={parHeure} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
-                <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2563eb" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#2563eb" stopOpacity={0.02} />
+                <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.2} />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={grilleGraphique} vertical={false} />
-              <XAxis dataKey="hour" tick={{ fill: graduationGraphique, fontSize: 11 }} tickLine={false} axisLine={{ stroke: grilleGraphique }} interval="preserveStartEnd" />
-              <YAxis allowDecimals={false} tick={{ fill: graduationGraphique, fontSize: 11 }} tickLine={false} axisLine={false} />
-              <Tooltip formatter={(v) => [`${v ?? 0} SMS`, 'Envoyés']} />
-              <Area type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} fill="url(#g)" />
+              <XAxis dataKey="hour" tick={{ fill: graduationGraphique, fontSize: 10 }} tickLine={false} axisLine={false} />
+              <YAxis allowDecimals={false} tick={{ fill: graduationGraphique, fontSize: 10 }} tickLine={false} axisLine={false} />
+              <Tooltip formatter={(v) => [`${v ?? 0} SMS`, 'Total']} />
+              <Area type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2.5} fill="url(#blueGradient)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </section>
-
-      {/* Appareils + Activité */}
-      <div className="mb-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <section className="rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800 xl:col-span-2">
-          <div className="flex items-center gap-2 border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
-            <Signal className="h-4 w-4 text-zinc-400" />
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Appareils connectés</h2>
-            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{appareils.length}</span>
-          </div>
-          {appareils.length === 0 ? (
-            <EtatVide icone={<Smartphone className="h-9 w-9" />} titre="Aucun appareil" indice="Installez l'app Android et associez-la au serveur." />
-          ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-zinc-100 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:border-zinc-800">
-                  <th className="px-5 py-3">Appareil</th><th className="px-5 py-3">Statut</th>
-                  <th className="px-5 py-3 w-52">SMS/h</th><th className="px-5 py-3">Activité</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/60">
-                {appareils.map((d) => (
-                  <tr key={d.id} className="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40">
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
-                          <Smartphone className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-                        </div>
-                        <p className="font-medium text-zinc-800 dark:text-zinc-200">{d.nom}</p>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5"><BadgeStatut statut={d.statut} config={STATUTS_APPAREILS} /></td>
-                    <td className="px-5 py-3.5">
-                      <Progression valeur={d.sms_last_hour} max={quota} afficherValeur />
-                    </td>
-                    <td className="px-5 py-3.5 text-xs text-zinc-400">
-                      {d.derniere_activite ? new Date(d.derniere_activite).toLocaleTimeString('fr-FR') : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </section>
-
-        {/* Flux d'activité */}
-        <section className="rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
-          <div className="flex items-center gap-2 border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
-            <Activity className="h-4 w-4 text-zinc-400" />
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Flux d&apos;activité</h2>
-          </div>
-          <div className="p-3">
-            {fil.length === 0 ? (
-              <EtatVide icone={<Inbox className="h-8 w-8" />} titre="Aucune activité" />
-            ) : fil.map((t) => (
-              <button key={t.id} onClick={() => setTacheDetaillee(t)}
-                className="flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                {ICONES_FIL[t.statut] ?? <Clock className="h-3.5 w-3.5 text-zinc-400" />}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-medium text-zinc-800 dark:text-zinc-200">{t.numero_destinataire}</p>
-                  <p className="truncate text-[11px] text-zinc-400">{STATUTS_TACHES[t.statut]?.label ?? t.statut}</p>
-                </div>
-                <span className="text-[11px] text-zinc-400">{new Date(t.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
-              </button>
-            ))}
-          </div>
-        </section>
       </div>
 
-      {/* Dernières tâches — cliquables */}
-      <section className="rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
-        <div className="flex items-center gap-2 border-b border-zinc-100 px-5 py-4 dark:border-zinc-800">
-          <Activity className="h-4 w-4 text-zinc-400" />
-          <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Dernières tâches</h2>
-          <Link href="/history" className="ml-auto flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline dark:text-blue-400">
-            Tout voir <ChevronRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-        <div className="divide-y divide-zinc-50 dark:divide-zinc-800/60">
-          {tachesRecentes.map((t) => (
-            <button key={t.id} onClick={() => setTacheDetaillee(t)}
-              className="flex w-full items-center gap-4 px-5 py-3 text-left hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40">
-              <span className="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t.numero_destinataire}</span>
-              <span className="min-w-0 flex-1 truncate text-xs text-zinc-500 dark:text-zinc-400">{t.message}</span>
-              {t.erreur && (
-                <span className="hidden max-w-40 truncate text-[11px] text-red-500 md:inline" title={t.erreur}>{t.erreur}</span>
-              )}
-              <BadgeStatut statut={t.statut} config={STATUTS_TACHES} />
-              <span className="text-xs text-zinc-400">{new Date(t.created_at).toLocaleTimeString('fr-FR')}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* ===== MODALE : fiche tâche (inspection) ===== */}
-      <Modale ouvert={!!tacheDetaillee} onFermer={() => setTacheDetaillee(null)} large
-        titre="Détail de la tâche" sousTitre="Traçabilité complète pour l'audit et le debug anti-doublon">
-        {tacheDetaillee && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <BadgeStatut statut={tacheDetaillee.statut} config={STATUTS_TACHES} />
-              {tacheDetaillee.erreur && (
-                <span className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 dark:bg-red-500/10 dark:text-red-400">
-                  {tacheDetaillee.erreur}
-                </span>
-              )}
-            </div>
-            <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800/60">
-              <p className="text-lg font-bold text-zinc-900 dark:text-white">{tacheDetaillee.numero_destinataire}</p>
-              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{tacheDetaillee.message}</p>
-            </div>
-            <dl className="grid grid-cols-2 gap-3 text-xs">
-              {[
-                ['Créée le', new Date(tacheDetaillee.created_at).toLocaleString('fr-FR')],
-                ['Mise à jour', new Date(tacheDetaillee.updated_at).toLocaleString('fr-FR')],
-                ['Appareil assigné', appareilDetaille?.nom ?? (tacheDetaillee.device_id ? 'inconnu' : '—')],
-                ['Statut serveur', tacheDetaillee.statut],
-              ].map(([k, v]) => (
-                <div key={k} className="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800/60">
-                  <dt className="text-zinc-400">{k}</dt>
-                  <dd className="mt-0.5 font-semibold text-zinc-800 dark:text-zinc-200">{v}</dd>
-                </div>
-              ))}
-            </dl>
-            {/* Idempotence : preuve piège n°3 */}
-            <div className="flex items-center gap-2 rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-700">
-              <Hash className="h-3.5 w-3.5 text-zinc-400" />
-              <span className="text-[11px] text-zinc-400">ID unique (idempotence) :</span>
-              <code className="flex-1 truncate font-mono text-[11px] text-zinc-600 dark:text-zinc-300">{tacheDetaillee.id}</code>
-            </div>
-            <p className="text-[11px] leading-relaxed text-zinc-400">
-              Cet identifiant garantit qu&apos;une re-délivrance (coupure réseau, redémarrage) ne provoque
-              jamais un double envoi : le serveur rejette les accusés portant un ID déjà traité.
-            </p>
+      {/* Grille 2 colonnes du bas */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        {/* Appareils connectés */}
+        <div className="rounded-2xl bg-white shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2">
+          <div className="border-b border-slate-100 px-6 py-4 dark:border-zinc-800/80">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Appareils connectés</h2>
+            <p className="text-xs text-slate-400 dark:text-zinc-500">{appareils.length} appareil{appareils.length > 1 ? 's' : ''} enregistré{appareils.length > 1 ? 's' : ''}</p>
           </div>
-        )}
-      </Modale>
 
-      {/* ===== MODALE : envoi ===== */}
-      <Modale ouvert={modaleOuverte} onFermer={() => { if (!envoiEnCours) { setModaleOuverte(false); setLiensGeneres([]) } }}
-        titre="Envoyer un SMS" sousTitre="La tâche sera ajoutée à la file d'attente">
-        {liensGeneres.length > 0 ? (
-          <div className="space-y-3">
-            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-              {liensGeneres.length} lien(s) généré(s) — copiez-les :
-            </p>
-            <ul className="max-h-64 space-y-2 overflow-y-auto">
-              {liensGeneres.map((l) => (
-                <li key={l.url} className="rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800/60">
-                  <p className="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">{l.numero_destinataire}</p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <code className="flex-1 truncate font-mono text-xs text-blue-600 dark:text-blue-400">{l.url}</code>
-                    <button type="button" onClick={() => navigator.clipboard?.writeText(l.url)}
-                      className="rounded-lg border border-zinc-200 px-2 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-700">
-                      Copier
-                    </button>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-100 bg-slate-50/50 text-left font-semibold uppercase tracking-wider text-slate-400 dark:border-zinc-800 dark:bg-zinc-800/30">
+                  <th className="px-6 py-3">APPAREIL</th>
+                  <th className="px-6 py-3">STATUT</th>
+                  <th className="px-6 py-3">SMS/H</th>
+                  <th className="px-6 py-3">ACTIVITÉ</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60">
+                {appareils.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-10 text-center text-xs text-slate-400 dark:text-zinc-500">
+                      Aucun appareil enregistré.{' '}
+                      <Link href="/devices/add" className="font-semibold text-blue-600 hover:underline dark:text-blue-400">
+                        Ajouter un téléphone
+                      </Link>
+                    </td>
+                  </tr>
+                ) : (
+                  appareils.map((a) => (
+                    <tr key={a.id} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/40">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+                            <Smartphone className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-800 dark:text-zinc-200">{a.nom}</p>
+                            <p className="font-mono text-[11px] text-slate-400">{a.id.substring(0, 8)}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {a.statut === 'EN_LIGNE' ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> En ligne
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-0.5 text-[11px] font-semibold text-red-600 dark:bg-red-500/10 dark:text-red-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-red-500" /> Hors ligne
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 font-semibold text-slate-600 dark:text-zinc-300">{a.sms_last_hour ?? 0}/h</td>
+                      <td className="px-6 py-4 font-mono text-slate-500 dark:text-zinc-400">
+                        {a.derniere_activite ? new Date(a.derniere_activite).toLocaleTimeString('fr-FR') : '—'}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Flux d'activité */}
+        <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Flux d'activité</h2>
+          <p className="text-xs text-slate-400 dark:text-zinc-500 mb-4">Événements récents</p>
+
+          {taches.length === 0 ? (
+            <p className="text-xs text-slate-400 dark:text-zinc-500">Aucun événement pour le moment.</p>
+          ) : (
+            <div className="space-y-4">
+              {taches.slice(0, 5).map((t) => (
+                <button key={t.id} onClick={() => setTacheDetaillee(t)} className="flex w-full items-start gap-3 text-left">
+                  <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${t.statut === 'ENVOYE' ? 'bg-emerald-500' : t.statut === 'ECHOUE' ? 'bg-red-500' : 'bg-amber-500'}`} />
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-bold text-slate-800 dark:text-zinc-200">
+                      {STATUTS_TACHES[t.statut]?.label ?? t.statut} — {t.numero_destinataire}
+                    </p>
+                    <p className="text-[11px] text-slate-400">
+                      {new Date(t.updated_at ?? t.created_at).toLocaleString('fr-FR', {
+                        day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+                      })}
+                    </p>
                   </div>
-                </li>
+                </button>
               ))}
-            </ul>
-            <button type="button" onClick={() => { setModaleOuverte(false); setLiensGeneres([]) }}
-              className="w-full rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700">
-              Fermer
-            </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Modal fiche tâche */}
+      <Modale ouvert={!!tacheDetaillee} onFermer={() => setTacheDetaillee(null)} large titre="Détail de la tâche">
+        {tacheDetaillee && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="font-mono text-sm font-bold text-slate-800 dark:text-zinc-200">{tacheDetaillee.numero_destinataire}</p>
+              <BadgeStatut statut={tacheDetaillee.statut} config={STATUTS_TACHES} />
+            </div>
+            <p className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600 dark:bg-zinc-800 dark:text-zinc-300">{tacheDetaillee.message}</p>
+            {(tacheDetaillee.erreur ?? tacheDetaillee.error_message) && (
+              <p className="text-xs text-red-500">{tacheDetaillee.erreur ?? tacheDetaillee.error_message}</p>
+            )}
+            <p className="text-[11px] text-slate-400">
+              Créée le {new Date(tacheDetaillee.created_at).toLocaleString('fr-FR')}
+            </p>
           </div>
-        ) : (
-        <form onSubmit={envoyerSms} className="space-y-4">
-          <textarea required rows={3} placeholder="+261328725411&#10;+261331298765 (un par ligne)" value={formulaire.to}
-            onChange={(e) => setFormulaire({ ...formulaire, to: e.target.value })}
-            className="w-full resize-none rounded-lg border border-zinc-200 px-3 py-2 font-mono text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
-          <div>
-            <textarea required rows={3} maxLength={160} placeholder="Votre message…" value={formulaire.message}
-              onChange={(e) => setFormulaire({ ...formulaire, message: e.target.value })}
-              className="w-full resize-none rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
-            <p className="mt-1 text-right text-[11px] text-zinc-400">{formulaire.message.length}/160</p>
-          </div>
-          <input type="password" required value={formulaire.cle_api}
-            onChange={(e) => setFormulaire({ ...formulaire, cle_api: e.target.value })}
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
-          <div>
-            <label className="mb-1 block text-xs font-medium text-zinc-500 dark:text-zinc-400">
-              Programmer l&apos;envoi (optionnel)
-            </label>
-            <input type="datetime-local" value={formulaire.programme}
-              onChange={(e) => setFormulaire({ ...formulaire, programme: e.target.value })}
-              className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
-          </div>
-          <label className="flex cursor-pointer items-start gap-2.5">
-            <input type="checkbox" checked={lienIntelligent}
-              onChange={(e) => setLienIntelligent(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500/20" />
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              Lien intelligent : génère une URL courte de suivi par destinataire.
-              Placez <code className="font-mono">{'{LIEN}'}</code> dans le message pour choisir sa position (sinon ajouté à la fin) — les liens s&apos;affichent après l&apos;envoi.
-            </span>
-          </label>
-          <button type="submit" disabled={envoiEnCours}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
-            {envoiEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            {envoiEnCours ? 'Envoi…' : 'Envoyer'}
-          </button>
-        </form>
         )}
       </Modale>
+
+      {/* Modal nouveau SMS */}
+      <ModaleEnvoiSms
+        ouvert={modaleOuverte}
+        onFermer={() => setModaleOuverte(false)}
+        onSucces={(message) => {
+          afficherNotification('succes', message)
+          chargerDonnees()
+        }}
+      />
 
       <Toast notification={notification} />
     </CoquilleTableauDeBord>

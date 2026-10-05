@@ -12,14 +12,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.FormatListNumbered
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,17 +31,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mitia.smsgateway.ui.theme.BleuAccent
-import com.mitia.smsgateway.ui.theme.FondCarte
-import com.mitia.smsgateway.ui.theme.TexteAttenue
-import com.mitia.smsgateway.ui.theme.TextePrincipal
 
 enum class OngletTableauDeBord(val label: String, val icone: ImageVector) {
-    STATUT("statut", Icons.Filled.Smartphone),
-    TACHES("tâches", Icons.Filled.List),
-    JOURNAL("journal", Icons.Filled.History),
-    DIAGNOSTIC("diag", Icons.Filled.Info),
-    STATS("stats", Icons.Filled.BarChart),
-    REGLAGES("réglages", Icons.Filled.Settings),
+    STATUT("Statut", Icons.Filled.GridView),
+    TACHES("Tâches", Icons.Filled.Inbox),
+    JOURNAL("Journal", Icons.Filled.FormatListNumbered),
+    DIAGNOSTIC("Diagnostic", Icons.Filled.LocalHospital),
+    STATS("Perf.", Icons.Filled.BarChart),
+    REGLAGES("Param.", Icons.Filled.Settings),
 }
 
 @Composable
@@ -52,13 +50,13 @@ fun BarreNavigationBasse(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = FondCarte,
-        tonalElevation = 4.dp,
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 8.dp,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp),
+                .padding(vertical = 8.dp, horizontal = 2.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -81,13 +79,13 @@ private fun ElementNavigation(
     compteurPastille: Int,
     auClic: () -> Unit,
 ) {
-    val teinte = if (selectionne) BleuAccent else TexteAttenue
+    val teinte = if (selectionne) BleuAccent else MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .clickable(onClick = auClic)
-            .padding(horizontal = 8.dp),
+            .padding(horizontal = 4.dp, vertical = 2.dp),
     ) {
         BadgedBox(
             badge = {
@@ -98,15 +96,15 @@ private fun ElementNavigation(
         ) {
             if (selectionne) {
                 Surface(
-                    color = BleuAccent.copy(alpha = 0.18f),
+                    color = BleuAccent.copy(alpha = 0.12f),
                     shape = CircleShape,
                 ) {
                     Icon(
                         imageVector = onglet.icone,
                         contentDescription = onglet.label,
-                        tint = teinte,
+                        tint = BleuAccent,
                         modifier = Modifier
-                            .padding(7.dp)
+                            .padding(6.dp)
                             .size(20.dp),
                     )
                 }
@@ -115,7 +113,7 @@ private fun ElementNavigation(
                     imageVector = onglet.icone,
                     contentDescription = onglet.label,
                     tint = teinte,
-                    modifier = Modifier.size(22.dp),
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }
@@ -123,8 +121,8 @@ private fun ElementNavigation(
         Text(
             text = onglet.label,
             color = teinte,
-            fontSize = 11.sp,
-            fontWeight = if (selectionne) FontWeight.SemiBold else FontWeight.Normal,
+            fontSize = 10.sp,
+            fontWeight = if (selectionne) FontWeight.Bold else FontWeight.Medium,
         )
     }
 }

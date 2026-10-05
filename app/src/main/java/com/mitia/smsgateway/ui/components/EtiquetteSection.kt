@@ -1,6 +1,7 @@
 package com.mitia.smsgateway.ui.components
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -8,7 +9,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mitia.smsgateway.ui.theme.TexteAttenue
 
 /**
  * Micro-label de section (style overline) : petites capitales espacées,
@@ -21,7 +21,7 @@ fun EtiquetteSection(
 ) {
     Text(
         text = texte.uppercase(),
-        color = TexteAttenue,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         fontSize = 11.sp,
         fontWeight = FontWeight.Bold,
         letterSpacing = 1.5.sp,

@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.mitia.smsgateway.data.local.PreferencesAppareil
 import com.mitia.smsgateway.service.ServicePasserelleSms
 import com.mitia.smsgateway.ui.NavigationApp
 import com.mitia.smsgateway.ui.views.EcranIntegration
@@ -94,9 +95,25 @@ class MainActivity : ComponentActivity() {
         }
         enableEdgeToEdge()
         setContent {
-            ThemePasserelleSms {
+            val context = LocalContext.current
+            val portee = rememberCoroutineScope()
+            var themeSombre by remember { mutableStateOf(true) }
+
+            LaunchedEffect(Unit) {
+                themeSombre = PreferencesAppareil.estThemeSombre(context)
+            }
+
+            ThemePasserelleSms(themeSombre = themeSombre) {
                 EcranPrincipal(
                     compteurPermissions = compteurPermissions,
+                    themeSombre = themeSombre,
+                    auChangementTheme = {
+                        val nouveau = !themeSombre
+                        themeSombre = nouveau
+                        portee.launch {
+                            PreferencesAppareil.enregistrerThemeSombre(context, nouveau)
+                        }
+                    },
                     aDemanderPermissionSms = {
                         demandePermissionSms.launch(Manifest.permission.SEND_SMS)
                     },
@@ -117,7 +134,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun demarrerServicePasserelle() {        val intention = Intent(this, ServicePasserelleSms::class.java)
+    private fun demarrerServicePasserelle() {
+        val intention = Intent(this, ServicePasserelleSms::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intention)
         } else {
@@ -174,6 +192,8 @@ class MainActivity : ComponentActivity() {
 fun EcranPrincipal(
     modifier: Modifier = Modifier,
     compteurPermissions: Int = 0,
+    themeSombre: Boolean = true,
+    auChangementTheme: () -> Unit = {},
     aDemanderPermissionSms: () -> Unit = {},
     aDemanderPermissionNotifications: () -> Unit = {},
     auDemarrageService: () -> Unit = {},
@@ -313,106 +333,110 @@ fun EcranPrincipal(
             modifier = modifier,
         )
     } else {
-    NavigationApp(
-        modifier = modifier,
-        nomAppareil = nomAppareil,
-        estEnLigne = connecte,
-        serviceActif = serviceActif,
-        smsEnvoyesAujourdhui = envoyesAujourdhui,
-        smsEnAttente = dernierCompteur,
-        reseau = reseau,
-        pourcentageBatterie = pourcentageBatterie,
-        batterieEnCharge = batterieEnCharge,
-        quotaSmsUtilise = usageQuota,
-        quotaSmsTotal = quota,
-        auDemarrageService = {
-            auDemarrageService()
-            portee.launch {
-                kotlinx.coroutines.delay(1000)
+        NavigationApp(
+            modifier = modifier,
+            themeSombre = themeSombre,
+            auChangementTheme = auChangementTheme,
+            nomAppareil = nomAppareil,
+            estEnLigne = connecte,
+            serviceActif = serviceActif,
+            smsEnvoyesAujourdhui = envoyesAujourdhui,
+            smsEnAttente = dernierCompteur,
+            reseau = reseau,
+            pourcentageBatterie = pourcentageBatterie,
+            batterieEnCharge = batterieEnCharge,
+            quotaSmsUtilise = usageQuota,
+            quotaSmsTotal = quota,
+            auDemarrageService = {
+                auDemarrageService()
+                portee.launch {
+                    kotlinx.coroutines.delay(1000)
+                    actualiser()
+                }
+            },
+            aActualiserStatut = { actualiser() },
+            aArretService = {
+                aArretService()
                 actualiser()
-            }
-        },
-        aArretService = {
-            aArretService()
-            actualiser()
-        },
-        taches = historique,
-        derniereSynchro = derniereSynchro,
-        evenements = evenements,
-        aExporterJournal = aExporterJournal,
-        aViderJournal = {
-            portee.launch { conteneur.depotJournaux.effacer() }
-        },
-        urlServeur = urlServeur,
-        auChangementUrlServeur = { urlServeur = it; messageParametres = "" },
-        jetonAppareil = jetonAppareil,
-        auChangementNomAppareil = { nomAppareil = it; messageParametres = "" },
-        messageParametres = messageParametres,
-        aEnregistrerServeur = {
-            portee.launch {
-                if (urlServeur.isBlank()) {
-                    messageParametres = "Renseigne l'adresse du serveur."
-                    return@launch
+            },
+            taches = historique,
+            derniereSynchro = derniereSynchro,
+            aViderTaches = {
+                portee.launch { com.mitia.smsgateway.data.local.MagasinHistoriqueTaches.effacer(context) }
+            },
+            evenements = evenements,
+            aExporterJournal = aExporterJournal,
+            aViderJournal = {
+                portee.launch { conteneur.depotJournaux.effacer() }
+            },
+            urlServeur = urlServeur,
+            auChangementUrlServeur = { urlServeur = it; messageParametres = "" },
+            jetonAppareil = jetonAppareil,
+            auChangementNomAppareil = { nomAppareil = it; messageParametres = "" },
+            messageParametres = messageParametres,
+            aEnregistrerServeur = {
+                portee.launch {
+                    if (urlServeur.isBlank()) {
+                        messageParametres = "Renseigne l'adresse du serveur."
+                        return@launch
+                    }
+                    val normalise = conteneur.depotAppareils.enregistrerUrlServeur(urlServeur)
+                    messageParametres = "Adresse enregistrée : $normalise"
+                    actualiser()
                 }
-                // On ne réécrit pas le champ : il garde la frappe, le message
-                // affiche la forme normalisée réellement enregistrée.
-                val normalise = conteneur.depotAppareils.enregistrerUrlServeur(urlServeur)
-                messageParametres = "Adresse enregistrée : $normalise"
-                actualiser()
-            }
-        },
-        aTesterConnexion = {
-            portee.launch {
-                if (urlServeur.isBlank()) {
-                    messageParametres = "Renseigne l'adresse du serveur."
-                    return@launch
+            },
+            aTesterConnexion = {
+                portee.launch {
+                    if (urlServeur.isBlank()) {
+                        messageParametres = "Renseigne l'adresse du serveur."
+                        return@launch
+                    }
+                    messageParametres = if (conteneur.depotAppareils.ping(urlServeur)) {
+                        "Serveur joignable : $urlServeur"
+                    } else {
+                        "Serveur injoignable : vérifie l'IP et que « npm run dev » tourne."
+                    }
                 }
-                messageParametres = if (conteneur.depotAppareils.ping(urlServeur)) {
-                    "Serveur joignable : $urlServeur"
-                } else {
-                    "Serveur injoignable : vérifie l'IP et que « npm run dev » tourne."
+            },
+            aEnregistrerNom = {
+                portee.launch {
+                    val nettoye = nomAppareil.trim()
+                    if (nettoye.isEmpty()) {
+                        messageParametres = "Donne un nom à l'appareil."
+                        return@launch
+                    }
+                    conteneur.depotAppareils.enregistrerNomAppareil(nettoye)
+                    nomAppareil = nettoye
+                    messageParametres = "Nom enregistré : $nettoye (appliqué au prochain enregistrement)"
                 }
-            }
-        },
-        aEnregistrerNom = {
-            portee.launch {
-                val nettoye = nomAppareil.trim()
-                if (nettoye.isEmpty()) {
-                    messageParametres = "Donne un nom à l'appareil."
-                    return@launch
+            },
+            aReinitialiserAppareil = {
+                portee.launch {
+                    conteneur.depotAppareils.effacerIdentifiants()
+                    jetonAppareil = null
+                    messageParametres = "Appareil réinitialisé : redémarre le service pour le ré-enregistrer."
+                    actualiser()
                 }
-                conteneur.depotAppareils.enregistrerNomAppareil(nettoye)
-                nomAppareil = nettoye
-                messageParametres = "Nom enregistré : $nettoye (appliqué au prochain enregistrement)"
-            }
-        },
-        aReinitialiserAppareil = {
-            portee.launch {
-                conteneur.depotAppareils.effacerIdentifiants()
-                jetonAppareil = null
-                messageParametres = "Appareil réinitialisé : redémarre le service pour le ré-enregistrer."
-                actualiser()
-            }
-        },
-        aDeconnecter = {
-            aArretService()
-            messageParametres = "Service arrêté : l'appareil n'envoie plus de SMS."
-        },
-        permissionSms = permissionSms,
-        permissionNotifications = permissionNotifications,
-        batterieOk = batterieOk,
-        aDemanderPermissionSms = aDemanderPermissionSms,
-        aDemanderPermissionNotifications = aDemanderPermissionNotifications,
-        aOuvrirReglagesBatterie = {
-            try {
-                context.startActivity(
-                    Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                )
-            } catch (e: Exception) {
-                messageParametres = "Impossible d'ouvrir les réglages batterie."
-            }
-        },
-    )
+            },
+            aDeconnecter = {
+                aArretService()
+                messageParametres = "Service arrêté : l'appareil n'envoie plus de SMS."
+            },
+            permissionSms = permissionSms,
+            permissionNotifications = permissionNotifications,
+            batterieOk = batterieOk,
+            aDemanderPermissionSms = aDemanderPermissionSms,
+            aDemanderPermissionNotifications = aDemanderPermissionNotifications,
+            aOuvrirReglagesBatterie = {
+                try {
+                    context.startActivity(
+                        Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                    )
+                } catch (e: Exception) {
+                    messageParametres = "Impossible d'ouvrir les réglages batterie."
+                }
+            },
+        )
     }
 }
 

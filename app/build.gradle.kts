@@ -22,9 +22,14 @@ android {
 
     buildTypes {
         release {
-            optimization {
-                enable = false
-            }
+            // Réduit APK + RAM (R8) : règles Gson/Firebase dans proguard-rules.pro.
+            // Tester l'APK release sur appareil avant diffusion (réflexion).
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {

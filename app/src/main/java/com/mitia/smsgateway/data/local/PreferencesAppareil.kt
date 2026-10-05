@@ -11,7 +11,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.first
 
 /**
- * Stockage local de l'identifiant d'appareil et du jeton d'authentification.
+ * Stockage local de l'identifiant d'appareil, du jeton d'authentification et des préférences UI.
  * Utilise DataStore Preferences (recommandé par Android depuis 2020).
  */
 private val Context.magasinDonnees by preferencesDataStore(name = "sms_gateway_prefs")
@@ -36,12 +36,37 @@ object PreferencesAppareil {
     private val CLE_SIM_MODE = stringPreferencesKey("sim_mode")
     private val CLE_SIM_SOUSCRIPTION = intPreferencesKey("sim_sub_id")
     private val CLE_SIM_COMPTEUR = intPreferencesKey("sim_counter")
+    private val CLE_THEME_SOMBRE = booleanPreferencesKey("dark_theme")
+    private val CLE_DEMARRAGE_AUTO = booleanPreferencesKey("demarrage_auto")
 
     const val DEFAUT_SERVEUR_HOTE = "192.168.4.147"
     const val DEFAUT_SERVEUR_PORT = "3000"
 
     /** Serveur de production : aucune saisie nécessaire par défaut. */
     const val DEFAUT_SERVEUR_URL = "https://sms-gateway-omega.vercel.app"
+
+    /**
+     * Preference thème UI : mode sombre par défaut (true).
+     */
+    suspend fun estThemeSombre(context: Context): Boolean {
+        return context.magasinDonnees.data.first()[CLE_THEME_SOMBRE] ?: true
+    }
+
+    suspend fun enregistrerThemeSombre(context: Context, sombre: Boolean) {
+        context.magasinDonnees.edit { prefs -> prefs[CLE_THEME_SOMBRE] = sombre }
+    }
+
+    /**
+     * Démarrage automatique du service au boot (vrai interrupteur
+     * de l'écran Paramètres, lu par RecepteurDemarrage).
+     */
+    suspend fun estDemarrageAuto(context: Context): Boolean {
+        return context.magasinDonnees.data.first()[CLE_DEMARRAGE_AUTO] ?: true
+    }
+
+    suspend fun enregistrerDemarrageAuto(context: Context, actif: Boolean) {
+        context.magasinDonnees.edit { prefs -> prefs[CLE_DEMARRAGE_AUTO] = actif }
+    }
 
     /**
      * URL complète du serveur, exactement telle que saisie

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Receipt } from 'lucide-react'
+import { Receipt, ChevronDown } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import { Toast } from '../../../composants/interface'
 
@@ -54,7 +54,7 @@ export default function PageFacturationEspace() {
       })
       if (reponse.ok) {
         setDemandeEnvoyee(true)
-        afficherNotification('succes', 'Demande transmise à l\u2019administrateur')
+        afficherNotification('succes', 'Demande transmise à l’administrateur')
       } else {
         afficherNotification('erreur', 'Envoi impossible')
       }
@@ -68,69 +68,101 @@ export default function PageFacturationEspace() {
     : 0
 
   return (
-    <CoquilleEspace titre="Facturation" sousTitre="Votre consommation mensuelle">
-      <div className="mb-2 max-w-5xl">
-        <input type="month" value={mois} onChange={(e) => e.target.value && setMois(e.target.value)}
-          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200" />
+    <CoquilleEspace>
+      {/* En-tête */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Facturation</h1>
+          <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
+            Consultez le relevé détaillé de votre consommation mensuelle.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Période</span>
+          <div className="relative">
+            <input
+              type="month"
+              value={mois}
+              onChange={(e) => e.target.value && setMois(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs font-semibold text-slate-700 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+            />
+          </div>
+        </div>
       </div>
+
       {!ligne ? (
-        <p className="text-sm text-zinc-400">Chargement…</p>
+        <p className="text-xs text-slate-400 dark:text-zinc-500">Chargement des données...</p>
       ) : (
         <>
-        <div className="mb-4 grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-4">
-          {[
-            ['SMS envoyés', ligne.sms_envoyes],
-            ['SMS reçus', ligne.sms_recus],
-            ['Clics', ligne.clics],
-            ['Échecs', ligne.echecs],
-          ].map(([etiquette, valeur]) => (
-            <div key={etiquette as string} className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
-              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{etiquette}</p>
-              <p className="mt-1 text-2xl font-bold tabular-nums text-zinc-900 dark:text-white">{valeur}</p>
-            </div>
-          ))}
-        </div>
-        <section className="max-w-5xl rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
-          <div className="mb-4 flex items-center gap-2">
-            <Receipt className="h-4 w-4 text-zinc-400" />
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
-              {ligne.mois} — {ligne.total_facture} unité(s)
-            </h2>
-            {ligne.depassement && (
-              <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600 dark:bg-red-500/15 dark:text-red-400">
-                QUOTA DÉPASSÉ
-              </span>
-            )}
-          </div>
-          <div className="mt-4">
-            <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-              <span>Quota mensuel</span>
-              <span className="font-semibold tabular-nums text-zinc-800 dark:text-zinc-200">
-                {ligne.total_facture} / {ligne.quota_mensuel ?? '∞'}
-              </span>
-            </div>
-            {ligne.quota_mensuel !== null && (
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
-                <div className={`h-full rounded-full ${pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-amber-500' : 'bg-blue-500'}`} style={{ width: `${pct}%` }} />
+          {/* 4 Cartes statistiques */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              ['SMS envoyés', ligne.sms_envoyes],
+              ['SMS reçus', ligne.sms_recus],
+              ['Clics liens', ligne.clics],
+              ['Échecs', ligne.echecs],
+            ].map(([etiquette, valeur]) => (
+              <div key={etiquette as string} className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
+                <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">{etiquette}</p>
+                <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{valeur}</p>
               </div>
-            )}
+            ))}
           </div>
-          <p className="mt-4 text-xs text-zinc-400">
-            1 unité = 1 SMS créé dans le mois. Facturation établie par votre administrateur.
-          </p>
-          {!demandeEnvoyee ? (
-            <button onClick={demanderQuota}
-              className="mt-3 rounded-lg border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
-              Demander une augmentation de quota
-            </button>
-          ) : (
-            <p className="mt-3 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-              Demande transmise — votre administrateur reviendra vers vous.
-            </p>
-          )}
-        </section>
+
+          {/* Carte principale consommations & quotas */}
+          <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Receipt className="h-5 w-5 text-blue-600" />
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900 dark:text-white">Relevé de {ligne.mois}</h2>
+                  <p className="text-xs text-slate-400 dark:text-zinc-500">{ligne.total_facture} unité(s) consommée(s)</p>
+                </div>
+              </div>
+              {ligne.depassement && (
+                <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600 dark:bg-red-500/10 dark:text-red-400">
+                  QUOTA ATTEINT
+                </span>
+              )}
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-2">
+                <span>Quota de votre compte</span>
+                <span>{ligne.total_facture} / {ligne.quota_mensuel ?? '∞'} SMS</span>
+              </div>
+              {ligne.quota_mensuel !== null && (
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-zinc-800">
+                  <div
+                    className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-amber-500' : 'bg-blue-600'}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <p className="text-xs text-slate-400 dark:text-zinc-500">
+                1 unité correspond à 1 SMS créé dans le mois. La facturation finale est calculée en fin de mois.
+              </p>
+              {!demandeEnvoyee ? (
+                <button
+                  onClick={demanderQuota}
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-200 shrink-0"
+                >
+                  Demander plus de quota
+                </button>
+              ) : (
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                  Demande d'augmentation envoyée
+                </span>
+              )}
+            </div>
+          </div>
         </>
       )}
+
       <Toast notification={notification} />
     </CoquilleEspace>
   )

@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,9 +30,6 @@ import com.mitia.smsgateway.domain.model.Statuts
 import com.mitia.smsgateway.ui.theme.BleuAccent
 import com.mitia.smsgateway.ui.theme.VertAccent
 import com.mitia.smsgateway.ui.theme.RougeAccent
-import com.mitia.smsgateway.ui.theme.TexteAttenue
-import com.mitia.smsgateway.ui.theme.TextePrincipal
-import com.mitia.smsgateway.ui.theme.TexteSecondaire
 
 enum class StatutTache(val label: String, val couleur: Color) {
     ENVOYE("envoyé", VertAccent),
@@ -80,14 +78,14 @@ fun LigneTache(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = numero,
-                color = TextePrincipal,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 text = message,
-                color = TexteAttenue,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 maxLines = 1,
             )

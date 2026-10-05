@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Bot, Trash2, Plus, Ban } from 'lucide-react'
+import { Bot, Trash2, Plus, Ban, Loader2 } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import { Toast } from '../../../composants/interface'
 
@@ -96,89 +96,119 @@ export default function PageAutomatismesEspace() {
 
   if (chargement) {
     return (
-      <div className="flex h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-950">
-        <p className="text-sm text-zinc-500">Chargement…</p>
+      <div className="flex h-screen items-center justify-center bg-slate-100 dark:bg-zinc-950">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     )
   }
 
   return (
-    <CoquilleEspace
-      titre="Automatismes"
-      sousTitre={`${regles.length} règle(s) · STOP / START gérés par le système`}
-    >
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-      <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
-        <div className="mb-4 flex items-center gap-2">
-          <Bot className="h-4 w-4 text-zinc-400" />
-          <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Mes réponses automatiques</h2>
-        </div>
-        <form onSubmit={creerRegle} className="mb-4 space-y-2">
-          <div className="flex gap-2">
-            <input type="text" required placeholder="Mot-clé (ex. INFO)" value={motCle}
-              onChange={(e) => setMotCle(e.target.value)}
-              className="w-36 rounded-lg border border-zinc-200 px-3 py-2 font-mono text-sm uppercase dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
-            <button type="submit" disabled={creationEnCours}
-              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
-              <Plus className="h-4 w-4" /> {creationEnCours ? '…' : 'Ajouter'}
-            </button>
-          </div>
-          <textarea required rows={2} placeholder="Réponse envoyée…" value={reponseRegle}
-            onChange={(e) => setReponseRegle(e.target.value)}
-            className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
-        </form>
-        <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
-          {regles.map((r) => {
-            const mienne = r.id_application !== null
-            return (
-              <li key={r.id} className="flex items-center gap-2 py-2.5">
-                {mienne ? (
-                  <button onClick={() => basculerRegle(r.id, r.actif)} title={r.actif ? 'Désactiver' : 'Activer'}
-                    className={`relative h-5 w-9 shrink-0 rounded-full transition ${r.actif ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-700'}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${r.actif ? 'left-[18px]' : 'left-0.5'}`} />
-                  </button>
-                ) : (
-                  <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">SYSTÈME</span>
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">{r.mot_cle}</p>
-                  <p className="truncate text-xs text-zinc-500 dark:text-zinc-400" title={r.reponse}>{r.reponse}</p>
-                </div>
-                {mienne && (
-                  <button onClick={() => supprimerRegle(r.id)} title="Supprimer"
-                    className="rounded-lg border border-zinc-200 p-1.5 text-zinc-500 hover:bg-red-50 hover:text-red-600 dark:border-zinc-700 dark:text-zinc-400">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                )}
-              </li>
-            )
-          })}
-          {regles.length === 0 && <p className="py-4 text-center text-xs text-zinc-400">Aucune règle.</p>}
-        </ul>
-      </section>
-
-      <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
-        <div className="mb-2 flex items-center gap-2">
-          <Ban className="h-4 w-4 text-zinc-400" />
-          <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Numéros désinscrits vous concernant</h2>
-          <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{blocages.length}</span>
-        </div>
-        <p className="mb-3 text-xs text-zinc-400">
-          Ils ne reçoivent plus vos SMS (STOP). Pour réinscrire un numéro, contactez votre administrateur.
+    <CoquilleEspace>
+      {/* En-tête */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Automatismes</h1>
+        <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
+          Configurez vos règles de réponse automatique par mot-clé et consultez vos désabonnements.
         </p>
-        {blocages.length === 0 ? (
-          <p className="py-2 text-center text-xs text-zinc-400">Aucun numéro bloqué.</p>
-        ) : (
-          <ul className="max-h-96 divide-y divide-zinc-100 overflow-y-auto dark:divide-zinc-800">
-            {blocages.map((b) => (
-              <li key={b.id} className="flex items-center justify-between py-2">
-                <span className="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">{b.numero_destinataire}</span>
-                <span className="text-[11px] text-zinc-400">{b.motif} · {new Date(b.date_creation).toLocaleDateString('fr-FR')}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        {/* Mes réponses automatiques */}
+        <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
+          <div className="flex items-center gap-2 mb-1">
+            <Bot className="h-4 w-4 text-blue-600" />
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Mes réponses automatiques</h2>
+          </div>
+          <p className="text-xs text-slate-400 dark:text-zinc-500 mb-4">
+            Lorsqu'un message entrant commence par un mot-clé actif, une réponse est automatiquement déclenchée.
+          </p>
+
+          <form onSubmit={creerRegle} className="mb-6 space-y-3">
+            <input
+              type="text"
+              required
+              placeholder="Mot-clé (ex. INFO)"
+              value={motCle}
+              onChange={(e) => setMotCle(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 p-3 font-mono text-xs uppercase focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            />
+            <textarea
+              required
+              rows={2}
+              placeholder="Réponse envoyée automatiquement..."
+              value={reponseRegle}
+              onChange={(e) => setReponseRegle(e.target.value)}
+              className="w-full resize-none rounded-xl border border-slate-200 p-3 text-xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            />
+            <button
+              type="submit"
+              disabled={creationEnCours}
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-60 transition"
+            >
+              <Plus className="h-4 w-4" /> {creationEnCours ? 'Création...' : 'Ajouter la règle'}
+            </button>
+          </form>
+
+          <div className="divide-y divide-slate-100 dark:divide-zinc-800">
+            {regles.map((r) => {
+              const mienne = r.id_application !== null
+              return (
+                <div key={r.id} className="flex items-center gap-3 py-3">
+                  {mienne ? (
+                    <button
+                      onClick={() => basculerRegle(r.id, r.actif)}
+                      className={`relative h-5 w-9 shrink-0 rounded-full transition ${r.actif ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-zinc-700'}`}
+                    >
+                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${r.actif ? 'left-[18px]' : 'left-0.5'}`} />
+                    </button>
+                  ) : (
+                    <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">SYSTÈME</span>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-mono text-xs font-bold text-slate-800 dark:text-zinc-200">{r.mot_cle}</p>
+                    <p className="truncate text-xs text-slate-500 dark:text-zinc-400" title={r.reponse}>{r.reponse}</p>
+                  </div>
+                  {mienne && (
+                    <button
+                      onClick={() => supprimerRegle(r.id)}
+                      className="rounded-lg p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+            {regles.length === 0 && <p className="py-6 text-center text-xs text-slate-400 dark:text-zinc-500">Aucune règle définie.</p>}
+          </div>
+        </div>
+
+        {/* Numéros désinscrits */}
+        <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
+          <div className="flex items-center gap-2 mb-1">
+            <Ban className="h-4 w-4 text-slate-500 dark:text-zinc-400" />
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Numéros désinscrits (STOP)</h2>
+          </div>
+          <p className="text-xs text-slate-400 dark:text-zinc-500 mb-4">
+            Ces numéros ne reçoivent plus vos SMS. Le mot-clé START les réinscrit automatiquement.
+          </p>
+
+          {blocages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Ban className="h-8 w-8 text-slate-300 dark:text-zinc-600" />
+              <p className="mt-2 text-xs font-semibold text-slate-700 dark:text-zinc-300">Aucun numéro bloqué</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100 dark:divide-zinc-800 max-h-96 overflow-y-auto">
+              {blocages.map((b) => (
+                <div key={b.id} className="flex items-center justify-between py-3">
+                  <span className="font-mono text-xs font-bold text-slate-800 dark:text-zinc-200">{b.numero_destinataire}</span>
+                  <span className="text-[11px] text-slate-400">{b.motif} · {new Date(b.date_creation).toLocaleDateString('fr-FR')}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <Toast notification={notification} />

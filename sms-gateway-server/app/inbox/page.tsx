@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Inbox, RefreshCw, RotateCcw, Send } from 'lucide-react'
+import {
+  MessageSquare, Search, Download, RefreshCw, Loader2,
+} from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
-import { BadgeStatut, STATUTS_TACHES, Toast } from '../../composants/interface'
 
 interface Entrant {
   id: string
@@ -11,179 +12,195 @@ interface Entrant {
   contenu: string
   date_reception: string
   statut_notification: string
-  tentatives_notification: number
   id_application: string | null
-  id_appareil: string | null
   applications: { nom: string } | null
   appareils: { nom: string } | null
 }
 
-interface ClientApi {
-  id: string
-  nom: string
+function badgeNotification(statut: string): string {
+  const s = statut.toLowerCase()
+  if (s.includes('envoy')) {
+    return 'inline-flex items-center rounded-md bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
+  }
+  if (s.includes('echec') || s.includes('échec') || s.includes('erreur')) {
+    return 'inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-[11px] font-medium text-red-600 dark:bg-red-500/15 dark:text-red-300'
+  }
+  return 'inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-500 dark:bg-zinc-800 dark:text-zinc-400'
 }
-
-const STATUT_NOTIFICATION_CONFIG = {
-  ENVOYE: { label: 'Envoyé', badge: '' },
-  EN_ATTENTE: { label: 'En attente', badge: '' },
-  ECHOUE: { label: 'Échoué', badge: '' },
-  DESACTIVE: { label: 'Coupé', badge: '' },
-} as unknown as Record<string, { label: string; badge: string }>
 
 export default function PageBoiteReception() {
   const [entrants, setEntrants] = useState<Entrant[]>([])
-  const [clients, setClients] = useState<ClientApi[]>([])
-  const [derniereActualisation, setDerniereActualisation] = useState<Date>(new Date())
-  const [actualisationEnCours, setActualisationEnCours] = useState(false)
   const [chargement, setChargement] = useState(true)
-  const [filtreClient, setFiltreClient] = useState<string>('TOUS')
-  const [notification, setNotification] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
+  const [recherche, setRecherche] = useState('')
+  const [relanceEnCours, setRelanceEnCours] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
 
-  function afficherNotification(type: 'succes' | 'erreur', texte: string) {
-    setNotification({ type, texte })
-    setTimeout(() => setNotification(null), 4000)
-  }
-
-  const chargerDonnees = useCallback(async (silencieux = false) => {
-    if (!silencieux) setActualisationEnCours(true)
+  const chargerDonnees = useCallback(async () => {
     try {
-      const [reponseEntrants, reponseClients] = await Promise.all([
-        fetch('/api/inbox?limit=100'),
-        fetch('/api/api-clients'),
-      ])
+      const reponseEntrants = await fetch('/api/inbox?limit=100')
       const donneesEntrants = await reponseEntrants.json()
-      const donneesClients = await reponseClients.json()
-      if (donneesEntrants.entrants) {
+      if (Array.isArray(donneesEntrants.entrants)) {
         setEntrants(donneesEntrants.entrants)
-      } else if (donneesEntrants.error) {
-        afficherNotification('erreur', `Inbox : ${donneesEntrants.error}`)
       }
-      if (donneesClients.clients) setClients(donneesClients.clients)
-      setDerniereActualisation(new Date())
     } finally {
       setChargement(false)
-      setActualisationEnCours(false)
     }
   }, [])
 
   useEffect(() => {
-    chargerDonnees(true)
-    const interval = setInterval(() => chargerDonnees(true), 10000)
+    chargerDonnees()
+    const interval = setInterval(() => chargerDonnees(), 10000)
     return () => clearInterval(interval)
   }, [chargerDonnees])
 
-  async function relancerNotification(id: string) {
+  const visibles = entrants.filter(e =>
+    e.expediteur.includes(recherche) || e.contenu.toLowerCase().includes(recherche.toLowerCase())
+  )
+
+  async function relancer(id: string) {
+    setRelanceEnCours(id)
+    setMessage(null)
     try {
-      const reponse = await fetch(`/api/inbox/${id}/relancer`, { method: 'POST' })
-      const donnees = await reponse.json()
-      if (reponse.ok) {
-        afficherNotification('succes', donnees.message ?? 'Notification remise en file')
-        chargerDonnees(true)
-      } else {
-        afficherNotification('erreur', donnees.error ?? 'Relance impossible')
-      }
+      const res = await fetch(`/api/inbox/${id}/relancer`, { method: 'POST' })
+      const data = await res.json().catch(() => ({}))
+      setMessage(data.message ?? data.error ?? 'Relance effectuée.')
+      await chargerDonnees()
     } catch {
-      afficherNotification('erreur', 'Erreur réseau')
+      setMessage('Relance impossible. Réessayez.')
+    } finally {
+      setRelanceEnCours(null)
     }
   }
 
-  const visibles = filtreClient === 'TOUS'
-    ? entrants
-    : entrants.filter((e) => e.id_application === filtreClient)
+  function exporter() {
+    const lignes = visibles.map((e) =>
+      [e.expediteur, `"${e.contenu.replace(/"/g, '""')}"`, e.applications?.nom ?? '', e.statut_notification, e.date_reception].join(';')
+    )
+    const blob = new Blob([['numero;message;client;notification;recu_le', ...lignes].join('\n'), '\n'], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'reception.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   if (chargement) {
     return (
-      <div className="flex h-screen items-center justify-center bg-zinc-100 dark:bg-zinc-950">
-        <p className="text-sm text-zinc-500">Chargement…</p>
+      <div className="flex h-screen items-center justify-center bg-slate-100 dark:bg-zinc-950">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     )
   }
 
   return (
-    <CoquilleTableauDeBord
-      titre="Boîte de réception"
-      sousTitre={`${visibles.length} message(s) · actualisé à ${derniereActualisation.toLocaleTimeString('fr-FR')}`}
-      actions={
-        <button onClick={() => chargerDonnees()}
-          className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-600 shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700">
-          <RefreshCw className={`h-4 w-4 ${actualisationEnCours ? 'animate-spin' : ''}`} /> Actualiser
-        </button>
-      }
-    >
-      <section className="rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200/60 dark:bg-zinc-900 dark:ring-zinc-800">
-        <div className="flex flex-col gap-3 border-b border-zinc-100 px-5 py-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <Inbox className="h-4 w-4 text-zinc-400" />
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">SMS reçus</h2>
-            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-              {visibles.length}
-            </span>
+    <CoquilleTableauDeBord>
+      {/* En-tête */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Réception</h1>
+        <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
+          Consultez les messages entrants reçus par vos appareils.
+        </p>
+      </div>
+
+      {message && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs font-medium text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
+          {message}
+        </div>
+      )}
+
+      {/* Main Card */}
+      <div className="rounded-2xl bg-white shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
+        <div className="flex flex-col gap-3 border-b border-slate-100 px-6 py-4 dark:border-zinc-800/80 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">SMS reçus</h2>
+            <p className="text-xs text-slate-400 dark:text-zinc-500">{visibles.length} messages au total</p>
           </div>
-          <select value={filtreClient} onChange={(e) => setFiltreClient(e.target.value)}
-            className="rounded-lg border border-zinc-200 bg-white px-2 py-1.5 text-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-            <option value="TOUS">Tous les clients</option>
-            {clients.map((c) => (
-              <option key={c.id} value={c.id}>{c.nom}</option>
-            ))}
-          </select>
+
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Rechercher dans les messages..."
+                value={recherche}
+                onChange={(e) => setRecherche(e.target.value)}
+                className="w-64 rounded-xl border border-slate-200 bg-white py-1.5 pl-8 pr-3 text-xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+              />
+            </div>
+            <button onClick={exporter}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
+              <Download className="h-3.5 w-3.5" /> Exporter
+            </button>
+          </div>
         </div>
 
-        {visibles.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 py-12 text-center">
-            <Inbox className="h-8 w-8 text-zinc-300 dark:text-zinc-600" />
-            <p className="text-sm font-medium text-zinc-600 dark:text-zinc-300">Aucun message reçu</p>
-            <p className="text-xs text-zinc-400">Les SMS reçus par vos téléphones apparaîtront ici.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-zinc-100 text-left text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:border-zinc-800">
-                  <th className="px-5 py-3">Expéditeur</th>
-                  <th className="px-5 py-3">Message</th>
-                  <th className="px-5 py-3">Client</th>
-                  <th className="px-5 py-3">Notification</th>
-                  <th className="px-5 py-3">Reçu le</th>
-                  <th className="px-5 py-3 text-right">Actions</th>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50/50 text-left font-semibold uppercase tracking-wider text-slate-400 dark:border-zinc-800 dark:bg-zinc-800/30">
+                <th className="px-6 py-3">NUMÉRO</th>
+                <th className="px-6 py-3">MESSAGE</th>
+                <th className="px-6 py-3">CLIENT</th>
+                <th className="px-6 py-3">NOTIFICATION</th>
+                <th className="px-6 py-3">REÇU LE</th>
+                <th className="px-6 py-3 text-right"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60">
+              {visibles.map((e) => (
+                <tr key={e.id} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/40">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4 text-blue-600" />
+                      <span className="font-semibold text-slate-800 dark:text-zinc-200">{e.expediteur}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 font-medium text-slate-800 dark:text-zinc-200 max-w-xs truncate">{e.contenu}</td>
+                  <td className="px-6 py-4">
+                    <div>
+                      <p className="font-semibold text-slate-800 dark:text-zinc-200">{e.applications?.nom ?? '—'}</p>
+                      <p className="text-[11px] text-slate-400">via {e.appareils?.nom ?? '—'}</p>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={badgeNotification(e.statut_notification)}>
+                      {e.statut_notification}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-slate-500 dark:text-zinc-400">
+                    {new Date(e.date_reception).toLocaleString('fr-FR', {
+                      day: '2-digit', month: '2-digit', year: 'numeric',
+                      hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    })}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button onClick={() => relancer(e.id)} disabled={relanceEnCours === e.id || !e.id_application}
+                      title={e.id_application ? 'Relancer la notification client' : 'Aucun client résolu'}
+                      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-blue-600 hover:bg-blue-50 disabled:opacity-40 dark:text-blue-400 dark:hover:bg-blue-500/10">
+                      {relanceEnCours === e.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                      Relancer
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/60">
-                {visibles.map((e) => (
-                  <tr key={e.id} className="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40">
-                    <td className="px-5 py-3.5"><span className="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">{e.expediteur}</span></td>
-                    <td className="max-w-xs px-5 py-3.5"><p className="truncate text-xs text-zinc-500 dark:text-zinc-400" title={e.contenu}>{e.contenu}</p></td>
-                    <td className="px-5 py-3.5 text-xs text-zinc-500 dark:text-zinc-400">
-                      {e.applications?.nom ?? <span className="italic text-zinc-400">sans client</span>}
-                      {e.appareils?.nom && <span className="block text-[11px] text-zinc-400">via {e.appareils.nom}</span>}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      {e.id_application
-                        ? <BadgeStatut statut={e.statut_notification} config={{ ...STATUTS_TACHES, ...STATUT_NOTIFICATION_CONFIG }} />
-                        : <span className="text-xs text-zinc-400">—</span>}
-                    </td>
-                    <td className="px-5 py-3.5 text-xs text-zinc-400">{new Date(e.date_reception).toLocaleString('fr-FR')}</td>
-                    <td className="px-5 py-3.5 text-right">
-                      {e.id_application && (
-                        <button onClick={() => relancerNotification(e.id)} title="Relancer la notification"
-                          className="rounded-lg border border-zinc-200 p-1.5 text-zinc-500 hover:bg-blue-50 hover:text-blue-600 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-blue-500/10">
-                          <RotateCcw className="h-4 w-4" />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+              ))}
+              {visibles.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-xs text-slate-400 dark:text-zinc-500">
+                    Aucun message reçu pour le moment.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-      <p className="flex items-center gap-1.5 text-xs text-zinc-400">
-        <Send className="h-3.5 w-3.5" />
-        Routage : réponse à un envoi récent → SIM dédiée → sinon visible ici sans notification.
-      </p>
-
-      <Toast notification={notification} />
+        {/* Footer */}
+        <div className="flex items-center justify-between border-t border-slate-100 px-6 py-3 text-xs text-slate-400 dark:border-zinc-800/80">
+          <span>{visibles.length} messages affichés</span>
+          <span>Page 1 sur 1</span>
+        </div>
+      </div>
     </CoquilleTableauDeBord>
   )
 }

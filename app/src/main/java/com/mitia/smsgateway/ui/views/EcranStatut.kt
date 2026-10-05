@@ -2,6 +2,7 @@ package com.mitia.smsgateway.ui.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,25 +13,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BatteryAlert
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.BatteryFull
-import androidx.compose.material.icons.filled.BatteryUnknown
-import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Inbox
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.SignalCellularAlt
-import androidx.compose.material.icons.filled.Smartphone
-import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.Wifi
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,15 +44,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mitia.smsgateway.ui.components.LigneInfo
 import com.mitia.smsgateway.ui.components.CarteKpi
-import com.mitia.smsgateway.ui.components.CarteStatut
+import com.mitia.smsgateway.ui.theme.AmbreAccent
 import com.mitia.smsgateway.ui.theme.BleuAccent
+import com.mitia.smsgateway.ui.theme.RougeAccent
 import com.mitia.smsgateway.ui.theme.VertAccent
-import com.mitia.smsgateway.ui.theme.FondCarte
-import com.mitia.smsgateway.ui.theme.FondSombre
-import com.mitia.smsgateway.ui.theme.TexteAttenue
-import com.mitia.smsgateway.ui.theme.TextePrincipal
 
 @Composable
 fun EcranStatut(
@@ -67,76 +65,121 @@ fun EcranStatut(
     texteDerniereSynchro: String,
     auDemarrageService: () -> Unit,
     aArretService: () -> Unit,
+    aActualiser: () -> Unit = {},
+    permissionSms: Boolean = false,
     modifier: Modifier = Modifier,
+    themeSombre: Boolean = true,
+    auChangementTheme: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(FondSombre)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
     ) {
-        // En-tête : appareil + état
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // En-tête : Logo bleu + Statut + Bouton Rafraîchir
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Surface(
-                color = BleuAccent.copy(alpha = 0.15f),
+                color = BleuAccent,
                 shape = RoundedCornerShape(14.dp),
+                modifier = Modifier.size(44.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Smartphone,
-                    contentDescription = null,
-                    tint = BleuAccent,
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .size(22.dp),
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Message,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = nomAppareil.ifBlank { "sms gateway" },
-                    color = TextePrincipal,
+                    text = "Statut",
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = if (estEnLigne) "connecté au serveur" else "hors ligne",
-                    color = TexteAttenue,
+                    text = "Supervision de l'appareil",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                 )
             }
+
             Surface(
-                color = (if (estEnLigne) VertAccent else TexteAttenue).copy(alpha = 0.15f),
-                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(12.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
             ) {
+                IconButton(onClick = aActualiser, modifier = Modifier.size(38.dp)) {
+                    Icon(
+                        imageVector = Icons.Filled.Refresh,
+                        contentDescription = "Rafraîchir",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        // Banner Alert Card (Appareil hors ligne / en ligne)
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = if (estEnLigne) VertAccent.copy(alpha = 0.12f) else AmbreAccent.copy(alpha = 0.12f),
+            shape = RoundedCornerShape(16.dp),
+            border = androidx.compose.foundation.BorderStroke(
+                1.dp,
+                if (estEnLigne) VertAccent.copy(alpha = 0.3f) else AmbreAccent.copy(alpha = 0.3f)
+            )
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = if (estEnLigne) Icons.Filled.VerifiedUser else Icons.Filled.Warning,
+                    contentDescription = null,
+                    tint = if (estEnLigne) VertAccent else AmbreAccent,
+                    modifier = Modifier.size(22.dp)
+                )
+                Spacer(Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (estEnLigne) "Appareil en ligne" else "Appareil hors ligne",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = if (estEnLigne) "Prêt à envoyer les SMS en arrière-plan." else "Le service reste disponible localement.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 11.sp,
+                    )
+                }
                 Text(
-                    text = if (estEnLigne) "en ligne" else "hors ligne",
-                    color = if (estEnLigne) VertAccent else TexteAttenue,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                    text = if (estEnLigne) "Connecté" else "À vérifier",
+                    color = if (estEnLigne) VertAccent else AmbreAccent,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
                 )
             }
         }
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = "dernière sync · $texteDerniereSynchro",
-            color = TexteAttenue,
-            fontSize = 11.sp,
-        )
-        Spacer(Modifier.height(16.dp))
 
-        // Carte statut + service
-        CarteStatut(
-            estEnLigne = estEnLigne,
-            sousTitre = if (serviceActif) "service actif en arrière-plan" else "service arrêté",
-        )
         Spacer(Modifier.height(12.dp))
 
+        // Service Control Card (service d'envoi)
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = FondCarte,
-            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(18.dp),
         ) {
             Row(
                 modifier = Modifier
@@ -147,34 +190,42 @@ fun EcranStatut(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "service d'envoi",
-                        color = TextePrincipal,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        text = if (serviceActif) "scrutation toutes les 30 s" else "à l'arrêt — aucun envoi",
-                        color = TexteAttenue,
+                        text = if (serviceActif) "actif en arrière-plan" else "à l'arrêt — aucun envoi",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp,
                     )
                 }
                 if (serviceActif) {
-                    OutlinedButton(onClick = aArretService) {
+                    OutlinedButton(
+                        onClick = aArretService,
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
                         Text("arrêter")
                     }
                 } else {
-                    Button(onClick = auDemarrageService) {
-                        Text("démarrer")
+                    Button(
+                        onClick = auDemarrageService,
+                        colors = ButtonDefaults.buttonColors(containerColor = BleuAccent),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("démarrer", fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
+
         Spacer(Modifier.height(12.dp))
 
-        // Grille 2x2
+        // 2 KPI Cards
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             CarteKpi(
                 valeur = smsEnvoyesAujourdhui.toString(),
-                etiquette = "sms envoyés aujourd'hui",
+                etiquette = "sms envoyés (24h)",
                 icone = Icons.Filled.Send,
                 modifier = Modifier.weight(1f),
             )
@@ -185,49 +236,91 @@ fun EcranStatut(
                 modifier = Modifier.weight(1f),
             )
         }
-        Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            CarteKpi(
-                valeur = reseau.lowercase(),
-                etiquette = "réseau · " + if (reseau == "Hors ligne" || reseau == "Inconnu") "pas de signal" else "signal fort",
-                icone = when (reseau) {
-                    "WiFi" -> Icons.Filled.Wifi
-                    "Données mobiles" -> Icons.Filled.SignalCellularAlt
-                    else -> Icons.Filled.CloudOff
-                },
-                modifier = Modifier.weight(1f),
-            )
-            CarteKpi(
-                valeur = if (pourcentageBatterie >= 0) "$pourcentageBatterie%" else "—",
-                etiquette = "batterie · " + if (batterieEnCharge) "en charge" else "sur batterie",
-                icone = when {
-                    pourcentageBatterie < 0 -> Icons.Filled.BatteryUnknown
-                    batterieEnCharge -> Icons.Filled.BatteryChargingFull
-                    pourcentageBatterie <= 15 -> Icons.Filled.BatteryAlert
-                    else -> Icons.Filled.BatteryFull
-                },
-                modifier = Modifier.weight(1f),
-            )
-        }
+
         Spacer(Modifier.height(12.dp))
 
-        // Carte quota
+        // Santé de l'appareil Card
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = FondCarte,
-            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(18.dp),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("quota sms (heure)", color = TexteAttenue, fontSize = 12.sp)
                     Text(
-                        "$quotaSmsUtilise / $quotaSmsTotal",
-                        color = TextePrincipal,
+                        text = "Santé de l'appareil",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = nomAppareil.ifBlank { "mis à jour récemment" },
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 11.sp,
+                    )
+                }
+
+                Spacer(Modifier.height(14.dp))
+
+                // Row 1 : Réseau
+                LigneSante(
+                    icone = Icons.Filled.WifiOff,
+                    titre = "réseau",
+                    valeur = if (reseau == "Hors ligne" || reseau == "Inconnu") "pas de signal" else reseau,
+                    estOk = !(reseau == "Hors ligne" || reseau == "Inconnu"),
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                // Row 2 : Batterie
+                LigneSante(
+                    icone = if (batterieEnCharge) Icons.Filled.BatteryChargingFull else Icons.Filled.BatteryFull,
+                    titre = "batterie",
+                    valeur = if (batterieEnCharge) "en charge" else "$pourcentageBatterie%",
+                    estOk = true,
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                // Row 3 : Permissions SMS
+                LigneSante(
+                    icone = Icons.Filled.Shield,
+                    titre = "permissions SMS",
+                    valeur = if (permissionSms) "accordées" else "refusées",
+                    estOk = permissionSms,
+                )
+            }
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        // Carte Quota Horaire
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(18.dp),
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Quota SMS / heure",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = "$quotaSmsUtilise / $quotaSmsTotal",
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
                     )
                 }
                 Spacer(Modifier.height(10.dp))
@@ -240,29 +333,106 @@ fun EcranStatut(
                         .height(6.dp)
                         .clip(RoundedCornerShape(3.dp)),
                     color = BleuAccent,
-                    trackColor = Color(0xFF1E2433),
-                )
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    "la file ralentit automatiquement au-delà du quota",
-                    color = TexteAttenue,
-                    fontSize = 11.sp,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
                 )
             }
         }
+
         Spacer(Modifier.height(12.dp))
 
-        // Carte notification
+        // Dernière synchronisation Card
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = FondCarte,
-            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(18.dp),
         ) {
-            LigneInfo(
-                icone = if (serviceActif) Icons.Filled.PlayArrow else Icons.Filled.Stop,
-                texte = "notification permanente activée — le système ne peut pas tuer l'app",
-                modifier = Modifier.padding(16.dp),
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = "Dernière synchronisation",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = texteDerniereSynchro,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 11.sp,
+                    )
+                }
+
+                Surface(
+                    color = VertAccent.copy(alpha = 0.12f),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(VertAccent)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = "terminée",
+                            color = VertAccent,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun LigneSante(
+    icone: androidx.compose.ui.graphics.vector.ImageVector,
+    titre: String,
+    valeur: String,
+    estOk: Boolean,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Surface(
+            color = (if (estOk) VertAccent else RougeAccent).copy(alpha = 0.12f),
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.size(32.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = icone,
+                    contentDescription = null,
+                    tint = if (estOk) VertAccent else RougeAccent,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+        Spacer(Modifier.width(12.dp))
+        Text(
+            text = titre,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = valeur,
+            color = if (estOk) VertAccent else RougeAccent,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }

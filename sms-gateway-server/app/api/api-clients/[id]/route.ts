@@ -2,8 +2,43 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
 import { EVENEMENTS_NOTIFICATION, fabriquerSecretNotification, enfilerNotification, traiterNotificationsEnAttente } from '@/lib/notifications'
 
-/** DELETE /api/api-clients/[id] — révoque une clé API */
-export async function DELETE(
+/**
+ * GET /api/api-clients/[id]?reveler=1 — renvoie la clé API complète (admin).
+ * Sans le paramètre, renvoie la fiche masquée. La clé n'est exposée
+ * qu'au clic explicite depuis le dashboard.
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    if (request.nextUrl.searchParams.get('reveler') !== '1') {
+      const { data, error } = await supabaseAdmin
+        .from('applications')
+        .select('id, nom, date_creation')
+        .eq('id', id)
+        .single()
+      if (error || !data) {
+        return NextResponse.json({ error: 'Clé introuvable' }, { status: 404 })
+      }
+      return NextResponse.json({ client: data })
+    }
+    const { data, error } = await supabaseAdmin
+      .from('applications')
+      .select('id, cle_api')
+      .eq('id', id)
+      .single()
+    if (error || !data) {
+      return NextResponse.json({ error: 'Clé introuvable' }, { status: 404 })
+    }
+    return NextResponse.json({ id: data.id, cle_api: data.cle_api })
+  } catch {
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
+  }
+}
+
+/** DELETE /api/api-clients/[id] — révoque une clé API */export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {

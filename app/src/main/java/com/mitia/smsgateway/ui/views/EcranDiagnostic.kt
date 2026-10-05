@@ -34,6 +34,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -64,11 +65,6 @@ import com.mitia.smsgateway.data.sms.ExpediteurSms
 import com.mitia.smsgateway.ui.theme.BleuAccent
 import com.mitia.smsgateway.ui.theme.VertAccent
 import com.mitia.smsgateway.ui.theme.RougeAccent
-import com.mitia.smsgateway.ui.theme.CouleurBordure
-import com.mitia.smsgateway.ui.theme.FondCarte
-import com.mitia.smsgateway.ui.theme.FondSombre
-import com.mitia.smsgateway.ui.theme.TexteAttenue
-import com.mitia.smsgateway.ui.theme.TextePrincipal
 import kotlinx.coroutines.launch
 
 /**
@@ -195,19 +191,19 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(FondSombre)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
     ) {
         Text(
             text = "diagnostic",
-            color = TextePrincipal,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
         )
         Text(
             text = "tests locaux, sans dépendre du serveur",
-            color = TexteAttenue,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 12.sp,
         )
         Spacer(Modifier.height(16.dp))
@@ -244,7 +240,7 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
             }
             if (resultatEssai != null) {
                 Spacer(Modifier.height(8.dp))
-                Text(text = resultatEssai!!, color = TextePrincipal, fontSize = 13.sp)
+                Text(text = resultatEssai!!, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp)
             }
         }
         Spacer(Modifier.height(12.dp))
@@ -263,7 +259,7 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                         latence!! < 0 -> "injoignable"
                         else -> "${latence} ms"
                     },
-                    color = TextePrincipal,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f),
@@ -284,7 +280,7 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
             if (!permissionTelephone) {
                 Text(
                     text = "Autorise l'accès aux SIM pour voir et choisir les cartes.",
-                    color = TexteAttenue,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                 )
                 Spacer(Modifier.height(8.dp))
@@ -298,7 +294,7 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                 if (cartesSim.isEmpty()) {
                     Text(
                         text = "Aucune SIM active détectée.",
-                        color = TexteAttenue,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 13.sp,
                     )
                 } else {
@@ -365,7 +361,7 @@ private fun CarteDiagnostic(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = FondCarte,
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(16.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -373,8 +369,8 @@ private fun CarteDiagnostic(
                 Icon(imageVector = icone, contentDescription = null, tint = BleuAccent)
                 Spacer(Modifier.width(8.dp))
                 Column {
-                    Text(text = titre, color = TextePrincipal, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text(text = sousTitre, color = TexteAttenue, fontSize = 11.sp)
+                    Text(text = titre, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text(text = sousTitre, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                 }
             }
             Spacer(Modifier.height(12.dp))
@@ -400,8 +396,8 @@ private fun LigneModeSim(
         RadioButton(selected = selectionne, onClick = null)
         Spacer(Modifier.width(8.dp))
         Column {
-            Text(text = titre, color = TextePrincipal, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-            Text(text = sousTitre, color = TexteAttenue, fontSize = 11.sp)
+            Text(text = titre, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            Text(text = sousTitre, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
         }
     }
 }
@@ -414,19 +410,19 @@ private fun LigneReseau(etiquette: String, valeur: String) {
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(text = etiquette, color = TexteAttenue, fontSize = 12.sp)
-        Text(text = valeur, color = TextePrincipal, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+        Text(text = etiquette, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+        Text(text = valeur, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 
 @Composable
 private fun couleursChampDiagnostic() = OutlinedTextFieldDefaults.colors(
-    focusedContainerColor = FondCarte,
-    unfocusedContainerColor = FondCarte,
+    focusedContainerColor = MaterialTheme.colorScheme.surface,
+    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
     focusedBorderColor = BleuAccent,
-    unfocusedBorderColor = CouleurBordure,
-    focusedTextColor = TextePrincipal,
-    unfocusedTextColor = TextePrincipal,
+    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
     cursorColor = BleuAccent,
 )
 

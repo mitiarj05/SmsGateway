@@ -28,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -52,11 +53,6 @@ import androidx.compose.ui.unit.sp
 import com.mitia.smsgateway.ui.theme.BleuAccent
 import com.mitia.smsgateway.ui.theme.VertAccent
 import com.mitia.smsgateway.ui.theme.RougeAccent
-import com.mitia.smsgateway.ui.theme.CouleurBordure
-import com.mitia.smsgateway.ui.theme.FondCarte
-import com.mitia.smsgateway.ui.theme.FondSombre
-import com.mitia.smsgateway.ui.theme.TexteAttenue
-import com.mitia.smsgateway.ui.theme.TextePrincipal
 
 /** Écran de chargement (logo + spinner) pendant l'init. */
 @Composable
@@ -64,7 +60,7 @@ fun EcranDemarrage(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondSombre),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
     ) {
         // Halos décoratifs
@@ -97,13 +93,13 @@ fun EcranDemarrage(modifier: Modifier = Modifier) {
             Spacer(Modifier.height(16.dp))
             Text(
                 text = "SMSIKA",
-                color = TextePrincipal,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
             )
             Text(
                 text = "passerelle autohébergée",
-                color = TexteAttenue,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp,
             )
             Spacer(Modifier.height(24.dp))
@@ -137,13 +133,13 @@ fun EcranIntegration(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(FondSombre)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
     ) {
         Text(
             text = "Étape ${etape + 1}/3",
-            color = TexteAttenue,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 12.sp,
         )
         Spacer(Modifier.height(8.dp))
@@ -151,7 +147,7 @@ fun EcranIntegration(
             progress = { (etape + 1) / 3f },
             modifier = Modifier.fillMaxWidth(),
             color = BleuAccent,
-            trackColor = FondCarte,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant,
         )
         Spacer(Modifier.height(32.dp))
 
@@ -236,7 +232,7 @@ private fun IntegrationBienvenue() {
         Spacer(Modifier.height(24.dp))
         Text(
             text = "Bienvenue sur SMSIKA",
-            color = TextePrincipal,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -245,7 +241,7 @@ private fun IntegrationBienvenue() {
         Text(
             text = "Ce téléphone va devenir un émetteur SMS piloté par votre serveur : " +
                 "il reçoit les tâches en push, envoie via sa carte SIM, même écran éteint.",
-            color = TexteAttenue,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
             textAlign = TextAlign.Center,
         )
@@ -263,14 +259,14 @@ private fun IntegrationServeur(
     Column {
         Text(
             text = "Connectez le serveur",
-            color = TextePrincipal,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
         )
         Spacer(Modifier.height(8.dp))
         Text(
             text = "Adresse de votre passerelle (pré-remplie en production).",
-            color = TexteAttenue,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 13.sp,
         )
         Spacer(Modifier.height(16.dp))
@@ -282,12 +278,12 @@ private fun IntegrationServeur(
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = FondCarte,
-                unfocusedContainerColor = FondCarte,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                 focusedBorderColor = BleuAccent,
-                unfocusedBorderColor = CouleurBordure,
-                focusedTextColor = TextePrincipal,
-                unfocusedTextColor = TextePrincipal,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                 cursorColor = BleuAccent,
             ),
             shape = RoundedCornerShape(10.dp),
@@ -320,14 +316,14 @@ private fun IntegrationPermissions(
     Column {
         Text(
             text = "Autorisations requises",
-            color = TextePrincipal,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
         )
         Spacer(Modifier.height(8.dp))
         Text(
             text = "Sans elles, l'envoi en arrière-plan ne fonctionnera pas.",
-            color = TexteAttenue,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 13.sp,
         )
         Spacer(Modifier.height(16.dp))
@@ -380,8 +376,8 @@ private fun LignePermissionIntegration(
         )
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = etiquette, color = TextePrincipal, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-            Text(text = detail, color = TexteAttenue, fontSize = 12.sp)
+            Text(text = etiquette, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+            Text(text = detail, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         }
         if (afficherAction) {
             Button(onClick = aAction) {

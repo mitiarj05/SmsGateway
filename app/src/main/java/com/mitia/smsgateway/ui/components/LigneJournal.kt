@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,9 +26,6 @@ import androidx.compose.ui.unit.sp
 import com.mitia.smsgateway.ui.theme.AmbreAccent
 import com.mitia.smsgateway.ui.theme.VertAccent
 import com.mitia.smsgateway.ui.theme.RougeAccent
-import com.mitia.smsgateway.ui.theme.FondCarte
-import com.mitia.smsgateway.ui.theme.TexteAttenue
-import com.mitia.smsgateway.ui.theme.TexteSecondaire
 
 data class EntreeJournal(
     val heure: String,
@@ -36,7 +34,7 @@ data class EntreeJournal(
 )
 
 enum class NiveauJournal(val couleur: Color) {
-    INFO(TexteSecondaire),
+    INFO(Color(0xFF64748B)),
     SUCCES(VertAccent),
     AVERTISSEMENT(AmbreAccent),
     ERREUR(RougeAccent),
@@ -54,9 +52,16 @@ fun niveauJournalDe(message: String): NiveauJournal = when {
 
 @Composable
 fun LigneJournal(entree: EntreeJournal, modifier: Modifier = Modifier) {
+    // INFO suit le thème (lisible en clair comme en sombre), les autres
+    // niveaux gardent leur couleur sémantique.
+    val couleurNiveau = if (entree.niveau == NiveauJournal.INFO) {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    } else {
+        entree.niveau.couleur
+    }
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = FondCarte,
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(10.dp),
     ) {
         Column(
@@ -66,7 +71,7 @@ fun LigneJournal(entree: EntreeJournal, modifier: Modifier = Modifier) {
         ) {
             Text(
                 text = entree.heure,
-                color = TexteAttenue,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace,
             )
@@ -76,12 +81,12 @@ fun LigneJournal(entree: EntreeJournal, modifier: Modifier = Modifier) {
                     modifier = Modifier
                         .size(8.dp)
                         .clip(CircleShape)
-                        .background(entree.niveau.couleur),
+                        .background(couleurNiveau),
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
                     text = entree.message,
-                    color = entree.niveau.couleur,
+                    color = couleurNiveau,
                     fontSize = 13.sp,
                     fontFamily = FontFamily.Monospace,
                     lineHeight = 18.sp,
