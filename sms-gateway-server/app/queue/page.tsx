@@ -17,6 +17,7 @@ const TACHES_PAR_DEFAUT: Tache[] = [
     device_id: 'dev_abidjan_01',
     error_message: null,
     created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   },
   {
     id: 'tch_710294b',
@@ -26,6 +27,7 @@ const TACHES_PAR_DEFAUT: Tache[] = [
     device_id: 'dev_dakar_01',
     error_message: null,
     created_at: new Date(Date.now() - 120000).toISOString(),
+    updated_at: new Date(Date.now() - 120000).toISOString(),
   },
   {
     id: 'tch_392011c',
@@ -35,6 +37,7 @@ const TACHES_PAR_DEFAUT: Tache[] = [
     device_id: 'dev_abidjan_01',
     error_message: null,
     created_at: new Date(Date.now() - 300000).toISOString(),
+    updated_at: new Date(Date.now() - 300000).toISOString(),
   },
   {
     id: 'tch_581920d',
@@ -44,6 +47,7 @@ const TACHES_PAR_DEFAUT: Tache[] = [
     device_id: null,
     error_message: null,
     created_at: new Date(Date.now() - 600000).toISOString(),
+    updated_at: new Date(Date.now() - 600000).toISOString(),
   },
 ]
 

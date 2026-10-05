@@ -24,7 +24,7 @@ export interface Tache {
   error_message?: string | null
   scheduled_at?: string | null
   created_at: string
-  updated_at: string
+  updated_at?: string
 }
 
 export interface PointHoraire {
