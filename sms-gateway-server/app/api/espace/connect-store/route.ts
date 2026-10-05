@@ -1,71 +1,91 @@
-import { NextResponse } from 'next/server'
-import { obtainContextAppareilGlobal } from '../../../../lib/restitution-donnees'
+import { NextRequest, NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase-serveur'
+import { lireSessionClient } from '@/lib/session-client'
+import { EVENEMENTS_NOTIFICATION, fabriquerSecretNotification } from '@/lib/notifications'
 
-export async function POST(req: Request) {
+/**
+ * POST /api/espace/connect-store — connexion boutique en 1 clic (client).
+ * Corps: { storeUrl: string, platform?: string }.
+ * Vérifie la boutique, garantit un secret de notification, puis y
+ * rattache l'URL de notification (webhook SMSIKA).
+ */
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json()
-    const { storeUrl, platform = 'WooCommerce' } = body
-
-    if (!storeUrl || typeof storeUrl !== 'string') {
+    const idApplication = lireSessionClient(request)
+    if (!idApplication) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
+    const corps = await request.json().catch(() => null)
+    const brut = typeof corps?.storeUrl === 'string' ? corps.storeUrl.trim() : ''
+    const plateforme = typeof corps?.platform === 'string' && corps.platform.trim()
+      ? corps.platform.trim().slice(0, 40)
+      : 'WooCommerce'
+    if (!brut) {
       return NextResponse.json({ error: 'URL de boutique invalide' }, { status: 400 })
     }
 
-    let urlNettoyee = storeUrl.trim().toLowerCase()
+    let urlNettoyee = brut.toLowerCase()
     if (!urlNettoyee.startsWith('http://') && !urlNettoyee.startsWith('https://')) {
       urlNettoyee = `https://${urlNettoyee}`
     }
 
-    // Récupérer le contexte client Supabase
-    const { supabase, client, error } = await obtainContextAppareilGlobal()
+    const { data: client, error } = await supabaseAdmin
+      .from('applications')
+      .select('id, secret_notification')
+      .eq('id', idApplication)
+      .single()
     if (error || !client) {
-      return NextResponse.json({ error: error || 'Client non authentifié' }, { status: 401 })
+      return NextResponse.json({ error: 'Client introuvable' }, { status: 404 })
     }
 
-    // S'assurer qu'un secret/clé API existe
-    let secretVisible = client.secret_notification
-    if (!secretVisible) {
-      secretVisible = `sk_live_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36)}`
-      await supabase
-        .from('clients')
-        .update({ secret_notification: secretVisible, notifications_actives: true })
-        .eq('id', client.id)
+    // Garantit un secret de signature (renvoyé une seule fois si créé ici).
+    let secretVisible: string | null = null
+    if (!client.secret_notification) {
+      secretVisible = fabriquerSecretNotification()
+      const { error: erreurSecret } = await supabaseAdmin
+        .from('applications')
+        .update({ secret_notification: secretVisible })
+        .eq('id', idApplication)
+      if (erreurSecret) {
+        return NextResponse.json({ error: erreurSecret.message }, { status: 500 })
+      }
     }
 
-    // Ping / Test de connectivité automatique
+    // Test de connectivité (borne 3 s, sans bloquer l'enregistrement).
     let connectiviteOk = false
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 3000)
-      const res = await fetch(urlNettoyee, { method: 'HEAD', signal: controller.signal })
-      clearTimeout(timeoutId)
+      const controleur = new AbortController()
+      const delai = setTimeout(() => controleur.abort(), 3000)
+      const res = await fetch(urlNettoyee, { method: 'HEAD', signal: controleur.signal })
+      clearTimeout(delai)
       connectiviteOk = res.ok || res.status < 500
     } catch {
-      // Si la boutique locale n'est pas joignable publiquement, on accepte l'enregistrement en mode simulation
-      connectiviteOk = true
+      connectiviteOk = false
     }
 
-    // Enregistrer le webhook automatique pour cette boutique
-    const webhookUrl = `${urlNettoyee}/wp-json/smsika/v1/webhook`
-    await supabase
-      .from('clients')
+    // Rattache le webhook SMSIKA à la boutique (événements supportés uniquement).
+    const urlNotification = `${urlNettoyee.replace(/\/+$/, '')}/wp-json/smsika/v1/webhook`
+    const { error: erreurWebhook } = await supabaseAdmin
+      .from('applications')
       .update({
-        url_notification: webhookUrl,
+        url_notification: urlNotification,
         notifications_actives: true,
-        evenements_notification: ['sms.recu', 'lien.clique', 'commande.creee'],
+        evenements_notification: [...EVENEMENTS_NOTIFICATION],
       })
-      .eq('id', client.id)
+      .eq('id', idApplication)
+    if (erreurWebhook) {
+      return NextResponse.json({ error: erreurWebhook.message }, { status: 500 })
+    }
 
     return NextResponse.json({
-      succes: true,
-      storeUrl: urlNettoyee,
-      platform,
-      connectiviteOk,
-      webhookUrl,
-      apiKey: secretVisible,
-      message: `Boutique ${platform} (${urlNettoyee}) connectée en 1 Clic ! SMSIKA écoute désormais vos commandes et notifications automatiques.`,
+      message: `Boutique ${plateforme} (${urlNettoyee}) connectée : SMSIKA y enverra désormais vos notifications.`,
+      url_boutique: urlNettoyee,
+      plateforme,
+      connectivite_ok: connectiviteOk,
+      url_notification: urlNotification,
+      ...(secretVisible ? { secret_notification_visible: secretVisible } : {}),
     })
-  } catch (err: unknown) {
-    const error = err as Error
-    return NextResponse.json({ error: error.message || 'Erreur lors de la connexion 1-clic' }, { status: 500 })
+  } catch {
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }
 }
