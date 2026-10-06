@@ -7,13 +7,12 @@ import { expirerEnAttentePerimees } from '@/lib/expiration-attente'
 import { promouvoirProgrammes } from '@/lib/programmes'
 import { genererCode, urlPublique } from '@/lib/liens'
 import { compterEnvoisMois, moisActuel } from '@/lib/facturation'
-import { numeroBloque } from '@/lib/automatismes'
 import { STATUT_TACHE } from '@/lib/statuts'
 
 /**
  * POST /api/espace/envoyer — envoi depuis l'espace client (session, pas de clé).
  * Corps: { to, message, scheduled_at?, lien_intelligent? }.
- * Mêmes garde-fous que /api/sms/send : quota mensuel, STOP, quota horaire.
+ * Mêmes garde-fous que /api/sms/send : quota mensuel, quota horaire.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -73,21 +72,6 @@ export async function POST(request: NextRequest) {
         )
       }
     }
-
-    const numerosBloques: string[] = []
-    for (const numero of numeros) {
-      if (await numeroBloque(numero, idApplication)) numerosBloques.push(numero)
-    }
-    if (numerosBloques.length > 0) {
-      numeros = numeros.filter((n) => !numerosBloques.includes(n))
-    }
-    if (numeros.length === 0) {
-      return NextResponse.json(
-        { error: 'Tous les destinataires sont désinscrits (STOP)', bloques: numerosBloques },
-        { status: 403 }
-      )
-    }
-    const bloques = numerosBloques
 
     await expirerEnAttentePerimees()
     await promouvoirProgrammes()
@@ -217,7 +201,6 @@ export async function POST(request: NextRequest) {
         count: tachesCreees.length,
         tasks: tachesCreees,
         ...(avecLien ? { liens: liensCrees } : {}),
-        ...(bloques.length > 0 ? { bloques } : {}),
         push_sent: pushEnvoye,
       },
       { status: 201 }

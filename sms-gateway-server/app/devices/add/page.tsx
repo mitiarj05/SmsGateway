@@ -53,7 +53,6 @@ export default function AjouterAppareilPage() {
   }
 
   const connecte = enAttente.length === 0
-  const urlApk = `${urlServeur || 'https://sms-gateway-omega.vercel.app'}/smsika.apk`
 
   return (
     <CoquilleTableauDeBord>
@@ -62,7 +61,7 @@ export default function AjouterAppareilPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Ajouter un téléphone</h1>
           <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-            Scannez le QR Code pour installer l'application et lier l'appareil Android à SMSIKA.
+            Scannez le QR Code pour lier l'appareil Android à SMSIKA.
           </p>
         </div>
         <Link
@@ -87,23 +86,13 @@ export default function AjouterAppareilPage() {
             </div>
           </div>
 
-          {/* Zone des 2 QR Codes */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 dark:bg-zinc-800/50 dark:border-zinc-700/80">
-            <div className="flex flex-col items-center text-center space-y-2">
-              <QrCodeSvg valeur={urlApk} taille={150} />
-              <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">1. QR Code APK</p>
-              <p className="text-[11px] text-slate-500 dark:text-zinc-400">
-                Scannez avec la caméra du téléphone pour télécharger l'application.
-              </p>
-            </div>
-
-            <div className="flex flex-col items-center text-center space-y-2">
-              <QrCodeSvg valeur={urlServeur || 'https://sms-gateway-omega.vercel.app'} taille={150} />
-              <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">2. QR Code Serveur</p>
-              <p className="text-[11px] text-slate-500 dark:text-zinc-400">
-                Scannez dans l'application SMSIKA pour appairer le serveur en 1s.
-              </p>
-            </div>
+          {/* Zone QR Code serveur */}
+          <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 dark:bg-zinc-800/50 dark:border-zinc-700/80">
+            <QrCodeSvg valeur={urlServeur || 'https://sms-gateway-omega.vercel.app'} taille={150} />
+            <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">QR Code Serveur</p>
+            <p className="text-[11px] text-slate-500 dark:text-zinc-400">
+              Scannez dans l'application SMSIKA pour appairer le serveur en 1s.
+            </p>
           </div>
 
           {/* Saisie manuelle URL */}

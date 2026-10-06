@@ -169,7 +169,7 @@ export default function PageEnvoyerEspace() {
             </li>
             <li className="flex items-start gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
-              <span><strong className="text-slate-800 dark:text-zinc-200">Désinscriptions (STOP)</strong> : les numéros désinscrits sont automatiquement filtrés.</span>
+              <span><strong className="text-slate-800 dark:text-zinc-200">Liens suivis</strong> : ajoutez {`{LIEN}`} pour mesurer les clics.</span>
             </li>
           </ul>
         </aside>

@@ -3,7 +3,6 @@ import { supabaseAdmin } from '@/lib/supabase-serveur'
 import { authentifierAppareil } from '@/lib/authentification'
 import { normaliserNumero, resoudreClientEntrant } from '@/lib/entrant'
 import { enfilerNotification, traiterNotificationsEnAttente } from '@/lib/notifications'
-import { traiterAutomatismes } from '@/lib/automatismes'
 
 /**
  * POST /api/devices/[id]/inbox — le téléphone transfère un SMS reçu.
@@ -86,14 +85,6 @@ export async function POST(
       source_routage: resolution.source,
     })
     await traiterNotificationsEnAttente()
-
-    // Réponses automatiques (STOP/START système + règles mot-clé).
-    await traiterAutomatismes({
-      id_entrant: entrant.id,
-      expediteur,
-      contenu,
-      id_application: resolution.idApplication,
-    })
 
     return NextResponse.json(
       {

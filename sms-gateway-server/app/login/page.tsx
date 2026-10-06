@@ -28,6 +28,19 @@ export default function PageConnexion() {
   const [chargement, setChargement] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
   const [destination, setDestination] = useState('/dashboard')
+  const [versionApp, setVersionApp] = useState<string | null>(null)
+  const [systemeOk, setSystemeOk] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    fetch('/api/health')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((s) => {
+        if (!s) { setSystemeOk(false); return }
+        if (typeof s.version === 'string') setVersionApp(s.version)
+        setSystemeOk(s.status === 'ok' && s.checks?.supabase?.ok !== false)
+      })
+      .catch(() => setSystemeOk(false))
+  }, [])
 
   useEffect(() => {
     const parametres = new URLSearchParams(window.location.search)
@@ -130,12 +143,14 @@ export default function PageConnexion() {
         <div className="relative rounded-2xl bg-[#131926] p-4 border border-zinc-800/80 max-w-xs">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${systemeOk === false ? 'bg-red-400' : 'bg-emerald-400'}`} />
+              <span className={`relative inline-flex h-2 w-2 rounded-full ${systemeOk === false ? 'bg-red-500' : 'bg-emerald-500'}`} />
             </span>
-            <p className="text-xs font-semibold text-zinc-200">Systèmes opérationnels</p>
+            <p className="text-xs font-semibold text-zinc-200">
+              {systemeOk === null ? 'Vérification…' : systemeOk ? 'Systèmes opérationnels' : 'Serveur injoignable'}
+            </p>
           </div>
-          <p className="mt-1 text-[11px] text-zinc-400">SMSIKA v2.4.1 · Passerelle connectée</p>
+          <p className="mt-1 text-[11px] text-zinc-400">SMSIKA {versionApp ? `v${versionApp}` : ''} · Passerelle {systemeOk === false ? 'hors ligne' : 'connectée'}</p>
         </div>
       </div>
 

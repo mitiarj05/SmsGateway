@@ -5,14 +5,15 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Inbox, Bot, Webhook, Receipt, LogOut, Send, Link2, BookOpen, List,
-  Moon, Sun, Search, Bell, AlertTriangle, HelpCircle, MoreHorizontal, LayoutGrid,
+  Inbox, Webhook, Receipt, LogOut, Send, Link2, BookOpen, List,
+  Moon, Sun, Search, Bell, AlertTriangle, HelpCircle, MoreHorizontal, LayoutGrid, Smartphone
 } from 'lucide-react'
 import { Modale } from './interface'
 import { useTheme } from '../lib/use-theme'
 
 const NAVIGATION = [
   { href: '/espace', icone: LayoutGrid, etiquette: 'Tableau de bord' },
+  { href: '/espace/appareils', icone: Smartphone, etiquette: 'Mes téléphones relais' },
   { href: '/espace/envoyer', icone: Send, etiquette: 'Envoyer un SMS' },
   { href: '/espace/envois', icone: List, etiquette: 'Mes envois' },
   { href: '/espace/entrees', icone: Inbox, etiquette: 'SMS reçus' },
@@ -125,9 +126,9 @@ export default function CoquilleEspace({ children }: {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
               </span>
-              <p className="text-xs font-semibold text-zinc-200">Espace actif</p>
+              <p className="text-xs font-semibold text-zinc-200">Parc d'envoi mutualisé</p>
             </div>
-            <p className="mt-1 text-[11px] text-zinc-400">Accès API opérationnel</p>
+            <p className="mt-1 text-[11px] text-zinc-400">SMS via téléphones relais</p>
           </div>
         </div>
 
@@ -157,7 +158,7 @@ export default function CoquilleEspace({ children }: {
             <span>Espace SMSIKA</span>
             <span>/</span>
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 font-semibold">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Client Production
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Relais Dédié Client
             </span>
           </div>
 

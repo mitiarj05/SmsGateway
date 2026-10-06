@@ -2,251 +2,268 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-  MessageSquare, Search, Download, RefreshCw, Loader2, CheckCircle2, AlertTriangle, ArrowUpRight
+  MessageSquare, Search, Download, RefreshCw, Loader2, Clock, Check, Smartphone
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 
 interface Entrant {
   id: string
+  initiales: string
   expediteur: string
+  heure: string
   contenu: string
-  date_reception: string
-  statut_notification: string
-  id_application: string | null
-  applications: { nom: string } | null
-  appareils: { nom: string } | null
+  passerelle: string
+  transmis: boolean
 }
 
-const ENTRANTS_PAR_DEFAUT: Entrant[] = [
-  {
-    id: 'ent_01a',
-    expediteur: '0389815487',
-    contenu: 'ok',
-    date_reception: new Date().toISOString(),
-    statut_notification: 'ENVAYE (200 OK)',
-    id_application: 'app_01',
-    applications: { nom: 'Amadou Koné' },
-    appareils: { nom: 'Gateway Abidjan 01' },
-  },
-  {
-    id: 'ent_02b',
-    expediteur: '+261389815487',
-    contenu: 'Vous êtes de nouveau inscrit.',
-    date_reception: new Date(Date.now() - 240000).toISOString(),
-    statut_notification: 'ENVAYE (200 OK)',
-    id_application: 'app_02',
-    applications: { nom: 'Kalimba Commerce' },
-    appareils: { nom: 'Gateway Abidjan 01' },
-  },
-  {
-    id: 'ent_03c',
-    expediteur: '+261389815487',
-    contenu: 'Vous êtes désinscrit. Pour vous réinscrire, répondez START.',
-    date_reception: new Date(Date.now() - 1140000).toISOString(),
-    statut_notification: 'ENVAYE (200 OK)',
-    id_application: 'app_03',
-    applications: { nom: 'Yas QuizWin' },
-    appareils: { nom: 'Gateway Dakar 01' },
-  },
-  {
-    id: 'ent_04d',
-    expediteur: '+261389815487',
-    contenu: 'test',
-    date_reception: new Date(Date.now() - 3120000).toISOString(),
-    statut_notification: 'ENVAYE (200 OK)',
-    id_application: 'app_01',
-    applications: { nom: 'Amadou Koné' },
-    appareils: { nom: 'Gateway Abidjan 01' },
-  },
-  {
-    id: 'ent_05e',
-    expediteur: '0340512249',
-    contenu: 'Confirmation reçue. Merci pour la réactivité.',
-    date_reception: new Date(Date.now() - 86400000).toISOString(),
-    statut_notification: 'ENVAYE (200 OK)',
-    id_application: 'app_04',
-    applications: { nom: 'TechLab SARL' },
-    appareils: { nom: 'Gateway Dakar 01' },
-  },
+const COULEURS_AVATAR = [
+  'bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400',
+  'bg-teal-100 text-teal-600 dark:bg-teal-500/15 dark:text-teal-400',
+  'bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400',
+  'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400',
+  'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400',
+  'bg-slate-200 text-slate-600 dark:bg-zinc-800 dark:text-zinc-300',
 ]
 
-function badgeNotification(statut: string): string {
-  const s = statut.toLowerCase()
-  if (s.includes('envay') || s.includes('200') || s.includes('ok')) {
-    return 'inline-flex items-center rounded-md bg-emerald-100 px-2 py-1 text-[11px] font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300 font-bold'
-  }
-  if (s.includes('echec') || s.includes('échec') || s.includes('erreur') || s.includes('500')) {
-    return 'inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-[11px] font-medium text-red-600 dark:bg-red-500/15 dark:text-red-300 font-bold'
-  }
-  return 'inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-500 dark:bg-zinc-800 dark:text-zinc-400 font-bold'
+function couleurAvatar(expediteur: string): string {
+  let h = 0
+  for (let i = 0; i < expediteur.length; i++) h = (h * 31 + expediteur.charCodeAt(i)) >>> 0
+  return COULEURS_AVATAR[h % COULEURS_AVATAR.length]
 }
 
 export default function PageBoiteReception() {
-  const [entrants, setEntrants] = useState<Entrant[]>(ENTRANTS_PAR_DEFAUT)
+  const [messages, setMessages] = useState<Entrant[]>([])
   const [chargement, setChargement] = useState(true)
   const [recherche, setRecherche] = useState('')
+  const [onglet, setOnglet] = useState<'tous' | 'transmis' | 'verifier'>('tous')
   const [relanceEnCours, setRelanceEnCours] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
+  const [info, setInfo] = useState<string | null>(null)
 
-  const chargerDonnees = useCallback(async () => {
+  const charger = useCallback(async () => {
     try {
-      const reponseEntrants = await fetch('/api/inbox?limit=100')
-      const donneesEntrants = await reponseEntrants.json()
-      if (Array.isArray(donneesEntrants.entrants) && donneesEntrants.entrants.length > 0) {
-        setEntrants(donneesEntrants.entrants)
-      } else {
-        setEntrants(ENTRANTS_PAR_DEFAUT)
-      }
+      const res = await fetch('/api/inbox?limit=100')
+      const data = await res.json().catch(() => ({}))
+      const liste: any[] = Array.isArray(data.entrants) ? data.entrants : []
+      setMessages(
+        liste.map((e: any) => {
+          const expediteur = typeof e.expediteur === 'string' && e.expediteur ? e.expediteur : '—'
+          return {
+            id: e.id,
+            initiales: (expediteur.replace(/\D/g, '').slice(-2) || expediteur.slice(0, 2).toUpperCase() || '??'),
+            expediteur,
+            heure: e.date_reception
+              ? new Date(e.date_reception).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+              : '—',
+            contenu: typeof e.contenu === 'string' ? e.contenu : '',
+            passerelle: e.appareils?.nom ?? '—',
+            transmis: e.statut_notification === 'ENVOYE',
+          }
+        })
+      )
     } finally {
       setChargement(false)
     }
   }, [])
 
   useEffect(() => {
-    chargerDonnees()
-    const interval = setInterval(() => chargerDonnees(), 10000)
-    return () => clearInterval(interval)
-  }, [chargerDonnees])
-
-  const visibles = entrants.filter(e =>
-    e.expediteur.includes(recherche) || e.contenu.toLowerCase().includes(recherche.toLowerCase())
-  )
+    charger()
+    const i = setInterval(() => charger(), 10000)
+    return () => clearInterval(i)
+  }, [charger])
 
   async function relancer(id: string) {
     setRelanceEnCours(id)
-    setMessage(null)
+    setInfo(null)
     try {
       const res = await fetch(`/api/inbox/${id}/relancer`, { method: 'POST' })
       const data = await res.json().catch(() => ({}))
-      setMessage(data.message ?? data.error ?? 'Notification Webhook réexpédiée avec succès.')
-      await chargerDonnees()
+      setInfo(data.message ?? data.error ?? 'Relance effectuée.')
+      await charger()
     } catch {
-      setMessage('Relance effectuée (simulation Webhook 200 OK).')
+      setInfo('Relance impossible. Réessayez.')
     } finally {
       setRelanceEnCours(null)
     }
   }
 
+  const visibles = messages.filter((m) => {
+    const correspondOnglet =
+      onglet === 'tous' ||
+      (onglet === 'transmis' && m.transmis) ||
+      (onglet === 'verifier' && !m.transmis)
+    const q = recherche.trim().toLowerCase()
+    return correspondOnglet && (q === '' || m.expediteur.toLowerCase().includes(q) || m.contenu.toLowerCase().includes(q))
+  })
+
+  const nbTransmis = messages.filter((m) => m.transmis).length
+  const nbAVerifier = messages.length - nbTransmis
+
   function exporter() {
-    const lignes = visibles.map((e) =>
-      [e.expediteur, `"${e.contenu.replace(/"/g, '""')}"`, e.applications?.nom ?? '', e.statut_notification, e.date_reception].join(';')
-    )
-    const blob = new Blob([['numero;message;client;notification;recu_le', ...lignes].join('\n'), '\n'], { type: 'text/csv;charset=utf-8' })
+    const lignes = visibles.map((m) => [m.expediteur, `"${m.contenu.replace(/"/g, '""')}"`, m.passerelle, m.transmis ? 'transmis' : 'a_verifier', m.heure].join(';'))
+    const blob = new Blob([['expediteur;message;passerelle;statut;heure', ...lignes].join('\n'), '\n'], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'reception.csv'
+    a.download = 'sms-recus.csv'
     a.click()
     URL.revokeObjectURL(url)
   }
 
-  if (chargement) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-slate-100 dark:bg-zinc-950">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-      </div>
-    )
-  }
-
   return (
     <CoquilleTableauDeBord>
-      {/* En-tête */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">SMS reçus</h1>
-        <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-          Consultez les messages entrants et leur transfert Webhook vers vos clients.
-        </p>
+      {/* En-tête (Exact Screenshot 1) */}
+      <div className="mb-6 flex items-end justify-between">
+        <div>
+          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+            SMS reçus
+          </h1>
+          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+            Les réponses reçues par vos passerelles, avec leur statut de transmission.
+          </p>
+        </div>
+        <button
+          onClick={exporter}
+          className="inline-flex items-center gap-2 rounded-full bg-[#5b5bd6] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#4c4cc9] transition"
+        >
+          <Download className="h-4 w-4" /> Exporter
+        </button>
       </div>
 
-      {message && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs font-medium text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
-          {message}
+      {info && (
+        <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs font-medium text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300">
+          {info}
         </div>
       )}
 
-      {/* Main Card */}
-      <div className="rounded-2xl bg-white shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
-        <div className="flex flex-col gap-3 border-b border-slate-100 px-6 py-4 dark:border-zinc-800/80 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">SMS reçus</h2>
-            <p className="text-xs text-slate-400 dark:text-zinc-500">{visibles.length} messages au total</p>
+      {/* Statistiques 3 Cartes (Exact Screenshot 1) */}
+      <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card grid grid-cols-3 divide-x divide-slate-100 px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 dark:divide-zinc-800">
+        <div className="pr-6">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+            Messages reçus
+          </p>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-[28px] font-extrabold text-slate-900 dark:text-white">{chargement ? '…' : messages.length}</span>
           </div>
+          <p className="text-[11.5px] text-slate-400">SMS entrants en base</p>
+        </div>
+        <div className="px-6">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+            Transmis au webhook
+          </p>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-[28px] font-extrabold text-slate-900 dark:text-white">{chargement ? '…' : nbTransmis}</span>
+          </div>
+          <p className="text-[11.5px] text-slate-400">Notifications remises</p>
+        </div>
+        <div className="pl-6">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+            À vérifier
+          </p>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-[28px] font-extrabold text-amber-600 dark:text-amber-400">{chargement ? '…' : nbAVerifier}</span>
+          </div>
+          <p className="text-[11.5px] text-slate-400">En attente ou en échec</p>
+        </div>
+      </div>
 
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Rechercher dans les messages..."
-                value={recherche}
-                onChange={(e) => setRecherche(e.target.value)}
-                className="w-64 rounded-xl border border-slate-200 bg-white py-1.5 pl-8 pr-3 text-xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-              />
+      {/* Onglets & Recherche (Exact Screenshot 1) */}
+      <div className="mb-4 mt-6 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setOnglet('tous')}
+            className={`rounded-full px-4 py-1.5 text-[12px] font-bold transition ${onglet === 'tous' ? 'bg-[#5b5bd6] text-white shadow-sm' : 'text-slate-500 hover:bg-white dark:text-zinc-400'}`}
+          >
+            Tous · {messages.length}
+          </button>
+          <button
+            onClick={() => setOnglet('transmis')}
+            className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${onglet === 'transmis' ? 'bg-[#5b5bd6] text-white shadow-sm' : 'text-slate-500 hover:bg-white dark:text-zinc-400'}`}
+          >
+            Transmis
+          </button>
+          <button
+            onClick={() => setOnglet('verifier')}
+            className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${onglet === 'verifier' ? 'bg-[#5b5bd6] text-white shadow-sm' : 'text-slate-500 hover:bg-white dark:text-zinc-400'}`}
+          >
+            À vérifier · {nbAVerifier}
+          </button>
+        </div>
+        <div className="flex w-64 items-center gap-2 rounded-full bg-white px-4 py-2 text-[12.5px] text-slate-400 shadow-card border border-slate-100 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400">
+          <Search className="h-4 w-4" />
+          <input
+            type="text"
+            placeholder="Numéro ou contenu"
+            value={recherche}
+            onChange={(e) => setRecherche(e.target.value)}
+            className="flex-1 bg-transparent focus:outline-none dark:text-zinc-200 text-xs"
+          />
+        </div>
+      </div>
+
+      {/* Liste des messages (Exact Screenshot 1) */}
+      <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card overflow-hidden dark:bg-zinc-900 dark:border-zinc-800">
+        <div className="divide-y divide-slate-100 dark:divide-zinc-800">
+          {chargement && (
+            <p className="flex items-center justify-center gap-2 px-6 py-12 text-xs text-slate-400">
+              <Loader2 className="h-4 w-4 animate-spin" /> Chargement…
+            </p>
+          )}
+          {!chargement && visibles.length === 0 && (
+            <p className="px-6 py-12 text-center text-xs text-slate-400 dark:text-zinc-500">
+              Aucun message reçu pour le moment.
+            </p>
+          )}
+          {visibles.map((m) => (
+            <div key={m.id} className="flex items-start gap-4 px-6 py-4 hover:bg-slate-50/50 dark:hover:bg-zinc-800/40">
+              <div
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-extrabold ${couleurAvatar(m.expediteur)}`}
+              >
+                {m.initiales}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[13.5px] font-bold text-slate-800 dark:text-zinc-200">
+                  {m.expediteur}
+                  <span className="ml-2 text-[11px] font-medium text-slate-400">
+                    {m.heure}
+                  </span>
+                </p>
+                <p className="mt-0.5 text-[12.5px] leading-relaxed text-slate-600 dark:text-zinc-300">
+                  {m.contenu}
+                </p>
+                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-400">
+                  <Smartphone className="h-3.5 w-3.5" />
+                  Reçu sur {m.passerelle}
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-col items-end gap-2">
+                {m.transmis ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10.5px] font-bold text-emerald-600 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300">
+                    <Check className="h-3 w-3 stroke-[3]" /> Webhook transmis
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10.5px] font-bold text-amber-600 border border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-300">
+                    À vérifier
+                  </span>
+                )}
+                {!m.transmis && (
+                  <button
+                    onClick={() => relancer(m.id)}
+                    disabled={relanceEnCours === m.id}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[11px] font-semibold text-slate-500 shadow-2xs hover:border-slate-300 hover:text-slate-800 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                  >
+                    {relanceEnCours === m.id
+                      ? <Loader2 className="h-3 w-3 animate-spin" />
+                      : <RefreshCw className="h-3 w-3" />}
+                    Nouvelle tentative
+                  </button>
+                )}
+              </div>
             </div>
-            <button onClick={exporter}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
-              <Download className="h-3.5 w-3.5" /> Exporter
-            </button>
-          </div>
+          ))}
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50 text-left font-semibold uppercase tracking-wider text-slate-400 dark:border-zinc-800 dark:bg-zinc-800/30">
-                <th className="px-6 py-3">EXPÉDITEUR</th>
-                <th className="px-6 py-3">MESSAGE</th>
-                <th className="px-6 py-3">CLIENT & PASSERELLE</th>
-                <th className="px-6 py-3">RÉPONSE WEBHOOK</th>
-                <th className="px-6 py-3">REÇU LE</th>
-                <th className="px-6 py-3 text-right">ACTION</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60">
-              {visibles.map((e) => (
-                <tr key={e.id} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/40">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="h-4 w-4 text-blue-600" />
-                      <span className="font-mono font-bold text-slate-900 dark:text-white">{e.expediteur}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 font-medium text-slate-800 dark:text-zinc-200 max-w-xs truncate">{e.contenu}</td>
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className="font-semibold text-slate-800 dark:text-zinc-200">{e.applications?.nom ?? 'Amadou Koné'}</p>
-                      <p className="text-[11px] text-slate-400">via {e.appareils?.nom ?? 'Gateway Abidjan 01'}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={badgeNotification(e.statut_notification)}>
-                      {e.statut_notification}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-slate-500 dark:text-zinc-400">
-                    {new Date(e.date_reception).toLocaleString('fr-FR', {
-                      day: '2-digit', month: '2-digit', year: 'numeric',
-                      hour: '2-digit', minute: '2-digit', second: '2-digit'
-                    })}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button onClick={() => relancer(e.id)} disabled={relanceEnCours === e.id}
-                      title="Relancer le Webhook"
-                      className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text.xs font-bold text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-500/10">
-                      {relanceEnCours === e.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-                      Relancer
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between border-t border-slate-100 px-6 py-3 text-xs text-slate-400 dark:border-zinc-800/80">
-          <span>{visibles.length} messages affichés</span>
-          <span>Données synchronisées en temps réel</span>
+        <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-6 py-3 text-[11px] text-slate-400 dark:border-zinc-800 dark:bg-zinc-800/40">
+          <span>{visibles.length} message{visibles.length > 1 ? 's' : ''} · Tous les résultats sont affichés</span>
+          <span>Transmission au webhook : {nbTransmis}/{messages.length}</span>
         </div>
       </div>
     </CoquilleTableauDeBord>

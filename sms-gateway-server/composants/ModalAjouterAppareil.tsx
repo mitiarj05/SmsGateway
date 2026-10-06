@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, QrCode, Download, Link2, Copy, Check, Smartphone, CheckCircle2, ShieldCheck, AlertTriangle } from 'lucide-react'
+import { X, Link2, Copy, Check, Smartphone, ShieldCheck, AlertTriangle } from 'lucide-react'
 import QrCodeSvg from './QrCodeSvg'
 
 interface PropsModalAjout {
@@ -12,7 +12,6 @@ interface PropsModalAjout {
 export default function ModalAjouterAppareil({ ouvert, onFermer }: PropsModalAjout) {
   const [urlServeur, setUrlServeur] = useState('')
   const [copie, setCopie] = useState(false)
-  const [onglet, setOnglet] = useState<'apk' | 'associer'>('apk')
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -21,8 +20,6 @@ export default function ModalAjouterAppareil({ ouvert, onFermer }: PropsModalAjo
   }, [])
 
   if (!ouvert) return null
-
-  const urlApk = `${urlServeur || 'https://sms-gateway-omega.vercel.app'}/smsika.apk`
 
   function copier(texte: String) {
     navigator.clipboard?.writeText(texte.toString())
@@ -53,59 +50,17 @@ export default function ModalAjouterAppareil({ ouvert, onFermer }: PropsModalAjo
           </button>
         </div>
 
-        {/* Sélection des Onglets QR Code */}
-        <div className="flex rounded-xl bg-slate-100 p-1 dark:bg-zinc-800">
-          <button
-            type="button"
-            onClick={() => setOnglet('apk')}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold transition ${
-              onglet === 'apk'
-                ? 'bg-white text-blue-600 shadow-sm dark:bg-zinc-900 dark:text-blue-400'
-                : 'text-slate-600 hover:text-slate-900 dark:text-zinc-400'
-            }`}
-          >
-            <Download className="h-4 w-4" /> 1. Installer l'APK (Camera)
-          </button>
-          <button
-            type="button"
-            onClick={() => setOnglet('associer')}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2 text-xs font-bold transition ${
-              onglet === 'associer'
-                ? 'bg-white text-blue-600 shadow-sm dark:bg-zinc-900 dark:text-blue-400'
-                : 'text-slate-600 hover:text-slate-900 dark:text-zinc-400'
-            }`}
-          >
-            <QrCode className="h-4 w-4" /> 2. Associer le Serveur
-          </button>
-        </div>
-
         {/* Contenu principal QR Code */}
         <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-50 border border-slate-200/80 dark:bg-zinc-800/50 dark:border-zinc-700/80 text-center space-y-4">
-          {onglet === 'apk' ? (
-            <>
-              <QrCodeSvg valeur={urlApk} taille={180} etiquette="Scannez avec l'appareil photo du téléphone" />
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                  Étape 1 : Télécharger l'application APK
-                </p>
-                <p className="text-[11px] text-slate-500 dark:text-zinc-400 max-w-sm">
-                  Pointez l'appareil photo de votre smartphone sur ce QR Code pour télécharger et installer l'application Android **SMSIKA Relay**.
-                </p>
-              </div>
-            </>
-          ) : (
-            <>
-              <QrCodeSvg valeur={urlServeur} taille={180} etiquette="Scannez depuis l'application SMSIKA" />
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                  Étape 2 : Appairage automatique du serveur
-                </p>
-                <p className="text-[11px] text-slate-500 dark:text-zinc-400 max-w-sm">
-                  Ouvrez l'application **SMSIKA** sur le téléphone, appuyez sur **"Scanner QR"** puis pointez la caméra sur ce code pour enregistrer le serveur en 1 seconde.
-                </p>
-              </div>
-            </>
-          )}
+          <QrCodeSvg valeur={urlServeur} taille={180} etiquette="Scannez depuis l'application SMSIKA" />
+          <div className="space-y-1">
+            <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+              Appairage automatique du serveur
+            </p>
+            <p className="text-[11px] text-slate-500 dark:text-zinc-400 max-w-sm">
+              Ouvrez l'application SMSIKA sur le téléphone, appuyez sur « Scanner QR » puis pointez la caméra sur ce code pour enregistrer le serveur en 1 seconde.
+            </p>
+          </div>
         </div>
 
         {/* Bloc d'URL manuelle de secours */}

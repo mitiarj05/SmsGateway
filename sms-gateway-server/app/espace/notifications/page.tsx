@@ -45,7 +45,7 @@ export default function PageNotificationsEspace() {
   const [boutiqueConnectee, setBoutiqueConnectee] = useState<{
     storeUrl: string
     platform: string
-    apiKey: string
+    apiKey: string | null
     webhookUrl: string
   } | null>(null)
 
@@ -133,15 +133,15 @@ export default function PageNotificationsEspace() {
       })
 
       const donnees = await reponse.json()
-      if (reponse.ok && donnees.succes) {
+      if (reponse.ok && donnees.url_notification) {
         setBoutiqueConnectee({
-          storeUrl: donnees.storeUrl,
-          platform: donnees.platform,
-          apiKey: donnees.apiKey,
-          webhookUrl: donnees.webhookUrl,
+          storeUrl: donnees.url_boutique,
+          platform: donnees.plateforme,
+          apiKey: donnees.secret_notification_visible ?? null,
+          webhookUrl: donnees.url_notification,
         })
-        setUrl(donnees.webhookUrl)
-        afficherNotification('succes', `Boutique ${donnees.platform} connectée en 1 Clic !`)
+        setUrl(donnees.url_notification)
+        afficherNotification('succes', donnees.message ?? `Boutique ${donnees.plateforme} connectée en 1 Clic !`)
         chargerDonnees()
       } else {
         afficherNotification('erreur', donnees.error || 'Échec de la connexion automatique')

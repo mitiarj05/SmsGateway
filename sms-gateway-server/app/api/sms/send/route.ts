@@ -7,7 +7,6 @@ import { expirerEnAttentePerimees } from '@/lib/expiration-attente'
 import { promouvoirProgrammes } from '@/lib/programmes'
 import { genererCode, urlPublique } from '@/lib/liens'
 import { compterEnvoisMois, moisActuel } from '@/lib/facturation'
-import { numeroBloque } from '@/lib/automatismes'
 import { STATUT_TACHE } from '@/lib/statuts'
 
 export async function POST(request: NextRequest) {
@@ -86,23 +85,6 @@ export async function POST(request: NextRequest) {
         )
       }
     }
-
-    // 2ter. Désinscriptions STOP : numéros bloqués ignorés (jamais d'envoi).
-    const numerosBloques: string[] = []
-    for (const numero of numeros) {
-      if (await numeroBloque(numero, client.id)) numerosBloques.push(numero)
-    }
-    if (numerosBloques.length > 0) {
-      numeros = numeros.filter((n) => !numerosBloques.includes(n))
-      console.log(`[sms/send] ${numerosBloques.length} destinataire(s) désinscrit(s) ignoré(s)`)
-    }
-    if (numeros.length === 0) {
-      return NextResponse.json(
-        { error: 'Tous les destinataires sont désinscrits (STOP)', bloques: numerosBloques },
-        { status: 403 }
-      )
-    }
-    const bloques = numerosBloques
 
     // Expiration des EN_ATTENTE trop anciens + promotion des PROGRAMME
     // (ne bloquent jamais l'envoi)
@@ -258,7 +240,6 @@ export async function POST(request: NextRequest) {
           count: tachesCreees.length,
           tasks: tachesCreees,
           ...(avecLien ? { liens: liensCrees } : {}),
-          ...(bloques.length > 0 ? { bloques } : {}),
           scheduled_for: programmePour.toISOString(),
           push_sent: false,
           client: { id: client.id, nom: client.nom },
@@ -272,7 +253,6 @@ export async function POST(request: NextRequest) {
           message: 'SMS mis en file d\'attente',
           task: tachesCreees[0],
           ...(avecLien ? { liens: liensCrees } : {}),
-          ...(bloques.length > 0 ? { bloques } : {}),
           push_sent: pushEnvoye,
           device_selected: appareilSelectionne,
           client: { id: client.id, nom: client.nom },
@@ -286,7 +266,6 @@ export async function POST(request: NextRequest) {
         count: tachesCreees.length,
         tasks: tachesCreees,
         ...(avecLien ? { liens: liensCrees } : {}),
-        ...(bloques.length > 0 ? { bloques } : {}),
         push_sent: pushEnvoye,
         device_selected: appareilSelectionne,
         client: { id: client.id, nom: client.nom },

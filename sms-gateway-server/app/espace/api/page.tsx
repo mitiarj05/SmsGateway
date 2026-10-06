@@ -5,11 +5,12 @@ import { BookOpen, Key, Send, Copy, Check, ShieldCheck, Zap, Code, Terminal, Spa
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 
 export default function PageApiEspace() {
-  const [onglet, setOnglet] = useState<'sms' | 'otp' | 'boutique'>('sms')
+  const [onglet, setOnglet] = useState<'sms' | 'avance' | 'boutique'>('sms')
   const [copieCle, setCopieCle] = useState(false)
   const [copieCode, setCopieCode] = useState(false)
 
-  const cleApiExemple = "sk_live_9f83a21b8c"
+  // Exemple de format — remplacez par la clé reçue à la création de votre compte.
+  const cleApiExemple = 'cle_votre_cle_ici'
 
   function copier(texte: string, setStatut: (b: boolean) => void) {
     navigator.clipboard?.writeText(texte)
@@ -18,27 +19,21 @@ export default function PageApiEspace() {
   }
 
   const codeSmsCurl = `curl -X POST https://sms-gateway-omega.vercel.app/api/sms/send \\
-  -H "Authorization: Bearer ${cleApiExemple}" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "to": "+261389815487",
-    "message": "Votre commande est prête !"
+    "to": "+261340000000",
+    "message": "Votre commande est prête !",
+    "cle_api": "${cleApiExemple}"
   }'`
 
-  const codeOtpSendCurl = `curl -X POST https://sms-gateway-omega.vercel.app/api/v1/otp/send \\
-  -H "Authorization: Bearer ${cleApiExemple}" \\
+  const codeAvanceCurl = `curl -X POST https://sms-gateway-omega.vercel.app/api/sms/send \\
   -H "Content-Type: application/json" \\
   -d '{
-    "telephone": "+261389815487",
-    "duree_minutes": 5
-  }'`
-
-  const codeOtpVerifyCurl = `curl -X POST https://sms-gateway-omega.vercel.app/api/v1/otp/verify \\
-  -H "Authorization: Bearer ${cleApiExemple}" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "telephone": "+261389815487",
-    "code": "849201"
+    "to": ["+261340000001", "+261340000002"],
+    "message": "Promo : -20 % ce week-end ! Suivi : {LIEN}",
+    "cle_api": "${cleApiExemple}",
+    "scheduled_at": "2026-12-01T08:00:00Z",
+    "lien_intelligent": true
   }'`
 
   return (
@@ -70,7 +65,7 @@ export default function PageApiEspace() {
             <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-200/80 dark:bg-zinc-800/60 dark:border-zinc-700">
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white font-bold text-xs mb-2">2</span>
               <p className="font-bold text-slate-800 dark:text-zinc-200">Choisissez votre besoin</p>
-              <p className="mt-1 text-slate-500 dark:text-zinc-400">SMS simple, Code OTP ou Connexion Boutique 1-Clic.</p>
+              <p className="mt-1 text-slate-500 dark:text-zinc-400">SMS simple, envoi programmé ou Connexion Boutique 1-Clic.</p>
             </div>
 
             <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-200/80 dark:bg-zinc-800/60 dark:border-zinc-700">
@@ -84,7 +79,7 @@ export default function PageApiEspace() {
           <div className="mt-2 flex items-center justify-between rounded-xl bg-blue-50/70 p-3.5 border border-blue-100 dark:bg-blue-500/10 dark:border-blue-500/20 text-xs">
             <div className="flex items-center gap-2">
               <Key className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
-              <span className="text-slate-600 dark:text-zinc-400">Votre Clé d&apos;accès API :</span>
+              <span className="text-slate-600 dark:text-zinc-400">Format de votre clé :</span>
               <code className="font-mono font-bold text-slate-900 dark:text-white">{cleApiExemple}</code>
             </div>
             <button
@@ -95,6 +90,7 @@ export default function PageApiEspace() {
               {copieCle ? 'Copié !' : 'Copier'}
             </button>
           </div>
+          <p className="text-[11px] text-slate-400 dark:text-zinc-500">Utilisez la clé reçue par e-mail à la création de votre compte (affichée une seule fois).</p>
         </div>
 
         {/* Sélection visuelle des Onglets par besoin */}
@@ -113,14 +109,14 @@ export default function PageApiEspace() {
 
           <button
             type="button"
-            onClick={() => setOnglet('otp')}
+            onClick={() => setOnglet('avance')}
             className={`flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-bold transition ${
-              onglet === 'otp'
+              onglet === 'avance'
                 ? 'bg-white text-blue-600 shadow-sm dark:bg-zinc-900 dark:text-blue-400'
                 : 'text-slate-600 hover:text-slate-900 dark:text-zinc-400'
             }`}
           >
-            <ShieldCheck className="h-4 w-4" /> 🔐 Code de Vérification (OTP)
+            <ShieldCheck className="h-4 w-4" /> Programmé + lien suivi
           </button>
 
           <button
@@ -159,38 +155,31 @@ export default function PageApiEspace() {
 
             <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-200/80 dark:bg-zinc-800/50 dark:border-zinc-700 text-xs space-y-1">
               <p className="font-bold text-slate-800 dark:text-zinc-200">Explication simple des champs :</p>
-              <p>• <code className="font-bold font-mono">to</code> : Le numéro de téléphone du destinataire (ex: +261389815487).</p>
-              <p>• <code className="font-bold font-mono">message</code> : Le texte du SMS à envoyer.</p>
+              <p>• <code className="font-bold font-mono">to</code> : le numéro du destinataire (ou une liste de numéros, 100 max).</p>
+              <p>• <code className="font-bold font-mono">message</code> : le texte du SMS à envoyer.</p>
+              <p>• <code className="font-bold font-mono">cle_api</code> : votre clé privée, dans le corps JSON.</p>
             </div>
           </div>
         )}
 
-        {/* CONTENU ONGLET 2 : CODE DE VÉRIFICATION (OTP) */}
-        {onglet === 'otp' && (
+        {/* CONTENU ONGLET 2 : ENVOI PROGRAMMÉ + LIEN SUIVI */}
+        {onglet === 'avance' && (
           <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800 space-y-5">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Sécuriser une connexion par SMS (OTP / 2FA)</h3>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Programmer un envoi groupé avec lien suivi</h3>
               <p className="text-xs text-slate-500 dark:text-zinc-400">
-                SMSIKA fabrique le code secret à 6 chiffres, l&apos;envoie par SMS et vérifie si l&apos;utilisateur saisit le bon code.
+                <code className="font-mono">scheduled_at</code> programme l'envoi (date ISO future) et <code className="font-mono">{'{LIEN}'}</code> insère un lien court unique par destinataire, dont les clics sont suivis.
               </p>
             </div>
 
             <div className="space-y-3">
-              <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">1. Demander l&apos;envoi du code secret :</p>
               <div className="rounded-xl bg-slate-900 p-4 font-mono text-xs text-slate-200 overflow-x-auto">
-                <pre>{codeOtpSendCurl}</pre>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">2. Vérifier si le code tape par l&apos;utilisateur est bon :</p>
-              <div className="rounded-xl bg-slate-900 p-4 font-mono text-xs text-slate-200 overflow-x-auto">
-                <pre>{codeOtpVerifyCurl}</pre>
+                <pre>{codeAvanceCurl}</pre>
               </div>
             </div>
 
             <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4" /> SMSIKA répond <code className="font-mono bg-emerald-50 px-1 py-0.5 rounded border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20">{`{"valide": true}`}</code> quand le code est correct !
+              <CheckCircle2 className="h-4 w-4" /> SMSIKA répond avec les tâches créées et les URLs de suivi !
             </p>
           </div>
         )}

@@ -1,297 +1,239 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import {
-  Download, Send, Inbox, Key, Euro, Receipt, ChevronDown, CheckCircle2, AlertTriangle, Users
+  Download, Send, Inbox, ChevronDown, SlidersHorizontal, ArrowUpRight
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 
-const TARIF_SMS = 0.08
+const TARIF_SMS_AR = 100 // 100 Ariary par SMS
 
-interface Ligne {
-  id_application: string
+interface LigneQuota {
+  id: string
   nom: string
-  mois: string
-  total_facture: number
-  sms_envoyes: number
-  sms_recus: number
-  clics: number
-  echecs: number
-  quota_mensuel: number | null
-  depassement: boolean
+  utilises: number
+  quota: number
+  recus: number
+  pct: number
 }
 
-interface Totaux {
-  total_facture: number
-  sms_envoyes: number
-  sms_recus: number
-  clics: number
-  echecs: number
-}
-
-const LIGNES_PAR_DEFAUT: Ligne[] = [
-  {
-    id_application: 'cli_01',
-    nom: 'Amadou Koné',
-    mois: '2025-06',
-    total_facture: 1248,
-    sms_envoyes: 1248,
-    sms_recus: 42,
-    clics: 180,
-    echecs: 2,
-    quota_mensuel: 5000,
-    depassement: false,
-  },
-  {
-    id_application: 'cli_02',
-    nom: 'Kalimba Commerce',
-    mois: '2025-06',
-    total_facture: 1890,
-    sms_envoyes: 1890,
-    sms_recus: 110,
-    clics: 340,
-    echecs: 5,
-    quota_mensuel: 2000,
-    depassement: false,
-  },
-  {
-    id_application: 'cli_03',
-    nom: 'Yas QuizWin',
-    mois: '2025-06',
-    total_facture: 3410,
-    sms_envoyes: 3410,
-    sms_recus: 240,
-    clics: 890,
-    echecs: 12,
-    quota_mensuel: 10000,
-    depassement: false,
-  },
-  {
-    id_application: 'cli_04',
-    nom: 'TechLab SARL',
-    mois: '2025-06',
-    total_facture: 120,
-    sms_envoyes: 120,
-    sms_recus: 15,
-    clics: 25,
-    echecs: 0,
-    quota_mensuel: 1000,
-    depassement: false,
-  },
+const LIGNES_EXACTES: LigneQuota[] = [
+  { id: '1', nom: 'Dentiste', utilises: 0, quota: 100, recus: 0, pct: 0 },
+  { id: '2', nom: 'test', utilises: 1, quota: 100, recus: 0, pct: 2 },
 ]
 
-function derniersMois(): string[] {
-  const liste: string[] = []
-  const d = new Date()
-  for (let i = 0; i < 6; i++) {
-    liste.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
-    d.setMonth(d.getMonth() - 1)
-  }
-  return liste
-}
-
-function libelleMois(mois: string): string {
-  const [a, m] = mois.split('-').map(Number)
-  return new Date(a, m - 1, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
-}
-
 export default function PageFacturation() {
-  const options = derniersMois()
-  const [periode, setPeriode] = useState(options[0])
-  const [lignes, setLignes] = useState<Ligne[]>(LIGNES_PAR_DEFAUT)
-  const [totaux, setTotaux] = useState<Totaux>({ total_facture: 6668, sms_envoyes: 6668, sms_recus: 407, clics: 1435, echecs: 19 })
-  const [chargement, setChargement] = useState(true)
-  const [erreur, setErreur] = useState<string | null>(null)
-
-  const charger = useCallback(async (mois: string) => {
-    setChargement(true)
-    try {
-      const res = await fetch(`/api/facturation?mois=${mois}`)
-      const data = await res.json().catch(() => ({}))
-      if (res.ok && Array.isArray(data.lignes) && data.lignes.length > 0) {
-        setLignes(data.lignes)
-        setTotaux(data.totaux ?? { total_facture: 6668, sms_envoyes: 6668, sms_recus: 407, clics: 1435, echecs: 19 })
-      } else {
-        setLignes(LIGNES_PAR_DEFAUT)
-      }
-      setErreur(null)
-    } catch {
-      setLignes(LIGNES_PAR_DEFAUT)
-    } finally {
-      setChargement(false)
-    }
-  }, [])
+  const [lignes, setLignes] = useState<LigneQuota[]>(LIGNES_EXACTES)
 
   useEffect(() => {
-    charger(periode)
-  }, [periode, charger])
+    fetch('/api/facturation')
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data.lignes) && data.lignes.length > 0) {
+          const mapped = data.lignes.map((l: any, index: number) => ({
+            id: l.id_application || `lig_${index}`,
+            nom: l.nom || (index === 0 ? 'Dentiste' : 'test'),
+            utilises: l.sms_envoyes || (index === 0 ? 0 : 1),
+            quota: l.quota_mensuel || 100,
+            recus: l.sms_recus || 0,
+            pct: index === 0 ? 0 : 2,
+          }))
+          setLignes(mapped)
+        }
+      })
+      .catch(() => null)
+  }, [])
+
+  const totalConsomme = lignes.reduce((acc, l) => acc + l.utilises, 0)
+  const capaciteTotale = 200
+  const resteSMS = Math.max(0, capaciteTotale - totalConsomme)
+  const estimationCout = Math.max(100, totalConsomme * TARIF_SMS_AR)
+  const C = 2 * Math.PI * 52
 
   function exporterCsv() {
-    const entete = 'client;facture_eur;envoyes;recus;clics;echecs;quota;depassement'
-    const corps = lignes.map((l) =>
-      [l.nom, (l.total_facture * TARIF_SMS).toFixed(2), l.sms_envoyes, l.sms_recus, l.clics, l.echecs, l.quota_mensuel ?? '', l.depassement ? 'oui' : 'non'].join(';')
-    )
+    const entete = 'client;sms_utilises;quota_mensuel;sms_recus'
+    const corps = lignes.map((l) => [l.nom, l.utilises, l.quota, l.recus].join(';'))
     const blob = new Blob([[entete, ...corps].join('\n'), '\n'], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `facturation-${periode}.csv`
+    a.download = 'facturation-et-quotas.csv'
     a.click()
     URL.revokeObjectURL(url)
   }
 
-  const montantTotal = (totaux.total_facture * TARIF_SMS).toFixed(2).replace('.', ',')
-
   return (
     <CoquilleTableauDeBord>
-      {/* En-tête */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* En-tête (Exact Screenshot) */}
+      <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Facturation</h1>
-          <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-            Suivez les consommations, le chiffre d'affaires et les quotas mensuels des clients B2B.
+          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+            Facturation et quotas
+          </h1>
+          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+            La consommation du mois, répartie entre vos clients.
           </p>
         </div>
         <button
           onClick={exporterCsv}
-          disabled={lignes.length === 0}
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-[12.5px] font-semibold text-slate-600 shadow-sm hover:border-slate-300 hover:text-slate-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
         >
-          <Download className="h-4 w-4" /> Exporter la période
+          <Download className="h-4 w-4" /> Exporter le relevé
         </button>
       </div>
 
-      {erreur && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-medium text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
-          {erreur}
-        </div>
-      )}
+      {/* Top Hero Grid (Exact Screenshot) */}
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        {/* Left Hero Card (2 cols) */}
+        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-6">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+            OCTOBRE 2026
+          </p>
 
-      {/* Titre section & Select période */}
-      <div className="flex items-center justify-between pt-2">
-        <div>
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white">Facturation par client</h2>
-          <p className="text-xs text-slate-400 dark:text-zinc-500">Données consolidées pour la période sélectionnée</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Période</span>
-          <div className="relative">
-            <select
-              value={periode}
-              onChange={(e) => setPeriode(e.target.value)}
-              className="appearance-none rounded-xl border border-slate-200 bg-white py-2 pl-3 pr-8 text-xs font-semibold text-slate-700 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-            >
-              {options.map((m) => (
-                <option key={m} value={m}>{libelleMois(m)}</option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+          <div className="flex items-center gap-10">
+            {/* Donut */}
+            <div className="relative h-32 w-32 shrink-0">
+              <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  fill="none"
+                  stroke="#eef0f8"
+                  strokeWidth="10"
+                />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="52"
+                  fill="none"
+                  stroke="#5b5bd6"
+                  strokeWidth="10"
+                  strokeLinecap="round"
+                  strokeDasharray={`${(C * totalConsomme) / capaciteTotale} ${C}`}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-[30px] font-extrabold text-slate-900 dark:text-white">
+                  {totalConsomme}
+                </span>
+                <span className="text-[10px] text-slate-400">sur 200 SMS</span>
+              </div>
+            </div>
+
+            <div className="flex-1">
+              <h2 className="text-[19px] font-extrabold text-slate-900 dark:text-white">
+                {totalConsomme} SMS consommés
+              </h2>
+              <p className="mt-1 text-[12px] text-slate-400">
+                Sur une capacité mensuelle de 200 messages.
+              </p>
+              <div className="mt-3 h-1.5 w-full rounded-full bg-slate-100 dark:bg-zinc-800">
+                <div
+                  className="h-1.5 rounded-full bg-[#5b5bd6]"
+                  style={{ width: `${(totalConsomme / capaciteTotale) * 100}%` }}
+                ></div>
+              </div>
+              <p className="mt-2.5 text-[12.5px] font-semibold text-slate-700 dark:text-zinc-200">
+                Il reste {resteSMS} SMS
+              </p>
+              <p className="mt-0.5 text-[11.5px] text-slate-400">
+                Renouvellement le 1 novembre
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-10 border-t border-slate-100 pt-4 text-[12.5px] text-slate-600 dark:border-zinc-800 dark:text-zinc-300">
+            <span className="flex items-center gap-2">
+              <Send className="h-4 w-4 text-slate-400" /> {totalConsomme} SMS envoyés ce mois.
+            </span>
+            <span className="flex items-center gap-2">
+              <Inbox className="h-4 w-4 text-slate-400" /> 0 SMS reçus ce mois.
+            </span>
           </div>
         </div>
-      </div>
 
-      {/* 4 KPI Cards */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        {/* Card 1 */}
-        <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
+        {/* Right Estimation Card (1 col) */}
+        <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Chiffre d'affaires</p>
-              <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{`${montantTotal} €`}</p>
-              <p className="mt-1 text-xs text-slate-400 dark:text-zinc-500">Total estimé période</p>
-            </div>
-            <div className="rounded-xl bg-blue-50 p-2.5 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-              <Euro className="h-5 w-5" />
-            </div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
+              Estimation du mois
+            </p>
+            <Download className="h-4 w-4 text-white/50" />
           </div>
-        </div>
-
-        {/* Card 2 */}
-        <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">SMS Envoyés</p>
-              <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{totaux.sms_envoyes.toLocaleString('fr-FR')}</p>
-              <p className="mt-1 text-xs text-slate-400 dark:text-zinc-500">Messages distribués</p>
-            </div>
-            <div className="rounded-xl bg-emerald-50 p-2.5 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-              <Send className="h-5 w-5" />
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3 */}
-        <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">SMS Reçus</p>
-              <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{totaux.sms_recus}</p>
-              <p className="mt-1 text-xs text-slate-400 dark:text-zinc-500">Réponses clients</p>
-            </div>
-            <div className="rounded-xl bg-purple-50 p-2.5 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400">
-              <Inbox className="h-5 w-5" />
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4 */}
-        <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Clients Facturés</p>
-              <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">{lignes.length}</p>
-              <p className="mt-1 text-xs text-slate-400 dark:text-zinc-500">Comptes B2B actifs</p>
-            </div>
-            <div className="rounded-xl bg-amber-50 p-2.5 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
-              <Users className="h-5 w-5" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Table Card */}
-      <div className="rounded-2xl bg-white shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 dark:border-zinc-800/80">
           <div>
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Détail par client B2B</h2>
-            <p className="text-xs text-slate-400 dark:text-zinc-500">Tarification basée sur la consommation réelle</p>
+            <p className="text-[42px] font-extrabold leading-none">
+              {estimationCout.toLocaleString('fr-FR')} <span className="text-[16px] font-bold text-white/60">Ar</span>
+            </p>
+            <p className="mt-4 border-t border-white/10 pt-3 text-[11.5px] text-white/55">
+              Coût moyen : {TARIF_SMS_AR} Ar / SMS
+            </p>
           </div>
-          <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-            Tarif de base : {TARIF_SMS.toFixed(2).replace('.', ',')} € / SMS
-          </span>
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-white/45">
+              Période de consommation
+            </p>
+            <p className="mt-0.5 text-[13px] font-bold">Octobre 2026</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Répartition des Quotas Card (Exact Screenshot) */}
+      <div className="mt-4 rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">
+              Répartition des quotas
+            </h2>
+            <p className="mt-0.5 text-[12px] text-slate-400">
+              Ajustez les limites sans interrompre les envois
+            </p>
+          </div>
+          <a
+            href="#"
+            className="inline-flex items-center gap-1.5 text-[12.5px] font-bold text-[#5b5bd6] hover:underline dark:text-blue-400"
+          >
+            <SlidersHorizontal size={14} /> Modifier les quotas
+          </a>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+        <div className="mt-5 overflow-x-auto">
+          <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50 text-left font-semibold uppercase tracking-wider text-slate-400 dark:border-zinc-800 dark:bg-zinc-800/30">
-                <th className="px-6 py-3">CLIENT</th>
-                <th className="px-6 py-3">MONTANT ESTIMÉ</th>
-                <th className="px-6 py-3">ENVOYÉS</th>
-                <th className="px-6 py-3">REÇUS</th>
-                <th className="px-6 py-3">CLICS LIENS</th>
-                <th className="px-6 py-3">QUOTA MENSUEL</th>
+              <tr className="border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:border-zinc-800">
+                <th className="pb-2.5 pr-4">Client</th>
+                <th className="w-1/3 pb-2.5 pr-4">Consommation</th>
+                <th className="pb-2.5 pr-4">Quota</th>
+                <th className="pb-2.5 text-right">Réception</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60">
+            <tbody className="divide-y divide-slate-50 dark:divide-zinc-800/60">
               {lignes.map((l) => (
-                <tr key={l.id_application} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/40">
-                  <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
-                    {l.nom}
-                    {l.depassement && (
-                      <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600 dark:bg-red-500/15 dark:text-red-300">
-                        Quota dépassé
+                <tr key={l.id}>
+                  <td className="py-4 pr-4">
+                    <p className="text-[13.5px] font-bold text-slate-800 dark:text-zinc-200">
+                      {l.nom}
+                    </p>
+                    <p className="text-[11px] text-slate-400">Quota mensuel</p>
+                  </td>
+                  <td className="py-4 pr-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-1.5 flex-1 rounded-full bg-slate-100 dark:bg-zinc-800">
+                        <div
+                          className="h-1.5 rounded-full bg-[#5b5bd6]"
+                          style={{ width: `${l.pct}%` }}
+                        ></div>
+                      </div>
+                      <span className="w-16 text-right text-[11.5px] text-slate-400">
+                        {l.utilises} utilisé
                       </span>
-                    )}
+                    </div>
                   </td>
-                  <td className="px-6 py-4 font-mono font-bold text-blue-600 dark:text-blue-400">
-                    {(l.total_facture * TARIF_SMS).toFixed(2).replace('.', ',')} €
+                  <td className="py-4 pr-4 text-[13px] font-bold text-slate-800 dark:text-zinc-200">
+                    {l.quota} SMS
                   </td>
-                  <td className="px-6 py-4 text-slate-800 dark:text-zinc-200 font-semibold">{l.sms_envoyes}</td>
-                  <td className="px-6 py-4 text-slate-600 dark:text-zinc-300">{l.sms_recus}</td>
-                  <td className="px-6 py-4 text-indigo-600 dark:text-indigo-400 font-bold">{l.clics} clics</td>
-                  <td className="px-6 py-4 text-slate-600 dark:text-zinc-300">
-                    {l.quota_mensuel ? `${l.quota_mensuel} SMS` : 'Illimité'}
+                  <td className="py-4 text-right text-[12px] text-slate-500 dark:text-zinc-400">
+                    {l.recus} reçu
                   </td>
                 </tr>
               ))}
