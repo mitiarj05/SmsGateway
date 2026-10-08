@@ -28,8 +28,9 @@ import androidx.lifecycle.lifecycleScope
 import com.mitia.smsgateway.data.local.PreferencesAppareil
 import com.mitia.smsgateway.service.ServicePasserelleSms
 import com.mitia.smsgateway.ui.NavigationApp
-import com.mitia.smsgateway.ui.views.EcranIntegration
 import com.mitia.smsgateway.ui.views.EcranDemarrage
+import com.mitia.smsgateway.ui.views.EcranOnboarding
+import com.mitia.smsgateway.ui.views.EcranConnexion
 import com.mitia.smsgateway.ui.infosBatterie
 import com.mitia.smsgateway.ui.batterieSansRestriction
 import com.mitia.smsgateway.ui.serviceEnCoursExecution
@@ -39,9 +40,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
-    /** Incrémenté à chaque retour de demande de permission → rafraîchit l'écran. */
     private var compteurPermissions by mutableStateOf(0)
-
     private var exportEnAttente: String? = null
 
     private val demandePermissionSms = registerForActivityResult(
@@ -97,7 +96,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
             val portee = rememberCoroutineScope()
-            var themeSombre by remember { mutableStateOf(true) }
+            var themeSombre by remember { mutableStateOf(false) }
 
             LaunchedEffect(Unit) {
                 themeSombre = PreferencesAppareil.estThemeSombre(context)
@@ -143,11 +142,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Déconnexion propre : prévient le serveur (statut HORS_LIGNE immédiat),
-     * puis coupe le foreground service. Les identifiants sont conservés :
-     * redémarrer réutilise le même appareil.
-     */
     private fun deconnecterEtArreter() {
         lifecycleScope.launch {
             val conteneur = (application as AppPasserelleSms).conteneurApp
@@ -183,7 +177,7 @@ class MainActivity : ComponentActivity() {
                 return@launch
             }
             exportEnAttente = journaux.versTexte(evenements)
-            lanceurExportDocument.launch("smsika-journal.txt")
+            lanceurExportDocument.launch("smstsika-journal.txt")
         }
     }
 }
@@ -192,7 +186,7 @@ class MainActivity : ComponentActivity() {
 fun EcranPrincipal(
     modifier: Modifier = Modifier,
     compteurPermissions: Int = 0,
-    themeSombre: Boolean = true,
+    themeSombre: Boolean = false,
     auChangementTheme: () -> Unit = {},
     aDemanderPermissionSms: () -> Unit = {},
     aDemanderPermissionNotifications: () -> Unit = {},
@@ -224,7 +218,11 @@ fun EcranPrincipal(
     var usageQuota by remember { mutableStateOf(0) }
     var messageParametres by remember { mutableStateOf("") }
     var pret by remember { mutableStateOf(false) }
-    var integrationTerminee by remember { mutableStateOf(true) }
+
+    // États du flux d'accueil
+    var onboardingVu by remember { mutableStateOf(false) }
+    var connecteSession by remember { mutableStateOf(false) }
+    var affichageConnexionForcee by remember { mutableStateOf(false) }
 
     val historique by conteneur.depotTaches.observerHistorique().collectAsState(initial = emptyList())
     val evenements by conteneur.depotJournaux.observer().collectAsState(initial = emptyList())
@@ -256,18 +254,19 @@ fun EcranPrincipal(
     }
 
     LaunchedEffect(Unit) {
-        // Chargement initial uniquement : ensuite les champs gardent la frappe.
         portee.launch {
             urlServeur = conteneur.depotAppareils.obtenirUrlServeur()
             nomAppareil = conteneur.depotAppareils.obtenirNomAppareil()
             jetonAppareil = conteneur.depotAppareils.obtenirIdentifiants()?.second
-            integrationTerminee = conteneur.depotAppareils.estIntegrationTerminee()
+            conteneur.depotAppareils.marquerIntegrationTerminee(true)
+            onboardingVu = PreferencesAppareil.estOnboardingVu(context)
+            connecteSession = PreferencesAppareil.estConnecteSession(context)
         }
         actualiser()
     }
+
     LaunchedEffect(compteurPermissions) { if (compteurPermissions > 0) actualiser() }
-    // Rafraîchit en continu tant que l'app est ouverte : l'écran Statut
-    // passe en ligne tout seul après démarrage (sans rouvrir l'app).
+
     LaunchedEffect(Unit) {
         while (true) {
             kotlinx.coroutines.delay(5000)
@@ -280,53 +279,30 @@ fun EcranPrincipal(
 
     if (!pret) {
         EcranDemarrage(modifier = modifier)
-    } else if (!integrationTerminee) {
-        EcranIntegration(
-            urlServeur = urlServeur,
-            auChangementUrlServeur = { urlServeur = it; messageParametres = "" },
-            message = messageParametres,
-            aEnregistrerServeur = {
-                portee.launch {
-                    if (urlServeur.isBlank()) {
-                        messageParametres = "Renseigne l'adresse du serveur."
-                        return@launch
-                    }
-                    val normalise = conteneur.depotAppareils.enregistrerUrlServeur(urlServeur)
-                    messageParametres = "Adresse enregistrée : $normalise"
-                    actualiser()
-                }
-            },
-            aTesterConnexion = {
-                portee.launch {
-                    if (urlServeur.isBlank()) {
-                        messageParametres = "Renseigne l'adresse du serveur."
-                        return@launch
-                    }
-                    messageParametres = if (conteneur.depotAppareils.ping(urlServeur)) {
-                        "Serveur joignable : $urlServeur"
-                    } else {
-                        "Serveur injoignable : vérifie l'IP et que « npm run dev » tourne."
-                    }
-                }
-            },
-            permissionSms = permissionSms,
-            permissionNotifications = permissionNotifications,
-            batterieOk = batterieOk,
-            aDemanderPermissionSms = aDemanderPermissionSms,
-            aDemanderPermissionNotifications = aDemanderPermissionNotifications,
-            aOuvrirReglagesBatterie = {
-                try {
-                    context.startActivity(
-                        Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                    )
-                } catch (e: Exception) {
-                    messageParametres = "Impossible d'ouvrir les réglages batterie."
-                }
-            },
+    } else if (!onboardingVu) {
+        EcranOnboarding(
             aTerminer = {
                 portee.launch {
-                    conteneur.depotAppareils.marquerIntegrationTerminee(true)
-                    integrationTerminee = true
+                    PreferencesAppareil.enregistrerOnboardingVu(context, true)
+                    onboardingVu = true
+                }
+            },
+            aOuvrirConnexion = {
+                portee.launch {
+                    PreferencesAppareil.enregistrerOnboardingVu(context, true)
+                    onboardingVu = true
+                    affichageConnexionForcee = true
+                }
+            },
+            modifier = modifier,
+        )
+    } else if (!connecteSession || affichageConnexionForcee) {
+        EcranConnexion(
+            aConnexionReussie = {
+                portee.launch {
+                    PreferencesAppareil.enregistrerConnecteSession(context, true)
+                    connecteSession = true
+                    affichageConnexionForcee = false
                     auDemarrageService()
                 }
             },

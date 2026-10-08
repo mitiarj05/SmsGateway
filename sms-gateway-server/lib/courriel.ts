@@ -5,7 +5,7 @@ import { promises as dns } from 'dns'
  * Envoi d'e-mails transactionnels (clé API après validation, etc.).
  * SMTP générique via variables d'environnement :
  *   SMTP_HOST, SMTP_PORT (587), SMTP_SECURE ("true"/"false"),
- *   SMTP_USER, SMTP_PASS, SMTP_FROM ("SMSIKA <no-reply@exemple.mg>").
+ *   SMTP_USER, SMTP_PASS, SMTP_FROM ("SMSTSIKA <no-reply@exemple.mg>").
  * Sans config : envoi ignoré silencieusement (false), le dashboard
  * reste la voie de transmission (clé affichée une seule fois).
  */
@@ -103,7 +103,7 @@ export function texteCleApi(nom: string, cleApi: string, urlEspace: string): str
   return [
     `Bonjour ${nom},`,
     '',
-    'Votre accès à la passerelle SMS SMSIKA est validé.',
+    'Votre accès à la passerelle SMS SMSTSIKA est validé.',
     '',
     `Votre clé API (à garder secrète) : ${cleApi}`,
     '',
@@ -112,6 +112,6 @@ export function texteCleApi(nom: string, cleApi: string, urlEspace: string): str
     '',
     'En cas de perte de clé, contactez votre administrateur (révocation + recréation).',
     '',
-    '— L’équipe SMSIKA',
+    '— L’équipe SMSTSIKA',
   ].join('\n')
 }

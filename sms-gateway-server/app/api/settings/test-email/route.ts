@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
     }
     const resultat = await envoyerCourrielDetaille(
       destinataire,
-      'Test e-mail SMSIKA',
-      'Si vous lisez ce message, l\u2019envoi d\u2019e-mails de la passerelle SMSIKA fonctionne.'
+      'Test e-mail SMSTSIKA',
+      'Si vous lisez ce message, l\u2019envoi d\u2019e-mails de la passerelle SMSTSIKA fonctionne.'
     )
     if (resultat.ok) {
       return NextResponse.json({ message: resultat.message })

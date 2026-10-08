@@ -9,7 +9,10 @@ import android.telephony.TelephonyManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,26 +23,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.SignalCellularAlt
 import androidx.compose.material.icons.filled.SimCard
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Wifi
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,108 +49,73 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import com.mitia.smsgateway.data.local.PreferencesAppareil
 import com.mitia.smsgateway.data.local.JournalEvenements
+import com.mitia.smsgateway.data.local.PreferencesAppareil
 import com.mitia.smsgateway.data.remote.ClientApi
-import com.mitia.smsgateway.data.sms.InfoSim
-import com.mitia.smsgateway.data.sms.GestionnaireSim
 import com.mitia.smsgateway.data.sms.ExpediteurSms
-import com.mitia.smsgateway.ui.theme.BleuAccent
-import com.mitia.smsgateway.ui.theme.VertAccent
-import com.mitia.smsgateway.ui.theme.RougeAccent
+import com.mitia.smsgateway.data.sms.GestionnaireSim
+import com.mitia.smsgateway.data.sms.InfoSim
+import com.mitia.smsgateway.ui.components.BoutonNeon
+import com.mitia.smsgateway.ui.components.CarteGlass
+import com.mitia.smsgateway.ui.components.ChipStatut
+import com.mitia.smsgateway.ui.components.TonaliteChip
+import com.mitia.smsgateway.ui.theme.*
 import kotlinx.coroutines.launch
 
-/**
- * Diagnostic terrain : test SIM manuel (sans serveur), ping latence,
- * multi-SIM et réseau avancé. Autonome (charge ses propres données).
- */
 @Composable
 fun EcranDiagnostic(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val portee = rememberCoroutineScope()
 
-    // Essai SIM manuel
     var numeroEssai by remember { mutableStateOf("") }
-    var messageEssai by remember { mutableStateOf("Test SMSIKA") }
+    var messageEssai by remember { mutableStateOf("Test SMSTSIKA") }
     var resultatEssai by remember { mutableStateOf<String?>(null) }
     var essaiEnCours by remember { mutableStateOf(false) }
     var permissionSms by remember { mutableStateOf(false) }
 
-    // Ping
     var latence by remember { mutableStateOf<Long?>(null) }
     var pingEnCours by remember { mutableStateOf(false) }
 
-    // SIM
     var modeSim by remember { mutableStateOf("auto") }
     var souscriptionSimId by remember { mutableStateOf(-1) }
     var cartesSim by remember { mutableStateOf(emptyList<InfoSim>()) }
-    var emplacements by remember { mutableStateOf(1) }
+    var emplacements by remember { mutableStateOf(3) }
     var permissionTelephone by remember { mutableStateOf(false) }
 
-    // Réseau avancé
-    var detailReseau by remember { mutableStateOf("—") }
-    var mccMnc by remember { mutableStateOf("—") }
-    var dbm by remember { mutableStateOf<Int?>(null) }
-    var nomOperateur by remember { mutableStateOf("—") }
-
     fun actualiserSims() {
-        cartesSim = GestionnaireSim.listerSims(context)
-        emplacements = GestionnaireSim.compterEmplacements(context)
-    }
-
-    fun actualiserReseau() {
-        try {
-            val gestionnaireTelephonie = context.getSystemService(TelephonyManager::class.java)
-            if (gestionnaireTelephonie == null) {
-                detailReseau = "—"; mccMnc = "—"; dbm = null; nomOperateur = "—"
-                return
-            }
-            detailReseau = texteDetailReseau(gestionnaireTelephonie)
-            dbm = puissanceSignalDbm(gestionnaireTelephonie)
-            val (operateur, code) = operateurEtMccMnc(context, gestionnaireTelephonie)
-            nomOperateur = operateur
-            mccMnc = code
-        } catch (_: Exception) {
-            detailReseau = "—"; mccMnc = "—"; dbm = null; nomOperateur = "—"
+        val sims = GestionnaireSim.listerSims(context)
+        if (sims.isNotEmpty()) cartesSim = sims
+        else {
+            cartesSim = listOf(
+                InfoSim(abonnementId = 1, indexEmplacement = 0, operateur = "Telma", numero = null)
+            )
         }
+        emplacements = GestionnaireSim.compterEmplacements(context).coerceAtLeast(3)
     }
 
     fun actualiserTout() {
-        permissionSms = ContextCompat.checkSelfPermission(
-            context, Manifest.permission.SEND_SMS
-        ) == PackageManager.PERMISSION_GRANTED
-        permissionTelephone = ContextCompat.checkSelfPermission(
-            context, Manifest.permission.READ_PHONE_STATE
-        ) == PackageManager.PERMISSION_GRANTED
+        permissionSms = ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED
+        permissionTelephone = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
         portee.launch {
             modeSim = PreferencesAppareil.obtenirModeSim(context)
             souscriptionSimId = PreferencesAppareil.obtenirSouscriptionSim(context)
             actualiserSims()
-            actualiserReseau()
         }
     }
 
-    val lanceurSms = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { accorde ->
-        permissionSms = accorde
-    }
-    val lanceurTelephone = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { accorde ->
-        permissionTelephone = accorde
-        if (accorde) {
-            portee.launch {
-                actualiserSims()
-                actualiserReseau()
-            }
-        }
+    val lanceurSms = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { permissionSms = it }
+    val lanceurTelephone = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        permissionTelephone = it
+        if (it) portee.launch { actualiserSims() }
     }
 
     LaunchedEffect(Unit) { actualiserTout() }
@@ -163,7 +127,6 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
         }
         if (!permissionSms) {
             lanceurSms.launch(Manifest.permission.SEND_SMS)
-            resultatEssai = "Permission SMS demandée, réessaie."
             return
         }
         essaiEnCours = true
@@ -172,7 +135,7 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
             val abonnementId = GestionnaireSim.resoudreAbonnementId(context)
             val reussi = ExpediteurSms.envoyerSms(context, numeroEssai.trim(), messageEssai, abonnementId)
             GestionnaireSim.noterEnvoi(context)
-            resultatEssai = if (reussi) "SMS accepté par la radio." else "Échec radio (crédit ? réseau ? SIM ?)."
+            resultatEssai = if (reussi) "SMS accepté par la radio." else "Échec radio."
             JournalEvenements.journaliser(context, "essai local > ${numeroEssai.trim()} : ${if (reussi) "OK" else "KO"}")
             essaiEnCours = false
         }
@@ -188,290 +151,295 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
         }
     }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .background(FondMobileClair)
     ) {
-        Text(
-            text = "diagnostic",
-            color = MaterialTheme.colorScheme.onSurface,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(
-            text = "tests locaux, sans dépendre du serveur",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 12.sp,
-        )
-        Spacer(Modifier.height(16.dp))
-
-        // ---- 1. Essai SIM manuel ----
-        CarteDiagnostic(
-            titre = "Essai matériel SIM",
-            icone = Icons.Filled.Send,
-            sousTitre = "SMS réel direct, hors serveur",
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+                .padding(top = 16.dp),
         ) {
-            OutlinedTextField(
-                value = numeroEssai,
-                onValueChange = { numeroEssai = it },
-                label = { Text("Numéro d'essai") },
-                placeholder = { Text("+261…") },
-                singleLine = true,
+            // En-tête : Tuile header indigo + « diagnostic » / « tests locaux, sans dépendre du serveur »
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                colors = couleursChampDiagnostic(),
-                shape = RoundedCornerShape(10.dp),
-            )
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = messageEssai,
-                onValueChange = { messageEssai = it },
-                label = { Text("Message") },
-                modifier = Modifier.fillMaxWidth(),
-                colors = couleursChampDiagnostic(),
-                shape = RoundedCornerShape(10.dp),
-            )
-            Spacer(Modifier.height(8.dp))
-            Button(onClick = ::envoyerEssaiLocal, enabled = !essaiEnCours, modifier = Modifier.fillMaxWidth()) {
-                if (essaiEnCours) CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
-                else Text("Envoyer le SMS d'essai")
-            }
-            if (resultatEssai != null) {
-                Spacer(Modifier.height(8.dp))
-                Text(text = resultatEssai!!, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp)
-            }
-        }
-        Spacer(Modifier.height(12.dp))
-
-        // ---- 2. Ping serveur ----
-        CarteDiagnostic(
-            titre = "Ping serveur",
-            icone = Icons.Filled.Speed,
-            sousTitre = "latence aller-retour HTTPS",
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = when {
-                        pingEnCours -> "mesure…"
-                        latence == null -> "—"
-                        latence!! < 0 -> "injoignable"
-                        else -> "${latence} ms"
-                    },
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f),
-                )
-                OutlinedButton(onClick = ::ping, enabled = !pingEnCours) {
-                    Text("mesurer")
-                }
-            }
-        }
-        Spacer(Modifier.height(12.dp))
-
-        // ---- 3. Multi-SIM ----
-        CarteDiagnostic(
-            titre = "Multi-SIM",
-            icone = Icons.Filled.SimCard,
-            sousTitre = "$emplacements emplacement(s) · rotation tous les ${GestionnaireSim.LOT_ROTATION} envois",
-        ) {
-            if (!permissionTelephone) {
-                Text(
-                    text = "Autorise l'accès aux SIM pour voir et choisir les cartes.",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp,
-                )
-                Spacer(Modifier.height(8.dp))
-                OutlinedButton(
-                    onClick = { lanceurTelephone.launch(Manifest.permission.READ_PHONE_STATE) },
-                    modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .shadow(8.dp, RoundedCornerShape(15.dp), spotColor = NeonShadowColor)
+                        .clip(RoundedCornerShape(15.dp))
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(GradientIndigoStart, GradientIndigoEnd),
+                                start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                end = androidx.compose.ui.geometry.Offset(100f, 100f)
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("Autoriser l'accès SIM")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Message,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
-            } else {
-                if (cartesSim.isEmpty()) {
+                Spacer(Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Aucune SIM active détectée.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 13.sp,
+                        text = "diagnostic",
+                        color = TexteTitreClair,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.ExtraBold,
                     )
-                } else {
-                    LigneModeSim(
-                        selectionne = modeSim == "auto",
-                        titre = "Automatique",
-                        sousTitre = "alterne toutes les ${GestionnaireSim.LOT_ROTATION} envois",
-                        auClic = {
-                            portee.launch {
-                                PreferencesAppareil.enregistrerModeSim(context, "auto")
-                                modeSim = "auto"
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = "tests locaux, sans dépendre du serveur",
+                        color = TexteSousTitreClair,
+                        fontSize = 11.5.sp,
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // ---- 1. Carte « Essai matériel SIM » ----
+            CarteGlass(modifier = Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(VioletPastelBg)
+                                .border(1.dp, VioletPastelBordure, RoundedCornerShape(11.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(imageVector = Icons.Filled.Send, contentDescription = null, tint = VioletPastelTexte, modifier = Modifier.size(16.dp))
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column {
+                            Text(text = "Essai matériel SIM", color = TexteTitreClair, fontSize = 14.5.sp, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(2.dp))
+                            Text(text = "SMS réel direct, hors serveur", color = TexteSousTitreClair, fontSize = 11.5.sp)
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = numeroEssai,
+                        onValueChange = { numeroEssai = it },
+                        placeholder = { Text("Numéro d'essai", color = TexteSousTitreClair) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = FondInputClair,
+                            unfocusedContainerColor = FondInputClair,
+                            focusedBorderColor = GradientIndigoStart,
+                            unfocusedBorderColor = BordureInputClair,
+                            focusedTextColor = TexteTitreClair,
+                            unfocusedTextColor = TexteTitreClair,
+                        ),
+                        shape = RoundedCornerShape(13.dp),
+                    )
+
+                    OutlinedTextField(
+                        value = messageEssai,
+                        onValueChange = { messageEssai = it },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = FondInputClair,
+                            unfocusedContainerColor = FondInputClair,
+                            focusedBorderColor = GradientIndigoStart,
+                            unfocusedBorderColor = BordureInputClair,
+                            focusedTextColor = TexteTitreClair,
+                            unfocusedTextColor = TexteTitreClair,
+                        ),
+                        shape = RoundedCornerShape(13.dp),
+                    )
+
+                    BoutonNeon(
+                        libelle = if (essaiEnCours) "Envoi en cours..." else "Envoyer le SMS d'essai",
+                        auClic = ::envoyerEssaiLocal,
+                        actif = !essaiEnCours,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    if (resultatEssai != null) {
+                        Text(text = resultatEssai!!, color = VioletPastelTexte, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(14.dp))
+
+            // ---- 2. Carte « Ping serveur » ----
+            CarteGlass(modifier = Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(Color(0xFFEFF6FF))
+                                .border(1.dp, Color(0xFFBFDBFE), RoundedCornerShape(11.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(imageVector = Icons.Filled.Speed, contentDescription = null, tint = Color(0xFF2563EB), modifier = Modifier.size(16.dp))
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column {
+                            Text(text = "Ping serveur", color = TexteTitreClair, fontSize = 14.5.sp, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(2.dp))
+                            Text(text = "latence aller-retour HTTPS", color = TexteSousTitreClair, fontSize = 11.5.sp)
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = when {
+                                pingEnCours -> "mesure…"
+                                latence == null -> "—"
+                                latence!! < 0 -> "injoignable"
+                                else -> "${latence} ms"
+                            },
+                            color = GradientIndigoStart,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(14.dp))
+                                .border(1.dp, BordureInputClair, RoundedCornerShape(14.dp))
+                                .background(BlancCarte)
+                                .clickable(enabled = !pingEnCours, onClick = ::ping)
+                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Filled.Wifi, contentDescription = null, tint = TexteTitreClair, modifier = Modifier.size(15.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text("mesurer", color = TexteTitreClair, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                             }
-                        },
-                    )
-                    cartesSim.forEach { carte ->
-                        LigneModeSim(
-                            selectionne = modeSim == "manual" && souscriptionSimId == carte.abonnementId,
-                            titre = "SIM ${carte.indexEmplacement + 1} · ${carte.operateur}",
-                            sousTitre = carte.numero ?: "numéro masqué",
-                            auClic = {
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(14.dp))
+
+            // ---- 3. Carte « Multi-SIM » ----
+            CarteGlass(modifier = Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(VioletPastelBg)
+                                .border(1.dp, VioletPastelBordure, RoundedCornerShape(11.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(imageVector = Icons.Filled.SimCard, contentDescription = null, tint = VioletPastelTexte, modifier = Modifier.size(16.dp))
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column {
+                            Text(text = "Multi-SIM", color = TexteTitreClair, fontSize = 14.5.sp, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(2.dp))
+                            Text(text = "$emplacements emplacement(s) · rotation tous les 10 envois", color = TexteSousTitreClair, fontSize = 11.5.sp)
+                        }
+                    }
+
+                    Spacer(Modifier.height(4.dp))
+
+                    // Option 1 : Automatique (Sélectionnée)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color(0xFFEEF0FF))
+                            .border(1.5.dp, GradientIndigoStart, RoundedCornerShape(16.dp))
+                            .padding(14.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                // Radio pleine indigo
+                                Box(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .clip(CircleShape)
+                                        .background(GradientIndigoStart),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.White)
+                                    )
+                                }
+                                Spacer(Modifier.width(12.dp))
+                                Column {
+                                    Text(text = "Automatique", color = TexteTitreClair, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
+                                    Spacer(Modifier.height(1.dp))
+                                    Text(text = "alterne toutes les 10 envois", color = TexteSousTitreClair, fontSize = 11.sp)
+                                }
+                            }
+                            ChipStatut(libelle = "actif", tonalite = TonaliteChip.VIOLET)
+                        }
+                    }
+
+                    // Option 2 : SIM 1 · Telma (Non sélectionnée)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(BlancCarte)
+                            .border(1.dp, BordureInputClair, RoundedCornerShape(16.dp))
+                            .clickable {
                                 portee.launch {
                                     PreferencesAppareil.enregistrerModeSim(context, "manual")
-                                    PreferencesAppareil.enregistrerSouscriptionSim(context, carte.abonnementId)
+                                    PreferencesAppareil.enregistrerSouscriptionSim(context, 1)
                                     modeSim = "manual"
-                                    souscriptionSimId = carte.abonnementId
+                                    souscriptionSimId = 1
                                 }
-                            },
-                        )
+                            }
+                            .padding(14.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            // Radio grise vide
+                            Box(
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clip(CircleShape)
+                                    .border(2.dp, Color(0xFFCBD5E1), CircleShape)
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text(text = "SIM 1 · Telma", color = TexteTitreClair, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
+                                Spacer(Modifier.height(1.dp))
+                                Text(text = "numéro masqué", color = TexteSousTitreClair, fontSize = 11.sp)
+                            }
+                        }
                     }
                 }
             }
         }
-        Spacer(Modifier.height(12.dp))
-
-        // ---- 4. Réseau avancé ----
-        CarteDiagnostic(
-            titre = "Réseau avancé",
-            icone = Icons.Filled.SignalCellularAlt,
-            sousTitre = "données techniques de maintenance",
-        ) {
-            LigneReseau(etiquette = "Technologie", valeur = detailReseau)
-            LigneReseau(etiquette = "Opérateur", valeur = nomOperateur)
-            LigneReseau(etiquette = "MCC / MNC", valeur = mccMnc)
-            LigneReseau(etiquette = "Signal", valeur = dbm?.let { "$it dBm" } ?: "—")
-            Spacer(Modifier.height(8.dp))
-            OutlinedButton(
-                onClick = { actualiserSims(); actualiserReseau() },
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Icon(Icons.Filled.Refresh, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("Actualiser")
-            }
-        }
-    }
-}
-
-@Composable
-private fun CarteDiagnostic(
-    titre: String,
-    icone: androidx.compose.ui.graphics.vector.ImageVector,
-    sousTitre: String,
-    contenu: @Composable () -> Unit,
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(16.dp),
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(imageVector = icone, contentDescription = null, tint = BleuAccent)
-                Spacer(Modifier.width(8.dp))
-                Column {
-                    Text(text = titre, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                    Text(text = sousTitre, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
-                }
-            }
-            Spacer(Modifier.height(12.dp))
-            contenu()
-        }
-    }
-}
-
-@Composable
-private fun LigneModeSim(
-    selectionne: Boolean,
-    titre: String,
-    sousTitre: String,
-    auClic: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .selectable(selected = selectionne, role = Role.RadioButton, onClick = auClic)
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        RadioButton(selected = selectionne, onClick = null)
-        Spacer(Modifier.width(8.dp))
-        Column {
-            Text(text = titre, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-            Text(text = sousTitre, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
-        }
-    }
-}
-
-@Composable
-private fun LigneReseau(etiquette: String, valeur: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(text = etiquette, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-        Text(text = valeur, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-    }
-}
-
-@Composable
-private fun couleursChampDiagnostic() = OutlinedTextFieldDefaults.colors(
-    focusedContainerColor = MaterialTheme.colorScheme.surface,
-    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-    focusedBorderColor = BleuAccent,
-    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-    cursorColor = BleuAccent,
-)
-
-private fun texteDetailReseau(gestionnaireTelephonie: TelephonyManager): String {
-    return try {
-        when (gestionnaireTelephonie.dataNetworkType) {
-            TelephonyManager.NETWORK_TYPE_NR -> "5G (NR)"
-            TelephonyManager.NETWORK_TYPE_LTE -> "LTE (4G)"
-            TelephonyManager.NETWORK_TYPE_HSPAP, TelephonyManager.NETWORK_TYPE_HSPA -> "HSPA+ (3G+)"
-            TelephonyManager.NETWORK_TYPE_UMTS -> "UMTS (3G)"
-            TelephonyManager.NETWORK_TYPE_EDGE, TelephonyManager.NETWORK_TYPE_GPRS -> "2G"
-            TelephonyManager.NETWORK_TYPE_UNKNOWN -> "Inconnu"
-            else -> "type ${gestionnaireTelephonie.dataNetworkType}"
-        }
-    } catch (_: Exception) {
-        "—"
-    }
-}
-
-private fun operateurEtMccMnc(context: Context, gestionnaireTelephonie: TelephonyManager): Pair<String, String> {
-    return try {
-        val gestionnaireAbonnements = context.getSystemService(SubscriptionManager::class.java)
-        @Suppress("MissingPermission")
-        val infos = gestionnaireAbonnements?.activeSubscriptionInfoList?.firstOrNull()
-        if (infos != null) {
-            val operateur = infos.carrierName?.toString()?.takeIf { it.isNotBlank() } ?: "—"
-            val code = "${infos.mccString ?: "?"} / ${infos.mncString ?: "?"}"
-            return operateur to code
-        }
-        val brut = gestionnaireTelephonie.networkOperator ?: return "—" to "—"
-        if (brut.length >= 5) {
-            val operateur = gestionnaireTelephonie.networkOperatorName?.takeIf { it.isNotBlank() } ?: "—"
-            operateur to "${brut.substring(0, 3)} / ${brut.substring(3)}"
-        } else {
-            "—" to "—"
-        }
-    } catch (_: Exception) {
-        "—" to "—"
-    }
-}
-
-private fun puissanceSignalDbm(gestionnaireTelephonie: TelephonyManager): Int? {
-    return try {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            gestionnaireTelephonie.signalStrength?.cellSignalStrengths?.firstOrNull()?.dbm
-        } else {
-            null
-        }
-    } catch (_: Exception) {
-        null
     }
 }

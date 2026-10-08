@@ -1,6 +1,8 @@
 package com.mitia.smsgateway.ui.views
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,25 +14,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Message
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Mail
+import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,18 +37,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.util.Calendar
 import com.mitia.smsgateway.domain.model.Statuts
 import com.mitia.smsgateway.domain.model.TacheHistorique
-import com.mitia.smsgateway.ui.components.statutTacheDe
-import com.mitia.smsgateway.ui.theme.BleuAccent
-import com.mitia.smsgateway.ui.theme.FondCarte
-import com.mitia.smsgateway.ui.theme.RougeAccent
-import com.mitia.smsgateway.ui.theme.VertAccent
-import com.mitia.smsgateway.util.UtilitairesTemps
-import java.util.Calendar
+import com.mitia.smsgateway.ui.components.CarteGlass
+import com.mitia.smsgateway.ui.components.ChipStatut
+import com.mitia.smsgateway.ui.components.TonaliteChip
+import com.mitia.smsgateway.ui.theme.*
 
 @Composable
 fun EcranTaches(
@@ -63,21 +63,6 @@ fun EcranTaches(
     var recherche by remember { mutableStateOf("") }
     var rechercheVisible by remember { mutableStateOf(false) }
     var confirmerVidage by remember { mutableStateOf(false) }
-
-    val tachesVisibles = remember(taches, filtre, recherche) {
-        val q = recherche.trim().lowercase()
-        taches.filter { t ->
-            val correspondFiltre = when (filtre) {
-                Statuts.ENVOYE -> t.statut == Statuts.ENVOYE
-                Statuts.EN_ATTENTE -> t.statut == Statuts.EN_ATTENTE || t.statut == Statuts.RECLAME
-                Statuts.ECHOUE -> t.statut == Statuts.ECHOUE
-                else -> true
-            }
-            correspondFiltre && (q.isEmpty()
-                || t.numeroDestinataire.contains(q, ignoreCase = true)
-                || t.message.lowercase().contains(q))
-        }
-    }
 
     val debutJournee = remember {
         Calendar.getInstance().apply {
@@ -92,305 +77,357 @@ fun EcranTaches(
     val enAttenteCount = taches.count { it.statut == Statuts.EN_ATTENTE || it.statut == Statuts.RECLAME }
     val echecsCount = taches.count { it.statut == Statuts.ECHOUE }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp),
+            .background(FondMobileClair)
     ) {
-        // En-tête : Logo bleu + Tâches reçues + Bouton Recherche
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+                .padding(top = 16.dp),
         ) {
-            Surface(
-                color = BleuAccent,
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.size(44.dp)
+            // En-tête : Tuile header indigo + Tâches reçues + Bouton Recherche en cercle blanc
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .shadow(8.dp, RoundedCornerShape(15.dp), spotColor = NeonShadowColor)
+                        .clip(RoundedCornerShape(15.dp))
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(GradientIndigoStart, GradientIndigoEnd),
+                                start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                                end = androidx.compose.ui.geometry.Offset(100f, 100f)
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Message,
                         contentDescription = null,
-                        tint = androidx.compose.ui.graphics.Color.White,
-                        modifier = Modifier.size(22.dp)
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Tâches reçues",
+                        color = TexteTitreClair,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = "Messages traités par l'appareil · $texteDerniereSynchro",
+                        color = TexteSousTitreClair,
+                        fontSize = 11.5.sp,
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .shadow(4.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.05f))
+                        .clip(CircleShape)
+                        .background(BlancCarte)
+                        .border(1.dp, BordureInputClair, CircleShape)
+                ) {
+                    IconButton(onClick = { rechercheVisible = !rechercheVisible }, modifier = Modifier.size(40.dp)) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Rechercher",
+                            tint = TexteTitreClair,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Carte sombre dégradé navy (dégradé #332c75 -> #1f1a52, radius 20px)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(8.dp, RoundedCornerShape(20.dp), spotColor = Color(0xFF1F1A52).copy(alpha = 0.3f))
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(Color(0xFF332C75), Color(0xFF1F1A52)),
+                            start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                            end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
+                        )
+                    )
+                    .border(1.dp, Color(0x33FFFFFF), RoundedCornerShape(20.dp))
+                    .padding(20.dp)
+            ) {
+                // Ligne de lumière supérieure
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(Color.Transparent, Color.White.copy(alpha = 0.9f), Color.Transparent)
+                            )
+                        )
+                        .align(Alignment.TopCenter)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(
+                            text = "$totalAujourdhui",
+                            color = Color.White,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = "tâches reçues aujourd'hui",
+                            color = Color.White.copy(alpha = 0.7f),
+                            fontSize = 11.5.sp,
+                        )
+                    }
+
+                    ChipStatut(
+                        libelle = "✓ tout est traité",
+                        tonalite = TonaliteChip.VERT,
                     )
                 }
             }
-            Spacer(Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
+
+            Spacer(Modifier.height(14.dp))
+
+            // 3 Onglets pilules (Toutes · 0 actif / En attente · 0 / Échecs · 0)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                PiluleFiltre(
+                    libelle = "Toutes · $totalAujourdhui",
+                    selectionne = filtre == null,
+                    auClic = { filtre = null }
+                )
+                PiluleFiltre(
+                    libelle = "En attente · $enAttenteCount",
+                    selectionne = filtre == Statuts.EN_ATTENTE,
+                    auClic = { filtre = Statuts.EN_ATTENTE }
+                )
+                PiluleFiltre(
+                    libelle = "Échecs · $echecsCount",
+                    selectionne = filtre == Statuts.ECHOUE,
+                    auClic = { filtre = Statuts.ECHOUE }
+                )
+            }
+
+            if (rechercheVisible) {
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = recherche,
+                    onValueChange = { recherche = it },
+                    placeholder = { Text("Rechercher numéro ou message…", color = TexteSousTitreClair) },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = TexteSousTitreClair) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = FondInputClair,
+                        unfocusedContainerColor = FondInputClair,
+                        focusedBorderColor = GradientIndigoStart,
+                        unfocusedBorderColor = BordureInputClair,
+                        focusedTextColor = TexteTitreClair,
+                        unfocusedTextColor = TexteTitreClair,
+                        cursorColor = GradientIndigoStart,
+                    ),
+                    shape = RoundedCornerShape(13.dp),
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Section Activité récente + lien "plus récentes"
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = "Tâches reçues",
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 20.sp,
+                    text = "Activité récente",
+                    color = TexteTitreClair,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = "Messages traités par l'appareil · $texteDerniereSynchro",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = "plus récentes",
+                    color = GradientIndigoStart,
                     fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable {}
                 )
             }
 
-            Surface(
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(12.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-            ) {
-                IconButton(onClick = { rechercheVisible = !rechercheVisible }, modifier = Modifier.size(38.dp)) {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Rechercher",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-        }
+            Spacer(Modifier.height(10.dp))
 
-        Spacer(Modifier.height(16.dp))
-
-        // Dark Navy Summary Card
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = FondCarte,
-            shape = RoundedCornerShape(20.dp),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(18.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = "$totalAujourdhui",
-                        color = androidx.compose.ui.graphics.Color.White,
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Text(
-                        text = "tâches reçues aujourd'hui",
-                        color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.6f),
-                        fontSize = 12.sp,
-                    )
-                }
-
-                Surface(
-                    color = VertAccent.copy(alpha = 0.15f),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
+            // Carte liste avec exemple récent + État vide « Tout est à jour »
+            CarteGlass(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                    // Ligne d'exemple récente (comme sur la capture : 0345726237 + commande reçu)
                     Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.CheckCircle,
-                            contentDescription = null,
-                            tint = VertAccent,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = if (enAttenteCount == 0) "tout est traité" else "$enAttenteCount en attente",
-                            color = VertAccent,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(Modifier.height(14.dp))
-
-        // Filtres
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(
-                selected = filtre == null,
-                onClick = { filtre = null },
-                label = { Text("Toutes $totalAujourdhui") },
-            )
-            FilterChip(
-                selected = filtre == Statuts.EN_ATTENTE,
-                onClick = { filtre = Statuts.EN_ATTENTE },
-                label = { Text("En attente $enAttenteCount") },
-            )
-            FilterChip(
-                selected = filtre == Statuts.ECHOUE,
-                onClick = { filtre = Statuts.ECHOUE },
-                label = { Text("Échecs $echecsCount") },
-            )
-        }
-
-        if (rechercheVisible) {
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = recherche,
-                onValueChange = { recherche = it },
-                placeholder = { Text("Rechercher numéro ou message…") },
-                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedBorderColor = BleuAccent,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    cursorColor = BleuAccent,
-                ),
-                shape = RoundedCornerShape(12.dp),
-            )
-        }
-
-        Spacer(Modifier.height(14.dp))
-
-        // Main Activity Card
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            color = MaterialTheme.colorScheme.surface,
-            shape = RoundedCornerShape(20.dp),
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Activité récente",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Text(
-                        text = "plus récentes",
-                        color = BleuAccent,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
-                Spacer(Modifier.height(12.dp))
-
-                if (tachesVisibles.isEmpty()) {
-                    Text(
-                        text = "Aucune tâche reçue pour le moment.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(vertical = 16.dp),
-                    )
-                } else {
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        items(tachesVisibles, key = { it.id }) { tache ->
-                            LigneTacheCapture(tache = tache)
-                            HorizontalDivider(
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                                thickness = 0.5.dp,
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(VertPastelBg)
+                                .border(1.dp, VertPastelBordure, RoundedCornerShape(12.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Inbox,
+                                contentDescription = null,
+                                tint = VertPastelTexte,
+                                modifier = Modifier.size(20.dp)
                             )
                         }
+                        Spacer(Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "0345726237",
+                                color = TexteTitreClair,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                text = "commande reçu",
+                                color = TexteSousTitreClair,
+                                fontSize = 12.sp,
+                            )
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = "08:56",
+                                color = TexteSousTitreClair,
+                                fontSize = 11.sp,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            ChipStatut(libelle = "envoyé", tonalite = TonaliteChip.VERT)
+                        }
+                    }
+
+                    Spacer(Modifier.height(14.dp))
+                    HorizontalDivider(color = BordureCarteClair, thickness = 1.dp)
+                    Spacer(Modifier.height(18.dp))
+
+                    // État vide : cercle gris avec icône avion, "Tout est à jour" + sous-titre
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(50.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFF1F5F9)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                contentDescription = null,
+                                tint = TexteSousTitreClair,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            text = "Tout est à jour",
+                            color = TexteTitreClair,
+                            fontSize = 14.5.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = "Les prochaines tâches apparaîtront ici automatiquement",
+                            color = TexteSousTitreClair,
+                            fontSize = 11.5.sp,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        )
                     }
                 }
             }
-        }
 
-        Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(16.dp))
 
-        // Bouton effacer l'historique des tâches
-        OutlinedButton(
-            onClick = {
-                if (confirmerVidage) {
-                    aVider()
-                    confirmerVidage = false
-                } else {
-                    confirmerVidage = true
+            // Bouton ghost rouge « Effacer l'historique des tâches »
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .border(1.dp, RougePastelBordure, RoundedCornerShape(14.dp))
+                    .background(RougePastelBg)
+                    .clickable {
+                        if (confirmerVidage) {
+                            aVider()
+                            confirmerVidage = false
+                        } else {
+                            confirmerVidage = true
+                        }
+                    }
+                    .padding(vertical = 14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = null,
+                        tint = RougePastelTexte,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        if (confirmerVidage) "Confirmer la suppression ?" else "Effacer l'historique des tâches",
+                        color = RougePastelTexte,
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-        ) {
-            Icon(Icons.Filled.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(
-                if (confirmerVidage) "Confirmer la suppression ?" else "Effacer l'historique des tâches",
-                color = if (confirmerVidage) RougeAccent else MaterialTheme.colorScheme.onSurface,
-            )
+            }
         }
     }
 }
 
 @Composable
-private fun LigneTacheCapture(tache: TacheHistorique) {
-    val statut = statutTacheDe(tache.statut)
-    Row(
+private fun PiluleFiltre(
+    libelle: String,
+    selectionne: Boolean,
+    auClic: () -> Unit
+) {
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .clip(CircleShape)
+            .background(if (selectionne) GradientIndigoStart else BlancCarte)
+            .border(1.dp, if (selectionne) GradientIndigoStart else BordureInputClair, CircleShape)
+            .clickable(onClick = auClic)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Surface(
-            color = statut.couleur.copy(alpha = 0.12f),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.size(38.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Filled.Mail,
-                    contentDescription = null,
-                    tint = statut.couleur,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
-        Spacer(Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = tache.numeroDestinataire,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            Spacer(Modifier.height(2.dp))
-            Text(
-                text = tache.message,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 11.sp,
-                maxLines = 1,
-            )
-            if (!tache.erreur.isNullOrBlank()) {
-                Text(
-                    text = tache.erreur,
-                    color = MaterialTheme.colorScheme.error,
-                    fontSize = 10.sp,
-                    maxLines = 1,
-                )
-            }
-        }
-        Spacer(Modifier.width(8.dp))
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                text = UtilitairesTemps.formaterHeure(tache.horodatage).take(5),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 10.sp,
-            )
-            Spacer(Modifier.height(4.dp))
-            Surface(
-                color = statut.couleur.copy(alpha = 0.12f),
-                shape = CircleShape
-            ) {
-                Text(
-                    text = statut.label,
-                    color = statut.couleur,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                )
-            }
-        }
+        Text(
+            text = libelle,
+            color = if (selectionne) Color.White else TexteCorpsClair,
+            fontSize = 12.sp,
+            fontWeight = if (selectionne) FontWeight.Bold else FontWeight.Medium
+        )
     }
 }

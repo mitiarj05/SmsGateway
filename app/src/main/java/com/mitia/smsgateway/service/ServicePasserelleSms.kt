@@ -197,7 +197,7 @@ class ServicePasserelleSms : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val canal = NotificationChannel(
                 Constantes.CANAL_PREMIER_PLAN_ID,
-                "SMSIKA",
+                "SMSTSIKA",
                 NotificationManager.IMPORTANCE_LOW
             )
             val gestionnaire = getSystemService(NotificationManager::class.java)
@@ -207,7 +207,7 @@ class ServicePasserelleSms : Service() {
 
     private fun construireNotification(): Notification {
         return NotificationCompat.Builder(this, Constantes.CANAL_PREMIER_PLAN_ID)
-            .setContentTitle("SMSIKA actif")
+            .setContentTitle("SMSTSIKA actif")
             .setContentText("En attente de tâches...")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setOngoing(true)
@@ -216,7 +216,7 @@ class ServicePasserelleSms : Service() {
 
     private fun mettreAJourNotification(texte: String) {
         val notification = NotificationCompat.Builder(this, Constantes.CANAL_PREMIER_PLAN_ID)
-            .setContentTitle("SMSIKA actif")
+            .setContentTitle("SMSTSIKA actif")
             .setContentText(texte)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setOngoing(true)

@@ -26,7 +26,7 @@ interface Sante {
 }
 
 const inputCls =
-  "rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] text-slate-700 outline-none focus:border-[#5b5bd6] focus:ring-2 focus:ring-[#5b5bd6]/15 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100"
+  "rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] text-slate-700 outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100"
 
 export default function PageParametres() {
   const [notification, setNotification] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
@@ -51,6 +51,8 @@ export default function PageParametres() {
   const [cleCreee, setCleCreee] = useState<string | null>(null)
   const [clesRevelees, setClesRevelees] = useState<Record<string, string>>({})
   const [revelationEnCours, setRevelationEnCours] = useState<string | null>(null)
+  const [emailTest, setEmailTest] = useState('')
+  const [envoiEmailEnCours, setEnvoiEmailEnCours] = useState(false)
   const [demandes, setDemandes] = useState<{ id: string; nom: string; contact: string; usage_prevu: string }[]>([])
 
   function afficherNotification(type: 'succes' | 'erreur', texte: string) {
@@ -181,8 +183,32 @@ export default function PageParametres() {
     }
   }
 
-  async function traiterDemande(id: string, action: 'valider' | 'refuser') {
+  async function testerEmail() {
+    if (!emailTest.trim()) {
+      afficherNotification('erreur', 'Saisissez une adresse e-mail')
+      return
+    }
+    setEnvoiEmailEnCours(true)
     try {
+      const res = await fetch('/api/settings/test-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: emailTest.trim() }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (res.ok) {
+        afficherNotification('succes', data.message ?? 'E-mail envoyé')
+      } else {
+        afficherNotification('erreur', data.details ? `${data.error} — ${data.details}` : (data.error ?? 'Échec envoi'))
+      }
+    } catch {
+      afficherNotification('erreur', 'Erreur réseau')
+    } finally {
+      setEnvoiEmailEnCours(false)
+    }
+  }
+
+  async function traiterDemande(id: string, action: 'valider' | 'refuser') {    try {
       const res = await fetch(`/api/demandes/${id}/${action}`, { method: 'POST' })
       const data = await res.json().catch(() => ({}))
       if (res.ok) {
@@ -204,7 +230,7 @@ export default function PageParametres() {
           Paramètres
         </h1>
         <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
-          Configurez les intégrations, quotas et accès de votre espace SMSIKA.
+          Configurez les intégrations, quotas et accès de votre espace SMSTSIKA.
         </p>
       </div>
 
@@ -262,7 +288,7 @@ export default function PageParametres() {
                 onChange={(e) => setCleLocale(e.target.value)}
                 className={`${inputCls} flex-1 bg-slate-50 font-mono text-slate-500 dark:bg-zinc-800`}
               />
-              <button onClick={enregistrerCleLocale} className="rounded-full bg-[#5b5bd6] px-5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#4c4cc9]">
+              <button onClick={enregistrerCleLocale} className="survol-brillance rounded-full bg-[#2563EB] px-5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#1D4ED8]">
                 Enregistrer
               </button>
             </div>
@@ -288,7 +314,7 @@ export default function PageParametres() {
                 onChange={(e) => setQuotaSms(e.target.value)}
                 className={`${inputCls} w-20 text-center font-semibold`}
               />
-              <button onClick={() => enregistrerReglage('sms_quota_per_hour', Number(quotaSms))} className="rounded-full bg-[#5b5bd6] px-5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#4c4cc9]">
+              <button onClick={() => enregistrerReglage('sms_quota_per_hour', Number(quotaSms))} className="survol-brillance rounded-full bg-[#2563EB] px-5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#1D4ED8]">
                 Enregistrer
               </button>
             </div>
@@ -322,7 +348,7 @@ export default function PageParametres() {
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
               </div>
-              <button onClick={() => enregistrerReglage('max_pending_hours', uniteExpiration === 'jours' ? Number(dureeExpiration) * 24 : Number(dureeExpiration))} className="rounded-full bg-[#5b5bd6] px-5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#4c4cc9]">
+              <button onClick={() => enregistrerReglage('max_pending_hours', uniteExpiration === 'jours' ? Number(dureeExpiration) * 24 : Number(dureeExpiration))} className="survol-brillance rounded-full bg-[#2563EB] px-5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#1D4ED8]">
                 Enregistrer
               </button>
             </div>
@@ -345,7 +371,7 @@ export default function PageParametres() {
                 onChange={(e) => setSeuilAlerte(e.target.value)}
                 className={`${inputCls} w-16 text-center font-semibold`}
               />
-              <button onClick={() => enregistrerReglage('queue_alert_threshold', Number(seuilAlerte))} className="rounded-full bg-[#5b5bd6] px-5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#4c4cc9]">
+              <button onClick={() => enregistrerReglage('queue_alert_threshold', Number(seuilAlerte))} className="survol-brillance rounded-full bg-[#2563EB] px-5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#1D4ED8]">
                 Enregistrer
               </button>
             </div>
@@ -416,7 +442,7 @@ export default function PageParametres() {
               <p className="text-[11px] text-slate-400">
                 {clients.length} clés actives — affichées une seule fois à la création.
               </p>
-              <button onClick={creerClient} disabled={creationEnCours || !nomClient.trim()} className="inline-flex items-center gap-1.5 rounded-full bg-[#5b5bd6] px-4 py-2 text-[12px] font-semibold text-white hover:bg-[#4c4cc9] disabled:opacity-50">
+              <button onClick={creerClient} disabled={creationEnCours || !nomClient.trim()} className="survol-brillance inline-flex items-center gap-1.5 rounded-full bg-[#2563EB] px-4 py-2 text-[12px] font-semibold text-white hover:bg-[#1D4ED8] disabled:opacity-50">
                 <Plus className="h-3.5 w-3.5" /> Créer
               </button>
             </div>
@@ -487,7 +513,7 @@ export default function PageParametres() {
                     <p className="mt-0.5 truncate text-[11px] text-slate-400">{d.contact} · {d.usage_prevu}</p>
                     <div className="mt-2 flex gap-2">
                       <button onClick={() => traiterDemande(d.id, 'valider')}
-                        className="rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700">
+                        className="survol-brillance rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700">
                         Valider
                       </button>
                       <button onClick={() => traiterDemande(d.id, 'refuser')}
@@ -499,6 +525,29 @@ export default function PageParametres() {
                 ))}
               </div>
             )}
+          </div>
+
+          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800">
+            <p className="text-[13.5px] font-bold text-slate-900 dark:text-white">
+              Test e-mail (SMTP)
+            </p>
+            <p className="mt-0.5 text-[11px] text-slate-400">
+              Vérifie l'envoi des clés par e-mail
+            </p>
+            <div className="mt-3 flex gap-2">
+              <input
+                type="email"
+                placeholder="adresse@exemple.mg"
+                value={emailTest}
+                onChange={(e) => setEmailTest(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') testerEmail() }}
+                className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+              />
+              <button onClick={testerEmail} disabled={envoiEmailEnCours || !emailTest.trim()}
+                className="survol-brillance shrink-0 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+                {envoiEmailEnCours ? '…' : 'Tester'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

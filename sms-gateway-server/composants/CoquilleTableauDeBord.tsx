@@ -35,6 +35,7 @@ export default function CoquilleTableauDeBord({ children }: {
   const [enAttente, setEnAttente] = useState(0)
   const [echoues, setEchoues] = useState(0)
   const [seuilFile, setSeuilFile] = useState(10)
+  const [versionApp, setVersionApp] = useState<string | null>(null)
   const [banniereIgnoreePour, setBanniereIgnoreePour] = useState<number | null>(null)
 
   const [marquesLues, setMarquesLues] = useState(() => {
@@ -68,9 +69,10 @@ export default function CoquilleTableauDeBord({ children }: {
 
   const chargerAlertes = useCallback(async () => {
     try {
-      const [statRes, setRes] = await Promise.all([
+      const [statRes, setRes, santeRes] = await Promise.all([
         fetch('/api/stats'),
         fetch('/api/settings'),
+        fetch('/api/health'),
       ])
       const statData = await statRes.json()
       if (statData.stats) {
@@ -82,6 +84,10 @@ export default function CoquilleTableauDeBord({ children }: {
         if (typeof setData.settings?.queue_alert_threshold === 'number') {
           setSeuilFile(setData.settings.queue_alert_threshold)
         }
+      }
+      if (santeRes.ok) {
+        const sante = await santeRes.json().catch(() => ({}))
+        if (typeof sante.version === 'string') setVersionApp(sante.version)
       }
     } catch { /* silencieux */ }
   }, [])
@@ -122,17 +128,11 @@ export default function CoquilleTableauDeBord({ children }: {
     <div className="flex min-h-screen bg-[#f3f4f8] text-slate-800 dark:bg-[#0B0F19] dark:text-zinc-100 antialiased font-sans transition-colors duration-200">
 
       {/* SIDEBAR EXACT TEMPLATE MATCH (PURPLE/NAVY GRADIENT) */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[240px] flex-col bg-gradient-to-b from-[#2b2663] to-[#1d1947] px-4 py-5 text-white md:flex justify-between border-r border-indigo-950/30">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[240px] flex-col bg-gradient-to-b from-[#2b2663] to-[#1d1947] px-4 py-5 text-white md:flex justify-between border-r border-blue-950/30">
         <div>
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center gap-3 px-2" title="Tableau de bord">
-            <Image src="/smsika.png" alt="SMSIKA" width={36} height={36} className="rounded-xl shrink-0 shadow-xs" />
-            <div className="leading-tight">
-              <p className="text-[15px] font-extrabold tracking-wide text-white">SMSIKA</p>
-              <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-white/50">
-                CONSOLE ADMIN
-              </p>
-            </div>
+            <Image src="/icons/logoSombre.png" alt="SMSTSIKA" width={200} height={48} className="h-12 w-auto shrink-0" />
           </Link>
 
           <p className="mb-2 mt-7 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">
@@ -149,7 +149,7 @@ export default function CoquilleTableauDeBord({ children }: {
                   href={href}
                   className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] transition-colors ${
                     active
-                      ? 'bg-white font-semibold text-[#2b2663] shadow-lg shadow-indigo-950/30'
+                      ? 'bg-white font-semibold text-[#2b2663] shadow-lg shadow-blue-950/30'
                       : 'text-white/65 hover:bg-white/10 hover:text-white'
                   }`}
                 >
@@ -183,7 +183,7 @@ export default function CoquilleTableauDeBord({ children }: {
                   href={href}
                   className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] transition-colors ${
                     active
-                      ? 'bg-white font-semibold text-[#2b2663] shadow-lg shadow-indigo-950/30'
+                      ? 'bg-white font-semibold text-[#2b2663] shadow-lg shadow-blue-950/30'
                       : 'text-white/65 hover:bg-white/10 hover:text-white'
                   }`}
                 >
@@ -208,7 +208,7 @@ export default function CoquilleTableauDeBord({ children }: {
             </p>
             <a
               href="/espace/api"
-              className="mt-2.5 inline-flex items-center gap-1 text-[12px] font-semibold text-[#a5a5f5] hover:underline"
+              className="mt-2.5 inline-flex items-center gap-1 text-[12px] font-semibold text-[#BFDBFE] hover:underline"
             >
               Centre d'aide <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
@@ -216,7 +216,7 @@ export default function CoquilleTableauDeBord({ children }: {
 
           {/* Utilisateur */}
           <div className="mt-4 flex items-center gap-3 border-t border-white/10 pt-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#8b8bf0] to-[#5b5bd6] text-[13px] font-bold text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#60A5FA] to-[#2563EB] text-[13px] font-bold text-white">
               A
             </div>
             <div className="flex-1 leading-tight">
@@ -252,7 +252,7 @@ export default function CoquilleTableauDeBord({ children }: {
                 </span>
                 Services stables
                 <span className="text-slate-300">·</span>
-                <span className="font-semibold text-slate-800 dark:text-white">v2.4.1</span>
+                <span className="font-semibold text-slate-800 dark:text-white">v{versionApp ?? '1.0.0'}</span>
               </div>
 
               {/* Barre de recherche */}
@@ -348,18 +348,18 @@ export default function CoquilleTableauDeBord({ children }: {
             })}
           </nav>
 
-          <div className="p-8 space-y-6">{children}</div>
+          <div className="anim-page p-8 space-y-6">{children}</div>
         </div>
 
         {/* Footer */}
         <footer className="flex items-center justify-between border-t border-slate-200/80 px-8 py-4 text-[11px] text-slate-400 dark:border-zinc-800/80 dark:text-zinc-500">
-          <span>© 2025 SMSika Gateway</span>
+          <span>© 2025 SMSTSIKA Gateway</span>
           <div className="flex items-center gap-3">
             <a href="/settings" className="hover:underline">État des services</a>
             <span>·</span>
             <a href="/espace/api" className="hover:underline">Guide API</a>
             <span>·</span>
-            <a href="mailto:support@smsika.app" className="hover:underline text-[#5b5bd6] dark:text-blue-400 font-semibold">Écrire au support ↗</a>
+            <a href="mailto:support@smsika.app" className="hover:underline text-[#2563EB] dark:text-blue-400 font-semibold">Écrire au support ↗</a>
           </div>
         </footer>
       </div>

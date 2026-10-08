@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
+import { verifierCaptcha } from '@/lib/captcha'
 
 /**
  * GET /api/demandes — file d'attente (admin).
@@ -41,6 +42,11 @@ export async function POST(request: NextRequest) {
         { error: 'Les champs "nom", "contact" et "usage_prevu" sont obligatoires' },
         { status: 400 }
       )
+    }
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null
+    const captcha = await verifierCaptcha(corps?.captcha, ip)
+    if (!captcha.ok) {
+      return NextResponse.json({ error: captcha.raison ?? 'Vérification anti-robot requise' }, { status: 403 })
     }
     const { data, error } = await supabaseAdmin
       .from('demandes')

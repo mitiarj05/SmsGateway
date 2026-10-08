@@ -4,13 +4,15 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import {
   Smartphone, Loader2,
-  XCircle, CheckCircle2, ChevronRight, WifiOff, Radio, ArrowUpRight, Plus, Clock,
+  XCircle, CheckCircle2, WifiOff, Radio, ArrowUpRight, Plus, Clock,
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 import {
   STATUTS_TACHES, BadgeStatut, Toast, Modale,
 } from '../../composants/interface'
 import ModaleEnvoiSms from '../../composants/ModaleEnvoiSms'
+import GraphiqueRythme from '../../composants/GraphiqueRythme'
+import CompteurValeur from '../../composants/CompteurValeur'
 
 interface Appareil {
   id: string; nom: string; statut: string; sms_last_hour: number
@@ -46,6 +48,7 @@ export default function DashboardPage() {
     tasks_failed: 0,
   })
   const [parHeure, setParHeure] = useState<PointHoraire[]>([])
+  const [periode, setPeriode] = useState('24h')
   const [chargement, setChargement] = useState(true)
   const [modaleOuverte, setModaleOuverte] = useState(false)
   const [tacheDetaillee, setTacheDetaillee] = useState<Tache | null>(null)
@@ -62,14 +65,13 @@ export default function DashboardPage() {
 
   const chargerDonnees = useCallback(async () => {
     try {
-      const [d, t, s, h] = await Promise.all([
-        fetch('/api/devices'), fetch('/api/tasks'), fetch('/api/stats'), fetch('/api/stats/hourly'),
+      const [d, t, s] = await Promise.all([
+        fetch('/api/devices'), fetch('/api/tasks'), fetch('/api/stats'),
       ])
-      const [dd, td, sd, hd] = [
+      const [dd, td, sd] = [
         await d.json().catch(() => ({})),
         await t.json().catch(() => ({})),
         await s.json().catch(() => ({})),
-        await h.json().catch(() => ({})),
       ]
 
       if (Array.isArray(dd.devices)) setAppareils(dd.devices)
@@ -82,7 +84,6 @@ export default function DashboardPage() {
           tasks_failed: sd.stats.tasks_failed ?? 0,
         })
       }
-      if (Array.isArray(hd.hourly)) setParHeure(hd.hourly)
     } catch {
       /* conservé */
     } finally {
@@ -90,11 +91,27 @@ export default function DashboardPage() {
     }
   }, [])
 
+  const chargerSerie = useCallback(async (p: string) => {
+    try {
+      const res = await fetch(`/api/stats/series?periode=${p}`)
+      const data = await res.json().catch(() => ({}))
+      if (Array.isArray(data.points)) {
+        setParHeure(data.points.map((pt: any) => ({ hour: pt.heure, count: pt.valeur ?? 0 })))
+      }
+    } catch { /* silencieux */ }
+  }, [])
+
   useEffect(() => {
     chargerDonnees()
     const i = setInterval(() => chargerDonnees(), 5000)
     return () => clearInterval(i)
   }, [chargerDonnees])
+
+  useEffect(() => {
+    chargerSerie(periode)
+    const i = setInterval(() => chargerSerie(periode), 30000)
+    return () => clearInterval(i)
+  }, [periode, chargerSerie])
 
   if (chargement) {
     return (
@@ -111,21 +128,8 @@ export default function DashboardPage() {
   const tauxEchec = totalTraites > 0
     ? `${(statistiques.tasks_failed / totalTraites * 100).toFixed(1).replace('.', ',')} %`
     : '—'
-  const volume24h = parHeure.reduce((s, p) => s + p.count, 0)
-  const maxVolume = Math.max(0, ...parHeure.map((p) => p.count))
-  const pic = parHeure.reduce<PointHoraire | null>((m, p) => (!m || p.count > m.count ? p : m), null)
-  // Courbe SVG depuis les vraies données (0 → ligne plate).
-  const courbe = (() => {
-    if (parHeure.length === 0 || maxVolume === 0) return null
-    const n = parHeure.length
-    const pts = parHeure.map((p, i) => {
-      const x = n === 1 ? 300 : (i / (n - 1)) * 600
-      const y = 112 - (p.count / maxVolume) * 100
-      return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`
-    })
-    const ligne = pts.join(' ')
-    return { ligne, aire: `${ligne} L600,120 L0,120 Z` }
-  })()
+  const volumePeriode = parHeure.reduce((s, p) => s + p.count, 0)
+  const etiquettePeriode = periode === '7j' ? '7 derniers jours' : periode === '30j' ? '30 derniers jours' : '24 dernières heures'
   const derniereActivite = appareils
     .map((a) => a.derniere_activite)
     .filter((x): x is string => !!x && !Number.isNaN(new Date(x).getTime()))
@@ -154,7 +158,7 @@ export default function DashboardPage() {
           </div>
           <button
             onClick={() => setModaleOuverte(true)}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700"
+            className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#1D4ED8] transition"
           >
             <Plus className="h-4 w-4" /> Nouveau SMS
           </button>
@@ -170,7 +174,7 @@ export default function DashboardPage() {
           </p>
           <a
             href="/devices"
-            className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#5b5bd6] hover:underline dark:text-blue-400"
+            className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#2563EB] hover:underline dark:text-blue-400"
           >
             Vérifier {horsLigneCount > 1 ? 'les appareils' : "l'appareil"} <ArrowUpRight className="h-4 w-4" />
           </a>
@@ -182,7 +186,7 @@ export default function DashboardPage() {
             {totalCount === 0 ? 'Aucun appareil enregistré pour le moment.' : 'Tous les appareils sont en ligne.'}
           </p>
           {totalCount === 0 && (
-            <a href="/devices/add" className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#5b5bd6] hover:underline dark:text-blue-400">
+            <a href="/devices/add" className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#2563EB] hover:underline dark:text-blue-400">
               Ajouter un téléphone <ArrowUpRight className="h-4 w-4" />
             </a>
           )}
@@ -192,7 +196,7 @@ export default function DashboardPage() {
       {/* 4 SEPARATE KPI CARDS (Exact Screenshot) */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* Card 1 */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Appareils en ligne</p>
           <p className="text-[30px] font-extrabold leading-none tracking-tight text-rose-600 dark:text-rose-400">{enLigneCount}/{totalCount}</p>
           <p className="text-[11.5px] text-slate-400">
@@ -201,16 +205,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 2 */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">SMS envoyés - 24 h</p>
-          <p className="text-[30px] font-extrabold leading-none tracking-tight text-slate-900 dark:text-white">{statistiques.tasks_sent}</p>
+          <p className="text-[30px] font-extrabold leading-none tracking-tight text-slate-900 dark:text-white"><CompteurValeur valeur={statistiques.tasks_sent} /></p>
           <p className="text-[11.5px] text-slate-400">Total des SMS envoyés</p>
         </div>
 
         {/* Card 3 */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">En file d'attente</p>
-          <p className="text-[30px] font-extrabold leading-none tracking-tight text-slate-900 dark:text-white">{statistiques.tasks_pending}</p>
+          <p className="text-[30px] font-extrabold leading-none tracking-tight text-slate-900 dark:text-white"><CompteurValeur valeur={statistiques.tasks_pending} /></p>
           {statistiques.tasks_pending === 0 ? (
             <p className="flex items-center gap-1.5 text-[11.5px] text-emerald-600">
               <CheckCircle2 size={13} className="text-emerald-500" /> File vide
@@ -221,7 +225,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 4 */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Taux d'échec</p>
           <p className="text-[30px] font-extrabold leading-none tracking-tight text-slate-900 dark:text-white">{tauxEchec}</p>
           <p className="text-[11.5px] text-slate-400">{statistiques.tasks_failed} échec{statistiques.tasks_failed > 1 ? 's' : ''} au total</p>
@@ -231,83 +235,31 @@ export default function DashboardPage() {
       {/* Middle Grid (Exact Screenshot Layout: Chart left 2 cols, Passerelles right 1 col) */}
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
 
-        {/* Rythme d'envoi (Chart Card - 2 cols) */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">Rythme d'envoi</h2>
-              <p className="mt-0.5 text-[12px] text-slate-400">{volume24h.toLocaleString('fr-FR')} message{volume24h > 1 ? 's' : ''} traité{volume24h > 1 ? 's' : ''} sur 24 h</p>
-            </div>
-            <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-slate-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 shadow-sm">
-              24 dernières heures <ChevronRight className="h-3.5 w-3.5 rotate-90" />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between">
-            {pic && maxVolume > 0 ? (
-              <span className="rounded-full bg-[#eef0ff] px-3 py-1 text-[11px] font-bold text-[#5b5bd6] dark:bg-blue-500/10 dark:text-blue-400">
-                Pic à {pic.hour} - {pic.count} SMS
-              </span>
-            ) : (
-              <span className="text-[11px] text-slate-400">Aucun pic sur la période</span>
-            )}
-            <span className="flex items-center gap-2 text-[11px] text-slate-400">
-              <span className="h-2 w-2 rounded-full bg-[#8a8ade]" /> SMS envoyés
-            </span>
-          </div>
-
-          {/* Graphique avec ligne et aire (données réelles, ligne plate si vide) */}
-          <div className="relative mt-2 h-44">
-            {volume24h === 0 && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-[15px] font-bold text-slate-600 dark:text-zinc-300">Aucun envoi sur la période</p>
-                <p className="mt-1 text-[12px] text-slate-400">L'activité apparaîtra ici après traitement.</p>
-              </div>
-            )}
-            <svg
-              className="absolute inset-x-0 bottom-6 h-32 w-full"
-              preserveAspectRatio="none"
-              viewBox="0 0 600 120"
-            >
-              <defs>
-                <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#8a8ade" stopOpacity="0.12" />
-                  <stop offset="100%" stopColor="#8a8ade" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              {[30, 60, 90].map((y) => (
-                <line
-                  key={y}
-                  x1="0"
-                  y1={y}
-                  x2="600"
-                  y2={y}
-                  stroke="#eef0f8"
-                  strokeWidth="1"
-                />
-              ))}
-              <path
-                d={courbe ? courbe.aire : 'M0,112 L600,112 L600,120 L0,120 Z'}
-                fill="url(#area)"
-              />
-              <path
-                d={courbe ? courbe.ligne : 'M0,112 L600,112'}
-                fill="none"
-                stroke="#b9bbe8"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="absolute inset-x-0 bottom-0 flex justify-between text-[10px] font-medium text-slate-400">
-              <span>00:00</span>
-              <span>04:00</span>
-              <span>08:00</span>
-              <span>12:00</span>
-              <span>16:00</span>
-              <span>20:00</span>
-            </div>
-          </div>
-        </div>
+        {/* Rythme d'envoi (même composant que l'espace client) */}
+        <GraphiqueRythme
+          titre="Rythme d'envoi"
+          sousTitre={`${volumePeriode.toLocaleString('fr-FR')} message${volumePeriode > 1 ? 's' : ''} traité${volumePeriode > 1 ? 's' : ''} · ${etiquettePeriode}`}
+          periode={etiquettePeriode}
+          series={[
+            {
+              cle: 'envoyes',
+              libelle: 'SMS envoyés',
+              couleurLigne: '#BFDBFE',
+              couleurPoint: '#8a8ade',
+              couleurDebut: '#8a8ade',
+              points: parHeure.map((p) => ({ heure: p.hour, valeur: p.count })),
+            },
+          ]}
+          texteVide="Aucun envoi sur la période"
+          sousTexteVide="L'activité apparaîtra ici après traitement."
+          optionsPeriode={[
+            { id: '24h', etiquette: '24 dernières heures' },
+            { id: '7j', etiquette: '7 derniers jours' },
+            { id: '30j', etiquette: '30 derniers jours' },
+          ]}
+          periodeActive={periode}
+          onChangementPeriode={setPeriode}
+        />
 
         {/* Les passerelles, en ce moment (Dark Card 1 col) */}
         <div className="flex flex-col rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card justify-between space-y-4">

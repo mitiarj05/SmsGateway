@@ -63,7 +63,7 @@ function pageConfirmation(reussi: boolean): string {
   const coche = reussi ? '✔' : '✕'
   return `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">` +
     `<meta name="viewport" content="width=device-width,initial-scale=1">` +
-    `<title>SMSIKA — ${titre}</title></head>` +
+    `<title>SMSTSIKA — ${titre}</title></head>` +
     `<body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f4f4f5;font-family:system-ui,sans-serif">` +
     `<main style="text-align:center;background:#fff;border-radius:16px;padding:40px 32px;max-width:320px;box-shadow:0 4px 24px rgba(0,0,0,.08)">` +
     `<div style="font-size:48px;color:${couleur}">${coche}</div>` +

@@ -1,7 +1,8 @@
 package com.mitia.smsgateway.ui.components
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,7 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.FormatListNumbered
@@ -21,22 +25,25 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mitia.smsgateway.ui.theme.BleuAccent
+import com.mitia.smsgateway.ui.theme.*
 
 enum class OngletTableauDeBord(val label: String, val icone: ImageVector) {
     STATUT("Statut", Icons.Filled.GridView),
     TACHES("Tâches", Icons.Filled.Inbox),
     JOURNAL("Journal", Icons.Filled.FormatListNumbered),
-    DIAGNOSTIC("Diagnostic", Icons.Filled.LocalHospital),
+    DIAGNOSTIC("Diag.", Icons.Filled.LocalHospital),
     STATS("Perf.", Icons.Filled.BarChart),
     REGLAGES("Param.", Icons.Filled.Settings),
 }
@@ -48,16 +55,17 @@ fun BarreNavigationBasse(
     pastilles: Map<OngletTableauDeBord, Int> = emptyMap(),
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 8.dp,
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .clip(RoundedCornerShape(32.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(32.dp))
+            .padding(vertical = 6.dp, horizontal = 4.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 2.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             OngletTableauDeBord.entries.forEach { onglet ->
@@ -66,6 +74,7 @@ fun BarreNavigationBasse(
                     selectionne = onglet == selectionne,
                     compteurPastille = pastilles[onglet] ?: 0,
                     auClic = { auChoix(onglet) },
+                    modifier = Modifier.weight(1f),
                 )
             }
         }
@@ -78,51 +87,66 @@ private fun ElementNavigation(
     selectionne: Boolean,
     compteurPastille: Int,
     auClic: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
+    // Actif en accent (lisible clair + sombre), inactif atténué.
     val teinte = if (selectionne) BleuAccent else MaterialTheme.colorScheme.onSurfaceVariant
+    val cyanGradient = Brush.horizontalGradient(listOf(NeonCyan, NeonIndigoStart))
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .clickable(onClick = auClic)
-            .padding(horizontal = 4.dp, vertical = 2.dp),
+        modifier = modifier
+            .selectable(
+                selected = selectionne,
+                onClick = auClic,
+                role = Role.Tab,
+            )
+            .padding(horizontal = 2.dp, vertical = 2.dp),
     ) {
+        // Barre néon supérieure au-dessus de l'onglet actif
+        if (selectionne) {
+            Box(
+                modifier = Modifier
+                    .width(28.dp)
+                    .height(3.dp)
+                    .clip(CircleShape)
+                    .background(cyanGradient)
+            )
+            Spacer(Modifier.height(4.dp))
+        } else {
+            Spacer(Modifier.height(7.dp))
+        }
+
         BadgedBox(
             badge = {
                 if (compteurPastille > 0) {
-                    Badge { Text(if (compteurPastille > 99) "99+" else "$compteurPastille") }
+                    Badge(
+                        containerColor = NeonRed,
+                        contentColor = Color.White,
+                    ) {
+                        Text(
+                            if (compteurPastille > 99) "99+" else "$compteurPastille",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 10.sp
+                        )
+                    }
                 }
             }
         ) {
-            if (selectionne) {
-                Surface(
-                    color = BleuAccent.copy(alpha = 0.12f),
-                    shape = CircleShape,
-                ) {
-                    Icon(
-                        imageVector = onglet.icone,
-                        contentDescription = onglet.label,
-                        tint = BleuAccent,
-                        modifier = Modifier
-                            .padding(6.dp)
-                            .size(20.dp),
-                    )
-                }
-            } else {
-                Icon(
-                    imageVector = onglet.icone,
-                    contentDescription = onglet.label,
-                    tint = teinte,
-                    modifier = Modifier.size(20.dp),
-                )
-            }
+            Icon(
+                imageVector = onglet.icone,
+                contentDescription = onglet.label,
+                tint = teinte,
+                modifier = Modifier.size(20.dp),
+            )
         }
         Spacer(Modifier.height(4.dp))
         Text(
             text = onglet.label,
             color = teinte,
             fontSize = 10.sp,
-            fontWeight = if (selectionne) FontWeight.Bold else FontWeight.Medium,
+            fontWeight = if (selectionne) FontWeight.Bold else FontWeight.Normal,
+            maxLines = 1,
         )
     }
 }

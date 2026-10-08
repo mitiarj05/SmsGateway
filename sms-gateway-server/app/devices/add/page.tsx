@@ -61,7 +61,7 @@ export default function AjouterAppareilPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Ajouter un téléphone</h1>
           <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-            Scannez le QR Code pour lier l'appareil Android à SMSIKA.
+            Scannez le QR Code pour lier l'appareil Android à SMSTSIKA.
           </p>
         </div>
         <Link
@@ -75,7 +75,7 @@ export default function AjouterAppareilPage() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
 
         {/* Carte gauche : QR Code & Étapes */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800 space-y-6">
+        <div className="rounded-2xl bg-white p-6 shadow-card border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800 space-y-6">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
               <Smartphone className="h-5 w-5" />
@@ -91,7 +91,7 @@ export default function AjouterAppareilPage() {
             <QrCodeSvg valeur={urlServeur || 'https://sms-gateway-omega.vercel.app'} taille={150} />
             <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">QR Code Serveur</p>
             <p className="text-[11px] text-slate-500 dark:text-zinc-400">
-              Scannez dans l'application SMSIKA pour appairer le serveur en 1s.
+              Scannez dans l'application SMSTSIKA pour appairer le serveur en 1s.
             </p>
           </div>
 
@@ -118,7 +118,7 @@ export default function AjouterAppareilPage() {
         </div>
 
         {/* Carte droite : En attente de première connexion */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800 flex flex-col justify-between">
+        <div className="rounded-2xl bg-white p-6 shadow-card border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-slate-900 dark:text-white">En attente de première connexion</h2>
@@ -165,7 +165,7 @@ export default function AjouterAppareilPage() {
             <button
               onClick={() => charger(false)}
               disabled={actualisation}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 survol-brillance rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition disabled:opacity-50"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${actualisation ? 'animate-spin' : ''}`} /> Actualiser
             </button>

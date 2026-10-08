@@ -107,7 +107,7 @@ export default function ModaleEnvoiSms({
           </p>
         )}
         <button type="submit" disabled={envoiEnCours}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
+          className="survol-brillance flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-2.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
           {envoiEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           {envoiEnCours ? 'Envoi…' : 'Envoyer'}
         </button>

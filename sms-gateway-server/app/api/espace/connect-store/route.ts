@@ -7,7 +7,7 @@ import { EVENEMENTS_NOTIFICATION, fabriquerSecretNotification } from '@/lib/noti
  * POST /api/espace/connect-store — connexion boutique en 1 clic (client).
  * Corps: { storeUrl: string, platform?: string }.
  * Vérifie la boutique, garantit un secret de notification, puis y
- * rattache l'URL de notification (webhook SMSIKA).
+ * rattache l'URL de notification (webhook SMSTSIKA).
  */
 export async function POST(request: NextRequest) {
   try {
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       connectiviteOk = false
     }
 
-    // Rattache le webhook SMSIKA à la boutique (événements supportés uniquement).
+    // Rattache le webhook SMSTSIKA à la boutique (événements supportés uniquement).
     const urlNotification = `${urlNettoyee.replace(/\/+$/, '')}/wp-json/smsika/v1/webhook`
     const { error: erreurWebhook } = await supabaseAdmin
       .from('applications')
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      message: `Boutique ${plateforme} (${urlNettoyee}) connectée : SMSIKA y enverra désormais vos notifications.`,
+      message: `Boutique ${plateforme} (${urlNettoyee}) connectée : SMSTSIKA y enverra désormais vos notifications.`,
       url_boutique: urlNettoyee,
       plateforme,
       connectivite_ok: connectiviteOk,

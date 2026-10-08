@@ -84,7 +84,7 @@ export async function PATCH(request: NextRequest) {
     if (corps.tester === true) {
       const idCharge = await enfilerNotification(idApplication, 'sms.recu', {
         test: true,
-        message_test: 'Ping de test depuis votre espace SMSIKA',
+        message_test: 'Ping de test depuis votre espace SMSTSIKA',
       })
       const resultat = await traiterNotificationsEnAttente()
       test = { en_file: !!idCharge, ...resultat }

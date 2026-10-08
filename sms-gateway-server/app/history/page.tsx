@@ -72,9 +72,9 @@ export default function PageHistorique() {
       {/* En-tête */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Historique</h1>
-          <p className="mt-1 text-xs text-slate-500 dark:text-zinc-400">
-            Retrouvez toutes les demandes d'envoi traitées par SMSIKA.
+          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">Historique</h1>
+          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+            Retrouvez toutes les demandes d'envoi traitées par SMSTSIKA.
           </p>
         </div>
         <button
@@ -86,7 +86,7 @@ export default function PageHistorique() {
       </div>
 
       {/* Main Table Card */}
-      <div className="rounded-2xl bg-white shadow-sm border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
+      <div className="rounded-2xl bg-white shadow-card border border-slate-200/80 dark:bg-zinc-900 dark:border-zinc-800">
         <div className="flex flex-col gap-3 border-b border-slate-100 px-6 py-4 dark:border-zinc-800/80 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-sm font-bold text-slate-900 dark:text-white">Historique des demandes</h2>

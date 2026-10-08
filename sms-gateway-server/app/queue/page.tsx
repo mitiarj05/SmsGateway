@@ -160,7 +160,7 @@ export default function PageFileAttente() {
       </div>
 
       {/* Bandeau état (Dark Navy Gradient Card #332c75 to #1f1a52 - Exact Screenshot) */}
-      <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card">
+      <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card survol-lift">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-emerald-400/40 bg-emerald-400/10 text-emerald-300">
@@ -233,7 +233,7 @@ export default function PageFileAttente() {
       </div>
 
       {/* Règles d'acheminement Card (Exact Screenshot) */}
-      <div className="mt-4 rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
+      <div className="mt-4 survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">
@@ -245,7 +245,7 @@ export default function PageFileAttente() {
           </div>
           <Link
             href="/settings"
-            className="inline-flex items-center gap-1.5 text-[12.5px] font-bold text-[#5b5bd6] hover:underline dark:text-blue-400"
+            className="inline-flex items-center gap-1.5 text-[12.5px] font-bold text-[#2563EB] hover:underline dark:text-blue-400"
           >
             <SlidersHorizontal size={14} /> Modifier
           </Link>
@@ -254,7 +254,7 @@ export default function PageFileAttente() {
         <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-3">
           {rules.map((r, i) => (
             <div key={r.title} className="relative flex items-start gap-3.5">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#eef0ff] text-[#5b5bd6] dark:bg-blue-500/10 dark:text-blue-400">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[#2563EB] dark:bg-blue-500/10 dark:text-blue-400">
                 <r.icon size={17} />
               </div>
               <div>
@@ -272,7 +272,7 @@ export default function PageFileAttente() {
       </div>
 
       {/* Derniers passages Card (Exact Screenshot) */}
-      <div className="mt-4 rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
+      <div className="mt-4 survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">
@@ -284,7 +284,7 @@ export default function PageFileAttente() {
           </div>
           <Link
             href="/history"
-            className="inline-flex items-center gap-1 text-[12.5px] font-bold text-[#5b5bd6] hover:underline dark:text-blue-400"
+            className="inline-flex items-center gap-1 text-[12.5px] font-bold text-[#2563EB] hover:underline dark:text-blue-400"
           >
             Voir le journal complet <ArrowUpRight size={13} />
           </Link>

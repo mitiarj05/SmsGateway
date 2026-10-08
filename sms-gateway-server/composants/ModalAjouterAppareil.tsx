@@ -38,7 +38,7 @@ export default function ModalAjouterAppareil({ ouvert, onFermer }: PropsModalAjo
               <Smartphone className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">Ajouter un téléphone SMSIKA</h2>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">Ajouter un téléphone SMSTSIKA</h2>
               <p className="text-xs text-slate-500 dark:text-zinc-400">Scannez le QR Code pour installer et lier le téléphone.</p>
             </div>
           </div>
@@ -52,13 +52,13 @@ export default function ModalAjouterAppareil({ ouvert, onFermer }: PropsModalAjo
 
         {/* Contenu principal QR Code */}
         <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-50 border border-slate-200/80 dark:bg-zinc-800/50 dark:border-zinc-700/80 text-center space-y-4">
-          <QrCodeSvg valeur={urlServeur} taille={180} etiquette="Scannez depuis l'application SMSIKA" />
+          <QrCodeSvg valeur={urlServeur} taille={180} etiquette="Scannez depuis l'application SMSTSIKA" />
           <div className="space-y-1">
             <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">
               Appairage automatique du serveur
             </p>
             <p className="text-[11px] text-slate-500 dark:text-zinc-400 max-w-sm">
-              Ouvrez l'application SMSIKA sur le téléphone, appuyez sur « Scanner QR » puis pointez la caméra sur ce code pour enregistrer le serveur en 1 seconde.
+              Ouvrez l'application SMSTSIKA sur le téléphone, appuyez sur « Scanner QR » puis pointez la caméra sur ce code pour enregistrer le serveur en 1 seconde.
             </p>
           </div>
         </div>
@@ -95,7 +95,7 @@ export default function ModalAjouterAppareil({ ouvert, onFermer }: PropsModalAjo
           </span>
           <button
             onClick={onFermer}
-            className="rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition"
+            className="survol-brillance rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition"
           >
             Fermer
           </button>

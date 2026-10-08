@@ -123,7 +123,7 @@ export default function PageBoiteReception() {
         </div>
         <button
           onClick={exporter}
-          className="inline-flex items-center gap-2 rounded-full bg-[#5b5bd6] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#4c4cc9] transition"
+          className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#1D4ED8] transition"
         >
           <Download className="h-4 w-4" /> Exporter
         </button>
@@ -136,13 +136,13 @@ export default function PageBoiteReception() {
       )}
 
       {/* Statistiques 3 Cartes (Exact Screenshot 1) */}
-      <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card grid grid-cols-3 divide-x divide-slate-100 px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 dark:divide-zinc-800">
+      <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card survol-lift grid grid-cols-3 divide-x divide-slate-100 px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 dark:divide-zinc-800">
         <div className="pr-6">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
             Messages reçus
           </p>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-[28px] font-extrabold text-slate-900 dark:text-white">{chargement ? '…' : messages.length}</span>
+            <span className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{chargement ? '…' : messages.length}</span>
           </div>
           <p className="text-[11.5px] text-slate-400">SMS entrants en base</p>
         </div>
@@ -151,7 +151,7 @@ export default function PageBoiteReception() {
             Transmis au webhook
           </p>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-[28px] font-extrabold text-slate-900 dark:text-white">{chargement ? '…' : nbTransmis}</span>
+            <span className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{chargement ? '…' : nbTransmis}</span>
           </div>
           <p className="text-[11.5px] text-slate-400">Notifications remises</p>
         </div>
@@ -160,7 +160,7 @@ export default function PageBoiteReception() {
             À vérifier
           </p>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-[28px] font-extrabold text-amber-600 dark:text-amber-400">{chargement ? '…' : nbAVerifier}</span>
+            <span className="text-[30px] font-extrabold leading-none text-amber-600 dark:text-amber-400">{chargement ? '…' : nbAVerifier}</span>
           </div>
           <p className="text-[11.5px] text-slate-400">En attente ou en échec</p>
         </div>
@@ -171,19 +171,19 @@ export default function PageBoiteReception() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setOnglet('tous')}
-            className={`rounded-full px-4 py-1.5 text-[12px] font-bold transition ${onglet === 'tous' ? 'bg-[#5b5bd6] text-white shadow-sm' : 'text-slate-500 hover:bg-white dark:text-zinc-400'}`}
+            className={`rounded-full px-4 py-1.5 text-[12px] font-bold transition ${onglet === 'tous' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:bg-white dark:text-zinc-400'}`}
           >
             Tous · {messages.length}
           </button>
           <button
             onClick={() => setOnglet('transmis')}
-            className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${onglet === 'transmis' ? 'bg-[#5b5bd6] text-white shadow-sm' : 'text-slate-500 hover:bg-white dark:text-zinc-400'}`}
+            className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${onglet === 'transmis' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:bg-white dark:text-zinc-400'}`}
           >
             Transmis
           </button>
           <button
             onClick={() => setOnglet('verifier')}
-            className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${onglet === 'verifier' ? 'bg-[#5b5bd6] text-white shadow-sm' : 'text-slate-500 hover:bg-white dark:text-zinc-400'}`}
+            className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${onglet === 'verifier' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:bg-white dark:text-zinc-400'}`}
           >
             À vérifier · {nbAVerifier}
           </button>

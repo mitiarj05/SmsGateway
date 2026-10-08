@@ -17,7 +17,7 @@ interface ClientB2B {
 }
 
 const COULEURS_AVATAR = [
-  'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300',
+  'bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-indigo-300',
   'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300',
   'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300',
   'bg-sky-100 text-sky-600 dark:bg-sky-500/15 dark:text-sky-300',
@@ -168,7 +168,7 @@ export default function PageClientsAdmin() {
         </div>
         <button
           onClick={() => { setModalClient(true); setCleCreee(null) }}
-          className="inline-flex items-center gap-2 rounded-full bg-[#5b5bd6] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#4c4cc9] transition"
+          className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#1D4ED8] transition"
         >
           <Users className="h-4 w-4" /> Inviter un client
         </button>
@@ -182,23 +182,23 @@ export default function PageClientsAdmin() {
 
       {/* Top 3 Metric Cards (Exact Screenshot) */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
+        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
             Espaces actifs
           </p>
-          <p className="mt-1.5 text-[32px] font-extrabold text-slate-900 dark:text-white">{clients.length}</p>
+          <p className="mt-1.5 text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{clients.length}</p>
         </div>
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
+        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
             SMS ce mois-ci
           </p>
-          <p className="mt-1.5 text-[32px] font-extrabold text-slate-900 dark:text-white">{totalSmsMois.toLocaleString('fr-FR')}</p>
+          <p className="mt-1.5 text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{totalSmsMois.toLocaleString('fr-FR')}</p>
         </div>
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
+        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
             Du quota global
           </p>
-          <p className="mt-1.5 text-[32px] font-extrabold text-slate-900 dark:text-white">
+          <p className="mt-1.5 text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">
             {pctGlobal === null ? '—' : `${pctGlobal} %`}
           </p>
         </div>
@@ -276,7 +276,7 @@ export default function PageClientsAdmin() {
                   </div>
                   <div className="mt-1.5 h-1.5 w-full rounded-full bg-slate-100 dark:bg-zinc-800">
                     <div
-                      className="h-1.5 rounded-full bg-gradient-to-r from-[#7c7ce0] to-[#a855f7]"
+                      className="h-1.5 rounded-full bg-gradient-to-r from-[#60A5FA] to-[#a855f7]"
                       style={{ width: `${pct}%` }}
                     ></div>
                   </div>
@@ -313,7 +313,7 @@ export default function PageClientsAdmin() {
             </p>
             <a
               href="/espace/api"
-              className="inline-flex items-center gap-1 text-[12px] font-bold text-[#5b5bd6] hover:underline dark:text-blue-400 pt-1"
+              className="inline-flex items-center gap-1 text-[12px] font-bold text-[#2563EB] hover:underline dark:text-blue-400 pt-1"
             >
               Consulter le guide API <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
@@ -357,7 +357,7 @@ export default function PageClientsAdmin() {
                 {cleCreee ? 'Fermer' : 'Annuler'}
               </button>
               {!cleCreee && (
-                <button onClick={ajouterClient} disabled={invitationEnCours || !nouveauNom.trim()} className="flex-1 rounded-xl bg-blue-600 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+                <button onClick={ajouterClient} disabled={invitationEnCours || !nouveauNom.trim()} className="flex-1 survol-brillance rounded-xl bg-blue-600 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
                   {invitationEnCours ? 'Création…' : "Inviter l'organisation"}
                 </button>
               )}

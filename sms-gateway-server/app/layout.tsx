@@ -13,8 +13,17 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "SMSIKA",
+  title: "SMSTSIKA",
   description: "Panneau de contrôle de la passerelle SMS",
+  appleWebApp: {
+    capable: true,
+    title: "SMSTSIKA",
+    statusBarStyle: "black-translucent",
+  },
+  icons: {
+    icon: "/icon.png",
+    apple: "/icons/apple-touch-icon.png",
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

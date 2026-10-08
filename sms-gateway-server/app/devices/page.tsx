@@ -110,7 +110,7 @@ export default function AppareilsPage() {
         </div>
         <button
           onClick={() => setModalAjoutOuverte(true)}
-          className="inline-flex items-center gap-2 rounded-full bg-[#5b5bd6] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#4c4cc9] transition"
+          className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#1D4ED8] transition"
         >
           <Plus className="h-4 w-4" /> Ajouter un appareil
         </button>
@@ -151,7 +151,7 @@ export default function AppareilsPage() {
               </div>
             </div>
 
-            {/* Carte du Téléphone Infinix X689C (Exact Screenshot) */}
+            {/* Carte téléphone (données temps réel) */}
             <div className="space-y-4">
               {appareilsVisibles.length === 0 && (
                 <p className="py-10 text-center text-xs text-slate-400 dark:text-zinc-500">
@@ -217,7 +217,7 @@ export default function AppareilsPage() {
                       <span className="font-bold text-slate-800 dark:text-zinc-200">{utilises} / {quota}</span>
                     </div>
                     <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-zinc-700">
-                      <div className="h-1.5 rounded-full bg-gradient-to-r from-[#7c7ce0] to-[#5b5bd6]" style={{ width: `${pct}%` }} />
+                      <div className="h-1.5 rounded-full bg-gradient-to-r from-[#60A5FA] to-[#2563EB]" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 </div>
@@ -227,8 +227,8 @@ export default function AppareilsPage() {
           </div>
 
           {/* Banner d'information bas de page (Exact Screenshot) */}
-          <div className="flex items-center gap-4 rounded-2xl border border-indigo-100 bg-[#f6f5ff] px-5 py-4 dark:bg-blue-500/10 dark:border-blue-500/20">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#5b5bd6]/10 text-[#5b5bd6] dark:bg-blue-500/20 dark:text-blue-400">
+          <div className="flex items-center gap-4 rounded-2xl border border-blue-100 bg-[#f6f5ff] px-5 py-4 dark:bg-blue-500/10 dark:border-blue-500/20">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563EB]/10 text-[#2563EB] dark:bg-blue-500/20 dark:text-blue-400">
               <Info className="h-4 w-4" />
             </div>
             <div className="flex-1">
@@ -239,7 +239,7 @@ export default function AppareilsPage() {
                 Vérifiez le réseau et l'application sur le téléphone pour reprendre les envois.
               </p>
             </div>
-            <a href="/espace/api" className="inline-flex items-center gap-1 text-[12.5px] font-bold text-[#5b5bd6] hover:underline dark:text-blue-400">
+            <a href="/espace/api" className="inline-flex items-center gap-1 text-[12.5px] font-bold text-[#2563EB] hover:underline dark:text-blue-400">
               Documentation <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
           </div>
@@ -248,7 +248,7 @@ export default function AppareilsPage() {
         {/* Colonne Droite (1 col) : Capacité & Appareils enregistrés (Exact Screenshot) */}
         <div className="space-y-4">
           {/* Card Capacité configurée */}
-          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-3">
+          <div className="survol-lift rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-3">
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
               Capacité configurée
             </p>
@@ -267,7 +267,7 @@ export default function AppareilsPage() {
           </div>
 
           {/* Card Appareils enregistrés */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
+          <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
             <p className="text-[12px] font-medium text-slate-400">
               Appareils enregistrés
             </p>
@@ -275,7 +275,7 @@ export default function AppareilsPage() {
           </div>
 
           {/* Card Actifs maintenant */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
+          <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
             <p className="text-[12px] font-medium text-slate-400">
               Actifs maintenant
             </p>

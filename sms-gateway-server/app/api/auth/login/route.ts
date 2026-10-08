@@ -7,6 +7,7 @@ import {
   DUREE_SESSION_SECONDES,
   verifierIdentifiants,
 } from '@/lib/admin-session'
+import { verifierCaptcha } from '@/lib/captcha'
 
 /**
  * POST /api/auth/login — { utilisateur, mot_de_passe, se_souvenir? } -> pose le cookie de session admin.
@@ -25,6 +26,12 @@ export async function POST(request: NextRequest) {
   const utilisateur = corps?.utilisateur
   const motDePasse = corps?.mot_de_passe
   const seSouvenir = corps?.se_souvenir !== false
+
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? null
+  const captcha = await verifierCaptcha(corps?.captcha, ip)
+  if (!captcha.ok) {
+    return NextResponse.json({ error: captcha.raison ?? 'Vérification anti-robot requise' }, { status: 403 })
+  }
 
   if (typeof utilisateur !== 'string' || typeof motDePasse !== 'string' || !verifierIdentifiants(utilisateur, motDePasse)) {
     return NextResponse.json({ error: 'Identifiants invalides' }, { status: 401 })

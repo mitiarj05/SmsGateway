@@ -7,9 +7,21 @@
 }
 
 .dark {
-  --background: #0a0a0a;
+  --background: #10162c;
   --foreground: #ededed;
+  /* Mode sombre adouci : ardoise bleutée (plus de noir pur),
+     en miroir du mode clair — s'applique à tous les écrans. */
+  --color-zinc-950: #10162c;
+  --color-zinc-900: #1e2745;
+  --color-zinc-800: #2b3658;
+  --color-zinc-700: #3d4c76;
 }
+
+/* Surfaces codées en dur (même adoucissement que la palette ci-dessus). */
+.dark .dark\:bg-\[\#0B0F19\] { background-color: #141b33; }
+.dark .dark\:bg-\[\#0B0F19\]\/80 { background-color: rgb(20 27 51 / 0.8); }
+.dark .dark\:bg-\[\#131926\] { background-color: #1e2745; }
+.dark .dark\:bg-\[\#1E293B\] { background-color: #2b3658; }
 
 @theme inline {
   --color-background: var(--background);
@@ -63,8 +75,8 @@ html.dark {
 
 /* ---------- B. Compteurs / texte néon pulsé ---------- */
 @keyframes neonPulse {
-  0%, 100% { text-shadow: 0 0 18px rgba(139,139,240,.55), 0 0 60px rgba(106,106,224,.25); }
-  50%      { text-shadow: 0 0 34px rgba(139,139,240,.95), 0 0 90px rgba(106,106,224,.45); }
+  0%, 100% { text-shadow: 0 0 18px rgba(96,165,250,.55), 0 0 60px rgba(37,99,235,.25); }
+  50%      { text-shadow: 0 0 34px rgba(96,165,250,.95), 0 0 90px rgba(37,99,235,.45); }
 }
 .stat-number {
   animation: neonPulse 3.2s ease-in-out infinite;
@@ -139,7 +151,7 @@ html.dark {
   position: absolute;
   width: 560px; height: 560px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(106,106,224,.14), transparent 62%);
+  background: radial-gradient(circle, rgba(37,99,235,.14), transparent 62%);
   pointer-events: none;
   transform: translate(-50%, -50%);
   transition: opacity .4s;
@@ -162,8 +174,85 @@ html.dark {
   animation: dashDraw 2s ease-out .4s forwards;
 }
 
-/* ---------- J. Marquee : défilement + pause au survol ---------- */
-@keyframes scrollX {
+/* ---------- J. Ombres des cartes admin ---------- */
+.shadow-card {
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, .05),
+    0 10px 28px -10px rgba(15, 23, 42, .14),
+    0 20px 56px -20px rgba(91, 91, 214, .14);
+}
+.dark .shadow-card {
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, .45),
+    0 12px 32px -10px rgba(0, 0, 0, .6),
+    0 0 0 1px rgba(255, 255, 255, .03),
+    0 18px 56px -18px rgba(91, 91, 214, .28);
+}
+/* Survol : les cartes cliquables se soulèvent */
+a.shadow-card, button.shadow-card {
+  transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s cubic-bezier(.22,1,.36,1);
+}
+a.shadow-card:hover, button.shadow-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, .06),
+    0 16px 36px -12px rgba(15, 23, 42, .2),
+    0 24px 64px -20px rgba(91, 91, 214, .22);
+}
+.dark a.shadow-card:hover, .dark button.shadow-card:hover {
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, .5),
+    0 20px 44px -12px rgba(0, 0, 0, .65),
+    0 24px 64px -20px rgba(91, 91, 214, .4);
+}
+
+/* ---------- K. Survols animés (interfaces admin, sobres & pro) ---------- */
+@media (hover: hover) {
+  /* Liens sidebar : l'icône glisse légèrement */
+  aside nav a svg {
+    transition: transform .25s cubic-bezier(.22,1,.36,1);
+  }
+  aside nav a:hover svg {
+    transform: translateX(2px) scale(1.1);
+  }
+  /* Lignes de tableau : fondu doux */
+  tbody tr {
+    transition: background-color .2s ease;
+  }
+  /* Champs : halo focus discret */
+  input:focus, select:focus, textarea:focus {
+    box-shadow: 0 0 0 3px rgba(91, 91, 214, .18);
+  }
+  /* Cartes : soulèvement au survol (opt-in) */
+  .survol-lift {
+    transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s cubic-bezier(.22,1,.36,1), border-color .25s ease;
+  }
+  .survol-lift:hover {
+    transform: translateY(-3px);
+  }
+  /* Boutons primaires : balayage lumineux (opt-in) */
+  .survol-brillance {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .survol-brillance::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -80%;
+    height: 100%; width: 45%;
+    transform: skewX(-18deg);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .35), transparent);
+    transition: left .55s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .survol-brillance:hover::after {
+    left: 130%;
+  }
+}
+
+/* ---------- L. Marquee : défilement + pause au survol ---------- */@keyframes scrollX {
   to { transform: translateX(-50%); }
 }
 .marquee-piste {
@@ -172,6 +261,112 @@ html.dark {
 }
 .marquee-piste:hover {
   animation-play-state: paused;
+}
+
+/* ---------- M. Graphiques : tracé animé à l'apparition ---------- */
+@keyframes traceGraphique {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ---------- M2. Connecteurs lumineux (flux temps réel) ---------- */
+@keyframes fluxConnecteur {
+  0% { top: -4px; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: calc(100% - 2px); opacity: 0; }
+}
+.connecteur-point {
+  animation: fluxConnecteur 2.2s ease-in-out infinite;
+}
+
+/* ---------- N. Textes : apparition en cascade + scintillement ---------- */
+@keyframes monteTexte {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* Contenu de page : chaque bloc apparaît en cascade (admin + espace). */
+.anim-page > * {
+  opacity: 0;
+  animation: monteTexte .55s cubic-bezier(.22,1,.36,1) forwards;
+}
+.anim-page > *:nth-child(1) { animation-delay: 30ms; }
+.anim-page > *:nth-child(2) { animation-delay: 110ms; }
+.anim-page > *:nth-child(3) { animation-delay: 190ms; }
+.anim-page > *:nth-child(4) { animation-delay: 270ms; }
+.anim-page > *:nth-child(5) { animation-delay: 350ms; }
+.anim-page > *:nth-child(n+6) { animation-delay: 420ms; }
+/* Lignes du hero : apparition en cascade (le display vient des classes). */
+.mot-anime {
+  opacity: 0;
+  animation: monteTexte .7s cubic-bezier(.22,1,.36,1) forwards;
+}
+/* Titres : balayage lumineux discret. */
+@keyframes scintilleTitre {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.titre-scintillant {
+  background-size: 200% auto;
+  animation: scintilleTitre 7s linear infinite;
+}
+
+/* ---------- N. Landing Level Up : dégradés, laser, bordures ---------- */
+@keyframes deriveGradient {
+  0% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+  100% { background-position: 0% center; }
+}
+.texte-degrade-anime {
+  background-size: 200% auto;
+  animation: deriveGradient 6s ease-in-out infinite;
+}
+@keyframes deriveOrbe {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(46px, 30px) scale(1.1); }
+  100% { transform: translate(-30px, 52px) scale(1.04); }
+}
+.orbe-derive {
+  animation: deriveOrbe 18s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes rayonLaser {
+  0% { left: 2%; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { left: 96%; opacity: 0; }
+}
+.laser-point {
+  animation: rayonLaser 3.4s linear infinite;
+}
+.btn-bordure-lumineuse {
+  position: relative;
+}
+.btn-bordure-lumineuse:hover {
+  border-color: transparent;
+  background:
+    linear-gradient(#fff, #fff) padding-box,
+    linear-gradient(135deg, #7C3AED, #D946EF, #7C3AED) border-box;
+  box-shadow: 0 14px 34px -12px rgba(37, 99, 235, .45);
+}
+
+/* ---------- N. Entrée du hero (accueil) ---------- */
+@keyframes entreeHaut {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.anim-entree {
+  opacity: 0;
+  animation: entreeHaut .8s cubic-bezier(.22,1,.36,1) forwards;
+}
+@keyframes flotteDoux {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.anim-flotte {
+  animation: flotteDoux 6s ease-in-out infinite;
+}
+.anim-flotte-retard {
+  animation: flotteDoux 7s ease-in-out 1s infinite;
 }
 
 /* ---------- I. Respect de l'accessibilité ---------- */

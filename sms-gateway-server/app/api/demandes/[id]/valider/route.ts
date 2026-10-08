@@ -47,7 +47,7 @@ export async function POST(
     if (estAdresseCourriel(contact)) {
       courrielEnvoye = await envoyerCourriel(
         contact.trim(),
-        'Votre clé API SMSIKA',
+        'Votre clé API SMSTSIKA',
         texteCleApi(demande.nom, cle_api, `${urlPublique()}/espace/login`)
       )
     }

@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-serveur'
 import fs from 'fs'
 import path from 'path'
 
-const VERSION = '0.1.0'
+const VERSION = '1.0.0'
 
 /**
  * GET /api/health — état du système (public, pour monitoring/démo).
