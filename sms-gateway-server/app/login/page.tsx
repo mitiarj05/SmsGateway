@@ -67,6 +67,27 @@ export default function PageConnexion() {
     setDestination(destinationSure(brut))
   }, [])
 
+  /** Bouton Google visible : OAuth direct, le serveur distingue inscription/connexion. */
+  async function connexionGoogleManuelle() {
+    setErreur(null)
+    setGoogleEnCours(true)
+    try {
+      const supabase = creerSupabaseNavigateur()
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/api/auth/google/retour?finalite=connexion` },
+      })
+      if (error) {
+        setErreur('Google indisponible pour le moment — continuez avec votre e-mail.')
+        setGoogleEnCours(false)
+      }
+      // Sinon : redirection vers Google, le callback ouvre l'espace ou affiche l'erreur.
+    } catch {
+      setErreur('Google indisponible pour le moment — continuez avec votre e-mail.')
+      setGoogleEnCours(false)
+    }
+  }
+
   async function gererSoumission(e: React.FormEvent) {
     e.preventDefault()
     setErreur(null)
@@ -326,6 +347,38 @@ export default function PageConnexion() {
                   etape === 'email' ? 'Continuer' : 'Se connecter'
                 )}
               </button>
+              {etape === 'email' && (
+                <>
+                  {/* Separator OR */}
+                  <div className="relative flex items-center justify-center text-center">
+                    <div className="w-full border-t border-slate-200" />
+                    <span className="absolute bg-white px-3 text-[10.5px] font-bold text-slate-400 uppercase">
+                      OR
+                    </span>
+                  </div>
+
+                  {/* Google Login Button */}
+                  <button
+                    type="button"
+                    onClick={connexionGoogleManuelle}
+                    disabled={googleEnCours || chargement}
+                    className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white py-3 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 transition disabled:opacity-60"
+                  >
+                    {googleEnCours ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <img
+                          src="/icons/google.jpg"
+                          alt="Google"
+                          className="h-4 w-4 object-contain"
+                        />
+                        Continuer avec Google
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
             </form>
 
             <div className="text-center text-xs text-slate-500">
