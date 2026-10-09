@@ -1,6 +1,6 @@
 'use client'
 
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 declare global {
   interface Window {
@@ -57,10 +57,12 @@ function chargerScript(): Promise<void> {
  */
 export const CaseAntiRobot = forwardRef<PoigneeAntiRobot, Proprietes>(
   function CaseAntiRobot({ cleSite, change }, ref) {
-    const conteneur = useRef<HTMLDivElement>(null)
-    const identifiant = useRef<number | null>(null)
-    const changeRef = useRef(change)
-    changeRef.current = change
+  const conteneur = useRef<HTMLDivElement>(null)
+  const identifiant = useRef<number | null>(null)
+  const changeRef = useRef(change)
+  changeRef.current = change
+  const [blocage, setBlocage] = useState(false)
+  const [relance, setRelance] = useState(0)
 
     useImperativeHandle(
       ref,
@@ -83,11 +85,13 @@ export const CaseAntiRobot = forwardRef<PoigneeAntiRobot, Proprietes>(
       if (!cleSite) return
       let monte = true
       let tentatives = 0
-      const minuteries: ReturnType<typeof setTimeout>[] = []
+      let delai = 200
+      let minuteur: ReturnType<typeof setTimeout> | null = null
+      setBlocage(false)
 
-      // Tentatives répétées : le script peut être lent ou bloqué au 1er
-      // chargement (adblocker, réseau). Une seule tentative silencieuse = case
-      // invisible jusqu'à la prochaine navigation.
+      // Réessais persistants : sur réseau mobile lent ou avec bloqueur,
+      // le script google.com/recaptcha peut mettre plus de 10 s. On insiste
+      // en espaçant (200 ms → 2 s max) jusqu'au succès ou au démontage.
       const essayerRendu = (): void => {
         if (!monte) return
         if (window.grecaptcha && conteneur.current && identifiant.current === null) {
@@ -103,25 +107,36 @@ export const CaseAntiRobot = forwardRef<PoigneeAntiRobot, Proprietes>(
             /* re-essaie ci-dessous */
           }
         }
-        if (++tentatives < 50 && monte) {
-          minuteries.push(setTimeout(essayerRendu, 200))
-        }
+        tentatives += 1
+        if (tentatives === 50 && monte) setBlocage(true)
+        delai = Math.min(2000, delai + 200)
+        if (monte) minuteur = setTimeout(essayerRendu, delai)
       }
 
       chargerScript().then(essayerRendu)
-      // Filet de sécurité : revérifie 3 s après le montage.
-      minuteries.push(
-        setTimeout(() => {
-          if (monte && identifiant.current === null) essayerRendu()
-        }, 3000)
-      )
       return () => {
         monte = false
-        minuteries.forEach(clearTimeout)
+        if (minuteur) clearTimeout(minuteur)
       }
-    }, [cleSite])
+    }, [cleSite, relance])
 
     if (!cleSite) return null
-    return <div ref={conteneur} className="flex justify-center" />
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <div ref={conteneur} className="flex justify-center" />
+        {blocage && identifiant.current === null && (
+          <p className="text-center text-[11px] text-slate-500">
+            Vérification anti-robot lente à charger — vérifiez votre connexion.{' '}
+            <button
+              type="button"
+              onClick={() => setRelance((n) => n + 1)}
+              className="font-bold text-blue-600 hover:underline"
+            >
+              Réessayer
+            </button>
+          </p>
+        )}
+      </div>
+    )
   }
 )
