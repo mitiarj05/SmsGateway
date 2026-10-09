@@ -1,6 +1,23 @@
 package com.mitia.smsgateway.ui.views
 
 import androidx.compose.foundation.Image
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.IconButton
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import com.mitia.smsgateway.data.remote.ClientApi
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -23,6 +40,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -55,14 +73,78 @@ import com.mitia.smsgateway.ui.components.BoutonNeon
 import com.mitia.smsgateway.ui.components.CarteGlass
 import com.mitia.smsgateway.ui.theme.*
 
+/**
+ * ID client Web OAuth (console Firebase → Authentication → Fournisseurs → Google).
+ * Requis pour la connexion Google native. Vide = bouton Google désactivé avec message.
+ */
+private const val WEB_CLIENT_ID = "233592128256-b6gter86alhot1th9mi1knp5g0t6664u.apps.googleusercontent.com"
+
 @Composable
 fun EcranConnexion(
     aConnexionReussie: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    var email by remember { mutableStateOf("test@smstsika.mg") }
-    var motDePasse by remember { mutableStateOf("••••••••••") }
+    var etape by remember { mutableStateOf("email") }
+    var email by remember { mutableStateOf("") }
+    var motDePasse by remember { mutableStateOf("") }
+    var afficherMotDePasse by remember { mutableStateOf(false) }
     var resterConnecte by remember { mutableStateOf(true) }
+    var erreur by remember { mutableStateOf<String?>(null) }
+    var googleEnCours by remember { mutableStateOf(false) }
+    val contexte = LocalContext.current
+    val portee = rememberCoroutineScope()
+
+    fun ouvrirNavigateur(chemin: String) {
+        try {
+            val url = ClientApi.urlBase.trimEnd('/') + chemin
+            contexte.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        } catch (e: Exception) {
+            Log.e("EcranConnexion", "Ouverture navigateur impossible", e)
+        }
+    }
+
+    fun connexionGoogle() {
+        if (WEB_CLIENT_ID.isBlank()) {
+            erreur = "Connexion Google non configurée sur cette application."
+            return
+        }
+        googleEnCours = true
+        erreur = null
+        portee.launch {
+            try {
+                val gestionnaire = CredentialManager.create(contexte)
+                val optionGoogle = GetGoogleIdOption.Builder()
+                    .setFilterByAuthorizedAccounts(false)
+                    .setServerClientId(WEB_CLIENT_ID)
+                    .build()
+                val requete = GetCredentialRequest.Builder()
+                    .addCredentialOption(optionGoogle)
+                    .build()
+                val resultat = gestionnaire.getCredential(contexte, requete)
+                val identifiant = GoogleIdTokenCredential.createFrom(resultat.credential.data)
+                val credential = GoogleAuthProvider.getCredential(identifiant.idToken, null)
+                val auth = FirebaseAuth.getInstance().signInWithCredential(credential).await()
+                val jetonId = auth.user?.getIdToken(false)?.await()?.token
+                if (jetonId.isNullOrBlank()) {
+                    erreur = "Connexion Google impossible — réessayez."
+                } else {
+                    val erreurServeur = ClientApi.lierCompteGoogle(jetonId)
+                    if (erreurServeur == null) {
+                        aConnexionReussie()
+                        return@launch
+                    }
+                    erreur = erreurServeur
+                }
+            } catch (e: Exception) {
+                if (e !is GetCredentialCancellationException) {
+                    erreur = "Connexion Google impossible — réessayez."
+                    Log.e("EcranConnexion", "Échec Google", e)
+                }
+            } finally {
+                googleEnCours = false
+            }
+        }
+    }
 
     Box(
         modifier = modifier
@@ -80,52 +162,22 @@ fun EcranConnexion(
         ) {
             Spacer(Modifier.height(16.dp))
 
-            // Logo icône néon 96px avec ombre indigo portée
-            Box(
+            // Logo officiel SMSTSIKA
+            Image(
+                painter = painterResource(id = R.drawable.logo_app),
+                contentDescription = "Logo SMSTSIKA",
                 modifier = Modifier
                     .size(96.dp)
-                    .shadow(24.dp, RoundedCornerShape(26.dp), spotColor = NeonShadowColor)
                     .clip(RoundedCornerShape(26.dp))
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(GradientIndigoStart, GradientIndigoEnd)
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.smstsika),
-                    contentDescription = "Logo SMSIKA",
-                    modifier = Modifier.size(56.dp)
-                )
-            }
+                    .shadow(24.dp, RoundedCornerShape(26.dp), spotColor = NeonShadowColor),
+                contentScale = ContentScale.Fit
+            )
 
             Spacer(Modifier.height(18.dp))
 
-            // Titre SMSIKA (SMS en #0F172A, IKA en dégradé texte)
+            // Sous-titre (le logo contient déjà « SMS GATEWAY »)
             Text(
-                text = buildAnnotatedString {
-                    withStyle(SpanStyle(color = Color(0xFF0F172A), fontWeight = FontWeight.ExtraBold, fontSize = 32.sp)) {
-                        append("SMS")
-                    }
-                    withStyle(
-                        SpanStyle(
-                            brush = Brush.linearGradient(listOf(GradientIndigoStart, Color(0xFF22D3EE))),
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 32.sp
-                        )
-                    ) {
-                        append("IKA")
-                    }
-                },
-                letterSpacing = 1.sp
-            )
-
-            Spacer(Modifier.height(4.dp))
-
-            // Sous-titre « SMS GATEWAY · Espace client »
-            Text(
-                text = "SMS GATEWAY · Espace client",
+                text = "Espace client",
                 color = TexteSousTitreClair,
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.Bold,
@@ -140,6 +192,26 @@ fun EcranConnexion(
                 coins = 20.dp
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    // Bannière d'erreur
+                    if (erreur != null) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(13.dp))
+                                .background(Color(0xFFFFF1F2))
+                                .border(1.dp, Color(0xFFFECDD3), RoundedCornerShape(13.dp))
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = erreur ?: "",
+                                color = Color(0xFFE11D48),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                    if (etape == "email") {
                     // Champ « Adresse e-mail »
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
@@ -172,7 +244,32 @@ fun EcranConnexion(
                             shape = RoundedCornerShape(13.dp)
                         )
                     }
-
+                    } else {
+                        // Récapitulatif e-mail + Modifier
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(13.dp))
+                                .background(FondInputClair)
+                                .clickable { etape = "email"; erreur = null }
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = email,
+                                color = TexteTitreClair,
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = "Modifier",
+                                color = GradientIndigoStart,
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     // Champ « Mot de passe »
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
@@ -185,7 +282,11 @@ fun EcranConnexion(
                             value = motDePasse,
                             onValueChange = { motDePasse = it },
                             singleLine = true,
-                            visualTransformation = PasswordVisualTransformation(),
+                            visualTransformation = if (afficherMotDePasse) {
+                                androidx.compose.ui.text.input.VisualTransformation.None
+                            } else {
+                                PasswordVisualTransformation()
+                            },
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Filled.Lock,
@@ -195,12 +296,14 @@ fun EcranConnexion(
                                 )
                             },
                             trailingIcon = {
-                                Icon(
-                                    imageVector = Icons.Filled.Visibility,
-                                    contentDescription = null,
-                                    tint = TexteSousTitreClair,
-                                    modifier = Modifier.size(18.dp).padding(end = 6.dp)
-                                )
+                                IconButton(onClick = { afficherMotDePasse = !afficherMotDePasse }) {
+                                    Icon(
+                                        imageVector = if (afficherMotDePasse) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                        contentDescription = if (afficherMotDePasse) "Masquer" else "Afficher",
+                                        tint = TexteSousTitreClair,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
                             },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
@@ -248,19 +351,37 @@ fun EcranConnexion(
                             color = GradientIndigoStart,
                             fontSize = 12.5.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.clickable {}
+                            modifier = Modifier.clickable { ouvrirNavigateur("/mot-de-passe-oublie") }
                         )
                     }
+                    } // fin etape mdp
 
                     Spacer(Modifier.height(4.dp))
 
-                    // Bouton dégradé pleine largeur « Se connecter »
+                    // Bouton principal : Continuer (e-mail) / Se connecter (mot de passe)
                     BoutonNeon(
-                        libelle = "Se connecter",
-                        auClic = aConnexionReussie,
+                        libelle = if (etape == "email") "Continuer" else "Se connecter",
+                        auClic = {
+                            if (etape == "email") {
+                                if (email.trim().isEmpty()) {
+                                    erreur = "Saisissez votre adresse e-mail pour continuer"
+                                } else {
+                                    erreur = null
+                                    etape = "mdp"
+                                }
+                            } else {
+                                if (motDePasse.isEmpty()) {
+                                    erreur = "Saisissez votre mot de passe"
+                                } else {
+                                    erreur = null
+                                    aConnexionReussie()
+                                }
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth()
                     )
 
+                    if (etape == "email") {
                     // Séparateur « ou continuer avec »
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
@@ -277,27 +398,39 @@ fun EcranConnexion(
                         HorizontalDivider(modifier = Modifier.weight(1f), color = BordureInputClair)
                     }
 
-                    // Bouton Google « Continuer avec Google »
+                    // Bouton Google « Continuer avec Google » (logo réel)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
                             .border(1.dp, BordureInputClair, RoundedCornerShape(14.dp))
                             .background(BlancCarte)
-                            .clickable {}
+                            .clickable { if (!googleEnCours) connexionGoogle() }
                             .padding(vertical = 13.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(18.dp)
-                                    .clip(CircleShape)
-                                    .background(Brush.horizontalGradient(listOf(Color(0xFFEA4335), Color(0xFFFBBC05), Color(0xFF34A853), Color(0xFF4285F4)))),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("G", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        if (googleEnCours) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                androidx.compose.material3.CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    color = GradientIndigoStart,
+                                    strokeWidth = 2.dp
+                                )
+                                Spacer(Modifier.width(10.dp))
+                                Text(
+                                    text = "Connexion…",
+                                    color = TexteTitreClair,
+                                    fontSize = 13.5.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
+                        } else {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(
+                                painter = painterResource(id = R.drawable.google_logo),
+                                contentDescription = "Google",
+                                modifier = Modifier.size(18.dp)
+                            )
                             Spacer(Modifier.width(10.dp))
                             Text(
                                 text = "Continuer avec Google",
@@ -306,7 +439,9 @@ fun EcranConnexion(
                                 fontWeight = FontWeight.Bold
                             )
                         }
+                        }
                     }
+                    } // fin etape email (séparateur + Google)
                 }
             }
 
@@ -327,37 +462,8 @@ fun EcranConnexion(
                     color = GradientIndigoStart,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.clickable {}
+                    modifier = Modifier.clickable { ouvrirNavigateur("/demande-acces") }
                 )
-            }
-
-            Spacer(Modifier.height(24.dp))
-
-            // Tout en bas, centré : « Compte démo » + chip fond #F1F5F9 mono « demo@smsika.mg / demo2026 »
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Text(
-                    text = "Compte démo",
-                    color = TexteSousTitreClair,
-                    fontSize = 11.5.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Surface(
-                    color = FondInputClair,
-                    shape = RoundedCornerShape(99.dp),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, BordureInputClair)
-                ) {
-                    Text(
-                        text = "demo@smsika.mg / demo2026",
-                        color = TexteTitreClair,
-                        fontSize = 11.5.sp,
-                        fontWeight = FontWeight.Medium,
-                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
-                    )
-                }
             }
 
             Spacer(Modifier.height(16.dp))

@@ -53,7 +53,7 @@ export default function PageDemandeAcces() {
       const supabase = creerSupabaseNavigateur()
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${window.location.origin}/api/auth/google/retour` },
+        options: { redirectTo: `${window.location.origin}/api/auth/google/retour?finalite=inscription` },
       })
       if (error) {
         setResultat({ reussi: false, texte: 'Google indisponible pour le moment — remplissez le formulaire.' })
@@ -75,23 +75,17 @@ export default function PageDemandeAcces() {
       return
     }
     try {
-      const nomComplet = prenom ? `${prenom} ${nom}`.trim() : nom
-      const reponse = await fetch('/api/demandes', {
+      const reponse = await fetch('/api/auth/inscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nom: nomComplet, contact, usage_prevu: usagePrevu || 'Accès SMSIKA', captcha }),
+        body: JSON.stringify({ prenom, nom, email: contact.trim(), mot_de_passe: motDePasse, captcha }),
       })
       const donnees = await reponse.json().catch(() => null)
-      if (reponse.ok) {
-        setResultat({ reussi: true, texte: donnees?.message ?? 'Demande transmise avec succès !' })
-        setPrenom('')
-        setNom('')
-        setContact('')
-        setMotDePasse('')
-        setUsagePrevu('')
-      } else {
-        setResultat({ reussi: false, texte: donnees?.error ?? 'Erreur lors de l’envoi' })
+      if (!reponse.ok) {
+        setResultat({ reussi: false, texte: donnees?.error ?? 'Inscription impossible — réessayez' })
+        return
       }
+      routeur.replace('/espace')
     } catch {
       setResultat({ reussi: false, texte: 'Serveur injoignable' })
     } finally {
@@ -101,7 +95,7 @@ export default function PageDemandeAcces() {
   }
 
   return (
-    <div className="min-h-screen bg-[#03102C] text-white font-sans antialiased flex flex-col justify-between p-6 sm:p-12 selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#FAFAFC] text-slate-800 font-sans antialiased flex flex-col justify-between p-6 sm:p-12 selection:bg-blue-600 selection:text-white dark:bg-[#0B0F19] dark:text-zinc-100">
 
       {/* 2-Column Main Container (Exact Screenshot Layout) */}
       <div className="mx-auto max-w-6xl w-full my-auto grid grid-cols-1 gap-12 lg:grid-cols-2 items-center">
@@ -111,27 +105,27 @@ export default function PageDemandeAcces() {
           <Image src="/icons/SMSTSIKA.png" alt="SMSTSIKA" width={64} height={64} className="h-16 w-16" />
 
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl leading-tight">
-            Demandez votre accès à la plateforme SMSTSIKA :
+            Créez votre compte SMSTSIKA :
           </h1>
 
-          <div className="space-y-3 text-sm text-blue-100 font-medium">
+          <div className="space-y-3 text-sm text-slate-500 font-medium dark:text-zinc-400">
             <p className="flex items-center gap-3">
               <Check className="h-4 w-4 text-blue-400 shrink-0" />
               <span>Aucune carte bancaire requise</span>
             </p>
             <p className="flex items-center gap-3">
               <Check className="h-4 w-4 text-blue-400 shrink-0" />
-              <span>Demande traitée sous 24 h</span>
+              <span>Compte créé instantanément</span>
             </p>
             <p className="flex items-center gap-3">
               <Check className="h-4 w-4 text-blue-400 shrink-0" />
-              <span>Clé API remise après validation</span>
+              <span>Votre clé API dans votre espace</span>
             </p>
           </div>
 
           <div className="space-y-3 pt-2">
-            <h2 className="text-xl font-bold text-white">Obtenez votre accès en quelques minutes</h2>
-            <div className="space-y-2.5 text-sm text-blue-100 font-medium">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Obtenez votre accès en quelques minutes</h2>
+            <div className="space-y-2.5 text-sm text-slate-500 font-medium dark:text-zinc-400">
               <p className="flex items-center gap-3">
                 <Check className="h-4 w-4 text-blue-400 shrink-0" />
                 <span>Indiquez votre nom et votre contact</span>
@@ -147,8 +141,8 @@ export default function PageDemandeAcces() {
             </div>
           </div>
 
-          <p className="text-[11px] text-blue-300/60 pt-4">
-            *Accès sous réserve de validation par l'administrateur.
+          <p className="text-[11px] text-slate-400 pt-4 dark:text-zinc-500">
+            *Votre téléphone, votre SIM : vous gérez vos envois.
           </p>
         </div>
 
@@ -159,10 +153,10 @@ export default function PageDemandeAcces() {
             {/* Header Text */}
             <div className="text-center space-y-1">
               <h2 className="text-2xl font-bold text-slate-900">
-                Demander un accès
+                S'inscrire
               </h2>
               <p className="text-xs text-slate-500">
-                Remplissez le formulaire — réponse sous 24 h.
+                Remplissez le formulaire — accès immédiat.
               </p>
             </div>
 
@@ -265,7 +259,7 @@ export default function PageDemandeAcces() {
               <button
                 type="submit"
                 disabled={envoiEnCours}
-                className="w-full rounded-xl bg-[#0066FF] py-3.5 text-xs font-bold text-white shadow-md hover:bg-[#0052CC] disabled:opacity-60 transition flex items-center justify-center gap-2 mt-2"
+                className="w-full rounded-xl bg-gradient-to-r from-[#2563EB] to-[#3B82F6] py-3.5 text-xs font-bold text-white shadow-[0_20px_40px_-15px_rgba(124,58,237,0.5)] hover:-translate-y-0.5 disabled:opacity-60 transition flex items-center justify-center gap-2 mt-2"
               >
                 {envoiEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Envoyer la demande'}
               </button>
@@ -309,13 +303,13 @@ export default function PageDemandeAcces() {
           </div>
 
           {/* Under Card Footer */}
-          <div className="mt-6 text-center text-xs text-blue-200/70 space-y-2">
+          <div className="mt-6 text-center text-xs text-slate-400 space-y-2 dark:text-zinc-500">
             <div className="flex justify-center gap-3">
               <span>Conditions d'utilisation</span>
               <span>|</span>
               <span>Politique de confidentialité</span>
             </div>
-            <p className="text-[11px] text-blue-300/50">© 2026 SMSTSIKA · Tous droits réservés</p>
+            <p className="text-[11px] text-slate-400 dark:text-zinc-500">© 2026 SMSTSIKA · Tous droits réservés</p>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
-import { lireSessionClient } from '@/lib/session-client'
+import { resoudreApplicationEspace } from '@/lib/espace-auth'
 import { compterEnvoisMois, moisActuel } from '@/lib/facturation'
 import { STATUT_TACHE } from '@/lib/statuts'
 
@@ -10,7 +10,7 @@ import { STATUT_TACHE } from '@/lib/statuts'
  */
 export async function GET(request: NextRequest) {
   try {
-    const idApplication = lireSessionClient(request)
+    const idApplication = await resoudreApplicationEspace(request)
     if (!idApplication) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }

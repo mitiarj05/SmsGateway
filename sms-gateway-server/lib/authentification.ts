@@ -64,6 +64,45 @@ export async function verifierJetonFirebase(jetonId: string): Promise<string | n
 }
 
 /**
+ * Vérifie un ID token Firebase Auth et retourne { uid, email }.
+ * Même transport que verifierJetonFirebase (Identity Toolkit HTTPS pur,
+ * compatible runtime Vercel). L'e-mail sert à rattacher les anciens comptes.
+ */
+export async function verifierCompteFirebase(
+  jetonId: string
+): Promise<{ uid: string; email: string | null } | null> {
+  if (!jetonId) return null
+  const cleApiWeb = process.env.FIREBASE_WEB_API_KEY
+  if (!cleApiWeb) {
+    console.warn('[auth] FIREBASE_WEB_API_KEY manquante — vérification Firebase impossible')
+    return null
+  }
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/identitytoolkit/v3/relyingparty/getAccountInfo?key=${cleApiWeb}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: jetonId }),
+      }
+    )
+    if (!res.ok) {
+      console.warn(`[auth] Identity Toolkit rejette le token (${res.status})`)
+      return null
+    }
+    const data = await res.json()
+    const utilisateur = data?.users?.[0]
+    const uid = utilisateur?.localId
+    if (typeof uid !== 'string' || uid.length === 0) return null
+    const email = typeof utilisateur?.email === 'string' ? utilisateur.email : null
+    return { uid, email }
+  } catch (err) {
+    console.warn('[auth] vérification Firebase impossible:', (err as Error).message)
+    return null
+  }
+}
+
+/**
  * Vérifie qu'un api_client existe avec cette clé API.
  * Retourne le client si OK, null sinon.
  */

@@ -2,6 +2,7 @@ package com.mitia.smsgateway.ui.views
 
 import android.os.Build
 import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -62,24 +63,15 @@ fun EcranDemarrage(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(
+            Image(
+                painter = painterResource(id = R.drawable.logo_app),
+                contentDescription = "SMSTSIKA",
                 modifier = Modifier
                     .size(96.dp)
                     .shadow(16.dp, RoundedCornerShape(26.dp), spotColor = NeonShadowColor)
-                    .clip(RoundedCornerShape(26.dp))
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(GradientIndigoStart, GradientIndigoEnd)
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.smstsika),
-                    contentDescription = "SMSTSIKA",
-                    modifier = Modifier.size(56.dp),
-                )
-            }
+                    .clip(RoundedCornerShape(26.dp)),
+                contentScale = ContentScale.Fit
+            )
             Spacer(Modifier.height(20.dp))
             Text(
                 text = "SMSTSIKA",
@@ -232,24 +224,15 @@ fun EcranIntegration(
 @Composable
 private fun IntegrationBienvenue() {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
+        Image(
+            painter = painterResource(id = R.drawable.logo_app),
+            contentDescription = "SMSTSIKA",
             modifier = Modifier
                 .size(96.dp)
                 .shadow(16.dp, RoundedCornerShape(26.dp), spotColor = NeonShadowColor)
-                .clip(RoundedCornerShape(26.dp))
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(GradientIndigoStart, GradientIndigoEnd)
-                    )
-                ),
-            contentAlignment = Alignment.Center,
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.smstsika),
-                contentDescription = "SMSTSIKA",
-                modifier = Modifier.size(56.dp),
-            )
-        }
+                .clip(RoundedCornerShape(26.dp)),
+            contentScale = ContentScale.Fit
+        )
         Spacer(Modifier.height(20.dp))
         Text(
             text = "Bienvenue sur SMSTSIKA",

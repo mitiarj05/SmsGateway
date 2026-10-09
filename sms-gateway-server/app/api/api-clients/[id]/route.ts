@@ -134,6 +134,12 @@ export async function PATCH(
       }
       maj.notifications_actives = corps.notifications_actives
     }
+    if ('suspendu' in corps) {
+      if (typeof corps.suspendu !== 'boolean') {
+        return NextResponse.json({ error: 'Le champ "suspendu" doit être un booléen' }, { status: 400 })
+      }
+      maj.suspendu = corps.suspendu
+    }
     if ('quota_mensuel' in corps) {
       const quota = corps.quota_mensuel
       if (quota !== null && (!Number.isInteger(quota) || (quota as number) < 1)) {
@@ -163,7 +169,6 @@ export async function PATCH(
       .select('id, nom, url_notification, evenements_notification, notifications_actives')
       .eq('id', id)
       .single()
-
     let test: Record<string, unknown> | null = null
     if (corps.tester === true) {
       const idCharge = await enfilerNotification(id, 'sms.recu', {

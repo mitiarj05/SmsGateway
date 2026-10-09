@@ -69,4 +69,8 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
     implementation("com.google.firebase:firebase-messaging")
     implementation(libs.firebase.auth)
+// Connexion Google native (Credential Manager + Google ID)
+implementation(libs.androidx.credentials)
+implementation(libs.androidx.credentials.play.services.auth)
+implementation(libs.googleid)
 }

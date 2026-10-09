@@ -7,7 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
-  Lock, Eye, EyeOff, Loader2, KeyRound,
+  Lock, Eye, EyeOff, Loader2,
   AlertTriangle, Mail, Check
 } from 'lucide-react'
 
@@ -19,14 +19,12 @@ function destinationSure(brute: string | null): string {
 export default function PageConnexion() {
   const routeur = useRouter()
 
-  const [onglet, setOnglet] = useState<'admin' | 'client'>('admin')
-  // Sign-in en 2 temps : e-mail + Continuer, puis mot de passe. Aucun choix d'espace affiché.
+  // Sign-in en 2 temps : e-mail + Continuer, puis mot de passe.
   const [etape, setEtape] = useState<'email' | 'mdp'>('email')
   const [utilisateur, setUtilisateur] = useState('')
   const [motDePasse, setMotDePasse] = useState('')
   const [afficherMotDePasse, setAfficherMotDePasse] = useState(false)
   const [seSouvenir, setSeSouvenir] = useState(true)
-  const [cleApi, setCleApi] = useState('')
   const [chargement, setChargement] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
   const [destination, setDestination] = useState('/dashboard')
@@ -50,7 +48,7 @@ export default function PageConnexion() {
     const parametres = new URLSearchParams(window.location.search)
     const echecGoogle = parametres.get('google')
     if (echecGoogle === 'compte-introuvable') {
-      setErreur('Aucun compte Google trouvé pour cet e-mail — vérifiez l\u2019adresse ou demandez un accès.')
+      setErreur('Aucun compte Google trouvé pour cet e-mail — vérifiez l\u2019adresse ou inscrivez-vous.')
     } else if (echecGoogle === 'application-introuvable') {
       setErreur('Compte retrouvé mais espace introuvable — contactez votre administrateur.')
     } else if (echecGoogle) {
@@ -62,14 +60,11 @@ export default function PageConnexion() {
       window.history.replaceState(null, '', urlPropre.pathname + urlPropre.search + urlPropre.hash)
     }
     const demande = parametres.get('onglet')
-    const initial = demande === 'client' ? 'client' : 'admin'
-    setOnglet(initial)
+    if (demande === 'client') {
+      setErreur('La connexion par clé API est remplacée par votre compte — connectez-vous avec votre e-mail.')
+    }
     const brut = parametres.get('next')
-    setDestination(
-      initial === 'client'
-        ? (brut && brut.startsWith('/espace') && !brut.startsWith('//') ? brut : '/espace')
-        : destinationSure(brut)
-    )
+    setDestination(destinationSure(brut))
   }, [])
 
   async function gererSoumission(e: React.FormEvent) {
@@ -77,7 +72,7 @@ export default function PageConnexion() {
     setErreur(null)
     setChargement(true)
     try {
-      if (onglet === 'admin') {
+      {
         if (etape === 'email') {
           const email = utilisateur.trim()
           if (!email) {
@@ -122,6 +117,32 @@ export default function PageConnexion() {
           return
         }
         if (!captchaExige()) return
+        // Compte client standard : Supabase Auth puis session espace.
+        try {
+          const supabase = creerSupabaseNavigateur()
+          const { error } = await supabase.auth.signInWithPassword({
+            email: utilisateur.trim(),
+            password: motDePasse,
+          })
+          if (!error) {
+            const session = await fetch('/api/auth/session-espace', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ captcha }),
+            })
+            const donneesSession = await session.json().catch(() => null)
+            if (session.ok) {
+              routeur.replace('/espace')
+              return
+            }
+            setErreur(donneesSession?.error ?? 'Aucun espace associé à ce compte')
+            captchaRef.current?.reinitialiser()
+            setChargement(false)
+            return
+          }
+        } catch {
+          // Repli : identifiants administrateur ci-dessous.
+        }
         const reponse = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -134,20 +155,6 @@ export default function PageConnexion() {
           return
         }
         routeur.replace(destination.startsWith('/espace') ? '/dashboard' : destination)
-      } else {
-        if (!captchaExige()) return
-        const reponse = await fetch('/api/espace/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cle_api: cleApi.trim(), captcha }),
-        })
-        const donnees = await reponse.json().catch(() => null)
-        if (!reponse.ok) {
-          setErreur(donnees?.error ?? 'Clé API invalide')
-          captchaRef.current?.reinitialiser()
-          return
-        }
-        routeur.replace(destination.startsWith('/espace') ? destination : '/espace')
       }
     } catch {
       setErreur('Impossible de joindre le serveur')
@@ -157,7 +164,7 @@ export default function PageConnexion() {
   }
 
   return (
-    <div className="min-h-screen bg-[#03102C] text-white font-sans antialiased flex flex-col justify-between p-6 sm:p-12 selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[#FAFAFC] text-slate-800 font-sans antialiased flex flex-col justify-between p-6 sm:p-12 selection:bg-blue-600 selection:text-white dark:bg-[#0B0F19] dark:text-zinc-100">
 
       {/* 2-Column Main Container (Exact Screenshot Layout) */}
       <div className="mx-auto max-w-6xl w-full my-auto grid grid-cols-1 gap-12 lg:grid-cols-2 items-center">
@@ -170,7 +177,7 @@ export default function PageConnexion() {
             Connectez-vous à votre console SMSTSIKA et pilotez vos envois :
           </h1>
 
-          <div className="space-y-3 text-sm text-blue-100 font-medium">
+          <div className="space-y-3 text-sm text-slate-500 font-medium dark:text-zinc-400">
             <p className="flex items-center gap-3">
               <Check className="h-4 w-4 text-blue-400 shrink-0" />
               <span>Console admin et espace client réunis</span>
@@ -186,8 +193,8 @@ export default function PageConnexion() {
           </div>
 
           <div className="space-y-3 pt-2">
-            <h2 className="text-xl font-bold text-white">Connexion en deux temps</h2>
-            <div className="space-y-2.5 text-sm text-blue-100 font-medium">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Connexion en deux temps</h2>
+            <div className="space-y-2.5 text-sm text-slate-500 font-medium dark:text-zinc-400">
               <p className="flex items-center gap-3">
                 <Check className="h-4 w-4 text-blue-400 shrink-0" />
                 <span>Saisissez votre adresse e-mail</span>
@@ -203,7 +210,7 @@ export default function PageConnexion() {
             </div>
           </div>
 
-          <p className="text-[11px] text-blue-300/60 pt-4">
+          <p className="text-[11px] text-slate-400 pt-4 dark:text-zinc-500">
             *Accès sous réserve de validation par l'administrateur.
           </p>
         </div>
@@ -215,12 +222,10 @@ export default function PageConnexion() {
             {/* Header Text */}
             <div className="text-center space-y-1">
               <h2 className="text-2xl font-bold text-slate-900">
-                {onglet === 'admin' ? 'Se connecter' : 'Espace Client'}
+                Se connecter
               </h2>
               <p className="text-xs text-slate-500">
-                {onglet === 'admin'
-                  ? 'Connectez-vous à votre console SMSTSIKA.'
-                  : 'Connectez-vous avec la clé remise par votre administrateur.'}
+                Connectez-vous à votre console SMSTSIKA.
               </p>
             </div>
 
@@ -234,9 +239,7 @@ export default function PageConnexion() {
 
             {/* Form Inputs (Floating Label Style Outline Boxes) */}
             <form onSubmit={gererSoumission} className="space-y-4">
-              {onglet === 'admin' ? (
-                <>
-                  {etape === 'email' ? (
+              {etape === 'email' ? (
                     <div className="space-y-1">
                       <label htmlFor="utilisateur" className="block text-xs font-semibold text-slate-700">
                         Adresse e-mail*
@@ -289,37 +292,22 @@ export default function PageConnexion() {
                         </div>
                       </div>
 
-                      <label className="flex cursor-pointer items-center gap-2 pt-1 text-[11px] text-slate-500">
-                        <input
-                          type="checkbox"
-                          checked={seSouvenir}
-                          onChange={(e) => setSeSouvenir(e.target.checked)}
-                          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <span>Rester connecté sur cet appareil</span>
-                      </label>
+                      <div className="flex items-center justify-between gap-2 pt-1 text-[11px]">
+                        <label className="flex cursor-pointer items-center gap-2 text-slate-500">
+                          <input
+                            type="checkbox"
+                            checked={seSouvenir}
+                            onChange={(e) => setSeSouvenir(e.target.checked)}
+                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span>Rester connecté sur cet appareil</span>
+                        </label>
+                        <Link href="/mot-de-passe-oublie" className="shrink-0 font-bold text-blue-600 hover:underline">
+                          Mot de passe oublié ?
+                        </Link>
+                      </div>
                     </>
                   )}
-                </>
-              ) : (
-                <div className="space-y-1">
-                  <label htmlFor="cleApi" className="block text-xs font-semibold text-slate-700">
-                    Clé d’API Client*
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="cleApi"
-                      type="password"
-                      required
-                      autoComplete="off"
-                      placeholder="cle_..."
-                      value={cleApi}
-                      onChange={(e) => setCleApi(e.target.value)}
-                      className="w-full rounded-xl border border-slate-300 bg-white p-3 text-xs font-mono text-slate-900 placeholder-slate-400 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-medium transition"
-                    />
-                  </div>
-                </div>
-              )}
 
               {/* Case anti-robot (visible seulement si clés configurées) */}
               <CaseAntiRobot ref={captchaRef} cleSite={cleSiteCaptcha} change={setCaptcha} />
@@ -328,14 +316,14 @@ export default function PageConnexion() {
               <button
                 type="submit"
                 disabled={chargement}
-                className="w-full rounded-xl bg-[#0066FF] py-3.5 text-xs font-bold text-white shadow-md hover:bg-[#0052CC] disabled:opacity-60 transition flex items-center justify-center gap-2"
+                className="w-full rounded-xl bg-gradient-to-r from-[#2563EB] to-[#3B82F6] py-3.5 text-xs font-bold text-white shadow-[0_20px_40px_-15px_rgba(124,58,237,0.5)] hover:-translate-y-0.5 disabled:opacity-60 transition flex items-center justify-center gap-2"
               >
                 {googleEnCours ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Redirection vers Google…</>
                 ) : chargement ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  onglet === 'admin' && etape === 'email' ? 'Continuer' : 'Se connecter'
+                  etape === 'email' ? 'Continuer' : 'Se connecter'
                 )}
               </button>
             </form>
@@ -343,20 +331,20 @@ export default function PageConnexion() {
             <div className="text-center text-xs text-slate-500">
               Pas encore de compte ?{' '}
               <Link href="/demande-acces" className="font-bold text-blue-600 hover:underline">
-                Demandez un accès API
+                S'inscrire
               </Link>
             </div>
 
           </div>
 
           {/* Under Card Footer */}
-          <div className="mt-6 text-center text-xs text-blue-200/70 space-y-2">
+          <div className="mt-6 text-center text-xs text-slate-400 space-y-2 dark:text-zinc-500">
             <div className="flex justify-center gap-3">
               <span>Conditions d'utilisation</span>
               <span>|</span>
               <span>Politique de confidentialité</span>
             </div>
-            <p className="text-[11px] text-blue-300/50">© 2026 SMSTSIKA · Tous droits réservés</p>
+            <p className="text-[11px] text-slate-400 dark:text-zinc-500">© 2026 SMSTSIKA · Tous droits réservés</p>
           </div>
         </div>
 

@@ -1,5 +1,5 @@
 import { createHmac } from 'crypto'
-import type { NextRequest } from 'next/server'
+import type { NextRequest, NextResponse } from 'next/server'
 
 /**
  * Session client (espace /espace) : cookie HttpOnly signé en HMAC-SHA256.
@@ -46,4 +46,19 @@ export function lireSessionClient(request: NextRequest): string | null {
   } catch {
     return null
   }
+}
+
+/**
+ * Pose le cookie de session client sur une réponse (mêmes attributs que
+ * /api/espace/auth/login). Utilisé après inscription / connexion par compte.
+ */
+export function poserCookieSessionClient(reponse: NextResponse, idApplication: string): void {
+  const valeur = creerValeurSessionClient(idApplication)
+  reponse.cookies.set(COOKIE_CLIENT, valeur, {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: DUREE_SESSION_CLIENT_SECONDES,
+    secure: process.env.NODE_ENV === 'production',
+  })
 }

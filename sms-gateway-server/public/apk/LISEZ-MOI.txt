@@ -1,0 +1,6 @@
+Distribuez ici l'application Android (passerelle SMS).
+1. Dans Android Studio : Build > Generate Signed App Bundle / APK > APK signé release.
+2. Copiez le fichier obtenu ici sous le nom : smstsika.apk
+   (chemin final : sms-gateway-server/public/apk/smstsika.apk)
+3. L'accueil (section "Installer", QR + bouton) pointe vers /apk/smstsika.apk.
+   Alternative : définissez NEXT_PUBLIC_URL_APK (ex. lien Play Store) dans .env.local.

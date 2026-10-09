@@ -216,7 +216,7 @@ fun EcranStats(modifier: Modifier = Modifier) {
                                 modifier = Modifier
                                     .size(7.dp)
                                     .clip(CircleShape)
-                                    .background(Color(0xFF5B5BD6))
+                                    .background(BleuAccentFonce)
                             )
                             Spacer(Modifier.width(6.dp))
                             Text(
@@ -247,7 +247,7 @@ fun EcranStats(modifier: Modifier = Modifier) {
                             val estLun = i == 4 // lun
 
                             val brushBarre = if (estLun) {
-                                Brush.verticalGradient(listOf(Color(0xFF8A8ADE), Color(0xFF5B5BD6)))
+                                Brush.verticalGradient(listOf(GradientIndigoStart, BleuAccentFonce))
                             } else {
                                 Brush.verticalGradient(listOf(Color(0xFFE5E7FB), Color(0xFFE5E7FB)))
                             }

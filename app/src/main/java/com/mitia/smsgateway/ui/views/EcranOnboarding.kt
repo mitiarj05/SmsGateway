@@ -1,6 +1,7 @@
 package com.mitia.smsgateway.ui.views
 
 import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -113,7 +114,7 @@ fun EcranOnboarding(
                             .clip(CircleShape)
                             .background(
                                 if (estActif)
-                                    Brush.horizontalGradient(listOf(GradientIndigoStart, Color(0xFF22D3EE)))
+                                    Brush.horizontalGradient(listOf(GradientIndigoStart, Color(0xFF38BDF8)))
                                 else
                                     Brush.horizontalGradient(listOf(BordureInputClair, BordureInputClair))
                             )
@@ -177,25 +178,16 @@ private fun SlideOnboarding1() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Centre : Logo icône néon 150px avec grande ombre indigo
-        Box(
+        // Centre : logo officiel SMSTSIKA 150px avec grande ombre portée
+        Image(
+            painter = painterResource(id = R.drawable.logo_app),
+            contentDescription = "Logo SMSTSIKA",
             modifier = Modifier
                 .size(150.dp)
                 .shadow(32.dp, RoundedCornerShape(38.dp), spotColor = NeonShadowColor)
-                .clip(RoundedCornerShape(38.dp))
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(GradientIndigoStart, GradientIndigoEnd)
-                    )
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.smstsika),
-                contentDescription = "Logo SMSTSIKA",
-                modifier = Modifier.size(90.dp)
-            )
-        }
+                .clip(RoundedCornerShape(38.dp)),
+            contentScale = ContentScale.Fit
+        )
 
         Spacer(Modifier.height(36.dp))
 
@@ -207,7 +199,7 @@ private fun SlideOnboarding1() {
                 }
                 withStyle(
                     SpanStyle(
-                        brush = Brush.linearGradient(listOf(GradientIndigoStart, Color(0xFF22D3EE))),
+                        brush = Brush.linearGradient(listOf(GradientIndigoStart, Color(0xFF38BDF8))),
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 23.sp
                     )
@@ -251,7 +243,7 @@ private fun SlideOnboarding2() {
                 }
                 withStyle(
                     SpanStyle(
-                        brush = Brush.linearGradient(listOf(GradientIndigoStart, Color(0xFF22D3EE))),
+                        brush = Brush.linearGradient(listOf(GradientIndigoStart, Color(0xFF38BDF8))),
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 23.sp
                     )
@@ -315,25 +307,16 @@ private fun SlideOnboarding3() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Logo icône néon 150px centré
-        Box(
+        // Logo officiel SMSTSIKA 150px centré
+        Image(
+            painter = painterResource(id = R.drawable.logo_app),
+            contentDescription = "Logo SMSTSIKA",
             modifier = Modifier
                 .size(150.dp)
                 .shadow(32.dp, RoundedCornerShape(38.dp), spotColor = NeonShadowColor)
-                .clip(RoundedCornerShape(38.dp))
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(GradientIndigoStart, GradientIndigoEnd)
-                    )
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.smstsika),
-                contentDescription = "Logo SMSTSIKA",
-                modifier = Modifier.size(90.dp)
-            )
-        }
+                .clip(RoundedCornerShape(38.dp)),
+            contentScale = ContentScale.Fit
+        )
 
         Spacer(Modifier.height(28.dp))
 
@@ -345,7 +328,7 @@ private fun SlideOnboarding3() {
                 }
                 withStyle(
                     SpanStyle(
-                        brush = Brush.linearGradient(listOf(GradientIndigoStart, Color(0xFF22D3EE))),
+                        brush = Brush.linearGradient(listOf(GradientIndigoStart, Color(0xFF38BDF8))),
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 23.sp
                     )

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
-import { lireSessionClient } from '@/lib/session-client'
+import { resoudreApplicationEspace } from '@/lib/espace-auth'
 import { obtenirDisponibiliteAppareil } from '@/lib/selection-appareil'
 import { envoyerPushNouvelleTache } from '@/lib/envoi-push'
 import { expirerEnAttentePerimees } from '@/lib/expiration-attente'
@@ -16,7 +16,7 @@ import { STATUT_TACHE } from '@/lib/statuts'
  */
 export async function POST(request: NextRequest) {
   try {
-    const idApplication = lireSessionClient(request)
+    const idApplication = await resoudreApplicationEspace(request)
     if (!idApplication) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }

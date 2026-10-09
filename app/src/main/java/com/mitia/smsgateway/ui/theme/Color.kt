@@ -9,14 +9,14 @@ val BordureCarteClair = Color(0xFFF1F5F9)
 val BordureInputClair = Color(0xFFE2E8F0)
 val FondInputClair = Color(0xFFF8FAFC)
 
-// Dégradés & Accents Principal
-val GradientIndigoStart = Color(0xFF6A6AE0)
-val GradientIndigoEnd = Color(0xFF4C4CC9)
-val NeonShadowColor = Color(0xFF5B5BD6)
+// Dégradés & Accents Principal (cohérents serveur web : #3B82F6 → #1D4ED8)
+val GradientIndigoStart = Color(0xFF3B82F6)
+val GradientIndigoEnd = Color(0xFF1D4ED8)
+val NeonShadowColor = Color(0xFF7C3AED)
 
-// Carte Sombre (en-tête / dashboard)
-val FondDarkCardStart = Color(0xFF332C75)
-val FondDarkCardEnd = Color(0xFF1F1A52)
+// Carte Sombre (cohérent serveur web : indigo-950 → #110C2E)
+val FondDarkCardStart = Color(0xFF1E1B4B)
+val FondDarkCardEnd = Color(0xFF110C2E)
 
 // Typographie Light Theme
 val TexteTitreClair = Color(0xFF0F172A)
@@ -54,7 +54,7 @@ val VertAccent = VertPastelTexte
 val VertAccentFonce = Color(0xFF059669)
 val BleuAccent = GradientIndigoEnd
 val BleuBoutonPrincipal = GradientIndigoEnd
-val BleuBoutonSecondaire = Color(0xFF383575)
+val BleuBoutonSecondaire = Color(0xFF1D4ED8)
 val BleuAccentFonce = Color(0xFF2563EB)
 val AmbreAccent = AmbrePastelTexte
 val RougeAccent = RougePastelTexte

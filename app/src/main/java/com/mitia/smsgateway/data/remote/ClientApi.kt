@@ -60,6 +60,41 @@ object ClientApi {
     // -------------------- Méthodes --------------------
 
     /**
+     * Lie le compte Google natif (ID token Firebase) à l'espace client.
+     * Le serveur vérifie le jeton, retrouve ou provisionne l'application
+     * et la rattache à l'UID Firebase. Retourne null si OK, sinon le message
+     * d'erreur du serveur (affiché tel quel à l'utilisateur).
+     */
+    suspend fun lierCompteGoogle(jetonId: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val corps = gson.toJson(mapOf("id_token" to jetonId))
+            val requete = Request.Builder()
+                .url("$urlBase/api/auth/google/android")
+                .post(corps.toRequestBody(TYPE_JSON))
+                .build()
+            clientHttp.newCall(requete).execute().use { reponse ->
+                val json = reponse.body?.string() ?: ""
+                @Suppress("UNCHECKED_CAST")
+                val carte = try {
+                    gson.fromJson(json, Map::class.java) as? Map<String, Any?>
+                } catch (_: Exception) {
+                    null
+                }
+                if (!reponse.isSuccessful) {
+                    return@withContext (carte?.get("error") as? String)
+                        ?: "Erreur serveur (${reponse.code}) — réessayez."
+                }
+                if (carte?.get("ok") == true) return@withContext null
+                return@withContext (carte?.get("error") as? String)
+                    ?: "Réponse serveur inattendue — réessayez."
+            }
+        } catch (e: Exception) {
+            Log.e(ETIQUETTE, "lierCompteGoogle échoué ($urlBase)", e)
+            return@withContext "Serveur injoignable — vérifiez l'URL et la connexion."
+        }
+    }
+
+    /**
      * Teste la joignabilité du serveur (GET racine, attendue 200).
      * Utilisé par l'écran d'accueil, avant d'enregistrer l'adresse.
      */

@@ -14,6 +14,7 @@ interface ClientB2B {
   quota_mensuel: number | null
   utilise_mois: number
   depassement: boolean
+  suspendu: boolean
 }
 
 const COULEURS_AVATAR = [
@@ -78,6 +79,7 @@ export default function PageClientsAdmin() {
             quota_mensuel: c.quota_mensuel ?? null,
             utilise_mois: ligne?.sms_envoyes ?? 0,
             depassement: ligne?.depassement ?? false,
+            suspendu: c.suspendu === true,
           }
         })
       )
@@ -132,6 +134,22 @@ export default function PageClientsAdmin() {
       const res = await fetch(`/api/api-clients/${id}`, { method: 'DELETE' })
       if (res.ok) await charger()
       else setErreur('Révocation impossible')
+    } catch {
+      setErreur('Erreur réseau')
+    }
+  }
+
+  async function basculerSuspension(c: ClientB2B) {
+    const action = c.suspendu ? 'réactiver' : 'suspendre'
+    if (!window.confirm(`${c.suspendu ? 'Réactiver' : 'Suspendre'} l'accès de « ${c.nom} » ?`)) return
+    try {
+      const res = await fetch(`/api/api-clients/${c.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ suspendu: !c.suspendu }),
+      })
+      if (res.ok) await charger()
+      else setErreur(`${action} impossible`)
     } catch {
       setErreur('Erreur réseau')
     }
@@ -257,10 +275,14 @@ export default function PageClientsAdmin() {
                     </p>
                   </div>
                   <span
-                    className={`rounded-full px-3 py-1 text-[10.5px] font-bold ${c.depassement ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-300' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'}`}
+                    className={`rounded-full px-3 py-1 text-[10.5px] font-bold ${c.suspendu ? 'bg-slate-200 text-slate-600 dark:bg-zinc-700 dark:text-zinc-300' : c.depassement ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-300' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'}`}
                   >
-                    {c.depassement ? 'Quota dépassé' : 'Actif'}
+                    {c.suspendu ? 'Suspendu' : c.depassement ? 'Quota dépassé' : 'Actif'}
                   </span>
+                  <button onClick={() => basculerSuspension(c)} title={c.suspendu ? "Réactiver l'accès" : "Suspendre l'accès"}
+                    className="rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-400 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-500/10">
+                    {c.suspendu ? 'Réactiver' : 'Suspendre'}
+                  </button>
                   <button onClick={() => revoquerClient(c.id, c.nom)} title="Révoquer l'accès"
                     className="rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10">
                     Révoquer

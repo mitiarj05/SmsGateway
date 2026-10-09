@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
 
 /**
  * Protection du dashboard : session cookie (`sms_admin`, posée par /login)
@@ -77,6 +78,39 @@ function estApiPublique(pathname: string): boolean {
 }
 
 /**
+ * Phase 2 — Session Supabase (comptes standard) pour l'espace client.
+ * Retourne true si un utilisateur est connecté (les routes vérifient
+ * ensuite son application via resoudreApplicationEspace).
+ * Absent en dev sans clés : on retombe sur le cookie historique.
+ */
+async function sessionSupabaseValide(
+  request: NextRequest,
+  reponse: NextResponse
+): Promise<boolean> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const cleAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !cleAnon) return false
+  try {
+    const supabase = createServerClient(url, cleAnon, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(aEcrire) {
+          aEcrire.forEach(({ name, value, options }) => reponse.cookies.set(name, value, options))
+        },
+      },
+    })
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    return !!user
+  } catch {
+    return false
+  }
+}
+
+/**
  * Session client (cookie sms_client, format v1.<idApplication>.<exp>.<sig>).
  * Dupliquée ici en Web Crypto car le proxy tourne hors runtime Node
  * (même raison que sessionValide). Retourne l'id_application ou null.
@@ -115,18 +149,23 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
   if (pathname === '/espace' || pathname.startsWith('/espace/')) {
+    const reponseEspace = NextResponse.next()
     const appId = await sessionClientValide(request, motDePasse)
-    if (!appId) {
+    if (!appId && !(await sessionSupabaseValide(request, reponseEspace))) {
       const loginUrl = new URL('/espace/login', request.url)
       loginUrl.searchParams.set('next', pathname)
       return NextResponse.redirect(loginUrl)
     }
-    return NextResponse.next()
+    return reponseEspace
   }
   if (pathname.startsWith('/api/espace/')) {
     const appId = await sessionClientValide(request, motDePasse)
     if (!appId) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+      const reponseApi = NextResponse.next()
+      if (!(await sessionSupabaseValide(request, reponseApi))) {
+        return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+      }
+      return reponseApi
     }
     return NextResponse.next()
   }

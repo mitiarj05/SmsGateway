@@ -152,15 +152,15 @@ fun EcranTaches(
 
             Spacer(Modifier.height(16.dp))
 
-            // Carte sombre dégradé navy (dégradé #332c75 -> #1f1a52, radius 20px)
+            // Carte sombre dégradé navy (cohérent serveur web : indigo-950 → #110C2E)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(8.dp, RoundedCornerShape(20.dp), spotColor = Color(0xFF1F1A52).copy(alpha = 0.3f))
+                    .shadow(8.dp, RoundedCornerShape(20.dp), spotColor = FondDarkCardEnd.copy(alpha = 0.3f))
                     .clip(RoundedCornerShape(20.dp))
                     .background(
                         Brush.linearGradient(
-                            colors = listOf(Color(0xFF332C75), Color(0xFF1F1A52)),
+                            colors = listOf(FondDarkCardStart, FondDarkCardEnd),
                             start = androidx.compose.ui.geometry.Offset(0f, 0f),
                             end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
                         )
