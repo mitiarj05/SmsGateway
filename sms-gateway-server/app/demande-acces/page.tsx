@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
-  Send, Loader2, CheckCircle2, AlertTriangle, ArrowRight,
+  Send, Loader2, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft,
   Check, User, Phone, Eye, EyeOff, Lock
 } from 'lucide-react'
 import { creerSupabaseNavigateur } from '../../lib/supabase-navigateur'
@@ -102,7 +102,9 @@ export default function PageDemandeAcces() {
 
         {/* Left Column (Value Proposition & Features Checklist) */}
         <div className="space-y-8 pr-0 lg:pr-6">
-          <Image src="/icons/SMSTSIKA.png" alt="SMSTSIKA" width={64} height={64} className="h-16 w-16" />
+          <Link href="/" title="Retour à l'accueil" className="inline-block transition-opacity hover:opacity-80">
+            <Image src="/icons/SMSTSIKA.png" alt="SMSTSIKA — retour à l'accueil" width={64} height={64} className="h-16 w-16" />
+          </Link>
 
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl leading-tight">
             Créez votre compte SMSTSIKA :
@@ -148,6 +150,12 @@ export default function PageDemandeAcces() {
 
         {/* Right Column (Exact White Card Matching Zoomed Screenshot) */}
         <div className="flex flex-col items-center">
+          <Link
+            href="/login"
+            className="mb-6 inline-flex items-center gap-1.5 self-start text-xs font-bold text-slate-400 transition hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-200"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Retour à la connexion
+          </Link>
           <div className="w-full max-w-md rounded-3xl bg-white p-8 sm:p-10 shadow-2xl text-slate-900 space-y-5">
 
             {/* Header Text */}

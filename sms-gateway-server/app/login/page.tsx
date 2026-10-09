@@ -7,7 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
-  Lock, Eye, EyeOff, Loader2,
+  Lock, Eye, EyeOff, Loader2, ArrowLeft,
   AlertTriangle, Mail, Check
 } from 'lucide-react'
 
@@ -192,7 +192,9 @@ export default function PageConnexion() {
 
         {/* Left Column (Value Proposition & Features Checklist - Exact Screenshot) */}
         <div className="space-y-8 pr-0 lg:pr-6">
-          <Image src="/icons/SMSTSIKA.png" alt="SMSTSIKA" width={64} height={64} className="h-16 w-16" />
+          <Link href="/" title="Retour à l'accueil" className="inline-block transition-opacity hover:opacity-80">
+            <Image src="/icons/SMSTSIKA.png" alt="SMSTSIKA — retour à l'accueil" width={64} height={64} className="h-16 w-16" />
+          </Link>
 
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl leading-tight">
             Connectez-vous à votre console SMSTSIKA et pilotez vos envois :
@@ -238,6 +240,12 @@ export default function PageConnexion() {
 
         {/* Right Column (Pure White Card Container - Exact Screenshot) */}
         <div className="flex flex-col items-center">
+          <Link
+            href="/"
+            className="mb-6 inline-flex items-center gap-1.5 self-start text-xs font-bold text-slate-400 transition hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-200"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Retour à l'accueil
+          </Link>
           <div className="w-full max-w-md rounded-3xl bg-white p-8 sm:p-10 shadow-2xl text-slate-900 space-y-6">
 
             {/* Header Text */}
