@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { CaseAntiRobot, type PoigneeAntiRobot } from '../../composants/CaseAntiRobot'
 import { creerSupabaseNavigateur } from '../../lib/supabase-navigateur'
+import { useReveal } from '../../lib/use-reveal'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -17,6 +18,7 @@ function destinationSure(brute: string | null): string {
 }
 
 export default function PageConnexion() {
+  useReveal()
   const routeur = useRouter()
 
   // Sign-in en 2 temps : e-mail + Continuer, puis mot de passe.
@@ -246,7 +248,7 @@ export default function PageConnexion() {
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Retour à l'accueil
           </Link>
-          <div className="w-full max-w-md rounded-3xl bg-white p-8 sm:p-10 shadow-2xl text-slate-900 space-y-6">
+          <div data-reveal="zoom" className="w-full max-w-md rounded-3xl bg-white p-8 sm:p-10 shadow-2xl text-slate-900 space-y-6">
 
             {/* Header Text */}
             <div className="text-center space-y-1">

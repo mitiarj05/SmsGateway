@@ -5,9 +5,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ChevronDown, ArrowUpRight, ArrowLeft, Moon, Sun } from 'lucide-react'
 import { useTheme } from '../../lib/use-theme'
+import { useReveal } from '../../lib/use-reveal'
+import BarreProgressionDefilante from '../../composants/BarreProgressionDefilante'
 
 export default function PageFAQ() {
   const { modeSombre, monte, basculerTheme } = useTheme()
+  useReveal()
   const [recherche, setRecherche] = useState('')
 
   const faqs = [
@@ -44,6 +47,7 @@ export default function PageFAQ() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFC] text-slate-800 font-sans antialiased selection:bg-blue-600 selection:text-white dark:bg-[#0B0F19] dark:text-zinc-100">
+      <BarreProgressionDefilante />
 
       {/* Header Bar */}
       <header className="sticky top-0 z-50 flex h-[72px] w-full items-center justify-between px-6 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl lg:px-12 dark:border-white/10 dark:bg-[#0B0F19]/85">
@@ -83,7 +87,7 @@ export default function PageFAQ() {
       </header>
 
       {/* Hero */}
-      <section className="py-16 px-8 max-w-7xl mx-auto text-center space-y-6">
+      <section data-reveal className="py-16 px-8 max-w-7xl mx-auto text-center space-y-6">
         <span className="inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-white/70 px-4 py-1.5 text-xs font-bold text-[#1D4ED8] shadow-sm backdrop-blur-md dark:border-blue-500/25 dark:bg-blue-500/10 dark:text-blue-300">
           ❓ Foire Aux Questions
         </span>
@@ -107,7 +111,7 @@ export default function PageFAQ() {
       </section>
 
       {/* Questions Accordions */}
-      <section className="py-12 px-8 max-w-3xl mx-auto border-t border-slate-200/60 dark:border-white/10 space-y-4">
+      <section data-reveal className="py-12 px-8 max-w-3xl mx-auto border-t border-slate-200/60 dark:border-white/10 space-y-4">
         {faqsFiltrees.map((f, i) => (
           <details key={i} className="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:border-[#2563EB]/40 hover:shadow-[0_20px_40px_-15px_rgba(37,99,235,0.25)] dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-[#60A5FA]/40">
             <summary className="flex cursor-pointer items-center justify-between font-bold text-slate-900 text-sm sm:text-base dark:text-white">
@@ -124,7 +128,7 @@ export default function PageFAQ() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-8 max-w-4xl mx-auto text-center space-y-6">
+      <section data-reveal className="py-20 px-8 max-w-4xl mx-auto text-center space-y-6">
         <h2 className="text-4xl font-extrabold text-slate-900 sm:text-5xl dark:text-white">
           Vous n'avez pas trouvé votre réponse ?
         </h2>

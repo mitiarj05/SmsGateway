@@ -9,6 +9,7 @@ import {
   QrCode, Download, ScanLine
 } from 'lucide-react'
 import { Tilt } from '../composants/Effets'
+import BarreProgressionDefilante from '../composants/BarreProgressionDefilante'
 import QrCodeSvg from '../composants/QrCodeSvg'
 import { useReveal } from '../lib/use-reveal'
 import { useTheme } from '../lib/use-theme'
@@ -75,6 +76,7 @@ export default function PageAccueilWeb() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFC] text-slate-800 font-sans antialiased selection:bg-blue-600 selection:text-white dark:bg-[#0B0F19] dark:text-zinc-100">
+      <BarreProgressionDefilante />
 
       {/* ================= 1. NAVBAR ================= */}
       <div className="sticky top-0 z-50 w-full">
@@ -263,7 +265,7 @@ export default function PageAccueilWeb() {
               },
             ].map((b, i) => (
               <div key={b.titre} data-reveal className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12">
-                <div data-reveal={i % 2 === 1 ? 'right' : 'left'} className={`relative overflow-hidden rounded-[2rem] shadow-[0_40px_90px_-24px_rgba(37,99,235,0.35)] ${i % 2 === 1 ? 'lg:order-2' : ''}`}>
+                <div data-reveal={i % 2 === 1 ? 'right' : 'left'} className={`bordure-faisceau relative overflow-hidden rounded-[2rem] shadow-[0_40px_90px_-24px_rgba(37,99,235,0.35)] ${i % 2 === 1 ? 'lg:order-2' : ''}`}>
                   <Image
                     src={b.image}
                     alt={b.alt}
@@ -272,7 +274,7 @@ export default function PageAccueilWeb() {
                     className="h-72 w-full object-cover sm:h-80 lg:h-96"
                   />
                 </div>
-                <div className={`space-y-4 ${i % 2 === 1 ? 'lg:order-1' : ''}`}>
+                <div data-reveal className={`space-y-4 ${i % 2 === 1 ? 'lg:order-1' : ''}`}>
                   <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">{b.braille}</span>
                   <h3 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
                     {b.titre}
@@ -306,7 +308,7 @@ export default function PageAccueilWeb() {
 
           <div className="max-w-md mx-auto">
             {/* QR + téléchargement uniquement */}
-            <div data-reveal="zoom" className="rounded-[1.5rem] border border-slate-100 bg-slate-50 p-8 space-y-6 text-center shadow-card dark:border-white/10 dark:bg-white/[0.04]">
+            <div data-reveal="zoom" className="bordure-faisceau rounded-[1.5rem] border border-slate-100 bg-slate-50 p-8 space-y-6 text-center shadow-card dark:border-white/10 dark:bg-white/[0.04]">
               <QrCodeSvg valeur={urlQrApk} taille={180} etiquette="QR de téléchargement de l'application Android" />
               <div className="space-y-3">
                 <a

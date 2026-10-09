@@ -370,6 +370,41 @@ a.shadow-card:hover, button.shadow-card:hover {
   animation: flotteDoux 7s ease-in-out 1s infinite;
 }
 
+/* ---------- O. Bordure faisceau : halo rotatif autour des images ---------- */
+@property --angle-faisceau {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes tourne-faisceau {
+  to { --angle-faisceau: 360deg; }
+}
+.bordure-faisceau {
+  position: relative;
+}
+.bordure-faisceau::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2.5px;
+  background: conic-gradient(
+    from var(--angle-faisceau),
+    transparent 0%,
+    rgba(56, 189, 248, 0) 70%,
+    #38BDF8 85%,
+    #818CF8 92%,
+    transparent 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: tourne-faisceau 4.5s linear infinite;
+  pointer-events: none;
+  z-index: 5;
+}
+
 /* ---------- I. Respect de l'accessibilité ---------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -9,9 +9,11 @@ import {
   Check, User, Phone, Eye, EyeOff, Lock
 } from 'lucide-react'
 import { creerSupabaseNavigateur } from '../../lib/supabase-navigateur'
+import { useReveal } from '../../lib/use-reveal'
 import { CaseAntiRobot, type PoigneeAntiRobot } from '../../composants/CaseAntiRobot'
 
 export default function PageDemandeAcces() {
+  useReveal()
   const routeur = useRouter()
   const [prenom, setPrenom] = useState('')
   const [nom, setNom] = useState('')
@@ -156,7 +158,7 @@ export default function PageDemandeAcces() {
           >
             <ArrowLeft className="h-3.5 w-3.5" /> Retour à la connexion
           </Link>
-          <div className="w-full max-w-md rounded-3xl bg-white p-8 sm:p-10 shadow-2xl text-slate-900 space-y-5">
+          <div data-reveal="zoom" className="w-full max-w-md rounded-3xl bg-white p-8 sm:p-10 shadow-2xl text-slate-900 space-y-5">
 
             {/* Header Text */}
             <div className="text-center space-y-1">

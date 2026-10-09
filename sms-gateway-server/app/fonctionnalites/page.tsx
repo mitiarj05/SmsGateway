@@ -7,11 +7,15 @@ import {
   BarChart3, Zap, Shield, ArrowUpRight, ArrowLeft, RefreshCw, Cpu, Moon, Sun
 } from 'lucide-react'
 import { useTheme } from '../../lib/use-theme'
+import { useReveal } from '../../lib/use-reveal'
+import BarreProgressionDefilante from '../../composants/BarreProgressionDefilante'
 
 export default function PageFonctionnalites() {
   const { modeSombre, monte, basculerTheme } = useTheme()
+  useReveal()
   return (
     <div className="min-h-screen bg-[#FAFAFC] text-slate-800 font-sans antialiased selection:bg-blue-600 selection:text-white dark:bg-[#0B0F19] dark:text-zinc-100">
+      <BarreProgressionDefilante />
 
       {/* Header Bar */}
       <header className="sticky top-0 z-50 flex h-[72px] w-full items-center justify-between px-6 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl lg:px-12 dark:border-white/10 dark:bg-[#0B0F19]/85">
@@ -51,7 +55,7 @@ export default function PageFonctionnalites() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-16 px-8 max-w-7xl mx-auto text-center space-y-6">
+      <section data-reveal className="py-16 px-8 max-w-7xl mx-auto text-center space-y-6">
         <span className="inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-white/70 px-4 py-1.5 text-xs font-bold text-[#1D4ED8] shadow-sm backdrop-blur-md dark:border-blue-500/25 dark:bg-blue-500/10 dark:text-blue-300">
           ⚡ Puissance & Contrôle
         </span>
@@ -64,7 +68,7 @@ export default function PageFonctionnalites() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-12 px-8 max-w-7xl mx-auto border-t border-slate-200/60 dark:border-white/10">
+      <section data-reveal className="py-12 px-8 max-w-7xl mx-auto border-t border-slate-200/60 dark:border-white/10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
             {
@@ -125,7 +129,7 @@ export default function PageFonctionnalites() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-8 max-w-4xl mx-auto text-center space-y-6">
+      <section data-reveal className="py-20 px-8 max-w-4xl mx-auto text-center space-y-6">
         <h2 className="text-4xl font-extrabold text-slate-900 sm:text-5xl dark:text-white">
           Prêt à tester par vous-même ?
         </h2>
