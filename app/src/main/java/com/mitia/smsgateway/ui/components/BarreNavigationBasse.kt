@@ -91,7 +91,7 @@ private fun ElementNavigation(
 ) {
     // Actif en accent (lisible clair + sombre), inactif atténué.
     val teinte = if (selectionne) BleuAccent else MaterialTheme.colorScheme.onSurfaceVariant
-    val cyanGradient = Brush.horizontalGradient(listOf(NeonCyan, NeonIndigoStart))
+    val indicateurGradient = Brush.horizontalGradient(listOf(BleuAccentFonce, GradientIndigoStart))
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -110,7 +110,7 @@ private fun ElementNavigation(
                     .width(28.dp)
                     .height(3.dp)
                     .clip(CircleShape)
-                    .background(cyanGradient)
+                    .background(indicateurGradient)
             )
             Spacer(Modifier.height(4.dp))
         } else {

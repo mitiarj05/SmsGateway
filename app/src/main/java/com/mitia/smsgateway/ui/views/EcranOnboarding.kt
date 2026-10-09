@@ -191,6 +191,20 @@ private fun SlideOnboarding1() {
 
         Spacer(Modifier.height(36.dp))
 
+        // Visuel humain : vrai SMS reçu sur un téléphone
+        Image(
+            painter = painterResource(id = R.drawable.photo_sms_recu),
+            contentDescription = "Exemple de SMS reçu par un client",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(170.dp)
+                .shadow(16.dp, RoundedCornerShape(20.dp), spotColor = NeonShadowColor)
+                .clip(RoundedCornerShape(20.dp)),
+            contentScale = ContentScale.Crop
+        )
+
+        Spacer(Modifier.height(24.dp))
+
         // Titre centré 23px font 800 #0F172A avec mot « poche » en dégradé
         Text(
             text = buildAnnotatedString {
