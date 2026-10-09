@@ -82,21 +82,42 @@ export const CaseAntiRobot = forwardRef<PoigneeAntiRobot, Proprietes>(
     useEffect(() => {
       if (!cleSite) return
       let monte = true
-      chargerScript().then(() => {
-        if (!monte || !window.grecaptcha || !conteneur.current || identifiant.current !== null) return
-        try {
-          identifiant.current = window.grecaptcha.render(conteneur.current, {
-            sitekey: cleSite,
-            callback: (jeton: string) => changeRef.current(jeton),
-            'expired-callback': () => changeRef.current(null),
-            'error-callback': () => changeRef.current(null),
-          })
-        } catch {
-          /* reCAPTCHA injoignable : le serveur répondra avec un message clair */
+      let tentatives = 0
+      const minuteries: ReturnType<typeof setTimeout>[] = []
+
+      // Tentatives répétées : le script peut être lent ou bloqué au 1er
+      // chargement (adblocker, réseau). Une seule tentative silencieuse = case
+      // invisible jusqu'à la prochaine navigation.
+      const essayerRendu = (): void => {
+        if (!monte) return
+        if (window.grecaptcha && conteneur.current && identifiant.current === null) {
+          try {
+            identifiant.current = window.grecaptcha.render(conteneur.current, {
+              sitekey: cleSite,
+              callback: (jeton: string) => changeRef.current(jeton),
+              'expired-callback': () => changeRef.current(null),
+              'error-callback': () => changeRef.current(null),
+            })
+            return // rendu réussi
+          } catch {
+            /* re-essaie ci-dessous */
+          }
         }
-      })
+        if (++tentatives < 50 && monte) {
+          minuteries.push(setTimeout(essayerRendu, 200))
+        }
+      }
+
+      chargerScript().then(essayerRendu)
+      // Filet de sécurité : revérifie 3 s après le montage.
+      minuteries.push(
+        setTimeout(() => {
+          if (monte && identifiant.current === null) essayerRendu()
+        }, 3000)
+      )
       return () => {
         monte = false
+        minuteries.forEach(clearTimeout)
       }
     }, [cleSite])
 

@@ -255,28 +255,28 @@ export default function PageAccueilWeb() {
         </div>
       </section>
 
-      {/* ================= 4b. INSTALLER L'APP ANDROID ================= */}
+      {/* ================= 4b. TÉLÉCHARGER L'APP ANDROID ================= */}
       <section id="installer" className="py-16 bg-white border-t border-slate-200/60 dark:bg-[#0B0F19] dark:border-white/10">
-        <div className="w-full px-6 space-y-10 lg:px-12">
+        <div className="w-full px-6 space-y-8 lg:px-12">
           <div className="text-center space-y-3">
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">INSTALLATION EN 1 MINUTE</span>
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">INSTALLATION RAPIDE</span>
             <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
-              Installez l'app, flashez, envoyez.
+              Téléchargez l'application Android
             </h2>
             <p className="text-base text-slate-500 max-w-xl mx-auto dark:text-zinc-400">
-              Scannez le QR avec votre Android pour télécharger l'application relais, puis associez-la depuis la console.
+              Scannez le QR code avec votre téléphone pour télécharger l'application relais.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-            {/* QR + téléchargement */}
-            <div className="rounded-[1.5rem] border border-slate-100 bg-slate-50 p-8 space-y-5 text-center dark:border-white/10 dark:bg-white/[0.04]">
+          <div className="max-w-md mx-auto">
+            {/* QR + téléchargement uniquement */}
+            <div className="rounded-[1.5rem] border border-slate-100 bg-slate-50 p-8 space-y-6 text-center shadow-card dark:border-white/10 dark:bg-white/[0.04]">
               <QrCodeSvg valeur={urlQrApk} taille={180} etiquette="QR de téléchargement de l'application Android" />
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <a
                   href={URL_APK}
                   download
-                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] px-8 py-3.5 text-sm font-bold text-white shadow-[0_20px_40px_-15px_rgba(124,58,237,0.5)] transition-all hover:-translate-y-0.5"
+                  className="inline-flex items-center justify-center gap-2 w-full rounded-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] px-8 py-3.5 text-sm font-bold text-white shadow-[0_20px_40px_-15px_rgba(124,58,237,0.5)] transition-all hover:-translate-y-0.5"
                 >
                   <Download className="h-4 w-4" /> Télécharger l'APK
                 </a>
@@ -284,24 +284,6 @@ export default function PageAccueilWeb() {
                   Android 8.0+ · ~23 Mo · signature SMSTSIKA
                 </p>
               </div>
-            </div>
-
-            {/* Étapes */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                { icone: QrCode, titre: '1. Scannez', desc: 'Flashez le QR avec l\u2019appareil photo de votre Android.' },
-                { icone: Download, titre: '2. Installez', desc: 'Ouvrez l\u2019APK et autorisez l\u2019installation une fois.' },
-                { icone: ScanLine, titre: '3. Associez', desc: 'Flashez le QR de la console pour lier le téléphone.' },
-                { icone: Smartphone, titre: '4. Envoyez', desc: 'Votre relais est actif : envoyez vos premiers SMS.' },
-              ].map((s) => (
-                <div key={s.titre} className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 space-y-3 dark:border-white/10 dark:bg-white/[0.04]">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow-md shadow-blue-500/30">
-                    <s.icone className="h-5 w-5" />
-                  </span>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">{s.titre}</p>
-                  <p className="text-xs leading-relaxed text-slate-500 dark:text-zinc-400">{s.desc}</p>
-                </div>
-              ))}
             </div>
           </div>
         </div>
