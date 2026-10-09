@@ -41,6 +41,7 @@ body {
 /* Contrôles natifs (scrollbars, inputs) accordés au mode */
 html {
   color-scheme: light;
+  scroll-behavior: smooth;
 }
 html.dark {
   color-scheme: dark;

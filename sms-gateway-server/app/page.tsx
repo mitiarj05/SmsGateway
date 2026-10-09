@@ -211,44 +211,80 @@ export default function PageAccueilWeb() {
         </div>
       </section>
 
+      {/* ================= 3b. MARQUEE CAPACITÉS ================= */}
+      <div className="overflow-hidden border-y border-slate-200/60 bg-white/60 py-4 backdrop-blur dark:border-white/10 dark:bg-white/[0.02]" aria-hidden>
+        <div className="marquee-piste flex w-max items-center gap-10 pr-10">
+          {['API REST', 'Webhooks temps réel', 'Multi-SIM', 'File d\u2019attente intelligente', 'OTP & vérification', 'Reprise hors-ligne', 'Notifications push', 'SMS reçus centralisés', 'API REST', 'Webhooks temps réel', 'Multi-SIM', 'File d\u2019attente intelligente', 'OTP & vérification', 'Reprise hors-ligne', 'Notifications push', 'SMS reçus centralisés'].map((m, i) => (
+            <span key={i} className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
+              <Check className="h-3.5 w-3.5 text-blue-500" /> {m}
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* ================= 4. TROIS PILIERS & LIENS VERS INTERFACES DÉDIÉES ================= */}
       <section id="fonctionnalites" className="py-16 bg-white border-t border-slate-200/60 dark:bg-[#0B0F19] dark:border-white/10">
         <div className="w-full px-6 space-y-10 lg:px-12">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div data-reveal className="mx-auto max-w-3xl space-y-3 text-center">
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">CONCRET, PAS ABSTRAIT</span>
+            <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+              Voyez ce que vos SMS deviennent.
+            </h2>
+          </div>
+
+          <div className="space-y-16 pt-4">
             {[
               {
-                icone: FolderKanban,
-                titre: 'Fonctionnalités avancées',
-                desc: 'Consultez la suite complète d\'outils : flotte Android, multi-SIM, file d\'attente et webhooks.',
+                image: '/images/serveur.webp',
+                alt: 'Console SMSTSIKA pilotant une flotte de téléphones Android',
+                braille: 'PILOTEZ TOUTE VOTRE FLOTTE',
+                titre: 'Chaque téléphone, sous vos yeux.',
+                texte: 'Vos Android deviennent des relais visibles depuis la console : état de connexion, file d\u2019attente, SIM actives. Fini le pilotage à l\u2019aveugle — vous savez toujours par où partent vos messages.',
                 lien: '/fonctionnalites',
-                libelleLien: 'Voir toutes les fonctionnalités ↗'
+                libelleLien: 'Voir toutes les fonctionnalités',
               },
               {
-                icone: Smartphone,
-                titre: 'Comment ça marche ?',
-                desc: 'Découvrez les 3 étapes simples du déploiement serveur à l\'émission par carte SIM locale.',
+                image: '/images/sms.jpg',
+                alt: 'Main tenant un téléphone, volume de messages en croissance',
+                braille: 'DE L\u2019ENVOI À LA CROISSANCE',
+                titre: 'Des messages qui font grandir.',
+                texte: 'Commandes prêtes, rappels, codes de vérification : chaque SMS est une occasion de faire revenir vos clients. Vous envoyez depuis la console, votre activité suit la courbe.',
                 lien: '/comment-ca-marche',
-                libelleLien: 'Découvrir le guide d\'intégration ↗'
+                libelleLien: 'Découvrir le guide d\u2019intégration',
               },
               {
-                icone: BarChart3,
-                titre: 'Cas d\'usage métiers',
-                desc: 'Notifications e-commerce, rappels de rendez-vous et codes de vérification OTP.',
+                image: '/images/smsrecu.jpeg',
+                alt: 'Vrai SMS reçu sur un téléphone',
+                braille: 'DE VRAIS SMS, VRAIMENT REÇUS',
+                titre: 'Vos clients le lisent vraiment.',
+                texte: 'Pas un e-mail noyé dans les spams : un SMS lu en quelques minutes sur le téléphone de votre client. Rendez-vous confirmés, commandes retirées, avis laissés — la preuve par l\u2019écran.',
                 lien: '/cas-d-usage',
-                libelleLien: 'Explorer les cas d\'usage ↗'
+                libelleLien: 'Explorer les cas d\u2019usage',
               },
-            ].map((p, i) => (
-              <div key={i} className="group rounded-[1.5rem] bg-slate-50 p-8 space-y-4 border border-slate-100 transition-all duration-300 hover:-translate-y-1 hover:border-[#2563EB]/40 dark:bg-white/[0.04] dark:border-white/10 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 text-white font-bold shadow-md shadow-blue-500/30">
-                    <p.icone className="h-6 w-6" />
-                  </div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">{p.titre}</h3>
-                  <p className="text-xs leading-relaxed text-slate-500 dark:text-zinc-400">{p.desc}</p>
+            ].map((b, i) => (
+              <div key={b.titre} data-reveal className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12">
+                <div data-reveal={i % 2 === 1 ? 'right' : 'left'} className={`relative overflow-hidden rounded-[2rem] shadow-[0_40px_90px_-24px_rgba(37,99,235,0.35)] ${i % 2 === 1 ? 'lg:order-2' : ''}`}>
+                  <Image
+                    src={b.image}
+                    alt={b.alt}
+                    width={1200}
+                    height={800}
+                    className="h-72 w-full object-cover sm:h-80 lg:h-96"
+                  />
                 </div>
-                <Link href={p.lien} className="inline-flex items-center gap-1 text-xs font-bold text-[#2563EB] hover:underline dark:text-[#60A5FA] pt-2">
-                  {p.libelleLien}
-                </Link>
+                <div className={`space-y-4 ${i % 2 === 1 ? 'lg:order-1' : ''}`}>
+                  <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">{b.braille}</span>
+                  <h3 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
+                    {b.titre}
+                  </h3>
+                  <p className="text-base leading-relaxed text-slate-500 dark:text-zinc-400">
+                    {b.texte}
+                  </p>
+                  <Link href={b.lien} className="group inline-flex items-center gap-1.5 text-sm font-bold text-[#2563EB] hover:underline dark:text-[#60A5FA]">
+                    {b.libelleLien}
+                    <span className="transition-transform group-hover:translate-x-0.5">↗</span>
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
@@ -258,7 +294,7 @@ export default function PageAccueilWeb() {
       {/* ================= 4b. TÉLÉCHARGER L'APP ANDROID ================= */}
       <section id="installer" className="py-16 bg-white border-t border-slate-200/60 dark:bg-[#0B0F19] dark:border-white/10">
         <div className="w-full px-6 space-y-8 lg:px-12">
-          <div className="text-center space-y-3">
+          <div data-reveal className="text-center space-y-3">
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">INSTALLATION RAPIDE</span>
             <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
               Téléchargez l'application Android
@@ -270,7 +306,7 @@ export default function PageAccueilWeb() {
 
           <div className="max-w-md mx-auto">
             {/* QR + téléchargement uniquement */}
-            <div className="rounded-[1.5rem] border border-slate-100 bg-slate-50 p-8 space-y-6 text-center shadow-card dark:border-white/10 dark:bg-white/[0.04]">
+            <div data-reveal="zoom" className="rounded-[1.5rem] border border-slate-100 bg-slate-50 p-8 space-y-6 text-center shadow-card dark:border-white/10 dark:bg-white/[0.04]">
               <QrCodeSvg valeur={urlQrApk} taille={180} etiquette="QR de téléchargement de l'application Android" />
               <div className="space-y-3">
                 <a
@@ -291,7 +327,8 @@ export default function PageAccueilWeb() {
 
       {/* ================= 5. CALL TO ACTION FINAL ================= */}
       <section className="relative overflow-hidden py-20 bg-gradient-to-br from-[#110C2E] via-[#0B0A1F] to-[#070613] text-white">
-        <div className="relative mx-auto max-w-4xl px-6 text-center space-y-6 lg:px-12">
+        <div className="orbe-derive pointer-events-none absolute left-1/2 top-0 h-[320px] w-[640px] -translate-x-1/2 rounded-full bg-blue-500/15 blur-[110px]" />
+        <div data-reveal className="relative mx-auto max-w-4xl px-6 text-center space-y-6 lg:px-12">
           <span className="text-[11px] font-extrabold uppercase tracking-widest text-blue-400">VOTRE PROCHAIN ENVOI COMMENCE ICI</span>
           <h2 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
             Reprenez la main sur vos SMS.
