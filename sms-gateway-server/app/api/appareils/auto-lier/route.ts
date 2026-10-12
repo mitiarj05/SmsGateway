@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
         const { data: parUidApp } = await supabaseAdmin
           .from('applications')
           .select('id')
-          .eq('firebase_uid', compte.uid)
+          .eq('uid_firebase', compte.uid)
           .order('date_creation', { ascending: false })
           .limit(1)
         applicationId = (parUidApp?.[0] as { id: string } | undefined)?.id ?? null
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
         .update({
           id_application: applicationId,
           nom,
-          ...(uidFirebase ? { firebase_uid: uidFirebase } : {}),
+          ...(uidFirebase ? { uid_firebase: uidFirebase } : {}),
         })
         .eq('id', existant.id)
       return NextResponse.json({
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
         statut: STATUT_APPAREIL.HORS_LIGNE,
         id_application: applicationId,
         android_id: androidId,
-        ...(uidFirebase ? { firebase_uid: uidFirebase } : {}),
+        ...(uidFirebase ? { uid_firebase: uidFirebase } : {}),
       })
       .select('id')
       .single()
