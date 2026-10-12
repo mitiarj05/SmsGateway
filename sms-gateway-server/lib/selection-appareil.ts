@@ -74,29 +74,40 @@ async function calculerDelaiAttente(idsAppareils: string[], extraIso: string | n
   return Math.max(1, Math.ceil((new Date(plusAncien).getTime() + 3600_000 - Date.now()) / 1000))
 }
 
-export async function obtenirDisponibiliteAppareil(): Promise<DisponibiliteAppareil> {
+export async function obtenirDisponibiliteAppareil(
+  idApplication?: string | null
+): Promise<DisponibiliteAppareil> {
   const quota = await obtenirParametreEntier('sms_quota_per_hour')
 
   // Les appareils morts ne doivent ni être sélectionnés ni recevoir de push.
   await marquerAppareilsInactifs()
 
-  const { data: appareils, error: erreurAppareils } = await supabaseAdmin
+  // Modèle individuel : restreint au parc du client (tous si non précisé).
+  let requeteAppareils = supabaseAdmin
     .from('appareils')
     .select('id, nom, jeton_fcm')
     .eq('statut', STATUT_APPAREIL.EN_LIGNE)
     .not('jeton_fcm', 'is', null)
+  if (idApplication) {
+    requeteAppareils = requeteAppareils.eq('id_application', idApplication)
+  }
+  const { data: appareils, error: erreurAppareils } = await requeteAppareils
 
   if (erreurAppareils || !appareils || appareils.length === 0) {
     return { appareil: null, sature: false, quota, delaiAttenteSecondes: 0 }
   }
 
-  // Pression globale : les EN_ATTENTE non assignés consommeront du quota sous peu.
-  // Hypothèse conservative : elles iront à l'appareil le moins chargé.
-  const { data: enAttente } = await supabaseAdmin
+  // Pression : les EN_ATTENTE non assignés consommeront du quota sous peu.
+  // Restreinte à l'espace concerné en modèle individuel.
+  let requeteAttente = supabaseAdmin
     .from('taches')
     .select('date_creation')
     .eq('statut', STATUT_TACHE.EN_ATTENTE)
     .is('id_appareil', null)
+  if (idApplication) {
+    requeteAttente = requeteAttente.eq('id_application', idApplication)
+  }
+  const { data: enAttente } = await requeteAttente
   const compteEnAttente = enAttente?.length ?? 0
   const plusAncienneEnAttente = (enAttente ?? []).reduce<string | null>(
     (min, m) => (!min || m.date_creation < min ? m.date_creation : min),

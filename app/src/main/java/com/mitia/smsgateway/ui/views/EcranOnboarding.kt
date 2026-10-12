@@ -60,7 +60,7 @@ fun EcranOnboarding(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondMobileClair)
+            .background(FondSombre)
     ) {
         Column(
             modifier = Modifier
@@ -76,7 +76,7 @@ fun EcranOnboarding(
             ) {
                 Text(
                     text = "Passer",
-                    color = TexteSousTitreClair,
+                    color = TexteSecondaire,
                     fontSize = 13.5.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -116,7 +116,7 @@ fun EcranOnboarding(
                                 if (estActif)
                                     Brush.horizontalGradient(listOf(GradientIndigoStart, Color(0xFF38BDF8)))
                                 else
-                                    Brush.horizontalGradient(listOf(BordureInputClair, BordureInputClair))
+                                    Brush.horizontalGradient(listOf(CouleurBordure, CouleurBordure))
                             )
                     )
                 }
@@ -149,7 +149,7 @@ fun EcranOnboarding(
                     ) {
                         Text(
                             text = "Déjà un compte ? ",
-                            color = TexteSousTitreClair,
+                            color = TexteSecondaire,
                             fontSize = 12.5.sp
                         )
                         Text(
@@ -191,24 +191,10 @@ private fun SlideOnboarding1() {
 
         Spacer(Modifier.height(36.dp))
 
-        // Visuel humain : vrai SMS reçu sur un téléphone
-        Image(
-            painter = painterResource(id = R.drawable.photo_sms_recu),
-            contentDescription = "Exemple de SMS reçu par un client",
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(170.dp)
-                .shadow(16.dp, RoundedCornerShape(20.dp), spotColor = NeonShadowColor)
-                .clip(RoundedCornerShape(20.dp)),
-            contentScale = ContentScale.Crop
-        )
-
-        Spacer(Modifier.height(24.dp))
-
         // Titre centré 23px font 800 #0F172A avec mot « poche » en dégradé
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = Color(0xFF0F172A), fontWeight = FontWeight.ExtraBold, fontSize = 23.sp)) {
+                withStyle(SpanStyle(color = TextePrincipal, fontWeight = FontWeight.ExtraBold, fontSize = 23.sp)) {
                     append("Votre passerelle SMS\ndans votre ")
                 }
                 withStyle(
@@ -230,7 +216,7 @@ private fun SlideOnboarding1() {
         // Sous-titre centré 12.5px #64748B
         Text(
             text = "Transformez vos téléphones Android en relais d'envoi professionnels — sans abonnement, avec vos propres cartes SIM.",
-            color = Color(0xFF64748B),
+            color = TexteSecondaire,
             fontSize = 12.5.sp,
             textAlign = TextAlign.Center,
             lineHeight = 18.sp,
@@ -252,7 +238,7 @@ private fun SlideOnboarding2() {
         // Titre centré 23px font 800 #0F172A avec « envoyer mieux » en dégradé
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = Color(0xFF0F172A), fontWeight = FontWeight.ExtraBold, fontSize = 23.sp)) {
+                withStyle(SpanStyle(color = TextePrincipal, fontWeight = FontWeight.ExtraBold, fontSize = 23.sp)) {
                     append("Tout ce qu'il faut\npour ")
                 }
                 withStyle(
@@ -337,7 +323,7 @@ private fun SlideOnboarding3() {
         // Titre "Prêt en 5 minutes" avec "5 minutes" en dégradé texte
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = Color(0xFF0F172A), fontWeight = FontWeight.ExtraBold, fontSize = 23.sp)) {
+                withStyle(SpanStyle(color = TextePrincipal, fontWeight = FontWeight.ExtraBold, fontSize = 23.sp)) {
                     append("Prêt en ")
                 }
                 withStyle(
@@ -359,7 +345,7 @@ private fun SlideOnboarding3() {
         // Sous-titre centré
         Text(
             text = "Installez l'app sur votre téléphone, scannez le QR depuis votre console web, et votre passerelle est en ligne.",
-            color = Color(0xFF64748B),
+            color = TexteSecondaire,
             fontSize = 12.5.sp,
             textAlign = TextAlign.Center,
             lineHeight = 18.sp,
@@ -379,7 +365,7 @@ private fun SlideOnboarding3() {
                 fondNumero = Color(0xFFECFDF5),
                 couleurNumero = Color(0xFF059669),
                 titre = "Connectez-vous à votre espace",
-                sousTitre = "test@smstsika.mg"
+                sousTitre = "Votre compte SMSTSIKA"
             )
 
             // Carte 2 : Scannez le QR de liaison
@@ -413,8 +399,8 @@ private fun CarteFonctionnalite(
                 spotColor = Color(0xFF23204D).copy(alpha = 0.06f)
             )
             .clip(RoundedCornerShape(15.dp))
-            .background(BlancCarte)
-            .border(1.dp, BordureCarteClair, RoundedCornerShape(15.dp))
+            .background(FondCarte)
+            .border(1.dp, CouleurBordure, RoundedCornerShape(15.dp))
             .padding(horizontal = 13.dp, vertical = 11.dp)
     ) {
         Row(
@@ -438,14 +424,14 @@ private fun CarteFonctionnalite(
             Column {
                 Text(
                     text = titre,
-                    color = Color(0xFF0F172A),
+                    color = TextePrincipal,
                     fontSize = 12.5.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(1.dp))
                 Text(
                     text = sousTitre,
-                    color = Color(0xFF94A3B8),
+                    color = TexteAttenue,
                     fontSize = 10.5.sp
                 )
             }
@@ -472,8 +458,8 @@ private fun CarteEtapeNumerotee(
                 spotColor = Color(0xFF23204D).copy(alpha = 0.06f)
             )
             .clip(RoundedCornerShape(15.dp))
-            .background(BlancCarte)
-            .border(1.dp, BordureCarteClair, RoundedCornerShape(15.dp))
+            .background(FondCarte)
+            .border(1.dp, CouleurBordure, RoundedCornerShape(15.dp))
             .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
         Row(
@@ -497,14 +483,14 @@ private fun CarteEtapeNumerotee(
             Column {
                 Text(
                     text = titre,
-                    color = Color(0xFF0F172A),
+                    color = TextePrincipal,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(1.dp))
                 Text(
                     text = sousTitre,
-                    color = Color(0xFF94A3B8),
+                    color = TexteAttenue,
                     fontSize = 11.sp
                 )
             }

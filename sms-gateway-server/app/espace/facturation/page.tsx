@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Receipt, Calendar, CreditCard, ShieldCheck, ArrowUpRight } from 'lucide-react'
+import { Receipt, Calendar, ShieldCheck, ArrowUpRight } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
-import { Toast } from '../../../composants/interface'
 
 interface ConsoMensuelle {
   mois: string
@@ -28,11 +27,8 @@ function libelleMois(id: string): string {
 }
 
 export default function PageFacturationEspace() {
-  const [demandeEnvoyee, setDemandeEnvoyee] = useState(false)
-  const [notification, setNotification] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
   const [conso, setConso] = useState<ConsoMensuelle | null>(null)
   const [quotidien, setQuotidien] = useState<number[]>([0, 0, 0, 0, 0, 0, 0])
-  const [nomClient, setNomClient] = useState('')
   const [mois, setMois] = useState(moisCourantId())
   const [detailOuvert, setDetailOuvert] = useState(false)
 
@@ -41,18 +37,6 @@ export default function PageFacturationEspace() {
   const nomMoisCourt = new Date(
     Number(idMois.split('-')[0]), Number(idMois.split('-')[1]) - 1, 1
   ).toLocaleString('fr-FR', { month: 'long' })
-
-  function afficherNotification(type: 'succes' | 'erreur', texte: string) {
-    setNotification({ type, texte })
-    setTimeout(() => setNotification(null), 4000)
-  }
-
-  useEffect(() => {
-    fetch('/api/espace/moi')
-      .then((r) => r.json())
-      .then((d) => { if (d?.nom) setNomClient(d.nom) })
-      .catch(() => null)
-  }, [])
 
   useEffect(() => {
     fetch(`/api/espace/facturation?mois=${idMois}`)
@@ -89,29 +73,6 @@ export default function PageFacturationEspace() {
       .catch(() => null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idMois])
-
-  async function demanderQuota() {
-    try {
-      const reponse = await fetch('/api/demandes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nom: nomClient || 'Client espace',
-          contact: 'via espace client',
-          usage_prevu: `Demande d'augmentation du quota mensuel (conso ${idMois} : ${conso?.total_facture ?? 0}, quota actuel : ${conso?.quota_mensuel ?? 'illimité'}).`,
-        }),
-      })
-      const donnees = await reponse.json().catch(() => ({}))
-      if (reponse.ok) {
-        setDemandeEnvoyee(true)
-        afficherNotification('succes', 'Demande d’augmentation transmise à l’administrateur')
-      } else {
-        afficherNotification('erreur', donnees?.error ?? 'Demande impossible')
-      }
-    } catch {
-      afficherNotification('erreur', 'Erreur réseau')
-    }
-  }
 
   const total = conso?.total_facture ?? 0
   const envoyes = conso?.sms_envoyes ?? 0
@@ -204,17 +165,10 @@ export default function PageFacturationEspace() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-2 border-t border-slate-100 dark:border-zinc-800 gap-3">
+            <div className="pt-2 border-t border-slate-100 dark:border-zinc-800">
               <p className="text-[11.5px] text-slate-400">
-                1 unité correspond à 1 SMS créé dans le mois. La facturation finale est calculée en fin de mois.
+                1 unité correspond à 1 SMS créé dans le mois. Votre crédit : la carte SIM de vos téléphones.
               </p>
-              <button
-                onClick={demanderQuota}
-                disabled={demandeEnvoyee}
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 shrink-0 disabled:opacity-50"
-              >
-                {demandeEnvoyee ? 'Demande envoyée' : 'Demander plus de quota'}
-              </button>
             </div>
           </div>
 
@@ -304,28 +258,6 @@ export default function PageFacturationEspace() {
             </div>
           </div>
 
-          {/* Middle Card : Moyen de paiement */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white">Moyen de paiement</h3>
-
-            <div className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-zinc-800 dark:bg-zinc-800/50">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300">
-                <CreditCard className="h-4 w-4" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">Non renseigné</p>
-                <p className="text-[10.5px] text-slate-400">Ajoutez un moyen de paiement</p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => afficherNotification('succes', 'Pour ajouter un moyen de paiement, contactez votre administrateur.')}
-              className="w-full rounded-full border border-slate-200 bg-white py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-            >
-              Modifier
-            </button>
-          </div>
-
           {/* Bottom Green Tip Box */}
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-900 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300 flex items-start gap-3">
             <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
@@ -341,8 +273,6 @@ export default function PageFacturationEspace() {
         </div>
 
       </div>
-
-      <Toast notification={notification} />
     </CoquilleEspace>
   )
 }

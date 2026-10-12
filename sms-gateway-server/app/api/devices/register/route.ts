@@ -41,6 +41,10 @@ export async function POST(request: NextRequest) {
 
     const corps = await request.json()
     const { nom } = corps
+    const androidId =
+      typeof corps?.android_id === 'string' && corps.android_id.trim().length > 0
+        ? corps.android_id.trim().slice(0, 128)
+        : null
 
     // Validation du champ "nom"
     if (!nom || typeof nom !== 'string' || nom.trim().length === 0) {
@@ -50,7 +54,38 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 2. Appareil déjà lié à ce compte Firebase ? On rend ses identifiants
+    // 2. Même téléphone physique ? On rend son identité existante
+    // (réinstallation, nouveau compte Firebase) au lieu de dupliquer.
+    if (androidId) {
+      const { data: memeTelephone } = await clientSupabase
+        .from('appareils')
+        .select('id, nom, jeton, statut, date_creation')
+        .eq('android_id', androidId)
+        .order('date_creation', { ascending: false })
+        .limit(1)
+      if (memeTelephone?.[0]) {
+        const existant = memeTelephone[0]
+        await clientSupabase
+          .from('appareils')
+          .update({ android_id: androidId })
+          .eq('id', existant.id)
+        return NextResponse.json(
+          {
+            message: 'Appareil déjà enregistré',
+            device: {
+              id: existant.id,
+              nom: existant.nom,
+              token: existant.jeton,
+              statut: existant.statut,
+              created_at: existant.date_creation,
+            },
+          },
+          { status: 200 }
+        )
+      }
+    }
+
+    // 2b. Appareil déjà lié à ce compte Firebase ? On rend ses identifiants
     // (réinstallation de l'app : même compte anonyme = même appareil).
     const { data: existant } = await clientSupabase
       .from('appareils')
@@ -77,16 +112,32 @@ export async function POST(request: NextRequest) {
     // 3. Nouvel appareil : token propre + HORS_LIGNE par défaut.
     const jeton = randomBytes(32).toString('hex')
 
-    const { data, error } = await clientSupabase
+    let data: any = null
+    let error: any = null
+    ;({ data, error } = await clientSupabase
       .from('appareils')
       .insert({
         nom: nom.trim(),
         jeton: jeton,
         statut: STATUT_APPAREIL.HORS_LIGNE,
         uid_firebase: uidFirebase,
+        ...(androidId ? { android_id: androidId } : {}),
       })
       .select('id, nom, jeton, statut, date_creation')
-      .single()
+      .single())
+    if (error && androidId && /android_id/i.test(error.message ?? '')) {
+      // Pré-migration (colonne absente) : crée sans l'identifiant matériel.
+      ;({ data, error } = await clientSupabase
+        .from('appareils')
+        .insert({
+          nom: nom.trim(),
+          jeton: jeton,
+          statut: STATUT_APPAREIL.HORS_LIGNE,
+          uid_firebase: uidFirebase,
+        })
+        .select('id, nom, jeton, statut, date_creation')
+        .single())
+    }
 
     if (error) {
       console.error('Erreur Supabase lors de l\'enregistrement:', error)

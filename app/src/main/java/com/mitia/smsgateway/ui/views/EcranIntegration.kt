@@ -59,7 +59,7 @@ fun EcranDemarrage(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondMobileClair),
+            .background(FondSombre),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -75,14 +75,14 @@ fun EcranDemarrage(modifier: Modifier = Modifier) {
             Spacer(Modifier.height(20.dp))
             Text(
                 text = "SMSTSIKA",
-                color = TexteTitreClair,
+                color = TextePrincipal,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.ExtraBold,
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 text = "passerelle autohébergée",
-                color = TexteSousTitreClair,
+                color = TexteSecondaire,
                 fontSize = 12.5.sp,
             )
             Spacer(Modifier.height(24.dp))
@@ -115,7 +115,7 @@ fun EcranIntegration(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondMobileClair)
+            .background(FondSombre)
     ) {
         Column(
             modifier = Modifier
@@ -125,7 +125,7 @@ fun EcranIntegration(
         ) {
             Text(
                 text = "Étape ${etape + 1}/3",
-                color = TexteSousTitreClair,
+                color = TexteSecondaire,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
             )
@@ -137,7 +137,7 @@ fun EcranIntegration(
                     .height(6.dp)
                     .clip(CircleShape),
                 color = GradientIndigoStart,
-                trackColor = BordureInputClair,
+                trackColor = CouleurBordure,
             )
             Spacer(Modifier.height(28.dp))
 
@@ -175,16 +175,16 @@ fun EcranIntegration(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(14.dp))
-                            .border(1.dp, BordureInputClair, RoundedCornerShape(14.dp))
-                            .background(BlancCarte)
+                            .border(1.dp, CouleurBordure, RoundedCornerShape(14.dp))
+                            .background(FondCarte)
                             .clickable { etape-- }
                             .padding(horizontal = 16.dp, vertical = 12.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = TexteTitreClair, modifier = Modifier.size(16.dp))
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = TextePrincipal, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Retour", color = TexteTitreClair, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            Text("Retour", color = TextePrincipal, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -236,7 +236,7 @@ private fun IntegrationBienvenue() {
         Spacer(Modifier.height(20.dp))
         Text(
             text = "Bienvenue sur SMSTSIKA",
-            color = TexteTitreClair,
+            color = TextePrincipal,
             fontSize = 22.sp,
             fontWeight = FontWeight.ExtraBold,
             textAlign = TextAlign.Center,
@@ -245,7 +245,7 @@ private fun IntegrationBienvenue() {
         Text(
             text = "Ce téléphone va devenir un émetteur SMS piloté par votre serveur : " +
                 "il reçoit les tâches en push, envoie via sa carte SIM, même écran éteint.",
-            color = TexteSousTitreClair,
+            color = TexteSecondaire,
             fontSize = 13.sp,
             textAlign = TextAlign.Center,
             lineHeight = 18.sp,
@@ -264,30 +264,30 @@ private fun IntegrationServeur(
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             text = "Connectez le serveur",
-            color = TexteTitreClair,
+            color = TextePrincipal,
             fontSize = 19.sp,
             fontWeight = FontWeight.ExtraBold,
         )
         Text(
             text = "Adresse de votre passerelle (pré-remplie en production).",
-            color = TexteSousTitreClair,
+            color = TexteSecondaire,
             fontSize = 12.5.sp,
         )
 
         OutlinedTextField(
             value = urlServeur,
             onValueChange = auChangementUrlServeur,
-            label = { Text("Adresse serveur", color = TexteSousTitreClair) },
-            placeholder = { Text("https://sms-gateway-omega.vercel.app", color = TexteSousTitreClair) },
+            label = { Text("Adresse serveur", color = TexteSecondaire) },
+            placeholder = { Text("https://sms-gateway-omega.vercel.app", color = TexteSecondaire) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = FondInputClair,
-                unfocusedContainerColor = FondInputClair,
+                focusedContainerColor = FondSaisie,
+                unfocusedContainerColor = FondSaisie,
                 focusedBorderColor = GradientIndigoStart,
-                unfocusedBorderColor = BordureInputClair,
-                focusedTextColor = TexteTitreClair,
-                unfocusedTextColor = TexteTitreClair,
+                unfocusedBorderColor = CouleurBordure,
+                focusedTextColor = TextePrincipal,
+                unfocusedTextColor = TextePrincipal,
             ),
             shape = RoundedCornerShape(13.dp),
         )
@@ -297,13 +297,13 @@ private fun IntegrationServeur(
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(14.dp))
-                    .border(1.dp, BordureInputClair, RoundedCornerShape(14.dp))
-                    .background(BlancCarte)
+                    .border(1.dp, CouleurBordure, RoundedCornerShape(14.dp))
+                    .background(FondCarte)
                     .clickable(onClick = aTesterConnexion)
                     .padding(vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Tester", color = TexteTitreClair, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text("Tester", color = TextePrincipal, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
 
             BoutonNeon(
@@ -331,13 +331,13 @@ private fun IntegrationPermissions(
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             text = "Autorisations requises",
-            color = TexteTitreClair,
+            color = TextePrincipal,
             fontSize = 19.sp,
             fontWeight = FontWeight.ExtraBold,
         )
         Text(
             text = "Sans elles, l'envoi en arrière-plan ne fonctionnera pas.",
-            color = TexteSousTitreClair,
+            color = TexteSecondaire,
             fontSize = 12.5.sp,
         )
 
@@ -400,8 +400,8 @@ private fun LignePermissionIntegration(
         }
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = etiquette, color = TexteTitreClair, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
-            Text(text = detail, color = TexteSousTitreClair, fontSize = 11.sp)
+            Text(text = etiquette, color = TextePrincipal, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
+            Text(text = detail, color = TexteSecondaire, fontSize = 11.sp)
         }
         if (afficherAction) {
             Box(

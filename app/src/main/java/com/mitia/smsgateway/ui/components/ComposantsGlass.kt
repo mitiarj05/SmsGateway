@@ -34,8 +34,8 @@ import com.mitia.smsgateway.ui.theme.*
 fun CarteGlass(
     modifier: Modifier = Modifier,
     glow: Color? = null,
-    couleurBordure: Color = BordureCarteClair,
-    fond: Color = BlancCarte,
+    couleurBordure: Color = CouleurBordure,
+    fond: Color = FondCarte,
     coins: Dp = 20.dp,
     contenu: @Composable () -> Unit
 ) {

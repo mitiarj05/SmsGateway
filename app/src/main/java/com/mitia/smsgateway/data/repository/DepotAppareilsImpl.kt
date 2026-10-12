@@ -47,7 +47,14 @@ class DepotAppareilsImpl(private val context: Context) : DepotAppareils {
 
     override suspend fun enregistrer(nomAppareil: String, jetonId: String): ResultatEnregistrement {
         ClientApi.definirUrlBase(PreferencesAppareil.obtenirUrlServeur(context))
-        return ClientApi.enregistrerAppareil(nomAppareil, jetonId)
+        // Identifiant matériel stable : permet au serveur de reconnaître ce
+        // téléphone (pas de doublon dans un même espace, même après réinstallation).
+        val androidId = try {
+            android.provider.Settings.Secure.getString(context.contentResolver, android.provider.Settings.Secure.ANDROID_ID)
+        } catch (_: Exception) {
+            null
+        }
+        return ClientApi.enregistrerAppareil(nomAppareil, jetonId, androidId)
     }
 
     override suspend fun deconnecter(appareilId: String, jeton: String): Boolean {

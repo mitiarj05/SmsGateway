@@ -43,15 +43,37 @@ export async function GET(
       console.warn(`quota: ${idAppareil} au quota (${usage}/${quota}), scrutation sans tâches`)
     }
 
+    // Modèle individuel : un téléphone ne réclame que les tâches de SON espace.
+    // Non lié → rien à servir (l'association se fait depuis l'espace client).
+    const { data: ficheAppareil } = await supabaseAdmin
+      .from('appareils')
+      .select('id_application')
+      .eq('id', idAppareil)
+      .single()
+    const idApplicationAppareil = (ficheAppareil as { id_application: string | null } | null)?.id_application ?? null
+    if (!idApplicationAppareil) {
+      return NextResponse.json(
+        {
+          device: { id: appareil.id, nom: appareil.nom },
+          tasks: [],
+          count: 0,
+          quota_reached: false,
+          quota,
+        },
+        { status: 200 }
+      )
+    }
+
     await expirerEnAttentePerimees()
     await promouvoirProgrammes()
 
-    // 1. Récupérer les tâches EN_ATTENTE (jamais assignées)
+    // 1. Récupérer les tâches EN_ATTENTE de SON espace (jamais assignées)
     const { data: tachesEnAttente, error: erreur1 } = await supabaseAdmin
       .from('taches')
       .select('id, numero_destinataire, contenu, statut, date_creation')
       .eq('statut', STATUT_TACHE.EN_ATTENTE)
       .is('id_appareil', null)
+      .eq('id_application', idApplicationAppareil)
       .order('date_creation', { ascending: true })
       .limit(5)
 
@@ -74,6 +96,7 @@ export async function GET(
       .from('taches')
       .select('id, numero_destinataire, contenu, statut, date_creation, id_appareil')
       .eq('statut', STATUT_TACHE.RECLAME)
+      .eq('id_application', idApplicationAppareil)
       .or(`reclame_a.is.null,reclame_a.lt.${seuilDelai}`)
       .order('date_creation', { ascending: true })
       .limit(5)

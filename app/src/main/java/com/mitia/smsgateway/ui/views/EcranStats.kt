@@ -53,6 +53,7 @@ import com.mitia.smsgateway.ui.components.ChipStatut
 import com.mitia.smsgateway.ui.components.TonaliteChip
 import com.mitia.smsgateway.ui.theme.*
 import java.util.Locale
+import kotlin.math.roundToInt
 
 @Composable
 fun EcranStats(modifier: Modifier = Modifier) {
@@ -65,13 +66,13 @@ fun EcranStats(modifier: Modifier = Modifier) {
         taux = MagasinHistoriqueTaches.tauxReussite7j(context)
     }
 
-    val totalEnvoyes = 1
-    val totalEchoues = 0
+    val totalEnvoyes = statistiques.sumOf { it.envoyes }
+    val totalEchoues = statistiques.sumOf { it.echoues }
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondMobileClair)
+            .background(FondSombre)
     ) {
         Column(
             modifier = Modifier
@@ -110,14 +111,14 @@ fun EcranStats(modifier: Modifier = Modifier) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Performances",
-                        color = TexteTitreClair,
+                        color = TextePrincipal,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
                         text = "Activité des 7 derniers jours",
-                        color = TexteSousTitreClair,
+                        color = TexteSecondaire,
                         fontSize = 11.5.sp,
                     )
                 }
@@ -127,14 +128,14 @@ fun EcranStats(modifier: Modifier = Modifier) {
                         .size(40.dp)
                         .shadow(4.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.05f))
                         .clip(CircleShape)
-                        .background(BlancCarte)
-                        .border(1.dp, BordureInputClair, CircleShape)
+                        .background(FondCarte)
+                        .border(1.dp, CouleurBordure, CircleShape)
                 ) {
                     IconButton(onClick = {}, modifier = Modifier.size(40.dp)) {
                         Icon(
                             imageVector = Icons.Filled.CalendarMonth,
                             contentDescription = "Période",
-                            tint = TexteTitreClair,
+                            tint = TextePrincipal,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -153,21 +154,21 @@ fun EcranStats(modifier: Modifier = Modifier) {
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(99.dp))
-                            .background(FondInputClair)
-                            .border(1.dp, BordureInputClair, RoundedCornerShape(99.dp))
+                            .background(FondSaisie)
+                            .border(1.dp, CouleurBordure, RoundedCornerShape(99.dp))
                             .padding(horizontal = 14.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Filled.CalendarMonth,
                             contentDescription = null,
-                            tint = TexteSousTitreClair,
+                            tint = TexteSecondaire,
                             modifier = Modifier.size(15.dp)
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
                             text = "7 derniers jours",
-                            color = TexteTitreClair,
+                            color = TextePrincipal,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -175,7 +176,7 @@ fun EcranStats(modifier: Modifier = Modifier) {
                         Icon(
                             imageVector = Icons.Filled.KeyboardArrowDown,
                             contentDescription = null,
-                            tint = TexteSousTitreClair,
+                            tint = TexteSecondaire,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -200,14 +201,14 @@ fun EcranStats(modifier: Modifier = Modifier) {
                         Column {
                             Text(
                                 text = "SMS traités",
-                                color = TexteTitreClair,
+                                color = TextePrincipal,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
                                 text = "volume quotidien d'envoi",
-                                color = TexteSousTitreClair,
+                                color = TexteSecondaire,
                                 fontSize = 11.5.sp
                             )
                         }
@@ -221,7 +222,7 @@ fun EcranStats(modifier: Modifier = Modifier) {
                             Spacer(Modifier.width(6.dp))
                             Text(
                                 text = "envoyés",
-                                color = TexteSousTitreClair,
+                                color = TexteSecondaire,
                                 fontSize = 11.5.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -230,23 +231,23 @@ fun EcranStats(modifier: Modifier = Modifier) {
 
                     Spacer(Modifier.height(20.dp))
 
-                    val joursLabels = listOf("jeu", "ven", "sam", "dim", "lun", "mar", "mer")
-                    val valeurs = listOf(0, 0, 0, 0, 1, 0, 0)
-                    val maxVal = 1
+                    val barres = statistiques.map { it.envoyes }
+                    val etiquettes = statistiques.map { it.label }
+                    val maxVal = (barres.maxOrNull() ?: 0).coerceAtLeast(1)
 
                     Canvas(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp)
                     ) {
-                        val emplacement = size.width / joursLabels.size
+                        val emplacement = size.width / 7f
                         val largeurBarre = emplacement * 0.35f
-                        valeurs.forEachIndexed { i, v ->
-                            val hauteurBarre = if (v == 0) 12f else size.height * 0.85f
+                        barres.forEachIndexed { i, v ->
+                            val hauteurBarre = if (v == 0) 12f else (size.height * 0.85f * (v.toFloat() / maxVal))
                             val x = i * emplacement + (emplacement - largeurBarre) / 2f
-                            val estLun = i == 4 // lun
+                            val estAujourdhui = i == barres.lastIndex
 
-                            val brushBarre = if (estLun) {
+                            val brushBarre = if (estAujourdhui && v > 0) {
                                 Brush.verticalGradient(listOf(GradientIndigoStart, BleuAccentFonce))
                             } else {
                                 Brush.verticalGradient(listOf(Color(0xFFE5E7FB), Color(0xFFE5E7FB)))
@@ -264,14 +265,14 @@ fun EcranStats(modifier: Modifier = Modifier) {
                     Spacer(Modifier.height(8.dp))
 
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        joursLabels.forEach { jour ->
+                        etiquettes.forEachIndexed { i, jour ->
                             Text(
                                 text = jour,
-                                color = TexteSousTitreClair,
+                                color = TexteSecondaire,
                                 fontSize = 11.sp,
                                 textAlign = TextAlign.Center,
                                 modifier = Modifier.weight(1f),
-                                fontWeight = if (jour == "lun") FontWeight.Bold else FontWeight.Normal
+                                fontWeight = if (i == etiquettes.lastIndex) FontWeight.Bold else FontWeight.Normal
                             )
                         }
                     }
@@ -285,22 +286,22 @@ fun EcranStats(modifier: Modifier = Modifier) {
                 // Tuile 1
                 CarteGlass(modifier = Modifier.weight(1f)) {
                     Column {
-                        Text(text = "sms envoyés (7 j)", fontSize = 10.5.sp, color = TexteSousTitreClair, fontWeight = FontWeight.Bold)
+                        Text(text = "sms envoyés (7 j)", fontSize = 10.5.sp, color = TexteSecondaire, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.height(6.dp))
-                        Text(text = "$totalEnvoyes", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = TexteTitreClair)
+                        Text(text = "$totalEnvoyes", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = TextePrincipal)
                         Spacer(Modifier.height(2.dp))
-                        Text(text = "+1 cette semaine", fontSize = 10.5.sp, color = TexteSousTitreClair)
+                        Text(text = "sur les 7 derniers jours", fontSize = 10.5.sp, color = TexteSecondaire)
                     }
                 }
 
                 // Tuile 2
                 CarteGlass(modifier = Modifier.weight(1f)) {
                     Column {
-                        Text(text = "échecs (7 j)", fontSize = 10.5.sp, color = TexteSousTitreClair, fontWeight = FontWeight.Bold)
+                        Text(text = "échecs (7 j)", fontSize = 10.5.sp, color = TexteSecondaire, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.height(6.dp))
-                        Text(text = "$totalEchoues", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = TexteTitreClair)
+                        Text(text = "$totalEchoues", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = TextePrincipal)
                         Spacer(Modifier.height(2.dp))
-                        Text(text = "aucun échec", fontSize = 10.5.sp, color = TexteSousTitreClair)
+                        Text(text = if (totalEchoues == 0) "aucun échec" else "à surveiller", fontSize = 10.5.sp, color = TexteSecondaire)
                     }
                 }
 
@@ -313,7 +314,7 @@ fun EcranStats(modifier: Modifier = Modifier) {
                     Column {
                         Text(text = "réussite", fontSize = 10.5.sp, color = VertPastelTexte, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.height(6.dp))
-                        Text(text = "100%", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = VertPastelTexte)
+                        Text(text = if (taux < 0) "—" else "${taux.roundToInt()}%", fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = VertPastelTexte)
                         Spacer(Modifier.height(2.dp))
                         Text(text = "sur les envois", fontSize = 10.5.sp, color = VertPastelTexte)
                     }
@@ -332,14 +333,14 @@ fun EcranStats(modifier: Modifier = Modifier) {
                     ) {
                         Text(
                             text = "LECTURE DES PERFORMANCES",
-                            color = TexteSousTitreClair,
+                            color = TexteSecondaire,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.2.sp
                         )
                         Text(
                             text = "cette semaine",
-                            color = TexteSousTitreClair,
+                            color = TexteSecondaire,
                             fontSize = 11.5.sp
                         )
                     }
@@ -365,7 +366,7 @@ fun EcranStats(modifier: Modifier = Modifier) {
                         Spacer(Modifier.width(14.dp))
                         Text(
                             text = "Le trafic reste faible et stable. Tous les SMS ont été transmis avec succès.",
-                            color = TexteTitreClair,
+                            color = TextePrincipal,
                             fontSize = 13.sp,
                             lineHeight = 18.sp,
                             modifier = Modifier.weight(1f),

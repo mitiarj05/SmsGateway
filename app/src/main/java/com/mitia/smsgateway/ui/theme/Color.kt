@@ -8,7 +8,6 @@ val BlancCarte = Color(0xFFFFFFFF)
 val BordureCarteClair = Color(0xFFF1F5F9)
 val BordureInputClair = Color(0xFFE2E8F0)
 val FondInputClair = Color(0xFFF8FAFC)
-
 // Dégradés & Accents Principal (cohérents serveur web : #3B82F6 → #1D4ED8)
 val GradientIndigoStart = Color(0xFF3B82F6)
 val GradientIndigoEnd = Color(0xFF1D4ED8)
@@ -41,13 +40,16 @@ val VioletPastelBg = Color(0xFFF5F3FF)
 val VioletPastelTexte = Color(0xFF7C3AED)
 val VioletPastelBordure = Color(0xFFDDD6FE)
 
-// Palette Sombre "SMSIKA Tableau de bord"
+// ================= TOKENS ADAPTATIFS =================
+// Tous aliasés sur le thème clair : le mode sombre est désactivé
+// (rendu identique à avant, aucun changement visuel).
 val FondSombre = FondMobileClair
 val FondCarte = BlancCarte
 val FondCarteClair = BlancCarte
 val CouleurBordure = BordureCarteClair
 val FondCarteGlass = BlancCarte
 val CouleurBordureGlass = BordureCarteClair
+val FondSaisie = FondInputClair
 
 // Accents & Compatibilité
 val VertAccent = VertPastelTexte
@@ -82,7 +84,7 @@ val NeonViolet = VioletPastelTexte
 val NeonVioletBg = VioletPastelBg
 val NeonVioletBd = VioletPastelBordure
 
-// Texte
+// Texte (aliasés sur le clair : rendu inchangé, voir ci-dessus)
 val TextePrincipal = TexteTitreClair
 val TexteSecondaire = TexteSousTitreClair
 val TexteAttenue = TexteLabelClair

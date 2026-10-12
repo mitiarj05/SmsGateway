@@ -20,6 +20,17 @@ export async function POST(request: NextRequest) {
     if (!idApplication) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
+    // Modèle individuel : sans téléphone lié, l'envoi est impossible.
+    const { count: nbAppareils } = await supabaseAdmin
+      .from('appareils')
+      .select('id', { count: 'exact', head: true })
+      .eq('id_application', idApplication)
+    if (!nbAppareils) {
+      return NextResponse.json(
+        { error: 'Aucun téléphone lié à votre espace — associez-en un pour envoyer.' },
+        { status: 400 }
+      )
+    }
     const corps = await request.json().catch(() => null)
     const to = corps?.to
     const message = typeof corps?.message === 'string' ? corps.message : ''
@@ -88,7 +99,7 @@ export async function POST(request: NextRequest) {
       programmePour = d
     }
 
-    const disponibilite = programmePour ? null : await obtenirDisponibiliteAppareil()
+    const disponibilite = programmePour ? null : await obtenirDisponibiliteAppareil(idApplication)
     if (disponibilite?.sature) {
       return NextResponse.json(
         {

@@ -6,6 +6,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material3.IconButton
 import android.content.Intent
 import android.net.Uri
+import android.provider.Settings
 import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
@@ -17,6 +18,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import com.mitia.smsgateway.data.remote.ClientApi
+import com.mitia.smsgateway.data.local.PreferencesAppareil
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -91,6 +93,7 @@ fun EcranConnexion(
     var resterConnecte by remember { mutableStateOf(true) }
     var erreur by remember { mutableStateOf<String?>(null) }
     var googleEnCours by remember { mutableStateOf(false) }
+    var connexionEnCours by remember { mutableStateOf(false) }
     val contexte = LocalContext.current
     val portee = rememberCoroutineScope()
 
@@ -100,6 +103,50 @@ fun EcranConnexion(
             contexte.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
         } catch (e: Exception) {
             Log.e("EcranConnexion", "Ouverture navigateur impossible", e)
+        }
+    }
+
+    /** Identifiant matériel stable (anti-doublon d'inscription côté serveur). */
+    fun androidId(): String? = try {
+        Settings.Secure.getString(contexte.contentResolver, Settings.Secure.ANDROID_ID)
+    } catch (_: Exception) {
+        null
+    }
+
+    /** Lie CE téléphone à l'espace du compte et mémorise ses identifiants. */
+    suspend fun lierTelephoneEtTerminer(
+        nom: String,
+        idToken: String? = null,
+        email: String? = null,
+        motDePasse: String? = null,
+    ): Boolean {
+        val identifiantMateriel = androidId()
+        if (identifiantMateriel.isNullOrBlank()) {
+            erreur = "Identifiant de l'appareil indisponible — réessayez."
+            return false
+        }
+        return when (
+            val resultat = ClientApi.lierMonTelephone(
+                nom = nom.ifBlank { android.os.Build.MODEL ?: "Téléphone Android" },
+                androidId = identifiantMateriel,
+                idToken = idToken,
+                email = email,
+                motDePasse = motDePasse,
+            )
+        ) {
+            is com.mitia.smsgateway.domain.model.ResultatEnregistrement.Succes -> {
+                PreferencesAppareil.enregistrer(contexte, resultat.appareilId, resultat.jeton)
+                aConnexionReussie()
+                true
+            }
+            is com.mitia.smsgateway.domain.model.ResultatEnregistrement.ErreurHttp -> {
+                erreur = resultat.message ?: "Erreur serveur (${resultat.code}) — réessayez."
+                false
+            }
+            com.mitia.smsgateway.domain.model.ResultatEnregistrement.ErreurReseau -> {
+                erreur = "Serveur injoignable — vérifiez l'URL et la connexion."
+                false
+            }
         }
     }
 
@@ -129,11 +176,15 @@ fun EcranConnexion(
                     erreur = "Connexion Google impossible — réessayez."
                 } else {
                     val erreurServeur = ClientApi.lierCompteGoogle(jetonId)
-                    if (erreurServeur == null) {
-                        aConnexionReussie()
-                        return@launch
+                    if (erreurServeur != null) {
+                        erreur = erreurServeur
+                    } else {
+                        // Lie CE téléphone à l'espace du compte Google.
+                        lierTelephoneEtTerminer(
+                            nom = auth.user?.displayName ?: "",
+                            idToken = jetonId,
+                        )
                     }
-                    erreur = erreurServeur
                 }
             } catch (e: Exception) {
                 if (e !is GetCredentialCancellationException) {
@@ -149,7 +200,7 @@ fun EcranConnexion(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondMobileClair),
+            .background(FondSombre),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -178,7 +229,7 @@ fun EcranConnexion(
             // Sous-titre (le logo contient déjà « SMS GATEWAY »)
             Text(
                 text = "Espace client",
-                color = TexteSousTitreClair,
+                color = TexteSecondaire,
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.5.sp
@@ -216,7 +267,7 @@ fun EcranConnexion(
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
                             text = "Adresse e-mail",
-                            color = TexteTitreClair,
+                            color = TextePrincipal,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -228,18 +279,18 @@ fun EcranConnexion(
                                 Icon(
                                     imageVector = Icons.Filled.Email,
                                     contentDescription = null,
-                                    tint = TexteSousTitreClair,
+                                    tint = TexteSecondaire,
                                     modifier = Modifier.size(18.dp).padding(start = 6.dp)
                                 )
                             },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = FondInputClair,
-                                unfocusedContainerColor = FondInputClair,
+                                focusedContainerColor = FondSaisie,
+                                unfocusedContainerColor = FondSaisie,
                                 focusedBorderColor = GradientIndigoStart,
-                                unfocusedBorderColor = BordureInputClair,
-                                focusedTextColor = TexteTitreClair,
-                                unfocusedTextColor = TexteTitreClair,
+                                unfocusedBorderColor = CouleurBordure,
+                                focusedTextColor = TextePrincipal,
+                                unfocusedTextColor = TextePrincipal,
                             ),
                             shape = RoundedCornerShape(13.dp)
                         )
@@ -250,7 +301,7 @@ fun EcranConnexion(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(13.dp))
-                                .background(FondInputClair)
+                                .background(FondSaisie)
                                 .clickable { etape = "email"; erreur = null }
                                 .padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
@@ -258,7 +309,7 @@ fun EcranConnexion(
                         ) {
                             Text(
                                 text = email,
-                                color = TexteTitreClair,
+                                color = TextePrincipal,
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier.weight(1f)
@@ -274,7 +325,7 @@ fun EcranConnexion(
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
                             text = "Mot de passe",
-                            color = TexteTitreClair,
+                            color = TextePrincipal,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -291,7 +342,7 @@ fun EcranConnexion(
                                 Icon(
                                     imageVector = Icons.Filled.Lock,
                                     contentDescription = null,
-                                    tint = TexteSousTitreClair,
+                                    tint = TexteSecondaire,
                                     modifier = Modifier.size(18.dp).padding(start = 6.dp)
                                 )
                             },
@@ -300,19 +351,19 @@ fun EcranConnexion(
                                     Icon(
                                         imageVector = if (afficherMotDePasse) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                                         contentDescription = if (afficherMotDePasse) "Masquer" else "Afficher",
-                                        tint = TexteSousTitreClair,
+                                        tint = TexteSecondaire,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = FondInputClair,
-                                unfocusedContainerColor = FondInputClair,
+                                focusedContainerColor = FondSaisie,
+                                unfocusedContainerColor = FondSaisie,
                                 focusedBorderColor = GradientIndigoStart,
-                                unfocusedBorderColor = BordureInputClair,
-                                focusedTextColor = TexteTitreClair,
-                                unfocusedTextColor = TexteTitreClair,
+                                unfocusedBorderColor = CouleurBordure,
+                                focusedTextColor = TextePrincipal,
+                                unfocusedTextColor = TextePrincipal,
                             ),
                             shape = RoundedCornerShape(13.dp)
                         )
@@ -333,14 +384,14 @@ fun EcranConnexion(
                                 onCheckedChange = { resterConnecte = it },
                                 colors = CheckboxDefaults.colors(
                                     checkedColor = NeonShadowColor,
-                                    uncheckedColor = BordureInputClair
+                                    uncheckedColor = CouleurBordure
                                 ),
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 text = "Rester connecté",
-                                color = TexteTitreClair,
+                                color = TextePrincipal,
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -360,7 +411,12 @@ fun EcranConnexion(
 
                     // Bouton principal : Continuer (e-mail) / Se connecter (mot de passe)
                     BoutonNeon(
-                        libelle = if (etape == "email") "Continuer" else "Se connecter",
+                        libelle = when {
+                            googleEnCours -> "Connexion…"
+                            connexionEnCours -> "Vérification…"
+                            etape == "email" -> "Continuer"
+                            else -> "Se connecter"
+                        },
                         auClic = {
                             if (etape == "email") {
                                 if (email.trim().isEmpty()) {
@@ -372,9 +428,21 @@ fun EcranConnexion(
                             } else {
                                 if (motDePasse.isEmpty()) {
                                     erreur = "Saisissez votre mot de passe"
-                                } else {
+                                } else if (!connexionEnCours) {
                                     erreur = null
-                                    aConnexionReussie()
+                                    connexionEnCours = true
+                                    portee.launch {
+                                        try {
+                                            // Vérifie le compte côté serveur ET lie ce téléphone.
+                                            lierTelephoneEtTerminer(
+                                                nom = "",
+                                                email = email.trim(),
+                                                motDePasse = motDePasse,
+                                            )
+                                        } finally {
+                                            connexionEnCours = false
+                                        }
+                                    }
                                 }
                             }
                         },
@@ -387,15 +455,15 @@ fun EcranConnexion(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        HorizontalDivider(modifier = Modifier.weight(1f), color = BordureInputClair)
+                        HorizontalDivider(modifier = Modifier.weight(1f), color = CouleurBordure)
                         Text(
                             text = "ou continuer avec",
-                            color = TexteSousTitreClair,
+                            color = TexteSecondaire,
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(horizontal = 12.dp)
                         )
-                        HorizontalDivider(modifier = Modifier.weight(1f), color = BordureInputClair)
+                        HorizontalDivider(modifier = Modifier.weight(1f), color = CouleurBordure)
                     }
 
                     // Bouton Google « Continuer avec Google » (logo réel)
@@ -403,8 +471,8 @@ fun EcranConnexion(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
-                            .border(1.dp, BordureInputClair, RoundedCornerShape(14.dp))
-                            .background(BlancCarte)
+                            .border(1.dp, CouleurBordure, RoundedCornerShape(14.dp))
+                            .background(FondCarte)
                             .clickable { if (!googleEnCours) connexionGoogle() }
                             .padding(vertical = 13.dp),
                         contentAlignment = Alignment.Center
@@ -419,7 +487,7 @@ fun EcranConnexion(
                                 Spacer(Modifier.width(10.dp))
                                 Text(
                                     text = "Connexion…",
-                                    color = TexteTitreClair,
+                                    color = TextePrincipal,
                                     fontSize = 13.5.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -434,7 +502,7 @@ fun EcranConnexion(
                             Spacer(Modifier.width(10.dp))
                             Text(
                                 text = "Continuer avec Google",
-                                color = TexteTitreClair,
+                                color = TextePrincipal,
                                 fontSize = 13.5.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -454,7 +522,7 @@ fun EcranConnexion(
             ) {
                 Text(
                     text = "Pas encore de compte ? ",
-                    color = TexteSousTitreClair,
+                    color = TexteSecondaire,
                     fontSize = 13.sp
                 )
                 Text(

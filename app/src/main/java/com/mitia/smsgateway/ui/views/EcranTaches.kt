@@ -80,7 +80,7 @@ fun EcranTaches(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondMobileClair)
+            .background(FondSombre)
     ) {
         Column(
             modifier = Modifier
@@ -119,14 +119,14 @@ fun EcranTaches(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Tâches reçues",
-                        color = TexteTitreClair,
+                        color = TextePrincipal,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
                         text = "Messages traités par l'appareil · $texteDerniereSynchro",
-                        color = TexteSousTitreClair,
+                        color = TexteSecondaire,
                         fontSize = 11.5.sp,
                     )
                 }
@@ -136,14 +136,14 @@ fun EcranTaches(
                         .size(40.dp)
                         .shadow(4.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.05f))
                         .clip(CircleShape)
-                        .background(BlancCarte)
-                        .border(1.dp, BordureInputClair, CircleShape)
+                        .background(FondCarte)
+                        .border(1.dp, CouleurBordure, CircleShape)
                 ) {
                     IconButton(onClick = { rechercheVisible = !rechercheVisible }, modifier = Modifier.size(40.dp)) {
                         Icon(
                             imageVector = Icons.Filled.Search,
                             contentDescription = "Rechercher",
-                            tint = TexteTitreClair,
+                            tint = TextePrincipal,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -234,17 +234,17 @@ fun EcranTaches(
                 OutlinedTextField(
                     value = recherche,
                     onValueChange = { recherche = it },
-                    placeholder = { Text("Rechercher numéro ou message…", color = TexteSousTitreClair) },
-                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = TexteSousTitreClair) },
+                    placeholder = { Text("Rechercher numéro ou message…", color = TexteSecondaire) },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = TexteSecondaire) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = FondInputClair,
-                        unfocusedContainerColor = FondInputClair,
+                        focusedContainerColor = FondSaisie,
+                        unfocusedContainerColor = FondSaisie,
                         focusedBorderColor = GradientIndigoStart,
-                        unfocusedBorderColor = BordureInputClair,
-                        focusedTextColor = TexteTitreClair,
-                        unfocusedTextColor = TexteTitreClair,
+                        unfocusedBorderColor = CouleurBordure,
+                        focusedTextColor = TextePrincipal,
+                        unfocusedTextColor = TextePrincipal,
                         cursorColor = GradientIndigoStart,
                     ),
                     shape = RoundedCornerShape(13.dp),
@@ -261,7 +261,7 @@ fun EcranTaches(
             ) {
                 Text(
                     text = "Activité récente",
-                    color = TexteTitreClair,
+                    color = TextePrincipal,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                 )
@@ -303,14 +303,14 @@ fun EcranTaches(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "0345726237",
-                                color = TexteTitreClair,
+                                color = TextePrincipal,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
                                 text = "commande reçu",
-                                color = TexteSousTitreClair,
+                                color = TexteSecondaire,
                                 fontSize = 12.sp,
                             )
                         }
@@ -318,7 +318,7 @@ fun EcranTaches(
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
                                 text = "08:56",
-                                color = TexteSousTitreClair,
+                                color = TexteSecondaire,
                                 fontSize = 11.sp,
                             )
                             Spacer(Modifier.height(4.dp))
@@ -327,7 +327,7 @@ fun EcranTaches(
                     }
 
                     Spacer(Modifier.height(14.dp))
-                    HorizontalDivider(color = BordureCarteClair, thickness = 1.dp)
+                    HorizontalDivider(color = CouleurBordure, thickness = 1.dp)
                     Spacer(Modifier.height(18.dp))
 
                     // État vide : cercle gris avec icône avion, "Tout est à jour" + sous-titre
@@ -347,21 +347,21 @@ fun EcranTaches(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Send,
                                 contentDescription = null,
-                                tint = TexteSousTitreClair,
+                                tint = TexteSecondaire,
                                 modifier = Modifier.size(22.dp)
                             )
                         }
                         Spacer(Modifier.height(12.dp))
                         Text(
                             text = "Tout est à jour",
-                            color = TexteTitreClair,
+                            color = TextePrincipal,
                             fontSize = 14.5.sp,
                             fontWeight = FontWeight.Bold,
                         )
                         Spacer(Modifier.height(2.dp))
                         Text(
                             text = "Les prochaines tâches apparaîtront ici automatiquement",
-                            color = TexteSousTitreClair,
+                            color = TexteSecondaire,
                             fontSize = 11.5.sp,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         )
@@ -418,14 +418,14 @@ private fun PiluleFiltre(
     Box(
         modifier = Modifier
             .clip(CircleShape)
-            .background(if (selectionne) GradientIndigoStart else BlancCarte)
-            .border(1.dp, if (selectionne) GradientIndigoStart else BordureInputClair, CircleShape)
+            .background(if (selectionne) GradientIndigoStart else FondCarte)
+            .border(1.dp, if (selectionne) GradientIndigoStart else CouleurBordure, CircleShape)
             .clickable(onClick = auClic)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Text(
             text = libelle,
-            color = if (selectionne) Color.White else TexteCorpsClair,
+            color = if (selectionne) Color.White else TexteSecondaire,
             fontSize = 12.sp,
             fontWeight = if (selectionne) FontWeight.Bold else FontWeight.Medium
         )

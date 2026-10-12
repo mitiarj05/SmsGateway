@@ -27,10 +27,6 @@ export default function PageEnvoyerEspace() {
   const nbCaracteres = message.length
   const nbSegments = Math.ceil(nbCaracteres / 160) || 1
 
-  function appliquerModele(texte: string) {
-    setMessage(texte)
-  }
-
   async function soumettre(e: React.FormEvent) {
     e.preventDefault()
     setEnvoiEnCours(true)
@@ -232,42 +228,6 @@ export default function PageEnvoyerEspace() {
                 <span><b>Quota</b> : 20 SMS/h par téléphone du parc.</span>
               </li>
             </ul>
-          </div>
-
-          {/* Card 3 : Modèles rapides */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white">Modèles rapides</h3>
-
-            <div className="flex flex-wrap gap-2 text-xs font-semibold">
-              <button
-                type="button"
-                onClick={() => appliquerModele("Bonjour ! Votre commande #4821 est prête. Retrait possible dès aujourd'hui au magasin. Merci ! {LIEN}")}
-                className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700 hover:bg-slate-200 dark:bg-zinc-800 dark:text-zinc-200"
-              >
-                Confirmation commande
-              </button>
-              <button
-                type="button"
-                onClick={() => appliquerModele("Rappel : Votre rendez-vous est confirmé pour demain à 10:00 au cabinet. {LIEN}")}
-                className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700 hover:bg-slate-200 dark:bg-zinc-800 dark:text-zinc-200"
-              >
-                Rappel rendez-vous
-              </button>
-              <button
-                type="button"
-                onClick={() => appliquerModele("Promo Flash ! Profitez de -20% sur tout le magasin ce week-end avec le code PROMO20. {LIEN}")}
-                className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700 hover:bg-slate-200 dark:bg-zinc-800 dark:text-zinc-200"
-              >
-                Promo du jour
-              </button>
-              <button
-                type="button"
-                onClick={() => appliquerModele("Votre colis est en cours de livraison par notre livreur. Suivez votre colis ici : {LIEN}")}
-                className="rounded-full bg-slate-100 px-3 py-1.5 text-slate-700 hover:bg-slate-200 dark:bg-zinc-800 dark:text-zinc-200"
-              >
-                Livraison en route
-              </button>
-            </div>
           </div>
 
         </div>

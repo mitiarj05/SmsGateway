@@ -95,6 +95,56 @@ object ClientApi {
     }
 
     /**
+     * Lie CE téléphone à l'espace du client connecté sur l'app.
+     * Authentification : id_token Firebase (Google natif) OU email + mot_de_passe.
+     * Le serveur retrouve l'application, lie l'appareil (anti-doublon par
+     * android_id) et renvoie ses identifiants à stocker localement.
+     */
+    suspend fun lierMonTelephone(
+        nom: String,
+        androidId: String,
+        idToken: String? = null,
+        email: String? = null,
+        motDePasse: String? = null,
+    ): ResultatEnregistrement = withContext(Dispatchers.IO) {
+        try {
+            val carte = mutableMapOf("nom" to nom, "android_id" to androidId)
+            if (!idToken.isNullOrBlank()) carte["id_token"] = idToken
+            if (!email.isNullOrBlank()) carte["email"] = email
+            if (!motDePasse.isNullOrBlank()) carte["mot_de_passe"] = motDePasse
+            val corps = gson.toJson(carte).toRequestBody(TYPE_JSON)
+            val requete = Request.Builder()
+                .url("$urlBase/api/appareils/auto-lier")
+                .post(corps)
+                .build()
+            clientHttp.newCall(requete).execute().use { reponse ->
+                val json = reponse.body?.string() ?: ""
+                @Suppress("UNCHECKED_CAST")
+                val racine = try {
+                    gson.fromJson(json, Map::class.java) as? Map<String, Any?>
+                } catch (_: Exception) {
+                    null
+                }
+                if (!reponse.isSuccessful) {
+                    val message = racine?.get("error") as? String
+                    return@withContext ResultatEnregistrement.ErreurHttp(reponse.code, message)
+                }
+                @Suppress("UNCHECKED_CAST")
+                val appareil = racine?.get("device") as? Map<String, Any?>
+                val id = appareil?.get("id") as? String
+                val jeton = appareil?.get("token") as? String
+                if (id.isNullOrBlank() || jeton.isNullOrBlank()) {
+                    return@withContext ResultatEnregistrement.ErreurHttp(reponse.code, "Réponse serveur inattendue")
+                }
+                return@withContext ResultatEnregistrement.Succes(id, jeton)
+            }
+        } catch (e: Exception) {
+            Log.e(ETIQUETTE, "lierMonTelephone échoué ($urlBase)", e)
+            return@withContext ResultatEnregistrement.ErreurReseau
+        }
+    }
+
+    /**
      * Teste la joignabilité du serveur (GET racine, attendue 200).
      * Utilisé par l'écran d'accueil, avant d'enregistrer l'adresse.
      */
@@ -126,11 +176,15 @@ object ClientApi {
      * Enregistre un nouvel appareil auprès du serveur.
      * Exige le jeton ID Firebase Auth (connexion anonyme) : le serveur
      * refuse tout enregistrement non authentifié (401).
+     * androidId (optionnel) : identifiant matériel pour éviter qu'un même
+     * téléphone ne s'inscrive deux fois dans un même espace.
      */
-    suspend fun enregistrerAppareil(nom: String, jetonId: String): ResultatEnregistrement = withContext(Dispatchers.IO) {
+    suspend fun enregistrerAppareil(nom: String, jetonId: String, androidId: String? = null): ResultatEnregistrement = withContext(Dispatchers.IO) {
         try {
-            val corps = gson.toJson(mapOf("nom" to nom))
-                .toRequestBody(TYPE_JSON)
+            val corps = gson.toJson(
+                if (!androidId.isNullOrBlank()) mapOf("nom" to nom, "android_id" to androidId)
+                else mapOf("nom" to nom)
+            ).toRequestBody(TYPE_JSON)
 
             val requete = Request.Builder()
                 .url("$urlBase/api/devices/register")

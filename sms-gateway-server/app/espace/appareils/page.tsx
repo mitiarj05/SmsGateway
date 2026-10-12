@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Smartphone, RefreshCw, Loader2, QrCode, Zap, ArrowUpRight
+  Smartphone, RefreshCw, Loader2, QrCode, Zap, ArrowUpRight, Trash2
 } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import ModalAjouterAppareil from '../../../composants/ModalAjouterAppareil'
@@ -13,6 +13,7 @@ interface AppareilParc {
   statut: string
   sms_last_hour: number
   derniere_activite: string | null
+  supprimable?: boolean
 }
 
 export default function PageAppareilsClient() {
@@ -20,6 +21,7 @@ export default function PageAppareilsClient() {
   const [chargement, setChargement] = useState(true)
   const [actualisation, setActualisation] = useState(false)
   const [modalAjoutOuverte, setModalAjoutOuverte] = useState(false)
+  const [erreur, setErreur] = useState<string | null>(null)
 
   const chargerDonnees = useCallback(async (silencieux = false) => {
     if (!silencieux) setActualisation(true)
@@ -53,6 +55,22 @@ export default function PageAppareilsClient() {
   const enLigneCount = appareils.filter((a) => a.statut === 'EN_LIGNE').length
   const horsLigneCount = totalAppareils - enLigneCount
   const debitTotal = appareils.reduce((s, a) => s + (a.sms_last_hour ?? 0), 0)
+
+  async function supprimerAppareil(a: AppareilParc) {
+    if (!window.confirm(`Supprimer « ${a.nom} » de votre parc ? Ses tâches passées sont conservées.`)) return
+    setErreur(null)
+    try {
+      const res = await fetch(`/api/espace/appareils/${a.id}`, { method: 'DELETE' })
+      const donnees = await res.json().catch(() => null)
+      if (!res.ok) {
+        setErreur(donnees?.error ?? 'Suppression impossible')
+        return
+      }
+      await chargerDonnees(true)
+    } catch {
+      setErreur('Serveur injoignable')
+    }
+  }
 
   function tempsEcouleFr(dateIso: string | null): string {
     if (!dateIso) return '—'
@@ -89,9 +107,9 @@ export default function PageAppareilsClient() {
               <Zap className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold">Votre parc d'envoi mutualisé</h2>
+              <h2 className="text-base font-bold">Votre parc d'envoi personnel</h2>
               <p className="text-xs text-white/60">
-                Vos SMS partent depuis ces téléphones, répartis automatiquement.
+                Vos téléphones uniquement — vos SMS partent par votre carte SIM.
               </p>
             </div>
           </div>
@@ -106,13 +124,12 @@ export default function PageAppareilsClient() {
         <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">TÉLÉPHONES ASSOCIÉS</p>
           <p className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{totalAppareils}</p>
-          <p className="text-[11px] text-slate-400">{enLigneCount} en ligne · {horsLigneCount} hors ligne</p>
-        </div>
+          <p className="text-[11px] text-slate-400">{enLigneCount} en ligne · {horsLigneCount} hors ligne</p>        </div>
 
         <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">CAPACITÉ TOTALE</p>
           <p className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{totalAppareils} <span className="text-sm font-bold text-slate-400">appareil{totalAppareils > 1 ? 's' : ''}</span></p>
-          <p className="text-[11px] text-slate-400">Dans votre parc visible</p>
+          <p className="text-[11px] text-slate-400">Vos appareils liés</p>
         </div>
 
         <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
@@ -140,22 +157,28 @@ export default function PageAppareilsClient() {
               <RefreshCw className={`h-3.5 w-3.5 ${actualisation ? 'animate-spin' : ''}`} /> Actualiser
             </button>
           </div>
+          {erreur && (
+            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-semibold text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+              {erreur}
+            </p>
+          )}
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead>
+                <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:border-zinc-800">
                   <th className="pb-3 pr-4">TÉLÉPHONE</th>
                   <th className="pb-3 pr-4">STATUT</th>
                   <th className="pb-3 pr-4">DÉBIT (SMS/H)</th>
                   <th className="pb-3 pr-4">DERNIÈRE ACTIVITÉ</th>
+                  <th className="pb-3 text-right">ACTIONS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
                 {appareils.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="py-10 text-center text-xs text-slate-400 dark:text-zinc-500">
-                      Aucun téléphone pour le moment.
+                    <td colSpan={5} className="py-10 text-center text-xs text-slate-400 dark:text-zinc-500">
+                      Aucun téléphone lié — associez votre premier téléphone pour commencer à envoyer.
                     </td>
                   </tr>
                 )}
@@ -181,6 +204,18 @@ export default function PageAppareilsClient() {
                     </td>
                     <td className="py-4 pr-4 font-semibold">{a.sms_last_hour ?? 0} SMS/h</td>
                     <td className="py-4 pr-4 text-slate-400">{tempsEcouleFr(a.derniere_activite)}</td>
+                    <td className="py-4 text-right">
+                      {a.supprimable && (
+                        <button
+                          type="button"
+                          onClick={() => supprimerAppareil(a)}
+                          title={`Supprimer ${a.nom} de votre parc`}
+                          className="inline-flex items-center justify-center rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </td>
                   </tr>
                   )
                 })}

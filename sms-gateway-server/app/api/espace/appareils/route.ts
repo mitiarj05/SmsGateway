@@ -5,8 +5,8 @@ import { marquerAppareilsInactifs } from '@/lib/statut-appareil'
 import { obtenirUsageAppareil } from '@/lib/selection-appareil'
 
 /**
- * GET /api/espace/appareils — parc d'envoi visible du client connecté.
- * Les appareils forment un parc mutualisé : le client y voit l'état
+ * GET /api/espace/appareils — parc d'envoi DU client connecté.
+ * Modèle individuel : seuls les appareils liés à SON application
  * (pas les secrets) pour comprendre par où partent ses SMS.
  */
 export async function GET(request: NextRequest) {
@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
     await marquerAppareilsInactifs()
     const { data, error } = await supabaseAdmin
       .from('appareils')
-      .select('id, nom, statut, derniere_activite, date_creation')
+      .select('id, nom, statut, derniere_activite, date_creation, id_application')
+      .eq('id_application', idApplication)
       .order('statut', { ascending: false })
       .order('derniere_activite', { ascending: false })
     if (error) {
@@ -32,6 +33,8 @@ export async function GET(request: NextRequest) {
         sms_last_hour: await obtenirUsageAppareil(d.id),
         derniere_activite: d.derniere_activite,
         created_at: d.date_creation,
+        // Liste déjà restreinte à MON espace : tout est supprimable.
+        supprimable: true,
       }))
     )
     return NextResponse.json({ appareils })

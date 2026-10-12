@@ -243,7 +243,7 @@ fun EcranStatut(
                             letterSpacing = 1.4.sp
                         )
                         Text(
-                            text = nomAppareil.ifBlank { "Infinix X689C" },
+                            text = nomAppareil.ifBlank { android.os.Build.MODEL },
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 11.sp,
                         )

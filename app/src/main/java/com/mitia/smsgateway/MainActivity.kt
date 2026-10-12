@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.firebase.auth.FirebaseAuth
 import com.mitia.smsgateway.data.local.PreferencesAppareil
 import com.mitia.smsgateway.service.ServicePasserelleSms
 import com.mitia.smsgateway.ui.NavigationApp
@@ -395,8 +396,19 @@ fun EcranPrincipal(
                 }
             },
             aDeconnecter = {
+                // Déconnexion complète du téléphone : serveur prévenu + service
+                // arrêté (aArretService) + session Firebase fermée + retour au login.
                 aArretService()
-                messageParametres = "Service arrêté : l'appareil n'envoie plus de SMS."
+                try {
+                    FirebaseAuth.getInstance().signOut()
+                } catch (_: Exception) {
+                }
+                portee.launch {
+                    PreferencesAppareil.enregistrerConnecteSession(context, false)
+                }
+                connecteSession = false
+                affichageConnexionForcee = false
+                messageParametres = "Téléphone déconnecté : service arrêté, session fermée."
             },
             permissionSms = permissionSms,
             permissionNotifications = permissionNotifications,

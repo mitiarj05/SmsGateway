@@ -65,6 +65,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // 2ter. Modèle individuel : sans téléphone lié, l'envoi est impossible.
+    const { count: nbAppareils } = await supabaseAdmin
+      .from('appareils')
+      .select('id', { count: 'exact', head: true })
+      .eq('id_application', client.id)
+    if (!nbAppareils) {
+      return NextResponse.json(
+        { error: 'Aucun téléphone lié à votre espace — associez-en un pour envoyer.' },
+        { status: 400 }
+      )
+    }
+
     // 2bis. Quota mensuel du client (facturation) : refusé AVANT toute création.
     const { data: ficheClient } = await supabaseAdmin
       .from('applications')
@@ -111,8 +123,9 @@ export async function POST(request: NextRequest) {
       programmePour = d
     }
 
-    // 3. Quota strict : refuser AVANT de créer la tâche si tout est saturé
-    const disponibilite = programmePour ? null : await obtenirDisponibiliteAppareil()
+    // 3. Quota strict : refuser AVANT de créer la tâche si tout est saturé.
+    // Modèle individuel : seuls les appareils de CE client comptent.
+    const disponibilite = programmePour ? null : await obtenirDisponibiliteAppareil(client.id)
     if (disponibilite?.sature) {
       return NextResponse.json(
         {

@@ -81,6 +81,34 @@ export async function PATCH(
         if (!application) {
           return NextResponse.json({ error: 'Client introuvable' }, { status: 404 })
         }
+        // Anti-doublon : même téléphone déjà lié à cet espace ?
+        try {
+          const { data: appareil } = await supabaseAdmin
+            .from('appareils')
+            .select('android_id')
+            .eq('id', id)
+            .single()
+          const androidId = (appareil as { android_id?: string | null } | null)?.android_id
+          if (androidId) {
+            const { data: doublons } = await supabaseAdmin
+              .from('appareils')
+              .select('id, nom')
+              .eq('android_id', androidId)
+              .eq('id_application', id_application)
+              .neq('id', id)
+              .limit(1)
+            if (doublons?.[0]) {
+              return NextResponse.json(
+                {
+                  error: `Ce téléphone est déjà lié à cet espace (« ${(doublons[0] as { nom: string }).nom} »)`,
+                },
+                { status: 409 }
+              )
+            }
+          }
+        } catch {
+          // Pré-migration (colonne absente) : on lie sans contrôle.
+        }
       }
       donneesMaj.id_application = id_application
     }
@@ -135,6 +163,13 @@ export async function DELETE(
 
     if (erreurDetachement) {
       return NextResponse.json({ error: erreurDetachement.message }, { status: 500 })
+    }
+
+    // Détacher aussi les SMS reçus via cet appareil (historique conservé).
+    try {
+      await supabaseAdmin.from('reponses').update({ id_appareil: null }).eq('id_appareil', id)
+    } catch {
+      /* colonne absente — on continue */
     }
 
     const { error } = await supabaseAdmin

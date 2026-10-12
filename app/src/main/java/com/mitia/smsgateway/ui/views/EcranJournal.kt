@@ -90,7 +90,7 @@ fun EcranJournal(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondMobileClair)
+            .background(FondSombre)
     ) {
         Column(
             modifier = Modifier
@@ -129,14 +129,14 @@ fun EcranJournal(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Journal",
-                        color = TexteTitreClair,
+                        color = TextePrincipal,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
                         text = "Événements techniques",
-                        color = TexteSousTitreClair,
+                        color = TexteSecondaire,
                         fontSize = 11.5.sp,
                     )
                 }
@@ -146,14 +146,14 @@ fun EcranJournal(
                         .size(40.dp)
                         .shadow(4.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.05f))
                         .clip(CircleShape)
-                        .background(BlancCarte)
-                        .border(1.dp, BordureInputClair, CircleShape)
+                        .background(FondCarte)
+                        .border(1.dp, CouleurBordure, CircleShape)
                 ) {
                     IconButton(onClick = aExporter, modifier = Modifier.size(40.dp)) {
                         Icon(
                             imageVector = Icons.Filled.Download,
                             contentDescription = "Exporter",
-                            tint = TexteTitreClair,
+                            tint = TextePrincipal,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -167,9 +167,9 @@ fun EcranJournal(
                 // Tuile 1
                 CarteGlass(modifier = Modifier.weight(1f)) {
                     Column {
-                        Text(text = "$total", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = TexteTitreClair)
+                        Text(text = "$total", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = TextePrincipal)
                         Spacer(Modifier.height(2.dp))
-                        Text(text = "événements", fontSize = 10.5.sp, color = TexteSousTitreClair)
+                        Text(text = "événements", fontSize = 10.5.sp, color = TexteSecondaire)
                     }
                 }
 
@@ -189,9 +189,9 @@ fun EcranJournal(
                 // Tuile 3
                 CarteGlass(modifier = Modifier.weight(1f)) {
                     Column {
-                        Text(text = dernierHeualer(dernierHeure), fontSize = 21.sp, fontWeight = FontWeight.ExtraBold, color = TexteTitreClair)
+                        Text(text = dernierHeualer(dernierHeure), fontSize = 21.sp, fontWeight = FontWeight.ExtraBold, color = TextePrincipal)
                         Spacer(Modifier.height(2.dp))
-                        Text(text = "dernier", fontSize = 10.5.sp, color = TexteSousTitreClair)
+                        Text(text = "dernier", fontSize = 10.5.sp, color = TexteSecondaire)
                     }
                 }
             }
@@ -227,13 +227,13 @@ fun EcranJournal(
             ) {
                 Text(
                     text = "Aujourd'hui",
-                    color = TexteTitreClair,
+                    color = TextePrincipal,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
                     text = "$total événements",
-                    color = TexteSousTitreClair,
+                    color = TexteSecondaire,
                     fontSize = 11.5.sp,
                 )
             }
@@ -246,7 +246,7 @@ fun EcranJournal(
                     evenementsVisibles.forEachIndexed { index, ev ->
                         LigneJournalCapture(evenement = ev)
                         if (index < evenementsVisibles.size - 1) {
-                            HorizontalDivider(color = BordureCarteClair, thickness = 0.5.dp)
+                            HorizontalDivider(color = CouleurBordure, thickness = 0.5.dp)
                         }
                     }
                 }
@@ -292,16 +292,16 @@ fun EcranJournal(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(14.dp))
-                        .border(1.dp, BordureInputClair, RoundedCornerShape(14.dp))
-                        .background(BlancCarte)
+                        .border(1.dp, CouleurBordure, RoundedCornerShape(14.dp))
+                        .background(FondCarte)
                         .clickable(onClick = aExporter)
                         .padding(vertical = 14.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Upload, contentDescription = null, tint = TexteCorpsClair, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Filled.Upload, contentDescription = null, tint = TexteSecondaire, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text("Exporter", color = TexteTitreClair, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
+                        Text("Exporter", color = TextePrincipal, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -320,14 +320,14 @@ private fun PiluleFiltre(
     Box(
         modifier = Modifier
             .clip(CircleShape)
-            .background(if (selectionne) GradientIndigoStart else BlancCarte)
-            .border(1.dp, if (selectionne) GradientIndigoStart else BordureInputClair, CircleShape)
+            .background(if (selectionne) GradientIndigoStart else FondCarte)
+            .border(1.dp, if (selectionne) GradientIndigoStart else CouleurBordure, CircleShape)
             .clickable(onClick = auClic)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Text(
             text = libelle,
-            color = if (selectionne) Color.White else TexteCorpsClair,
+            color = if (selectionne) Color.White else TexteSecondaire,
             fontSize = 12.sp,
             fontWeight = if (selectionne) FontWeight.Bold else FontWeight.Medium
         )
@@ -363,14 +363,14 @@ private fun LigneJournalCapture(evenement: ElementEvenement) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = "09:43:02",
-                color = TexteSousTitreClair,
+                color = TexteSecondaire,
                 fontSize = 10.5.sp,
                 fontWeight = FontWeight.Medium
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 text = evenement.message,
-                color = if (estErreur) RougePastelTexte else TexteTitreClair,
+                color = if (estErreur) RougePastelTexte else TextePrincipal,
                 fontSize = 12.5.sp,
                 fontWeight = if (estErreur) FontWeight.Bold else FontWeight.Medium
             )
@@ -378,7 +378,7 @@ private fun LigneJournalCapture(evenement: ElementEvenement) {
         Spacer(Modifier.width(8.dp))
         Text(
             text = "passerelle",
-            color = TexteSousTitreClair,
+            color = TexteSecondaire,
             fontSize = 10.sp,
         )
     }
