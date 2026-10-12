@@ -11,15 +11,52 @@ interface PropsModalAjout {
 
 export default function ModalAjouterAppareil({ ouvert, onFermer }: PropsModalAjout) {
   const [urlServeur, setUrlServeur] = useState('')
+  const [code, setCode] = useState<string | null>(null)
+  const [expireA, setExpireA] = useState<number>(0)
+  const [maintenant, setMaintenant] = useState<number>(Date.now())
+  const [chargement, setChargement] = useState(false)
+  const [erreur, setErreur] = useState<string | null>(null)
   const [copie, setCopie] = useState(false)
+
+  async function genererCode() {
+    setChargement(true)
+    setErreur(null)
+    try {
+      const reponse = await fetch('/api/espace/codes-liaison', { method: 'POST' })
+      const donnees = await reponse.json().catch(() => null)
+      if (!reponse.ok) {
+        setErreur(donnees?.error ?? 'Génération impossible')
+        return
+      }
+      setCode(donnees.code)
+      setExpireA(donnees.expire_a)
+    } catch {
+      setErreur('Serveur injoignable')
+    } finally {
+      setChargement(false)
+    }
+  }
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setUrlServeur(window.location.origin)
     }
-  }, [])
+    if (ouvert) genererCode()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ouvert])
+
+  useEffect(() => {
+    if (!ouvert) return
+    const minuteur = setInterval(() => setMaintenant(Date.now()), 1000)
+    return () => clearInterval(minuteur)
+  }, [ouvert])
 
   if (!ouvert) return null
+
+  const secondesRestantes = Math.max(0, Math.round((expireA - maintenant) / 1000))
+  const valeurQr = code ? `${urlServeur}/lier/${code}` : urlServeur
+  const mm = String(Math.floor(secondesRestantes / 60)).padStart(2, '0')
+  const ss = String(secondesRestantes % 60).padStart(2, '0')
 
   function copier(texte: String) {
     navigator.clipboard?.writeText(texte.toString())
@@ -52,13 +89,20 @@ export default function ModalAjouterAppareil({ ouvert, onFermer }: PropsModalAjo
 
         {/* Contenu principal QR Code */}
         <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-50 border border-slate-200/80 dark:bg-zinc-800/50 dark:border-zinc-700/80 text-center space-y-4">
-          <QrCodeSvg valeur={urlServeur} taille={180} etiquette="Scannez depuis l'application SMSTSIKA" />
+          {chargement && !code ? (
+            <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Génération du code…</p>
+          ) : (
+            <QrCodeSvg valeur={valeurQr} taille={180} etiquette="Scannez depuis l'application SMSTSIKA" />
+          )}
+          {erreur && (
+            <p className="text-xs font-semibold text-red-600 dark:text-red-400">{erreur}</p>
+          )}
           <div className="space-y-1">
             <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-              Appairage automatique du serveur
+              Liaison à votre espace en un flash
             </p>
             <p className="text-[11px] text-slate-500 dark:text-zinc-400 max-w-sm">
-              Ouvrez l'application SMSTSIKA sur le téléphone, appuyez sur « Scanner QR » puis pointez la caméra sur ce code pour enregistrer le serveur en 1 seconde.
+              Ouvrez l'application SMSTSIKA sur le téléphone, appuyez sur « Scanner QR » puis pointez ce code : le téléphone rejoint votre espace.
             </p>
           </div>
         </div>

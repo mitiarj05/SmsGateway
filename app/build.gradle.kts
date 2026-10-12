@@ -73,4 +73,6 @@ dependencies {
 implementation(libs.androidx.credentials)
 implementation(libs.androidx.credentials.play.services.auth)
 implementation(libs.googleid)
+// Scan QR de liaison (zxing)
+implementation(libs.zxing.android.embedded)
 }

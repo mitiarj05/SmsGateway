@@ -145,6 +145,54 @@ object ClientApi {
     }
 
     /**
+     * Consomme un code QR de liaison (POST /api/appareils/lier-par-code).
+     * Exige le jeton ID Firebase + l'URL du serveur lue dans le QR.
+     * Retourne les identifiants à mémoriser, comme enregistrerAppareil.
+     */
+    suspend fun lierParCode(
+        urlServeur: String,
+        code: String,
+        nom: String,
+        androidId: String,
+        jetonId: String,
+    ): ResultatEnregistrement = withContext(Dispatchers.IO) {
+        try {
+            val corps = gson.toJson(
+                mapOf("code" to code, "nom" to nom, "android_id" to androidId)
+            ).toRequestBody(TYPE_JSON)
+            val requete = Request.Builder()
+                .url("${urlServeur.trimEnd('/')}/api/appareils/lier-par-code")
+                .header("Authorization", "Bearer $jetonId")
+                .post(corps)
+                .build()
+            clientHttp.newCall(requete).execute().use { reponse ->
+                val json = reponse.body?.string() ?: ""
+                @Suppress("UNCHECKED_CAST")
+                val racine = try {
+                    gson.fromJson(json, Map::class.java) as? Map<String, Any?>
+                } catch (_: Exception) {
+                    null
+                }
+                if (!reponse.isSuccessful) {
+                    val message = racine?.get("error") as? String
+                    return@withContext ResultatEnregistrement.ErreurHttp(reponse.code, message)
+                }
+                @Suppress("UNCHECKED_CAST")
+                val appareil = racine?.get("device") as? Map<String, Any?>
+                val id = appareil?.get("id") as? String
+                val jeton = appareil?.get("token") as? String
+                if (id.isNullOrBlank() || jeton.isNullOrBlank()) {
+                    return@withContext ResultatEnregistrement.ErreurHttp(reponse.code, "Réponse serveur inattendue")
+                }
+                return@withContext ResultatEnregistrement.Succes(id, jeton)
+            }
+        } catch (e: Exception) {
+            Log.e(ETIQUETTE, "lierParCode échoué ($urlServeur)", e)
+            return@withContext ResultatEnregistrement.ErreurReseau
+        }
+    }
+
+    /**
      * Teste la joignabilité du serveur (GET racine, attendue 200).
      * Utilisé par l'écran d'accueil, avant d'enregistrer l'adresse.
      */

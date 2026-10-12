@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -94,6 +95,7 @@ fun EcranConnexion(
     var erreur by remember { mutableStateOf<String?>(null) }
     var googleEnCours by remember { mutableStateOf(false) }
     var connexionEnCours by remember { mutableStateOf(false) }
+    var scanQrOuvert by remember { mutableStateOf(false) }
     val contexte = LocalContext.current
     val portee = rememberCoroutineScope()
 
@@ -510,6 +512,34 @@ fun EcranConnexion(
                         }
                     }
                     } // fin etape email (séparateur + Google)
+
+                    // Bouton scan QR (visible aux deux étapes) : lier ce téléphone via QR.
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .border(1.dp, CouleurBordure, RoundedCornerShape(14.dp))
+                            .background(FondCarte)
+                            .clickable { scanQrOuvert = true }
+                            .padding(vertical = 13.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Filled.QrCodeScanner,
+                                contentDescription = null,
+                                tint = TextePrincipal,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                text = "Scanner un QR de liaison",
+                                color = TextePrincipal,
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
             }
 
@@ -535,6 +565,19 @@ fun EcranConnexion(
             }
 
             Spacer(Modifier.height(16.dp))
+        }
+
+        if (scanQrOuvert) {
+            EcranScanQr(
+                aLiaisonReussie = { id, jeton ->
+                    scanQrOuvert = false
+                    portee.launch {
+                        PreferencesAppareil.enregistrer(contexte, id, jeton)
+                        aConnexionReussie()
+                    }
+                },
+                aFermer = { scanQrOuvert = false }
+            )
         }
     }
 }

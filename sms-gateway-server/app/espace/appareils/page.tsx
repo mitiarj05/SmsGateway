@@ -266,17 +266,20 @@ export default function PageAppareilsClient() {
             </div>
           </div>
 
-          {/* QR de liaison Widget Card */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 text-center space-y-3">
+          {/* QR de liaison : ouvre la modale (vrai QR, 10 min) */}
+          <button
+            onClick={() => setModalAjoutOuverte(true)}
+            className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 text-center space-y-3 w-full transition hover:border-[#2563EB]/40"
+          >
             <p className="text-xs font-bold text-slate-900 dark:text-white">QR de liaison</p>
             <div className="flex justify-center p-4">
               <QrCode className="h-24 w-24 text-slate-800 dark:text-white" />
             </div>
-            <p className="text-[11px] text-slate-400">Expire dans 09:42</p>
-            <button onClick={() => setModalAjoutOuverte(true)} className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-200 w-full justify-center">
-              <RefreshCw className="h-3.5 w-3.5" /> Régénérer
-            </button>
-          </div>
+            <p className="text-[11px] text-slate-400">Flashez pour lier un téléphone à votre espace</p>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs dark:border-zinc-700 dark:text-zinc-200">
+              <Smartphone className="h-3.5 w-3.5" /> Associer un téléphone
+            </span>
+          </button>
         </div>
 
       </div>
