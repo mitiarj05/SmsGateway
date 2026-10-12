@@ -36,7 +36,6 @@ export interface LigneFacturation {
   total_facture: number
   sms_envoyes: number
   sms_recus: number
-  clics: number
   echecs: number
   quota_mensuel: number | null
   depassement: boolean
@@ -52,7 +51,7 @@ export async function lireFacturation(mois: string): Promise<LigneFacturation[]>
 
   const lignes: LigneFacturation[] = []
   for (const app of applications ?? []) {
-    const [total, envoyes, echecs, recus, clics] = await Promise.all([
+    const [total, envoyes, echecs, recus] = await Promise.all([
       compterEnvoisMois(app.id, mois),
       supabaseAdmin.from('taches').select('id', { count: 'exact', head: true })
         .eq('id_application', app.id).eq('statut', STATUT_TACHE.ENVOYE).gte('date_creation', debut)
@@ -63,14 +62,11 @@ export async function lireFacturation(mois: string): Promise<LigneFacturation[]>
       supabaseAdmin.from('reponses').select('id', { count: 'exact', head: true })
         .eq('id_application', app.id).gte('date_reception', debut)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('liens').select('id', { count: 'exact', head: true })
-        .eq('id_application', app.id).eq('statut', 'CLIQUE').gte('date_clic', debut)
-        .then((r) => r.count ?? 0),
     ])
     await supabaseAdmin.from('facturation').upsert(
       {
         id_application: app.id, mois, sms_envoyes: envoyes,
-        sms_recus: recus, clics, echecs, date_maj: new Date().toISOString(),
+        sms_recus: recus, clics: 0, echecs, date_maj: new Date().toISOString(),
       },
       { onConflict: 'id_application,mois' }
     )
@@ -78,7 +74,7 @@ export async function lireFacturation(mois: string): Promise<LigneFacturation[]>
     lignes.push({
       id_application: app.id, nom: app.nom, mois,
       total_facture: total,
-      sms_envoyes: envoyes, sms_recus: recus, clics, echecs,
+      sms_envoyes: envoyes, sms_recus: recus, echecs,
       quota_mensuel: quota,
       depassement: quota !== null && total >= quota,
     })

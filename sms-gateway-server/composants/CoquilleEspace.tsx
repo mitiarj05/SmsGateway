@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Inbox, Webhook, Receipt, Send, Link2, BookOpen, List,
+  Inbox, Webhook, Receipt, Send, BookOpen, List,
   Moon, Sun, Search, Bell, AlertTriangle, MoreHorizontal, LayoutGrid, Smartphone, ArrowUpRight
 } from 'lucide-react'
 import { Modale } from './interface'
@@ -17,7 +17,6 @@ const NAVIGATION = [
   { href: '/espace/envoyer', icone: Send, etiquette: 'Envoyer un SMS' },
   { href: '/espace/envois', icone: List, etiquette: 'Mes envois' },
   { href: '/espace/entrees', icone: Inbox, etiquette: 'SMS reçus' },
-  { href: '/espace/liens', icone: Link2, etiquette: 'Liens intelligents' },
   { href: '/espace/notifications', icone: Webhook, etiquette: 'Notifications' },
   { href: '/espace/facturation', icone: Receipt, etiquette: 'Facturation' },
   { href: '/espace/api', icone: BookOpen, etiquette: 'Doc API' },

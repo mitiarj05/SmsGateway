@@ -5,13 +5,12 @@ import { obtenirDisponibiliteAppareil } from '@/lib/selection-appareil'
 import { envoyerPushNouvelleTache } from '@/lib/envoi-push'
 import { expirerEnAttentePerimees } from '@/lib/expiration-attente'
 import { promouvoirProgrammes } from '@/lib/programmes'
-import { genererCode, urlPublique } from '@/lib/liens'
 import { compterEnvoisMois, moisActuel } from '@/lib/facturation'
 import { STATUT_TACHE } from '@/lib/statuts'
 
 /**
  * POST /api/espace/envoyer — envoi depuis l'espace client (session, pas de clé).
- * Corps: { to, message, scheduled_at?, lien_intelligent? }.
+ * Corps: { to, message, scheduled_at? }.
  * Mêmes garde-fous que /api/sms/send : quota mensuel, quota horaire.
  */
 export async function POST(request: NextRequest) {
@@ -111,77 +110,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const avecLien = message.includes('{LIEN}') || corps?.lien_intelligent === true
-    const baseUrl = urlPublique(
-      request.headers.get('x-forwarded-host') ?? request.headers.get('host')
-    )
-
     type LigneCree = {
       id: string; numero_destinataire: string; contenu: string
       statut: string; programme_a: string | null; date_creation: string
     }
-    const lignesCreees: LigneCree[] = []
-    const liensCrees: { numero_destinataire: string; url: string }[] = []
-    if (!avecLien) {
-      const { data, error } = await supabaseAdmin
-        .from('taches')
-        .insert(
-          numeros.map((numero) => ({
-            numero_destinataire: numero,
-            contenu: message.trim(),
-            statut: programmePour ? STATUT_TACHE.PROGRAMME : STATUT_TACHE.EN_ATTENTE,
-            programme_a: programmePour ? programmePour.toISOString() : null,
-            id_application: idApplication,
-          }))
-        )
-        .select('id, numero_destinataire, contenu, statut, programme_a, date_creation')
-      if (error || !data || data.length === 0) {
-        return NextResponse.json(
-          { error: 'Erreur lors de la création des tâches', details: error?.message },
-          { status: 500 }
-        )
-      }
-      lignesCreees.push(...data)
-    } else {
-      for (const numero of numeros) {
-        const code = await genererCode()
-        const gabarit = message.includes('{LIEN}') ? message : `${message}\n{LIEN}`
-        const contenu = gabarit.replaceAll('{LIEN}', `${baseUrl}/c/${code}`)
-        const { data: ligne, error: erreurInsert } = await supabaseAdmin
-          .from('taches')
-          .insert({
-            numero_destinataire: numero,
-            contenu: contenu.trim(),
-            statut: programmePour ? STATUT_TACHE.PROGRAMME : STATUT_TACHE.EN_ATTENTE,
-            programme_a: programmePour ? programmePour.toISOString() : null,
-            id_application: idApplication,
-          })
-          .select('id, numero_destinataire, contenu, statut, programme_a, date_creation')
-          .single()
-        if (erreurInsert || !ligne) {
-          return NextResponse.json(
-            { error: 'Erreur lors de la création des tâches', details: erreurInsert?.message },
-            { status: 500 }
-          )
-        }
-        const { error: erreurLien } = await supabaseAdmin
-          .from('liens')
-          .insert({
-            id: code,
-            id_tache: ligne.id,
-            id_application: idApplication,
-            numero_destinataire: numero,
-          })
-        if (erreurLien) {
-          return NextResponse.json(
-            { error: 'Erreur lors de la création du lien', details: erreurLien.message },
-            { status: 500 }
-          )
-        }
-        lignesCreees.push(ligne)
-        liensCrees.push({ numero_destinataire: numero, url: `${baseUrl}/c/${code}` })
-      }
+    const { data, error } = await supabaseAdmin
+      .from('taches')
+      .insert(
+        numeros.map((numero) => ({
+          numero_destinataire: numero,
+          contenu: message.trim(),
+          statut: programmePour ? STATUT_TACHE.PROGRAMME : STATUT_TACHE.EN_ATTENTE,
+          programme_a: programmePour ? programmePour.toISOString() : null,
+          id_application: idApplication,
+        }))
+      )
+      .select('id, numero_destinataire, contenu, statut, programme_a, date_creation')
+    if (error || !data || data.length === 0) {
+      return NextResponse.json(
+        { error: 'Erreur lors de la création des tâches', details: error?.message },
+        { status: 500 }
+      )
     }
+    const lignesCreees: LigneCree[] = data
 
     const tachesCreees = lignesCreees.map((t) => ({
       id: t.id,
@@ -211,7 +162,6 @@ export async function POST(request: NextRequest) {
             : 'SMS mis en file d\u2019attente',
         count: tachesCreees.length,
         tasks: tachesCreees,
-        ...(avecLien ? { liens: liensCrees } : {}),
         push_sent: pushEnvoye,
       },
       { status: 201 }

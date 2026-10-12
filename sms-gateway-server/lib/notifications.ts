@@ -3,13 +3,13 @@ import { supabaseAdmin } from './supabase-serveur'
 
 /**
  * Notifications sortantes : le serveur prévient les systèmes clients à chaque
- * événement (sms.recu, lien.clique) au lieu d'être interrogé en boucle.
+ * événement (sms.recu) au lieu d'être interrogé en boucle.
  *
  * Livraison fiable : file en base (notifications) + retry exponentiel,
  * traitée paresseusement à chaque point d'entrée (pas de cron, pas de Redis).
  */
 
-export const EVENEMENTS_NOTIFICATION = ['sms.recu', 'lien.clique'] as const
+export const EVENEMENTS_NOTIFICATION = ['sms.recu'] as const
 export type EvenementNotification = (typeof EVENEMENTS_NOTIFICATION)[number]
 
 const DELAIS_REJEU_MINUTES = [1, 5, 30, 120, 720]

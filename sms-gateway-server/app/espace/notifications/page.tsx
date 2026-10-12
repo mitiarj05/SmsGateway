@@ -16,12 +16,11 @@ interface Envoi {
 
 const EVENEMENTS_DISPONIBLES = [
   { id: 'sms.recu', label: 'SMS reçus' },
-  { id: 'lien.clique', label: 'Clics lien' },
 ]
 
 export default function PageNotificationsEspace() {
   const [url, setUrl] = useState('')
-  const [evenements, setEvenements] = useState<string[]>(['sms.recu', 'lien.clique'])
+  const [evenements, setEvenements] = useState<string[]>(['sms.recu'])
   const [actifs, setActifs] = useState(true)
   const [secretVisible, setSecretVisible] = useState<string | null>(null)
   const [resultatTest, setResultatTest] = useState<string | null>(null)

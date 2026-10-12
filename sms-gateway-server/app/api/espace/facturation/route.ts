@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       )
     }
     const debut = debutMoisIso(brut)
-    const [total, envoyes, echecs, recus, clics, app] = await Promise.all([
+    const [total, envoyes, echecs, recus, app] = await Promise.all([
       supabaseAdmin.from('taches').select('id', { count: 'exact', head: true })
         .eq('id_application', idApplication).gte('date_creation', debut)
         .then((r) => r.count ?? 0),
@@ -33,9 +33,6 @@ export async function GET(request: NextRequest) {
       supabaseAdmin.from('reponses').select('id', { count: 'exact', head: true })
         .eq('id_application', idApplication).gte('date_reception', debut)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('liens').select('id', { count: 'exact', head: true })
-        .eq('id_application', idApplication).eq('statut', 'CLIQUE').gte('date_clic', debut)
-        .then((r) => r.count ?? 0),
       supabaseAdmin.from('applications').select('nom, quota_mensuel')
         .eq('id', idApplication).single(),
     ])
@@ -46,7 +43,6 @@ export async function GET(request: NextRequest) {
       total_facture: total,
       sms_envoyes: envoyes,
       sms_recus: recus,
-      clics,
       echecs,
       quota_mensuel: quota,
       depassement: quota !== null && total >= quota,

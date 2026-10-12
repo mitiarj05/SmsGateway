@@ -59,18 +59,9 @@ CREATE TABLE IF NOT EXISTS reponses (
 CREATE INDEX IF NOT EXISTS idx_reponses_expediteur ON reponses (expediteur);
 CREATE INDEX IF NOT EXISTS idx_reponses_application ON reponses (id_application);
 
--- Liens intelligents (SMS -> Web).
-CREATE TABLE IF NOT EXISTS liens (
-  id text NOT NULL,
-  id_tache uuid REFERENCES public.taches(id),
-  id_application uuid REFERENCES public.applications(id),
-  numero_destinataire text NOT NULL,
-  statut text NOT NULL DEFAULT 'CREE',
-  date_creation timestamptz NOT NULL DEFAULT now(),
-  date_clic timestamptz,
-  CONSTRAINT liens_pkey PRIMARY KEY (id)
-);
-CREATE INDEX IF NOT EXISTS idx_liens_application ON liens (id_application);
+-- Fonctionnalité Liens intelligents supprimée du produit :
+-- suppression définitive de la table (données de suivi périmées).
+DROP TABLE IF EXISTS liens;
 
 -- File des notifications sortantes.
 CREATE TABLE IF NOT EXISTS notifications (
@@ -147,14 +138,18 @@ alter table applications
 
 create index if not exists idx_applications_email on applications (email);
 
--- ---------- 3. Row Level Security ----------
-alter table applications enable row level security;
-alter table appareils enable row level security;
-alter table taches enable row level security;
-alter table reponses enable row level security;
-alter table liens enable row level security;
-alter table notifications enable row level security;
-alter table demandes enable row level security;
+-- ---------- 3. Row Level Security (neutre si une table est absente) ----------
+DO $$
+DECLARE
+  t text;
+BEGIN
+  FOREACH t IN ARRAY ARRAY['applications', 'appareils', 'taches', 'reponses', 'liens', 'notifications', 'demandes']
+  LOOP
+    IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = t) THEN
+      EXECUTE format('alter table %I enable row level security', t);
+    END IF;
+  END LOOP;
+END $$;
 
 -- Applications : chacun sa ligne (la clé service_role de l'app contourne RLS).
 drop policy if exists "applications_select_own" on applications;
@@ -185,11 +180,7 @@ create policy "reponses_all_own" on reponses
   using (id_application in (select id from applications where user_id = auth.uid()))
   with check (id_application in (select id from applications where user_id = auth.uid()));
 
-drop policy if exists "liens_all_own" on liens;
-create policy "liens_all_own" on liens
-  for all to authenticated
-  using (id_application in (select id from applications where user_id = auth.uid()))
-  with check (id_application in (select id from applications where user_id = auth.uid()));
+-- (politiques liens supprimées avec la table — voir DROP ci-dessus)
 
 drop policy if exists "notifications_all_own" on notifications;
 create policy "notifications_all_own" on notifications

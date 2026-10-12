@@ -20,10 +20,9 @@ export async function GET(request: NextRequest) {
         total_facture: acc.total_facture + l.total_facture,
         sms_envoyes: acc.sms_envoyes + l.sms_envoyes,
         sms_recus: acc.sms_recus + l.sms_recus,
-        clics: acc.clics + l.clics,
         echecs: acc.echecs + l.echecs,
       }),
-      { total_facture: 0, sms_envoyes: 0, sms_recus: 0, clics: 0, echecs: 0 }
+      { total_facture: 0, sms_envoyes: 0, sms_recus: 0, echecs: 0 }
     )
     return NextResponse.json({ mois: brut, lignes, totaux })
   } catch {

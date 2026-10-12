@@ -1,18 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Send, Loader2, CheckCircle2, AlertTriangle, Users, Link2, Calendar, Clock, Smartphone, Check } from 'lucide-react'
+import { Send, Loader2, CheckCircle2, AlertTriangle, Users, Calendar, Clock, Smartphone, Check } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import { Toast } from '../../../composants/interface'
 
 export default function PageEnvoyerEspace() {
   const [numeros, setNumeros] = useState('+261340000000\n+261330000000')
-  const [message, setMessage] = useState("Bonjour ! Votre commande #4821 est prête. Retrait possible dès aujourd'hui au magasin. Merci ! {LIEN}")
-  const [lienIntelligent, setLienIntelligent] = useState(true)
+  const [message, setMessage] = useState("Bonjour ! Votre commande #4821 est prête. Retrait possible dès aujourd'hui au magasin. Merci !")
   const [modeProgrammation, setModeProgrammation] = useState<'immediat' | 'programmer'>('immediat')
   const [envoiEnCours, setEnvoiEnCours] = useState(false)
   const [resultat, setResultat] = useState<{
-    reussi: boolean; texte: string; liens?: { numero_destinataire: string; url: string }[]
+    reussi: boolean; texte: string
   } | null>(null)
   const [notification, setNotification] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
 
@@ -23,7 +22,6 @@ export default function PageEnvoyerEspace() {
 
   const destinatairesListe = numeros.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean)
   const nombreDestinataires = destinatairesListe.length
-  const contientLien = message.includes('{LIEN}')
   const nbCaracteres = message.length
   const nbSegments = Math.ceil(nbCaracteres / 160) || 1
 
@@ -38,7 +36,6 @@ export default function PageEnvoyerEspace() {
         body: JSON.stringify({
           to: nombreDestinataires > 1 ? destinatairesListe : destinatairesListe[0] ?? '',
           message,
-          ...(lienIntelligent ? { lien_intelligent: true } : {}),
         }),
       })
       const donnees = await reponse.json().catch(() => null)
@@ -46,7 +43,6 @@ export default function PageEnvoyerEspace() {
         setResultat({
           reussi: true,
           texte: donnees?.message ?? 'SMS mis en file d’attente',
-          ...(Array.isArray(donnees?.liens) && donnees.liens.length > 0 ? { liens: donnees.liens } : {}),
         })
         afficherNotification('succes', 'Messages envoyés avec succès')
       } else {
@@ -81,16 +77,6 @@ export default function PageEnvoyerEspace() {
             {resultat.reussi ? <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" /> : <AlertTriangle className="h-4 w-4 shrink-0 text-red-600" />}
             {resultat.texte}
           </p>
-          {resultat.liens && resultat.liens.length > 0 && (
-            <ul className="mt-3 space-y-2">
-              {resultat.liens.map((l) => (
-                <li key={l.url} className="rounded-xl bg-white/80 p-2.5 dark:bg-zinc-800">
-                  <p className="font-mono text-xs font-bold">{l.numero_destinataire}</p>
-                  <code className="block truncate font-mono text-xs text-blue-600 dark:text-blue-400 mt-0.5">{l.url}</code>
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
       )}
 
@@ -132,29 +118,10 @@ export default function PageEnvoyerEspace() {
                 className="w-full resize-none rounded-2xl border border-slate-200 p-3.5 text-xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
               />
               <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-zinc-500">
-                <span className="flex items-center gap-1">
-                  {contientLien && <Link2 className="h-3.5 w-3.5 text-blue-600" />}
-                  {contientLien ? '1 lien intelligent inséré' : ''}
-                </span>
+                <span />
                 <span>{nbCaracteres} / 160 caractères · {nbSegments} segment{nbSegments > 1 ? 's' : ''}</span>
               </div>
             </div>
-
-            {/* Checkbox Générer des liens intelligents */}
-            <label className="flex cursor-pointer items-start gap-3 rounded-2xl bg-slate-50/80 p-4 border border-slate-200/80 dark:bg-zinc-800/60 dark:border-zinc-700">
-              <input
-                type="checkbox"
-                checked={lienIntelligent}
-                onChange={(e) => setLienIntelligent(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20"
-              />
-              <div>
-                <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">Générer des liens intelligents</p>
-                <p className="mt-0.5 text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed">
-                  Insère une URL courte de suivi unique par destinataire. Insérez <code className="font-mono font-semibold text-slate-700 dark:text-zinc-200">{'{LIEN}'}</code> dans le texte pour définir son emplacement.
-                </p>
-              </div>
-            </label>
 
             {/* Programmation */}
             <div className="space-y-2">
@@ -198,8 +165,7 @@ export default function PageEnvoyerEspace() {
 
               <div className="rounded-2xl bg-[#1d1947] p-3 text-xs text-white leading-relaxed border border-indigo-900/50 space-y-2">
                 <p>
-                  Bonjour ! Votre commande #4821 est prête. Retrait possible dès aujourd'hui au magasin. Merci !{' '}
-                  <span className="text-blue-400 underline font-mono text-[11px]">smska.mg/l/x7K2p</span>
+                  Bonjour ! Votre commande #4821 est prête. Retrait possible dès aujourd'hui au magasin. Merci !
                 </p>
                 <p className="text-[9px] text-slate-400 text-right">✓✓ Remis</p>
               </div>
@@ -215,14 +181,10 @@ export default function PageEnvoyerEspace() {
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
                 <span><b>Limite de destinataires</b> : jusqu'à 100 numéros par lot.</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
-                <span><b>Format international</b> : préférez la forme E.164 (ex. +261...).</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
-                <span><b>Liens suivis</b> : ajoutez {`{LIEN}`} pour mesurer les clics.</span>
-              </li>
+                <li className="flex items-start gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
+                  <span><b>Format international</b> : préférez la forme E.164 (ex. +261...).</span>
+                </li>
               <li className="flex items-start gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
                 <span><b>Quota</b> : 20 SMS/h par téléphone du parc.</span>

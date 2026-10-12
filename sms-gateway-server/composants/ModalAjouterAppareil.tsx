@@ -18,7 +18,7 @@ export default function ModalAjouterAppareil({ ouvert, onFermer }: PropsModalAjo
   const [erreur, setErreur] = useState<string | null>(null)
   const [copie, setCopie] = useState(false)
 
-  async function genererCode() {
+  async function genererCodeLiaison() {
     setChargement(true)
     setErreur(null)
     try {
@@ -41,7 +41,7 @@ export default function ModalAjouterAppareil({ ouvert, onFermer }: PropsModalAjo
     if (typeof window !== 'undefined') {
       setUrlServeur(window.location.origin)
     }
-    if (ouvert) genererCode()
+    if (ouvert) genererCodeLiaison()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ouvert])
 
@@ -104,6 +104,19 @@ export default function ModalAjouterAppareil({ ouvert, onFermer }: PropsModalAjo
             <p className="text-[11px] text-slate-500 dark:text-zinc-400 max-w-sm">
               Ouvrez l'application SMSTSIKA sur le téléphone, appuyez sur « Scanner QR » puis pointez ce code : le téléphone rejoint votre espace.
             </p>
+            {code && (
+              <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-400">
+                Expire dans {mm}:{ss} —{' '}
+                <button
+                  type="button"
+                  onClick={genererCodeLiaison}
+                  disabled={chargement}
+                  className="text-blue-600 hover:underline dark:text-blue-400 disabled:opacity-50"
+                >
+                  Régénérer
+                </button>
+              </p>
+            )}
           </div>
         </div>
 

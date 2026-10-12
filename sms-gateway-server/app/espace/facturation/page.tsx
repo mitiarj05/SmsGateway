@@ -9,7 +9,6 @@ interface ConsoMensuelle {
   total_facture: number
   sms_envoyes: number
   sms_recus: number
-  clics: number
   echecs: number
   quota_mensuel: number | null
 }
@@ -48,7 +47,6 @@ export default function PageFacturationEspace() {
             total_facture: d.total_facture ?? 0,
             sms_envoyes: d.sms_envoyes ?? 0,
             sms_recus: d.sms_recus ?? 0,
-            clics: d.clics ?? 0,
             echecs: d.echecs ?? 0,
             quota_mensuel: typeof d.quota_mensuel === 'number' ? d.quota_mensuel : null,
           })
@@ -77,7 +75,6 @@ export default function PageFacturationEspace() {
   const total = conso?.total_facture ?? 0
   const envoyes = conso?.sms_envoyes ?? 0
   const recus = conso?.sms_recus ?? 0
-  const clics = conso?.clics ?? 0
   const echecs = conso?.echecs ?? 0
   const quota = conso?.quota_mensuel ?? null
   const pctQuota = quota && quota > 0 ? Math.min(100, Math.round((total / quota) * 100)) : 0
@@ -120,12 +117,6 @@ export default function PageFacturationEspace() {
           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">SMS REÇUS</p>
           <p className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{recus}</p>
           <p className="text-[11.5px] text-slate-400">Transmis au webhook</p>
-        </div>
-
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">CLICS LIEN</p>
-          <p className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{clics}</p>
-          <p className="text-[11.5px] text-slate-400">Suivi intelligent</p>
         </div>
 
         <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
@@ -230,7 +221,7 @@ export default function PageFacturationEspace() {
                   {detailOuvert && (
                     <tr className="bg-slate-50/60 dark:bg-zinc-800/40">
                       <td colSpan={6} className="px-4 py-3 text-[11px] text-slate-500 dark:text-zinc-400">
-                        Clics sur liens : <b>{conso?.clics ?? 0}</b> · Échecs : <b>{conso?.echecs ?? 0}</b> ·
+                        Échecs : <b>{conso?.echecs ?? 0}</b> ·
                         Unités facturées : <b>{conso?.total_facture ?? 0}</b>
                       </td>
                     </tr>

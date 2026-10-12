@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Send, Inbox, AlertTriangle, CheckCircle2, ArrowRight, XCircle,
-  Sparkles, Smartphone, Plus, Link2, Zap, ArrowUpRight, Clock,
+  Sparkles, Smartphone, Plus, Zap, ArrowUpRight, Clock,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import CoquilleEspace from '../../composants/CoquilleEspace'
@@ -374,9 +374,6 @@ export default function PageTableauDeBordClient() {
             <div className="space-y-2 text-xs font-semibold">
               <Link href="/espace/envoyer" className="flex items-center gap-2 text-blue-600 hover:underline dark:text-blue-400">
                 <Send className="h-3.5 w-3.5" /> Envoyer un SMS
-              </Link>
-              <Link href="/espace/liens" className="flex items-center gap-2 text-blue-600 hover:underline dark:text-blue-400">
-                <Link2 className="h-3.5 w-3.5" /> Créer un lien intelligent
               </Link>
               <Link href="/espace/notifications" className="flex items-center gap-2 text-blue-600 hover:underline dark:text-blue-400">
                 <Zap className="h-3.5 w-3.5" /> Connecter ma boutique

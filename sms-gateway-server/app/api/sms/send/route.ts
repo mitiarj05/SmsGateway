@@ -5,7 +5,6 @@ import { envoyerPushNouvelleTache } from '@/lib/envoi-push'
 import { obtenirDisponibiliteAppareil } from '@/lib/selection-appareil'
 import { expirerEnAttentePerimees } from '@/lib/expiration-attente'
 import { promouvoirProgrammes } from '@/lib/programmes'
-import { genererCode, urlPublique } from '@/lib/liens'
 import { compterEnvoisMois, moisActuel } from '@/lib/facturation'
 import { STATUT_TACHE } from '@/lib/statuts'
 
@@ -137,86 +136,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 4. Créer une tâche par destinataire.
-    // Liens : si le message contient {LIEN} (ou option
-    // lien_intelligent: true), un code court distinct par destinataire
-    // est généré et substitué (une ligne par destinataire, sinon bulk).
-    // Contrat JSON inchangé : les clés restent message/device_id/created_at
-    // (+ liens : [{ numero_destinataire, url }] quand un lien est généré).
-    const avecLien = message.includes('{LIEN}') || corps?.lien_intelligent === true
-    const baseUrl = urlPublique(
-      request.headers.get('x-forwarded-host') ?? request.headers.get('host')
-    )
-
+    // 4. Créer une tâche par destinataire (envoi groupé).
     type LigneCree = {
       id: string; numero_destinataire: string; contenu: string
       statut: string; programme_a: string | null; date_creation: string
     }
-    let lignesCreees: LigneCree[] = []
-    const liensCrees: { numero_destinataire: string; url: string }[] = []
-    if (!avecLien) {
-      const { data, error } = await supabaseAdmin
-        .from('taches')
-        .insert(
-          numeros.map((numero) => ({
-            numero_destinataire: numero,
-            contenu: message.trim(),
-            statut: programmePour ? STATUT_TACHE.PROGRAMME : STATUT_TACHE.EN_ATTENTE,
-            programme_a: programmePour ? programmePour.toISOString() : null,
-            id_application: client.id,
-          }))
-        )
-        .select('id, numero_destinataire, contenu, statut, programme_a, date_creation')
-      if (error || !data || data.length === 0) {
-        console.error('Erreur Supabase:', error)
-        return NextResponse.json(
-          { error: 'Erreur lors de la création des tâches', details: error?.message },
-          { status: 500 }
-        )
-      }
-      lignesCreees = data
-    } else {
-      for (const numero of numeros) {
-        const code = await genererCode()
-        const gabarit = message.includes('{LIEN}') ? message : `${message}\n{LIEN}`
-        const contenu = gabarit.replaceAll('{LIEN}', `${baseUrl}/c/${code}`)
-        const { data: ligne, error: erreurInsert } = await supabaseAdmin
-          .from('taches')
-          .insert({
-            numero_destinataire: numero,
-            contenu: contenu.trim(),
-            statut: programmePour ? STATUT_TACHE.PROGRAMME : STATUT_TACHE.EN_ATTENTE,
-            programme_a: programmePour ? programmePour.toISOString() : null,
-            id_application: client.id,
-          })
-          .select('id, numero_destinataire, contenu, statut, programme_a, date_creation')
-          .single()
-        if (erreurInsert || !ligne) {
-          console.error('Erreur Supabase (lien):', erreurInsert)
-          return NextResponse.json(
-            { error: 'Erreur lors de la création des tâches', details: erreurInsert?.message },
-            { status: 500 }
-          )
-        }
-        const { error: erreurLien } = await supabaseAdmin
-          .from('liens')
-          .insert({
-            id: code,
-            id_tache: ligne.id,
-            id_application: client.id,
-            numero_destinataire: numero,
-          })
-        if (erreurLien) {
-          console.error('Erreur Supabase (liens):', erreurLien)
-          return NextResponse.json(
-            { error: 'Erreur lors de la création du raccourci', details: erreurLien.message },
-            { status: 500 }
-          )
-        }
-        lignesCreees.push(ligne)
-        liensCrees.push({ numero_destinataire: numero, url: `${baseUrl}/c/${code}` })
-      }
+    const { data, error } = await supabaseAdmin
+      .from('taches')
+      .insert(
+        numeros.map((numero) => ({
+          numero_destinataire: numero,
+          contenu: message.trim(),
+          statut: programmePour ? STATUT_TACHE.PROGRAMME : STATUT_TACHE.EN_ATTENTE,
+          programme_a: programmePour ? programmePour.toISOString() : null,
+          id_application: client.id,
+        }))
+      )
+      .select('id, numero_destinataire, contenu, statut, programme_a, date_creation')
+    if (error || !data || data.length === 0) {
+      console.error('Erreur Supabase:', error)
+      return NextResponse.json(
+        { error: 'Erreur lors de la création des tâches', details: error?.message },
+        { status: 500 }
+      )
     }
+    const lignesCreees: LigneCree[] = data
 
     const tachesCreees = lignesCreees.map((t) => ({
       id: t.id,
@@ -252,7 +196,6 @@ export async function POST(request: NextRequest) {
           message: `SMS programmé pour le ${programmePour.toLocaleString('fr-FR')}`,
           count: tachesCreees.length,
           tasks: tachesCreees,
-          ...(avecLien ? { liens: liensCrees } : {}),
           scheduled_for: programmePour.toISOString(),
           push_sent: false,
           client: { id: client.id, nom: client.nom },
@@ -265,7 +208,6 @@ export async function POST(request: NextRequest) {
         {
           message: 'SMS mis en file d\'attente',
           task: tachesCreees[0],
-          ...(avecLien ? { liens: liensCrees } : {}),
           push_sent: pushEnvoye,
           device_selected: appareilSelectionne,
           client: { id: client.id, nom: client.nom },
@@ -275,11 +217,10 @@ export async function POST(request: NextRequest) {
     }
     return NextResponse.json(
       {
-        message: `${tachesCreees.length} SMS mis en file d'attente`,
-        count: tachesCreees.length,
-        tasks: tachesCreees,
-        ...(avecLien ? { liens: liensCrees } : {}),
-        push_sent: pushEnvoye,
+          message: `${tachesCreees.length} SMS mis en file d'attente`,
+          count: tachesCreees.length,
+          tasks: tachesCreees,
+          push_sent: pushEnvoye,
         device_selected: appareilSelectionne,
         client: { id: client.id, nom: client.nom },
       },

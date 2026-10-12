@@ -23,7 +23,6 @@ interface Envoi {
 
 const EVENEMENTS = [
   { cle: 'sms.recu', etiquette: 'SMS reçus' },
-  { cle: 'lien.clique', etiquette: 'Clics liens' },
 ]
 
 /** Configuration webhooks d'un client API (URL, événements, secret, test, journal). */
