@@ -32,7 +32,7 @@ export default function PageParametres() {
   const [notification, setNotification] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
 
   // Clé API locale
-  const [cleLocale, setCleLocale] = useState('')
+
 
   // Réglages serveur
   const [quotaSms, setQuotaSms] = useState('')
@@ -84,15 +84,8 @@ export default function PageParametres() {
   }
 
   useEffect(() => {
-    const saved = localStorage.getItem('smsika-cle-api')
-    if (saved) setCleLocale(saved)
     charger()
   }, [])
-
-  function enregistrerCleLocale() {
-    localStorage.setItem('smsika-cle-api', cleLocale.trim())
-    afficherNotification('succes', 'Clé enregistrée dans ce navigateur')
-  }
 
   async function enregistrerReglage(cle: 'sms_quota_per_hour' | 'queue_alert_threshold' | 'max_pending_hours', valeur: number) {
     setSauvegarde(cle)
@@ -274,29 +267,6 @@ export default function PageParametres() {
 
         {/* Formulaires centraux */}
         <div className="space-y-4">
-          {/* Clé API test */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
-            <h2 className="text-[15px] font-bold text-slate-900 dark:text-white">
-              Clé API (envois de test)
-            </h2>
-            <p className="mt-0.5 text-[12px] text-slate-400">
-              Stockée uniquement dans ce navigateur, utilisée pour les envois de test.
-            </p>
-            <div className="mt-4 flex items-center gap-3">
-              <input
-                value={cleLocale}
-                onChange={(e) => setCleLocale(e.target.value)}
-                className={`${inputCls} flex-1 bg-slate-50 font-mono text-slate-500 dark:bg-zinc-800`}
-              />
-              <button onClick={enregistrerCleLocale} className="survol-brillance rounded-full bg-[#2563EB] px-5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#1D4ED8]">
-                Enregistrer
-              </button>
-            </div>
-            <p className="mt-3 flex items-center gap-1.5 text-[11px] text-slate-400">
-              <LockIcon size={12} /> Stockage local
-            </p>
-          </div>
-
           {/* Quotas */}
           <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card flex items-center justify-between gap-6 p-6 dark:bg-zinc-900 dark:border-zinc-800">
             <div>
@@ -555,8 +525,4 @@ export default function PageParametres() {
       <Toast notification={notification} />
     </CoquilleTableauDeBord>
   )
-}
-
-function LockIcon({ size }: { size: number }) {
-  return <ShieldCheck size={size} />
 }
