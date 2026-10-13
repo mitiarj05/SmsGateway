@@ -49,7 +49,7 @@ export default function PageClientsAdmin() {
   const [recherche, setRecherche] = useState('')
   const [modalClient, setModalClient] = useState(false)
   const [nouveauNom, setNouveauNom] = useState('')
-  const [nouveauQuota, setNouveauQuota] = useState('100')
+  const [nouveauEmail, setNouveauEmail] = useState('')
   const [invitationEnCours, setInvitationEnCours] = useState(false)
   const [cleCreee, setCleCreee] = useState<string | null>(null)
   const [erreur, setErreur] = useState<string | null>(null)
@@ -98,29 +98,27 @@ export default function PageClientsAdmin() {
 
   async function ajouterClient() {
     if (!nouveauNom.trim()) return
+    const emailPropre = nouveauEmail.trim().toLowerCase()
+    if (emailPropre && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailPropre)) {
+      setErreur('Adresse e-mail invalide')
+      return
+    }
     setInvitationEnCours(true)
     setCleCreee(null)
     try {
       const res = await fetch('/api/api-clients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nom: nouveauNom.trim() }),
+        body: JSON.stringify({ nom: nouveauNom.trim(), ...(emailPropre ? { email: emailPropre } : {}) }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok || !data.client) {
         setErreur(data.error ?? 'Invitation impossible')
         return
       }
-      const quota = Number(nouveauQuota)
-      if (Number.isInteger(quota) && quota >= 1) {
-        await fetch(`/api/api-clients/${data.client.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ quota_mensuel: quota }),
-        })
-      }
       setCleCreee(data.client.cle_api ?? null)
       setNouveauNom('')
+      setNouveauEmail('')
       await charger()
     } catch {
       setErreur('Erreur réseau')
@@ -361,11 +359,12 @@ export default function PageClientsAdmin() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Quota mensuel de SMS</label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">E-mail du client (liaison auto à l'inscription)</label>
               <input
-                type="number" min={1}
-                value={nouveauQuota}
-                onChange={(e) => setNouveauQuota(e.target.value)}
+                type="email"
+                value={nouveauEmail}
+                onChange={(e) => setNouveauEmail(e.target.value)}
+                placeholder="client@entreprise.com"
                 className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
               />
             </div>

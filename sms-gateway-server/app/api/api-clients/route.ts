@@ -59,21 +59,27 @@ export async function GET() {
   }
 }
 
-/** POST /api/api-clients — crée une nouvelle clé API (corps: { nom }) */
+/** POST /api/api-clients — pré-crée un espace client (corps: { nom, email? }).
+ * Quota illimité par défaut. Si un e-mail est fourni, le client s'inscrit
+ * avec cet e-mail et retrouve son espace prêt (liaison automatique). */
 export async function POST(request: NextRequest) {
   try {
     const corps = await request.json()
     const { nom } = corps
+    const emailBrut = typeof corps?.email === 'string' ? corps.email.trim().toLowerCase() : ''
 
     if (!nom || typeof nom !== 'string' || nom.trim().length === 0) {
       return NextResponse.json({ error: 'Le champ "nom" est obligatoire' }, { status: 400 })
+    }
+    if (emailBrut && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(emailBrut)) {
+      return NextResponse.json({ error: 'Adresse e-mail invalide' }, { status: 400 })
     }
 
     const cle_api = `cle_${randomBytes(16).toString('hex')}`
 
     const { data, error } = await supabaseAdmin
       .from('applications')
-      .insert({ nom: nom.trim(), cle_api })
+      .insert({ nom: nom.trim(), cle_api, quota_mensuel: null, ...(emailBrut ? { email: emailBrut } : {}) })
       .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives, quota_mensuel')
       .single()
 

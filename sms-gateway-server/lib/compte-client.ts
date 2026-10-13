@@ -39,6 +39,21 @@ export async function obtenirOuCreerApplication(
     return { applicationId: id, cree: false }
   }
 
+  // Espace pré-créé par l'admin pour cet e-mail (invitation) → on le rattache.
+  const { data: precree } = await supabaseAdmin
+    .from('applications')
+    .select('id')
+    .ilike('email', courriel)
+    .is('user_id', null)
+    .order('date_creation', { ascending: false })
+    .limit(1)
+  if (precree?.[0]) {
+    const id = (precree[0] as { id: string }).id
+    await supabaseAdmin.from('applications').update({ user_id: userId }).eq('id', id)
+    await refuserSiSuspendu(id)
+    return { applicationId: id, cree: false }
+  }
+
   const { data: demandes } = await supabaseAdmin
     .from('demandes')
     .select('id, nom, statut')
