@@ -1,0 +1,14 @@
+
+> sms-gateway-server@1.0.0 dev
+> next dev
+
+▲ Next.js 16.3.5 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.56.1:3000
+- Environments: .env.local
+✓ Ready in 809ms
+✓ Running next.config.ts took 58ms
+
+ GET / 200 in 783ms (next.js: 399ms, application-code: 384ms)
+ GET / 200 in 111ms (next.js: 19ms, application-code: 91ms)
+ GET /login 200 in 104ms (next.js: 48ms, application-code: 56ms)
