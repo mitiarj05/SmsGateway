@@ -24,7 +24,7 @@ export default function PageApiEspace() {
     setTimeout(() => setStatut(false), 2000)
   }
 
-  const codeSmsCurl = `curl -X POST https://sms-gateway-omega.vercel.app/api/sms/send \\
+  const codeSmsCurl = `curl -X POST https://smstsika.vercel.app/api/sms/send \\
   -H "Content-Type: application/json" \\
   -d '{
     "to": "+261340000000",

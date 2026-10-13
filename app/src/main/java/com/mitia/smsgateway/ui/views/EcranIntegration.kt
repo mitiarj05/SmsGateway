@@ -278,7 +278,7 @@ private fun IntegrationServeur(
             value = urlServeur,
             onValueChange = auChangementUrlServeur,
             label = { Text("Adresse serveur", color = TexteSecondaire) },
-            placeholder = { Text("https://sms-gateway-omega.vercel.app", color = TexteSecondaire) },
+            placeholder = { Text("https://smstsika.vercel.app", color = TexteSecondaire) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(

@@ -45,7 +45,7 @@ object PreferencesAppareil {
     const val DEFAUT_SERVEUR_PORT = "3000"
 
     /** Serveur de production : aucune saisie nécessaire par défaut. */
-    const val DEFAUT_SERVEUR_URL = "https://sms-gateway-omega.vercel.app"
+    const val DEFAUT_SERVEUR_URL = "https://smstsika.vercel.app"
 
     /** Preference Onboarding Vu */
     suspend fun estOnboardingVu(context: Context): Boolean {
@@ -90,7 +90,7 @@ object PreferencesAppareil {
 
     /**
      * URL complète du serveur, exactement telle que saisie
-     * (ex. https://sms-gateway-omega.vercel.app ou http://192.168.1.10:3000).
+     * (ex. https://smstsika.vercel.app ou http://192.168.1.10:3000).
      */
     suspend fun obtenirUrlServeur(context: Context): String {
         val prefs = context.magasinDonnees.data.first()

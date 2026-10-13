@@ -164,7 +164,7 @@ fun EcranParametres(
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text("URL DU SERVEUR", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TexteSecondaire)
                         OutlinedTextField(
-                            value = urlServeur.ifBlank { "https://sms-gateway-omega.vercel.app" },
+                            value = urlServeur.ifBlank { "https://smstsika.vercel.app" },
                             onValueChange = auChangementUrlServeur,
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),

@@ -128,10 +128,10 @@ export default function ModalAjouterAppareil({ ouvert, onFermer }: PropsModalAjo
           <div className="flex items-center gap-2 rounded-xl bg-slate-100 p-3 border border-slate-200 dark:bg-zinc-800 dark:border-zinc-700">
             <Link2 className="h-4 w-4 text-slate-400 shrink-0" />
             <code className="flex-1 truncate font-mono text-xs font-bold text-slate-800 dark:text-zinc-200">
-              {urlServeur || 'https://sms-gateway-omega.vercel.app'}
+              {urlServeur || 'https://smstsika.vercel.app'}
             </code>
             <button
-              onClick={() => copier(urlServeur || 'https://sms-gateway-omega.vercel.app')}
+              onClick={() => copier(urlServeur || 'https://smstsika.vercel.app')}
               className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400"
             >
               {copie ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}

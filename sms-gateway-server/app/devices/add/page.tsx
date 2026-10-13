@@ -88,7 +88,7 @@ export default function AjouterAppareilPage() {
 
           {/* Zone QR Code serveur */}
           <div className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 dark:bg-zinc-800/50 dark:border-zinc-700/80">
-            <QrCodeSvg valeur={urlServeur || 'https://sms-gateway-omega.vercel.app'} taille={150} />
+            <QrCodeSvg valeur={urlServeur || 'https://smstsika.vercel.app'} taille={150} />
             <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">QR Code Serveur</p>
             <p className="text-[11px] text-slate-500 dark:text-zinc-400">
               Scannez dans l'application SMSTSIKA pour appairer le serveur en 1s.
