@@ -112,6 +112,10 @@ CREATE TABLE IF NOT EXISTS facturation (
 DROP TABLE IF EXISTS blocages;
 DROP TABLE IF EXISTS automatismes;
 
+-- ---------- Codes de recharge : fonctionnalité retirée ----------
+-- (forfait illimité : le seul vrai crédit est la SIM du client)
+DROP TABLE IF EXISTS codes_recharge;
+
 -- Colonnes applicatives historiques.
 ALTER TABLE appareils ADD COLUMN IF NOT EXISTS uid_firebase TEXT UNIQUE;
 ALTER TABLE appareils ADD COLUMN IF NOT EXISTS sms_envoyes_heure INTEGER DEFAULT 0;
@@ -119,9 +123,12 @@ ALTER TABLE appareils ADD COLUMN IF NOT EXISTS id_application uuid REFERENCES pu
 ALTER TABLE taches ADD COLUMN IF NOT EXISTS programme_a TIMESTAMPTZ;
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS url_notification text;
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS secret_notification text;
-ALTER TABLE applications ADD COLUMN IF NOT EXISTS evenements_notification text[] NOT NULL DEFAULT '{sms.recu,lien.clique}';
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS evenements_notification text[] NOT NULL DEFAULT '{sms.recu}';
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS notifications_actives boolean NOT NULL DEFAULT true;
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS quota_mensuel integer;
+
+-- Forfait illimité : le seul vrai crédit est la SIM du client.
+UPDATE applications SET quota_mensuel = NULL WHERE quota_mensuel IS NOT NULL;
 
 -- ---------- 1. Comptes standard : applications liées aux utilisateurs ----------
 alter table applications
@@ -215,3 +222,10 @@ drop index if exists uq_appareils_android_espace;
 create unique index uq_appareils_android_espace
   on appareils (android_id, id_application)
   where android_id is not null and id_application is not null;
+
+-- ---------- 6. Forfait illimité pour tous ----------
+-- Le seul vrai crédit est la SIM du client : aucun quota imposé.
+UPDATE applications SET quota_mensuel = NULL WHERE quota_mensuel IS NOT NULL;
+
+-- Recharge le cache PostgREST (sinon l'API peut voir l'ancien schéma).
+NOTIFY pgrst, 'reload schema';

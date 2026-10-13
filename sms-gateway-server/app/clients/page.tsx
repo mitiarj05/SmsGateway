@@ -93,6 +93,7 @@ export default function PageClientsAdmin() {
 
   useEffect(() => {
     charger()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function ajouterClient() {
