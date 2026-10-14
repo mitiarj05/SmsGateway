@@ -1,15 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Send, Loader2 } from 'lucide-react'
 import { Modale } from './interface'
 
 /**
- * Modale d'envoi SMS partagée (fonctionnalité complète) :
+ * Modale d'envoi SMS du dashboard (session admin, sans clé API) :
+ * - choix de l'espace d'envoi (liste des clients)
  * - un ou plusieurs destinataires (un par ligne, virgules/points-virgules acceptés)
  * - message 160 caractères avec compteur
  * - envoi programmé optionnel (scheduled_at)
- * - clé API pré-remplie depuis le navigateur
  */
 export default function ModaleEnvoiSms({
   ouvert,
@@ -22,12 +22,16 @@ export default function ModaleEnvoiSms({
 }) {
   const [to, setTo] = useState('')
   const [message, setMessage] = useState('')
-  const [cleApi, setCleApi] = useState(() =>
-    typeof window === 'undefined' ? '' : (localStorage.getItem('smsika-cle-api') ?? '')
-  )
+  const [espaces, setEspaces] = useState<{ id: string; nom: string }[]>([])
+  const [espaceId, setEspaceId] = useState('')
   const [programme, setProgramme] = useState('')
   const [envoiEnCours, setEnvoiEnCours] = useState(false)
   const [erreur, setErreur] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (ouvert) chargerEspaces()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ouvert])
 
   function fermer() {
     if (!envoiEnCours) {
@@ -36,7 +40,28 @@ export default function ModaleEnvoiSms({
     }
   }
 
+  async function chargerEspaces() {
+    try {
+      const reponse = await fetch('/api/api-clients')
+      const donnees = await reponse.json().catch(() => null)
+      const liste = Array.isArray(donnees?.clients) ? donnees.clients : []
+      setEspaces(liste.map((c: any) => ({ id: c.id, nom: c.nom })))
+      if (liste.length > 0 && !espaceId) setEspaceId(liste[0].id)
+    } catch {
+      /* la validation affichera l'erreur */
+    }
+  }
+
   async function envoyerSms(e: React.FormEvent) {
+    e.preventDefault()
+    setEnvoiEnCours(true)
+    setErreur(null)
+    if (!espaceId) {
+      await chargerEspaces()
+      setErreur('Choisissez l\u2019espace d\u2019envoi')
+      setEnvoiEnCours(false)
+      return
+    }
     e.preventDefault()
     setEnvoiEnCours(true)
     setErreur(null)
@@ -44,13 +69,13 @@ export default function ModaleEnvoiSms({
     const destinataires = to.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean)
     const programmeA = programme ? new Date(programme).toISOString() : undefined
     try {
-      const reponse = await fetch('/api/sms/send', {
+      const reponse = await fetch('/api/sms/envoyer-admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: destinataires.length > 1 ? destinataires : destinataires[0] ?? '',
           message,
-          cle_api: cleApi.trim(),
+          id_application: espaceId,
           ...(programmeA ? { scheduled_at: programmeA } : {}),
         }),
       })
@@ -98,9 +123,21 @@ export default function ModaleEnvoiSms({
             onChange={(e) => setProgramme(e.target.value)}
             className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
         </div>
-        <input type="password" required placeholder="Clé API" value={cleApi}
-          onChange={(e) => setCleApi(e.target.value)}
-          className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" />
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-zinc-400">
+            Espace d'envoi
+          </label>
+          <select
+            value={espaceId}
+            onChange={(e) => setEspaceId(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-800 focus:border-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+          >
+            <option value="">— Choisir un espace —</option>
+            {espaces.map((e) => (
+              <option key={e.id} value={e.id}>{e.nom}</option>
+            ))}
+          </select>
+        </div>
         {erreur && (
           <p className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600 dark:bg-red-500/10 dark:text-red-300">
             {erreur}
