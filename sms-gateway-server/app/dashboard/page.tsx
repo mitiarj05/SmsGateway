@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   Smartphone, Loader2,
   XCircle, CheckCircle2, WifiOff, Radio, ArrowUpRight, Plus, Clock,
@@ -10,7 +11,6 @@ import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 import {
   STATUTS_TACHES, BadgeStatut, Toast, Modale,
 } from '../../composants/interface'
-import ModaleEnvoiSms from '../../composants/ModaleEnvoiSms'
 import GraphiqueRythme from '../../composants/GraphiqueRythme'
 import CompteurValeur from '../../composants/CompteurValeur'
 
@@ -50,9 +50,9 @@ export default function DashboardPage() {
   const [parHeure, setParHeure] = useState<PointHoraire[]>([])
   const [periode, setPeriode] = useState('24h')
   const [chargement, setChargement] = useState(true)
-  const [modaleOuverte, setModaleOuverte] = useState(false)
   const [tacheDetaillee, setTacheDetaillee] = useState<Tache | null>(null)
   const [notification, setNotification] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
+  const routeur = useRouter()
 
   const dateAujourdhui = new Date().toLocaleDateString('fr-FR', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
@@ -157,7 +157,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <button
-            onClick={() => setModaleOuverte(true)}
+            onClick={() => routeur.push('/sms/envoyer')}
             className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#1D4ED8] transition"
           >
             <Plus className="h-4 w-4" /> Nouveau SMS
@@ -370,16 +370,6 @@ export default function DashboardPage() {
           </div>
         )}
       </Modale>
-
-      {/* Modal nouveau SMS */}
-      <ModaleEnvoiSms
-        ouvert={modaleOuverte}
-        onFermer={() => setModaleOuverte(false)}
-        onSucces={(message) => {
-          afficherNotification('succes', message)
-          chargerDonnees()
-        }}
-      />
 
       <Toast notification={notification} />
     </CoquilleTableauDeBord>

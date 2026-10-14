@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Smartphone, Inbox, History, Settings, LayoutGrid, Users,
+  Smartphone, Inbox, History, Settings, LayoutGrid, Users, Send,
   Moon, Sun, Bell, Search, AlertTriangle, X, Receipt, MoreHorizontal, ArrowUpRight
 } from 'lucide-react'
 import { Modale } from './interface'
@@ -14,6 +14,7 @@ import { useTheme } from '../lib/use-theme'
 const NAVIGATION_ADMIN = [
   { href: '/dashboard', icone: LayoutGrid, etiquette: 'Vue d\'ensemble' },
   { href: '/devices', icone: Smartphone, etiquette: 'Appareils' },
+  { href: '/sms/envoyer', icone: Send, etiquette: 'Envoyer un SMS' },
   { href: '/queue', icone: Inbox, etiquette: 'File d’attente', pastille: true },
   { href: '/inbox', icone: Inbox, etiquette: 'SMS reçus' },
   { href: '/history', icone: History, etiquette: 'Historique' },

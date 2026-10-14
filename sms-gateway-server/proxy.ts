@@ -189,6 +189,8 @@ export const config = {
   matcher: [
     '/dashboard',
     '/dashboard/:path*',
+    '/sms',
+    '/sms/:path*',
     '/devices',
     '/devices/:path*',
     '/queue',
