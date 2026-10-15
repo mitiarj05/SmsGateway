@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -202,7 +203,7 @@ fun EcranConnexion(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondSombre),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -231,7 +232,7 @@ fun EcranConnexion(
             // Sous-titre (le logo contient déjà « SMS GATEWAY »)
             Text(
                 text = "Espace client",
-                color = TexteSecondaire,
+                color = MaterialTheme.colorScheme.secondaryContainer,
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.5.sp
@@ -269,7 +270,7 @@ fun EcranConnexion(
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
                             text = "Adresse e-mail",
-                            color = TextePrincipal,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -281,18 +282,18 @@ fun EcranConnexion(
                                 Icon(
                                     imageVector = Icons.Filled.Email,
                                     contentDescription = null,
-                                    tint = TexteSecondaire,
+                                    tint = MaterialTheme.colorScheme.secondaryContainer,
                                     modifier = Modifier.size(18.dp).padding(start = 6.dp)
                                 )
                             },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = FondSaisie,
-                                unfocusedContainerColor = FondSaisie,
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 focusedBorderColor = GradientIndigoStart,
-                                unfocusedBorderColor = CouleurBordure,
-                                focusedTextColor = TextePrincipal,
-                                unfocusedTextColor = TextePrincipal,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                             ),
                             shape = RoundedCornerShape(13.dp)
                         )
@@ -303,7 +304,7 @@ fun EcranConnexion(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(13.dp))
-                                .background(FondSaisie)
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
                                 .clickable { etape = "email"; erreur = null }
                                 .padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
@@ -311,7 +312,7 @@ fun EcranConnexion(
                         ) {
                             Text(
                                 text = email,
-                                color = TextePrincipal,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier.weight(1f)
@@ -327,7 +328,7 @@ fun EcranConnexion(
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(
                             text = "Mot de passe",
-                            color = TextePrincipal,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -344,7 +345,7 @@ fun EcranConnexion(
                                 Icon(
                                     imageVector = Icons.Filled.Lock,
                                     contentDescription = null,
-                                    tint = TexteSecondaire,
+                                    tint = MaterialTheme.colorScheme.secondaryContainer,
                                     modifier = Modifier.size(18.dp).padding(start = 6.dp)
                                 )
                             },
@@ -353,19 +354,19 @@ fun EcranConnexion(
                                     Icon(
                                         imageVector = if (afficherMotDePasse) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                                         contentDescription = if (afficherMotDePasse) "Masquer" else "Afficher",
-                                        tint = TexteSecondaire,
+                                        tint = MaterialTheme.colorScheme.secondaryContainer,
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = FondSaisie,
-                                unfocusedContainerColor = FondSaisie,
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 focusedBorderColor = GradientIndigoStart,
-                                unfocusedBorderColor = CouleurBordure,
-                                focusedTextColor = TextePrincipal,
-                                unfocusedTextColor = TextePrincipal,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                             ),
                             shape = RoundedCornerShape(13.dp)
                         )
@@ -386,14 +387,14 @@ fun EcranConnexion(
                                 onCheckedChange = { resterConnecte = it },
                                 colors = CheckboxDefaults.colors(
                                     checkedColor = NeonShadowColor,
-                                    uncheckedColor = CouleurBordure
+                                    uncheckedColor = MaterialTheme.colorScheme.outline
                                 ),
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 text = "Rester connecté",
-                                color = TextePrincipal,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.Medium
                             )
@@ -457,15 +458,15 @@ fun EcranConnexion(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        HorizontalDivider(modifier = Modifier.weight(1f), color = CouleurBordure)
+                        HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outline)
                         Text(
                             text = "ou continuer avec",
-                            color = TexteSecondaire,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                             fontSize = 10.5.sp,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(horizontal = 12.dp)
                         )
-                        HorizontalDivider(modifier = Modifier.weight(1f), color = CouleurBordure)
+                        HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outline)
                     }
 
                     // Bouton Google « Continuer avec Google » (logo réel)
@@ -473,8 +474,8 @@ fun EcranConnexion(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
-                            .border(1.dp, CouleurBordure, RoundedCornerShape(14.dp))
-                            .background(FondCarte)
+                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
+                            .background(MaterialTheme.colorScheme.surface)
                             .clickable { if (!googleEnCours) connexionGoogle() }
                             .padding(vertical = 13.dp),
                         contentAlignment = Alignment.Center
@@ -489,7 +490,7 @@ fun EcranConnexion(
                                 Spacer(Modifier.width(10.dp))
                                 Text(
                                     text = "Connexion…",
-                                    color = TextePrincipal,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     fontSize = 13.5.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -504,7 +505,7 @@ fun EcranConnexion(
                             Spacer(Modifier.width(10.dp))
                             Text(
                                 text = "Continuer avec Google",
-                                color = TextePrincipal,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 13.5.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -518,8 +519,8 @@ fun EcranConnexion(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
-                            .border(1.dp, CouleurBordure, RoundedCornerShape(14.dp))
-                            .background(FondCarte)
+                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
+                            .background(MaterialTheme.colorScheme.surface)
                             .clickable { scanQrOuvert = true }
                             .padding(vertical = 13.dp),
                         contentAlignment = Alignment.Center
@@ -528,13 +529,13 @@ fun EcranConnexion(
                             Icon(
                                 imageVector = Icons.Filled.QrCodeScanner,
                                 contentDescription = null,
-                                tint = TextePrincipal,
+                                tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(Modifier.width(10.dp))
                             Text(
                                 text = "Scanner un QR de liaison",
-                                color = TextePrincipal,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 13.5.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -552,7 +553,7 @@ fun EcranConnexion(
             ) {
                 Text(
                     text = "Pas encore de compte ? ",
-                    color = TexteSecondaire,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
                     fontSize = 13.sp
                 )
                 Text(

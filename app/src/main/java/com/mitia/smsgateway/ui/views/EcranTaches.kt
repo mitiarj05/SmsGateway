@@ -1,4 +1,4 @@
-package com.mitia.smsgateway.ui.views
+﻿package com.mitia.smsgateway.ui.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -64,6 +65,11 @@ fun EcranTaches(
     var rechercheVisible by remember { mutableStateOf(false) }
     var confirmerVidage by remember { mutableStateOf(false) }
 
+    val isSombre = MaterialTheme.colorScheme.background.red < 0.2f
+    val fondRougeButton = if (isSombre) Color(0x22EF4444) else RougePastelBg
+    val bordureRougeButton = if (isSombre) Color(0x44EF4444) else RougePastelBordure
+    val texteRougeButton = if (isSombre) Color(0xFFF87171) else RougePastelTexte
+
     val debutJournee = remember {
         Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
@@ -80,7 +86,7 @@ fun EcranTaches(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondSombre)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -89,7 +95,7 @@ fun EcranTaches(
                 .padding(16.dp)
                 .padding(top = 16.dp),
         ) {
-            // En-tête : Tuile header indigo + Tâches reçues + Bouton Recherche en cercle blanc
+            // En-tête : Tuile header indigo + Tâches reçues + Bouton Recherche
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -119,14 +125,14 @@ fun EcranTaches(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Tâches reçues",
-                        color = TextePrincipal,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
                         text = "Messages traités par l'appareil · $texteDerniereSynchro",
-                        color = TexteSecondaire,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
                         fontSize = 11.5.sp,
                     )
                 }
@@ -136,14 +142,14 @@ fun EcranTaches(
                         .size(40.dp)
                         .shadow(4.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.05f))
                         .clip(CircleShape)
-                        .background(FondCarte)
-                        .border(1.dp, CouleurBordure, CircleShape)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
                 ) {
                     IconButton(onClick = { rechercheVisible = !rechercheVisible }, modifier = Modifier.size(40.dp)) {
                         Icon(
                             imageVector = Icons.Filled.Search,
                             contentDescription = "Rechercher",
-                            tint = TextePrincipal,
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -152,7 +158,7 @@ fun EcranTaches(
 
             Spacer(Modifier.height(16.dp))
 
-            // Carte sombre dégradé navy (cohérent serveur web : indigo-950 → #110C2E)
+            // Carte sombre dégradé navy
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -210,7 +216,7 @@ fun EcranTaches(
 
             Spacer(Modifier.height(14.dp))
 
-            // 3 Onglets pilules (Toutes · 0 actif / En attente · 0 / Échecs · 0)
+            // 3 Onglets pilules
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 PiluleFiltre(
                     libelle = "Toutes · $totalAujourdhui",
@@ -234,17 +240,17 @@ fun EcranTaches(
                 OutlinedTextField(
                     value = recherche,
                     onValueChange = { recherche = it },
-                    placeholder = { Text("Rechercher numéro ou message…", color = TexteSecondaire) },
-                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = TexteSecondaire) },
+                    placeholder = { Text("Rechercher numéro ou message…", color = MaterialTheme.colorScheme.secondaryContainer) },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = MaterialTheme.colorScheme.secondaryContainer) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = FondSaisie,
-                        unfocusedContainerColor = FondSaisie,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                         focusedBorderColor = GradientIndigoStart,
-                        unfocusedBorderColor = CouleurBordure,
-                        focusedTextColor = TextePrincipal,
-                        unfocusedTextColor = TextePrincipal,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                         cursorColor = GradientIndigoStart,
                     ),
                     shape = RoundedCornerShape(13.dp),
@@ -261,7 +267,7 @@ fun EcranTaches(
             ) {
                 Text(
                     text = "Activité récente",
-                    color = TextePrincipal,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                 )
@@ -279,7 +285,7 @@ fun EcranTaches(
             // Carte liste avec exemple récent + État vide « Tout est à jour »
             CarteGlass(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                    // Ligne d'exemple récente (comme sur la capture : 0345726237 + commande reçu)
+                    // Ligne d'exemple récente
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -288,14 +294,14 @@ fun EcranTaches(
                             modifier = Modifier
                                 .size(40.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(VertPastelBg)
-                                .border(1.dp, VertPastelBordure, RoundedCornerShape(12.dp)),
+                                .background(if (isSombre) Color(0x2210B981) else VertPastelBg)
+                                .border(1.dp, if (isSombre) Color(0x4434D399) else VertPastelBordure, RoundedCornerShape(12.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Inbox,
                                 contentDescription = null,
-                                tint = VertPastelTexte,
+                                tint = if (isSombre) Color(0xFF34D399) else VertPastelTexte,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -303,14 +309,14 @@ fun EcranTaches(
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "0345726237",
-                                color = TextePrincipal,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
-                                text = "commande reçu",
-                                color = TexteSecondaire,
+                                text = "commande reçue",
+                                color = MaterialTheme.colorScheme.secondaryContainer,
                                 fontSize = 12.sp,
                             )
                         }
@@ -318,7 +324,7 @@ fun EcranTaches(
                         Column(horizontalAlignment = Alignment.End) {
                             Text(
                                 text = "08:56",
-                                color = TexteSecondaire,
+                                color = MaterialTheme.colorScheme.secondaryContainer,
                                 fontSize = 11.sp,
                             )
                             Spacer(Modifier.height(4.dp))
@@ -327,10 +333,10 @@ fun EcranTaches(
                     }
 
                     Spacer(Modifier.height(14.dp))
-                    HorizontalDivider(color = CouleurBordure, thickness = 1.dp)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
                     Spacer(Modifier.height(18.dp))
 
-                    // État vide : cercle gris avec icône avion, "Tout est à jour" + sous-titre
+                    // État vide : cercle sombre/gris avec icône avion
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -341,27 +347,27 @@ fun EcranTaches(
                             modifier = Modifier
                                 .size(50.dp)
                                 .clip(CircleShape)
-                                .background(Color(0xFFF1F5F9)),
+                                .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Send,
                                 contentDescription = null,
-                                tint = TexteSecondaire,
+                                tint = MaterialTheme.colorScheme.secondaryContainer,
                                 modifier = Modifier.size(22.dp)
                             )
                         }
                         Spacer(Modifier.height(12.dp))
                         Text(
                             text = "Tout est à jour",
-                            color = TextePrincipal,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 14.5.sp,
                             fontWeight = FontWeight.Bold,
                         )
                         Spacer(Modifier.height(2.dp))
                         Text(
                             text = "Les prochaines tâches apparaîtront ici automatiquement",
-                            color = TexteSecondaire,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                             fontSize = 11.5.sp,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                         )
@@ -371,13 +377,13 @@ fun EcranTaches(
 
             Spacer(Modifier.height(16.dp))
 
-            // Bouton ghost rouge « Effacer l'historique des tâches »
+            // Bouton ghost rouge
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .border(1.dp, RougePastelBordure, RoundedCornerShape(14.dp))
-                    .background(RougePastelBg)
+                    .border(1.dp, bordureRougeButton, RoundedCornerShape(14.dp))
+                    .background(fondRougeButton)
                     .clickable {
                         if (confirmerVidage) {
                             aVider()
@@ -393,13 +399,13 @@ fun EcranTaches(
                     Icon(
                         imageVector = Icons.Filled.Delete,
                         contentDescription = null,
-                        tint = RougePastelTexte,
+                        tint = texteRougeButton,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         if (confirmerVidage) "Confirmer la suppression ?" else "Effacer l'historique des tâches",
-                        color = RougePastelTexte,
+                        color = texteRougeButton,
                         fontSize = 13.5.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -418,14 +424,14 @@ private fun PiluleFiltre(
     Box(
         modifier = Modifier
             .clip(CircleShape)
-            .background(if (selectionne) GradientIndigoStart else FondCarte)
-            .border(1.dp, if (selectionne) GradientIndigoStart else CouleurBordure, CircleShape)
+            .background(if (selectionne) GradientIndigoStart else MaterialTheme.colorScheme.surface)
+            .border(1.dp, if (selectionne) GradientIndigoStart else MaterialTheme.colorScheme.outline, CircleShape)
             .clickable(onClick = auClic)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Text(
             text = libelle,
-            color = if (selectionne) Color.White else TexteSecondaire,
+            color = if (selectionne) Color.White else MaterialTheme.colorScheme.secondaryContainer,
             fontSize = 12.sp,
             fontWeight = if (selectionne) FontWeight.Bold else FontWeight.Medium
         )

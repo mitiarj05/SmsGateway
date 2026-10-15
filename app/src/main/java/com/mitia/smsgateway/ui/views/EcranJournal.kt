@@ -1,4 +1,4 @@
-package com.mitia.smsgateway.ui.views
+﻿package com.mitia.smsgateway.ui.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -60,37 +61,29 @@ fun EcranJournal(
     var filtreErreurs by remember { mutableStateOf<Boolean?>(null) }
     var confirmerVidage by remember { mutableStateOf(false) }
 
-    val evenementsFictifs = if (evenements.isEmpty()) {
-        listOf(
-            ElementEvenement(horodatage = System.currentTimeMillis() - 120000, message = "sms reçu > Yas QuizWin : échec transfert"),
-            ElementEvenement(horodatage = System.currentTimeMillis() - 3600000, message = "réseau perdu · reprise dans 30 s"),
-            ElementEvenement(horodatage = System.currentTimeMillis() - 7200000, message = "connexion rétablie"),
-            ElementEvenement(horodatage = System.currentTimeMillis() - 10800000, message = "réseau perdu · reprise dans 30 s"),
-            ElementEvenement(horodatage = System.currentTimeMillis() - 14400000, message = "connexion rétablie"),
-            ElementEvenement(horodatage = System.currentTimeMillis() - 18000000, message = "réseau perdu · reprise dans 30 s"),
-        )
-    } else {
-        evenements
-    }
+    val isSombre = MaterialTheme.colorScheme.background.red < 0.2f
+    val fondRougeButton = if (isSombre) Color(0x22EF4444) else RougePastelBg
+    val bordureRougeButton = if (isSombre) Color(0x44EF4444) else RougePastelBordure
+    val texteRougeButton = if (isSombre) Color(0xFFF87171) else RougePastelTexte
 
-    val compteurErreurs = remember(evenementsFictifs) {
-        evenementsFictifs.count { niveauJournalDe(it.message) == NiveauJournal.ERREUR }
+    val compteurErreurs = remember(evenements) {
+        evenements.count { niveauJournalDe(it.message) == NiveauJournal.ERREUR }
     }
-    val evenementsVisibles = remember(evenementsFictifs, filtreErreurs) {
+    val evenementsVisibles = remember(evenements, filtreErreurs) {
         when (filtreErreurs) {
-            true -> evenementsFictifs.filter { niveauJournalDe(it.message) == NiveauJournal.ERREUR }
-            false -> evenementsFictifs.filter { niveauJournalDe(it.message) != NiveauJournal.ERREUR }
-            null -> evenementsFictifs
+            true -> evenements.filter { niveauJournalDe(it.message) == NiveauJournal.ERREUR }
+            false -> evenements.filter { niveauJournalDe(it.message) != NiveauJournal.ERREUR }
+            null -> evenements
         }
     }
 
-    val total = evenementsFictifs.size.coerceAtLeast(41)
-    val dernierHeure = evenementsFictifs.firstOrNull()?.let { UtilitairesTemps.formaterHeure(it.horodatage).take(5) } ?: "09:43"
+    val total = evenements.size
+    val dernierHeure = evenements.firstOrNull()?.let { UtilitairesTemps.formaterHeure(it.horodatage).take(5) } ?: "—"
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondSombre)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -99,7 +92,7 @@ fun EcranJournal(
                 .padding(16.dp)
                 .padding(top = 16.dp),
         ) {
-            // En-tête : Tuile header indigo + Journal + Bouton download en cercle blanc
+            // En-tête : Tuile header indigo + Journal + Bouton download
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -129,14 +122,14 @@ fun EcranJournal(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Journal",
-                        color = TextePrincipal,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
                         text = "Événements techniques",
-                        color = TexteSecondaire,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
                         fontSize = 11.5.sp,
                     )
                 }
@@ -146,14 +139,14 @@ fun EcranJournal(
                         .size(40.dp)
                         .shadow(4.dp, CircleShape, ambientColor = Color.Black.copy(alpha = 0.05f))
                         .clip(CircleShape)
-                        .background(FondCarte)
-                        .border(1.dp, CouleurBordure, CircleShape)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
                 ) {
                     IconButton(onClick = aExporter, modifier = Modifier.size(40.dp)) {
                         Icon(
                             imageVector = Icons.Filled.Download,
                             contentDescription = "Exporter",
-                            tint = TextePrincipal,
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -162,43 +155,43 @@ fun EcranJournal(
 
             Spacer(Modifier.height(16.dp))
 
-            // 3 Tuiles KPI (Total, à examiner rouge fond #FFF1F2, dernier)
+            // 3 Tuiles KPI (Total, à examiner rouge, dernier)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 // Tuile 1
                 CarteGlass(modifier = Modifier.weight(1f)) {
                     Column {
-                        Text(text = "$total", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = TextePrincipal)
+                        Text(text = "$total", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
                         Spacer(Modifier.height(2.dp))
-                        Text(text = "événements", fontSize = 10.5.sp, color = TexteSecondaire)
+                        Text(text = "événements", fontSize = 10.5.sp, color = MaterialTheme.colorScheme.secondaryContainer)
                     }
                 }
 
-                // Tuile 2 (Rouge fond #FFF1F2, texte rouge)
+                // Tuile 2 (Rouge adaptatif)
                 CarteGlass(
-                    fond = RougePastelBg,
-                    couleurBordure = RougePastelBordure,
+                    fond = fondRougeButton,
+                    couleurBordure = bordureRougeButton,
                     modifier = Modifier.weight(1f)
                 ) {
                     Column {
-                        Text(text = "${compteurErreurs.coerceAtLeast(2)}", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = RougePastelTexte)
+                        Text(text = "$compteurErreurs", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = texteRougeButton)
                         Spacer(Modifier.height(2.dp))
-                        Text(text = "à examiner", fontSize = 10.5.sp, color = RougePastelTexte)
+                        Text(text = "à examiner", fontSize = 10.5.sp, color = texteRougeButton)
                     }
                 }
 
                 // Tuile 3
                 CarteGlass(modifier = Modifier.weight(1f)) {
                     Column {
-                        Text(text = dernierHeualer(dernierHeure), fontSize = 21.sp, fontWeight = FontWeight.ExtraBold, color = TextePrincipal)
+                        Text(text = dernierHeure, fontSize = 21.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
                         Spacer(Modifier.height(2.dp))
-                        Text(text = "dernier", fontSize = 10.5.sp, color = TexteSecondaire)
+                        Text(text = "dernier", fontSize = 10.5.sp, color = MaterialTheme.colorScheme.secondaryContainer)
                     }
                 }
             }
 
             Spacer(Modifier.height(14.dp))
 
-            // Onglets Pilules (Tous actif, Infos, Erreurs · 2)
+            // Onglets Pilules (Tous actif, Infos, Erreurs)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 PiluleFiltre(
                     libelle = "Tous",
@@ -211,7 +204,7 @@ fun EcranJournal(
                     auClic = { filtreErreurs = false }
                 )
                 PiluleFiltre(
-                    libelle = "Erreurs · 2",
+                    libelle = "Erreurs · $compteurErreurs",
                     selectionne = filtreErreurs == true,
                     auClic = { filtreErreurs = true }
                 )
@@ -227,13 +220,13 @@ fun EcranJournal(
             ) {
                 Text(
                     text = "Aujourd'hui",
-                    color = TextePrincipal,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
                     text = "$total événements",
-                    color = TexteSecondaire,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
                     fontSize = 11.5.sp,
                 )
             }
@@ -246,7 +239,7 @@ fun EcranJournal(
                     evenementsVisibles.forEachIndexed { index, ev ->
                         LigneJournalCapture(evenement = ev)
                         if (index < evenementsVisibles.size - 1) {
-                            HorizontalDivider(color = CouleurBordure, thickness = 0.5.dp)
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 0.5.dp)
                         }
                     }
                 }
@@ -263,8 +256,8 @@ fun EcranJournal(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(14.dp))
-                        .border(1.dp, RougePastelBordure, RoundedCornerShape(14.dp))
-                        .background(RougePastelBg)
+                        .border(1.dp, bordureRougeButton, RoundedCornerShape(14.dp))
+                        .background(fondRougeButton)
                         .clickable {
                             if (confirmerVidage) {
                                 aVider()
@@ -277,11 +270,11 @@ fun EcranJournal(
                     contentAlignment = Alignment.Center
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Delete, contentDescription = null, tint = RougePastelTexte, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Filled.Delete, contentDescription = null, tint = texteRougeButton, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
                         Text(
                             if (confirmerVidage) "Confirmer ?" else "Effacer le journal",
-                            color = RougePastelTexte,
+                            color = texteRougeButton,
                             fontSize = 13.5.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -292,24 +285,22 @@ fun EcranJournal(
                     modifier = Modifier
                         .weight(1f)
                         .clip(RoundedCornerShape(14.dp))
-                        .border(1.dp, CouleurBordure, RoundedCornerShape(14.dp))
-                        .background(FondCarte)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
+                        .background(MaterialTheme.colorScheme.surface)
                         .clickable(onClick = aExporter)
                         .padding(vertical = 14.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.Upload, contentDescription = null, tint = TexteSecondaire, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Filled.Upload, contentDescription = null, tint = MaterialTheme.colorScheme.secondaryContainer, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text("Exporter", color = TextePrincipal, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
+                        Text("Exporter", color = MaterialTheme.colorScheme.onSurface, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
     }
 }
-
-private fun dernierHeualer(h: String) = if (h == "09:43") "09:43" else h
 
 @Composable
 private fun PiluleFiltre(
@@ -320,14 +311,14 @@ private fun PiluleFiltre(
     Box(
         modifier = Modifier
             .clip(CircleShape)
-            .background(if (selectionne) GradientIndigoStart else FondCarte)
-            .border(1.dp, if (selectionne) GradientIndigoStart else CouleurBordure, CircleShape)
+            .background(if (selectionne) GradientIndigoStart else MaterialTheme.colorScheme.surface)
+            .border(1.dp, if (selectionne) GradientIndigoStart else MaterialTheme.colorScheme.outline, CircleShape)
             .clickable(onClick = auClic)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Text(
             text = libelle,
-            color = if (selectionne) Color.White else TexteSecondaire,
+            color = if (selectionne) Color.White else MaterialTheme.colorScheme.secondaryContainer,
             fontSize = 12.sp,
             fontWeight = if (selectionne) FontWeight.Bold else FontWeight.Medium
         )
@@ -336,41 +327,47 @@ private fun PiluleFiltre(
 
 @Composable
 private fun LigneJournalCapture(evenement: ElementEvenement) {
+    val isSombre = MaterialTheme.colorScheme.background.red < 0.2f
     val estErreur = niveauJournalDe(evenement.message) == NiveauJournal.ERREUR
+
+    val chipBg = if (estErreur) (if (isSombre) Color(0x22EF4444) else RougePastelBg) else (if (isSombre) Color(0x2210B981) else VertPastelBg)
+    val chipBd = if (estErreur) (if (isSombre) Color(0x44EF4444) else RougePastelBordure) else (if (isSombre) Color(0x4434D399) else VertPastelBordure)
+    val chipTxt = if (estErreur) (if (isSombre) Color(0xFFF87171) else RougePastelTexte) else (if (isSombre) Color(0xFF34D399) else VertPastelTexte)
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Chip icône 28px (✗ rouge pour erreur, ✓ vert pour info)
+        // Chip icône 28px
         Box(
             modifier = Modifier
                 .size(28.dp)
                 .clip(CircleShape)
-                .background(if (estErreur) RougePastelBg else VertPastelBg)
-                .border(1.dp, if (estErreur) RougePastelBordure else VertPastelBordure, CircleShape),
+                .background(chipBg)
+                .border(1.dp, chipBd, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = if (estErreur) Icons.Filled.Close else Icons.Filled.Check,
                 contentDescription = null,
-                tint = if (estErreur) RougePastelTexte else VertPastelTexte,
+                tint = chipTxt,
                 modifier = Modifier.size(14.dp)
             )
         }
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "09:43:02",
-                color = TexteSecondaire,
+                text = UtilitairesTemps.formaterHeure(evenement.horodatage),
+                color = MaterialTheme.colorScheme.secondaryContainer,
                 fontSize = 10.5.sp,
                 fontWeight = FontWeight.Medium
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 text = evenement.message,
-                color = if (estErreur) RougePastelTexte else TextePrincipal,
+                color = if (estErreur) chipTxt else MaterialTheme.colorScheme.onSurface,
                 fontSize = 12.5.sp,
                 fontWeight = if (estErreur) FontWeight.Bold else FontWeight.Medium
             )
@@ -378,7 +375,7 @@ private fun LigneJournalCapture(evenement: ElementEvenement) {
         Spacer(Modifier.width(8.dp))
         Text(
             text = "passerelle",
-            color = TexteSecondaire,
+            color = MaterialTheme.colorScheme.secondaryContainer,
             fontSize = 10.sp,
         )
     }

@@ -1,4 +1,4 @@
-package com.mitia.smsgateway.ui.views
+﻿package com.mitia.smsgateway.ui.views
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -24,9 +24,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -86,10 +88,20 @@ fun EcranParametres(
     var demarrageAuto by remember { mutableStateOf(true) }
     var confirmerDeconnexion by remember { mutableStateOf(false) }
 
+    val isSombre = MaterialTheme.colorScheme.background.red < 0.2f
+
+    val fondRougeBtn = if (isSombre) Color(0x22EF4444) else RougePastelBg
+    val bordureRougeBtn = if (isSombre) Color(0x44EF4444) else RougePastelBordure
+    val texteRougeBtn = if (isSombre) Color(0xFFF87171) else RougePastelTexte
+
+    val prefIconBg = if (isSombre) Color(0x227C3AED) else VioletPastelBg
+    val prefIconBd = if (isSombre) Color(0x44A78BFA) else VioletPastelBordure
+    val prefIconTxt = if (isSombre) Color(0xFFA78BFA) else VioletPastelTexte
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondSombre)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -98,7 +110,7 @@ fun EcranParametres(
                 .padding(18.dp)
                 .padding(top = 16.dp),
         ) {
-            // En-tête : Tuile header indigo + Paramètres / Configuration SMSTSIKA
+            // En-tête : Tuile header indigo + Paramètres / Configuration SMSIKA
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -128,14 +140,14 @@ fun EcranParametres(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Paramètres",
-                        color = TextePrincipal,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
-                        text = "Configuration SMSTSIKA",
-                        color = TexteSecondaire,
+                        text = "Configuration SMSIKA",
+                        color = MaterialTheme.colorScheme.secondaryContainer,
                         fontSize = 11.5.sp,
                     )
                 }
@@ -153,7 +165,7 @@ fun EcranParametres(
                     ) {
                         Text(
                             text = "CONNEXION AU SERVEUR",
-                            color = TexteSecondaire,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.2.sp
@@ -162,19 +174,19 @@ fun EcranParametres(
                     }
 
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("URL DU SERVEUR", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TexteSecondaire)
+                        Text("URL DU SERVEUR", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondaryContainer)
                         OutlinedTextField(
-                            value = urlServeur.ifBlank { "https://smstsika.vercel.app" },
+                            value = urlServeur.ifBlank { "https://sms-gateway-omega.vercel.app" },
                             onValueChange = auChangementUrlServeur,
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = FondSaisie,
-                                unfocusedContainerColor = FondSaisie,
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 focusedBorderColor = GradientIndigoStart,
-                                unfocusedBorderColor = CouleurBordure,
-                                focusedTextColor = TextePrincipal,
-                                unfocusedTextColor = TextePrincipal,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                             ),
                             shape = RoundedCornerShape(13.dp)
                         )
@@ -191,16 +203,16 @@ fun EcranParametres(
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(14.dp))
-                                .border(1.dp, CouleurBordure, RoundedCornerShape(14.dp))
-                                .background(FondCarte)
+                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
+                                .background(MaterialTheme.colorScheme.surface)
                                 .clickable(onClick = aTesterConnexion)
                                 .padding(vertical = 12.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Filled.Wifi, contentDescription = null, tint = TextePrincipal, modifier = Modifier.size(15.dp))
+                                Icon(Icons.Filled.Wifi, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(15.dp))
                                 Spacer(Modifier.width(6.dp))
-                                Text("tester", color = TextePrincipal, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                Text("tester", color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -223,7 +235,7 @@ fun EcranParametres(
                     ) {
                         Text(
                             text = "APPAREIL",
-                            color = TexteSecondaire,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 1.2.sp
@@ -236,7 +248,7 @@ fun EcranParametres(
                     }
 
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("JETON D'APPAREIL", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TexteSecondaire)
+                        Text("JETON D'APPAREIL", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondaryContainer)
                         OutlinedTextField(
                             value = jetonAppareil?.let { it.take(4) + "..." + it.takeLast(4) } ?: "—",
                             onValueChange = {},
@@ -256,28 +268,28 @@ fun EcranParametres(
                                 }
                             },
                             colors = OutlinedTextFieldDefaults.colors(
-                                disabledContainerColor = FondSaisie,
-                                disabledBorderColor = CouleurBordure,
-                                disabledTextColor = TextePrincipal,
+                                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                disabledTextColor = MaterialTheme.colorScheme.onSurface,
                             ),
                             shape = RoundedCornerShape(13.dp)
                         )
                     }
 
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("NOM DE L'APPAREIL", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TexteSecondaire)
+                        Text("NOM DE L'APPAREIL", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondaryContainer)
                         OutlinedTextField(
                             value = nomAppareil.ifBlank { android.os.Build.MODEL },
                             onValueChange = auChangementNomAppareil,
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedContainerColor = FondSaisie,
-                                unfocusedContainerColor = FondSaisie,
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 focusedBorderColor = GradientIndigoStart,
-                                unfocusedBorderColor = CouleurBordure,
-                                focusedTextColor = TextePrincipal,
-                                unfocusedTextColor = TextePrincipal,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                             ),
                             shape = RoundedCornerShape(13.dp)
                         )
@@ -288,26 +300,26 @@ fun EcranParametres(
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(14.dp))
-                                .border(1.dp, CouleurBordure, RoundedCornerShape(14.dp))
-                                .background(FondCarte)
+                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
+                                .background(MaterialTheme.colorScheme.surface)
                                 .clickable(onClick = aEnregistrerNom)
                                 .padding(vertical = 11.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("enregistrer le nom", color = TextePrincipal, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text("enregistrer le nom", color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
 
                         Box(
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(14.dp))
-                                .border(1.dp, RougePastelBordure, RoundedCornerShape(14.dp))
-                                .background(FondCarte)
+                                .border(1.dp, bordureRougeBtn, RoundedCornerShape(14.dp))
+                                .background(fondRougeBtn)
                                 .clickable(onClick = aReinitialiserAppareil)
                                 .padding(vertical = 11.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("réinitialiser", color = RougePastelTexte, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text("réinitialiser", color = texteRougeBtn, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -320,7 +332,7 @@ fun EcranParametres(
                 Column {
                     Text(
                         text = "PRÉFÉRENCES",
-                        color = TexteSecondaire,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.2.sp
@@ -338,17 +350,17 @@ fun EcranParametres(
                                 modifier = Modifier
                                     .size(34.dp)
                                     .clip(RoundedCornerShape(11.dp))
-                                    .background(VioletPastelBg)
-                                    .border(1.dp, VioletPastelBordure, RoundedCornerShape(11.dp)),
+                                    .background(prefIconBg)
+                                    .border(1.dp, prefIconBd, RoundedCornerShape(11.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Filled.FlashOn, contentDescription = null, tint = VioletPastelTexte, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Filled.FlashOn, contentDescription = null, tint = prefIconTxt, modifier = Modifier.size(16.dp))
                             }
                             Spacer(Modifier.width(12.dp))
                             Column {
-                                Text("Démarrage automatique", fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = TextePrincipal)
+                                Text("Démarrage automatique", fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                                 Spacer(Modifier.height(1.dp))
-                                Text("Lancer le service à l'ouverture", fontSize = 11.sp, color = TexteSecondaire)
+                                Text("Lancer le service à l'ouverture", fontSize = 11.sp, color = MaterialTheme.colorScheme.secondaryContainer)
                             }
                         }
 
@@ -358,24 +370,60 @@ fun EcranParametres(
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
                                 checkedTrackColor = GradientIndigoStart,
-                                uncheckedThumbColor = TexteSecondaire,
-                                uncheckedTrackColor = CouleurBordure
+                                uncheckedThumbColor = MaterialTheme.colorScheme.secondaryContainer,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.outline
                             )
                         )
                     }
 
                     Spacer(Modifier.height(14.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(RoundedCornerShape(11.dp))
+                                    .background(prefIconBg)
+                                    .border(1.dp, prefIconBd, RoundedCornerShape(11.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Filled.DarkMode, contentDescription = null, tint = prefIconTxt, modifier = Modifier.size(16.dp))
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text("Mode sombre", fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                Spacer(Modifier.height(1.dp))
+                                Text(if (themeSombre) "Thème nuit activé" else "Thème jour activé", fontSize = 11.sp, color = MaterialTheme.colorScheme.secondaryContainer)
+                            }
+                        }
+
+                        Switch(
+                            checked = themeSombre,
+                            onCheckedChange = { auChangementTheme() },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = GradientIndigoStart,
+                                uncheckedThumbColor = MaterialTheme.colorScheme.secondaryContainer,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.outline
+                            )
+                        )
+                    }
                 }
             }
 
             Spacer(Modifier.height(14.dp))
 
-            // Carte 4 : Compte — déconnexion du téléphone
+            // Carte 4 : Compte — déconnexion
             CarteGlass(modifier = Modifier.fillMaxWidth()) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
                         text = "COMPTE",
-                        color = TexteSecondaire,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.2.sp
@@ -384,8 +432,8 @@ fun EcranParametres(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(14.dp))
-                            .border(1.dp, RougePastelBordure, RoundedCornerShape(14.dp))
-                            .background(FondCarte)
+                            .border(1.dp, bordureRougeBtn, RoundedCornerShape(14.dp))
+                            .background(fondRougeBtn)
                             .clickable { confirmerDeconnexion = true }
                             .padding(vertical = 12.dp),
                         contentAlignment = Alignment.Center
@@ -394,16 +442,16 @@ fun EcranParametres(
                             Icon(
                                 Icons.AutoMirrored.Filled.Logout,
                                 contentDescription = null,
-                                tint = RougePastelTexte,
+                                tint = texteRougeBtn,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text("Se déconnecter", color = RougePastelTexte, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            Text("Se déconnecter", color = texteRougeBtn, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                     Text(
                         text = "Arrête le service, prévient le serveur et ferme la session sur ce téléphone.",
-                        color = TexteSecondaire,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
                         fontSize = 11.sp
                     )
                 }
@@ -412,16 +460,16 @@ fun EcranParametres(
             if (confirmerDeconnexion) {
                 AlertDialog(
                     onDismissRequest = { confirmerDeconnexion = false },
-                    title = { Text("Se déconnecter ?", fontWeight = FontWeight.Bold, color = TextePrincipal) },
-                    text = { Text("Le service s'arrête et ce téléphone n'enverra plus de SMS.", color = TexteSecondaire) },
+                    title = { Text("Se déconnecter ?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
+                    text = { Text("Le service s'arrête et ce téléphone n'enverra plus de SMS.", color = MaterialTheme.colorScheme.secondaryContainer) },
                     confirmButton = {
                         TextButton(onClick = { confirmerDeconnexion = false; aDeconnecter() }) {
-                            Text("Déconnecter", color = RougePastelTexte, fontWeight = FontWeight.Bold)
+                            Text("Déconnecter", color = texteRougeBtn, fontWeight = FontWeight.Bold)
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { confirmerDeconnexion = false }) {
-                            Text("Annuler", color = TexteSecondaire)
+                            Text("Annuler", color = MaterialTheme.colorScheme.secondaryContainer)
                         }
                     }
                 )

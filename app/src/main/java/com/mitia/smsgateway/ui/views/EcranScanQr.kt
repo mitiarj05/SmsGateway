@@ -23,6 +23,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -175,7 +176,7 @@ fun EcranScanQr(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondSombre),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -188,7 +189,7 @@ fun EcranScanQr(
                     CircularProgressIndicator(color = GradientIndigoStart)
                     Text(
                         text = "Liaison en cours…",
-                        color = TextePrincipal,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -197,12 +198,12 @@ fun EcranScanQr(
                     Icon(
                         imageVector = Icons.Filled.QrCodeScanner,
                         contentDescription = null,
-                        tint = TexteSecondaire,
+                        tint = MaterialTheme.colorScheme.secondaryContainer,
                         modifier = Modifier.size(48.dp)
                     )
                     Text(
                         text = messageErreur ?: "Échec du scan.",
-                        color = TextePrincipal,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
@@ -219,18 +220,18 @@ fun EcranScanQr(
                         Text("Recommencer", color = GradientIndigoStart, fontWeight = FontWeight.Bold)
                     }
                     TextButton(onClick = aFermer) {
-                        Text("Fermer", color = TexteSecondaire)
+                        Text("Fermer", color = MaterialTheme.colorScheme.secondaryContainer)
                     }
                 }
                 else -> {
                     CircularProgressIndicator(color = GradientIndigoStart)
                     Text(
                         text = "Ouverture de la caméra…",
-                        color = TexteSecondaire,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
                         fontSize = 13.sp
                     )
                     TextButton(onClick = aFermer) {
-                        Text("Annuler", color = TexteSecondaire)
+                        Text("Annuler", color = MaterialTheme.colorScheme.secondaryContainer)
                     }
                 }
             }

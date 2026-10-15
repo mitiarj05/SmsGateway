@@ -1,4 +1,4 @@
-package com.mitia.smsgateway.ui.views
+﻿package com.mitia.smsgateway.ui.views
 
 import android.Manifest
 import android.content.Context
@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.SimCard
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -55,6 +56,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -86,6 +88,16 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
     var cartesSim by remember { mutableStateOf(emptyList<InfoSim>()) }
     var emplacements by remember { mutableStateOf(3) }
     var permissionTelephone by remember { mutableStateOf(false) }
+
+    val isSombre = MaterialTheme.colorScheme.background.red < 0.2f
+
+    val pingIconBg = if (isSombre) Color(0x222563EB) else Color(0xFFEFF6FF)
+    val pingIconBd = if (isSombre) Color(0x443B82F6) else Color(0xFFBFDBFE)
+    val pingIconTxt = if (isSombre) Color(0xFF60A5FA) else Color(0xFF2563EB)
+
+    val simIconBg = if (isSombre) Color(0x227C3AED) else VioletPastelBg
+    val simIconBd = if (isSombre) Color(0x44A78BFA) else VioletPastelBordure
+    val simIconTxt = if (isSombre) Color(0xFFA78BFA) else VioletPastelTexte
 
     fun actualiserSims() {
         val sims = GestionnaireSim.listerSims(context)
@@ -124,7 +136,7 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondSombre)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -133,7 +145,7 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                 .padding(16.dp)
                 .padding(top = 16.dp),
         ) {
-            // En-tête : Tuile header indigo + « diagnostic » / « tests locaux, sans dépendre du serveur »
+            // En-tête : Tuile header indigo + diagnostic / tests locaux
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -163,14 +175,14 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "diagnostic",
-                        color = TextePrincipal,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
                         text = "tests locaux, sans dépendre du serveur",
-                        color = TexteSecondaire,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
                         fontSize = 11.5.sp,
                     )
                 }
@@ -178,7 +190,7 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
 
             Spacer(Modifier.height(16.dp))
 
-            // ---- 1. Carte « Ping serveur » ----
+            // ---- 1. Carte Ping serveur ----
             CarteGlass(modifier = Modifier.fillMaxWidth()) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -186,17 +198,17 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                             modifier = Modifier
                                 .size(34.dp)
                                 .clip(RoundedCornerShape(11.dp))
-                                .background(Color(0xFFEFF6FF))
-                                .border(1.dp, Color(0xFFBFDBFE), RoundedCornerShape(11.dp)),
+                                .background(pingIconBg)
+                                .border(1.dp, pingIconBd, RoundedCornerShape(11.dp)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(imageVector = Icons.Filled.Speed, contentDescription = null, tint = Color(0xFF2563EB), modifier = Modifier.size(16.dp))
+                            Icon(imageVector = Icons.Filled.Speed, contentDescription = null, tint = pingIconTxt, modifier = Modifier.size(16.dp))
                         }
                         Spacer(Modifier.width(12.dp))
                         Column {
-                            Text(text = "Ping serveur", color = TextePrincipal, fontSize = 14.5.sp, fontWeight = FontWeight.Bold)
+                            Text(text = "Ping serveur", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.5.sp, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(2.dp))
-                            Text(text = "latence aller-retour HTTPS", color = TexteSecondaire, fontSize = 11.5.sp)
+                            Text(text = "latence aller-retour HTTPS", color = MaterialTheme.colorScheme.secondaryContainer, fontSize = 11.5.sp)
                         }
                     }
 
@@ -220,15 +232,15 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(14.dp))
-                                .border(1.dp, CouleurBordure, RoundedCornerShape(14.dp))
-                                .background(FondCarte)
+                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
+                                .background(MaterialTheme.colorScheme.surface)
                                 .clickable(enabled = !pingEnCours, onClick = ::ping)
                                 .padding(horizontal = 16.dp, vertical = 10.dp)
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Filled.Wifi, contentDescription = null, tint = TextePrincipal, modifier = Modifier.size(15.dp))
+                                Icon(Icons.Filled.Wifi, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(15.dp))
                                 Spacer(Modifier.width(6.dp))
-                                Text("mesurer", color = TextePrincipal, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                Text("mesurer", color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -237,7 +249,7 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
 
             Spacer(Modifier.height(14.dp))
 
-            // ---- 3. Carte « Multi-SIM » ----
+            // ---- 2. Carte Multi-SIM ----
             CarteGlass(modifier = Modifier.fillMaxWidth()) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -245,28 +257,28 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                             modifier = Modifier
                                 .size(34.dp)
                                 .clip(RoundedCornerShape(11.dp))
-                                .background(VioletPastelBg)
-                                .border(1.dp, VioletPastelBordure, RoundedCornerShape(11.dp)),
+                                .background(simIconBg)
+                                .border(1.dp, simIconBd, RoundedCornerShape(11.dp)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(imageVector = Icons.Filled.SimCard, contentDescription = null, tint = VioletPastelTexte, modifier = Modifier.size(16.dp))
+                            Icon(imageVector = Icons.Filled.SimCard, contentDescription = null, tint = simIconTxt, modifier = Modifier.size(16.dp))
                         }
                         Spacer(Modifier.width(12.dp))
                         Column {
-                            Text(text = "Multi-SIM", color = TextePrincipal, fontSize = 14.5.sp, fontWeight = FontWeight.Bold)
+                            Text(text = "Multi-SIM", color = MaterialTheme.colorScheme.onSurface, fontSize = 14.5.sp, fontWeight = FontWeight.Bold)
                             Spacer(Modifier.height(2.dp))
-                            Text(text = "$emplacements emplacement(s) · rotation tous les 10 envois", color = TexteSecondaire, fontSize = 11.5.sp)
+                            Text(text = "$emplacements emplacement(s) · rotation tous les 10 envois", color = MaterialTheme.colorScheme.secondaryContainer, fontSize = 11.5.sp)
                         }
                     }
 
                     Spacer(Modifier.height(4.dp))
 
-                    // Option 1 : Automatique (Sélectionnée)
+                    // Option 1 : Automatique
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFFEEF0FF))
+                            .background(GradientIndigoStart.copy(alpha = 0.12f))
                             .border(1.5.dp, GradientIndigoStart, RoundedCornerShape(16.dp))
                             .padding(14.dp)
                     ) {
@@ -276,7 +288,6 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                                // Radio pleine indigo
                                 Box(
                                     modifier = Modifier
                                         .size(20.dp)
@@ -288,27 +299,53 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                                         modifier = Modifier
                                             .size(8.dp)
                                             .clip(CircleShape)
-                                            .background(FondCarte)
+                                            .background(MaterialTheme.colorScheme.surface)
                                     )
                                 }
                                 Spacer(Modifier.width(12.dp))
                                 Column {
-                                    Text(text = "Automatique", color = TextePrincipal, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
+                                    Text(text = "Automatique", color = MaterialTheme.colorScheme.onSurface, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
                                     Spacer(Modifier.height(1.dp))
-                                    Text(text = "alterne toutes les 10 envois", color = TexteSecondaire, fontSize = 11.sp)
+                                    Text(text = "alterne toutes les 10 envois", color = MaterialTheme.colorScheme.secondaryContainer, fontSize = 11.sp)
                                 }
                             }
                             ChipStatut(libelle = "actif", tonalite = TonaliteChip.VIOLET)
                         }
                     }
 
-                    // Cartes SIM réellement détectées (aucune donnée fictive)
+                    // Cartes SIM
                     if (cartesSim.isEmpty()) {
-                        Text(
-                            text = "Aucune carte SIM détectée sur cet appareil.",
-                            color = TexteSecondaire,
-                            fontSize = 12.sp
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
+                                .padding(14.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = if (!permissionTelephone)
+                                    "Accès téléphone requis pour lire vos cartes SIM."
+                                else
+                                    "Aucune carte SIM détectée sur cet appareil.",
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(Modifier.height(10.dp))
+                            BoutonNeon(
+                                libelle = if (!permissionTelephone) "Autoriser l'accès téléphone" else "Revérifier",
+                                auClic = {
+                                    if (!permissionTelephone) {
+                                        lanceurTelephone.launch(Manifest.permission.READ_PHONE_STATE)
+                                    } else {
+                                        actualiserTout()
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
                     cartesSim.forEach { sim ->
                         val selectionnee = modeSim == "manual" && souscriptionSimId == sim.abonnementId
@@ -316,10 +353,10 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(16.dp))
-                                .background(FondCarte)
+                                .background(MaterialTheme.colorScheme.surface)
                                 .border(
                                     if (selectionnee) 1.5.dp else 1.dp,
-                                    if (selectionnee) GradientIndigoStart else CouleurBordure,
+                                    if (selectionnee) GradientIndigoStart else MaterialTheme.colorScheme.outline,
                                     RoundedCornerShape(16.dp)
                                 )
                                 .clickable {
@@ -340,7 +377,7 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                                     modifier = Modifier
                                         .size(20.dp)
                                         .clip(CircleShape)
-                                        .border(2.dp, if (selectionnee) GradientIndigoStart else Color(0xFFCBD5E1), CircleShape)
+                                        .border(2.dp, if (selectionnee) GradientIndigoStart else MaterialTheme.colorScheme.outline, CircleShape)
                                         .background(if (selectionnee) GradientIndigoStart else Color.Transparent),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -349,7 +386,7 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                                             modifier = Modifier
                                                 .size(8.dp)
                                                 .clip(CircleShape)
-                                                .background(FondCarte)
+                                                .background(MaterialTheme.colorScheme.surface)
                                         )
                                     }
                                 }
@@ -357,14 +394,14 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                                 Column {
                                     Text(
                                         text = "SIM ${sim.indexEmplacement + 1} · ${sim.operateur ?: "Opérateur inconnu"}",
-                                        color = TextePrincipal,
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         fontSize = 13.5.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Spacer(Modifier.height(1.dp))
                                     Text(
                                         text = sim.numero ?: "numéro indisponible",
-                                        color = TexteSecondaire,
+                                        color = MaterialTheme.colorScheme.secondaryContainer,
                                         fontSize = 11.sp
                                     )
                                 }

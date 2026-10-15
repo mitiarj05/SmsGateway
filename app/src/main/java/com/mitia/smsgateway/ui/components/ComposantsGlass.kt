@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,14 +29,14 @@ import androidx.compose.ui.unit.sp
 import com.mitia.smsgateway.ui.theme.*
 
 /**
- * Carte Design System Clair : Fond Blanc, Bordure 1px #F1F5F9, Rayon 20px, Ombre Douce + Ligne de lumière supérieure
+ * Carte Design System Adaptatif : Fond thème-aware, bordure fine + ligne de lumière
  */
 @Composable
 fun CarteGlass(
     modifier: Modifier = Modifier,
     glow: Color? = null,
-    couleurBordure: Color = CouleurBordure,
-    fond: Color = FondCarte,
+    couleurBordure: Color = MaterialTheme.colorScheme.outline,
+    fond: Color = MaterialTheme.colorScheme.surface,
     coins: Dp = 20.dp,
     contenu: @Composable () -> Unit
 ) {
@@ -54,14 +55,14 @@ fun CarteGlass(
             .border(1.dp, bordureEffective, RoundedCornerShape(coins))
             .padding(16.dp)
     ) {
-        // Ligne de lumière supérieure (transparent -> blanc 0.9 -> transparent)
+        // Ligne de lumière supérieure (transparent -> blanc/bleu 0.3 -> transparent)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
                 .background(
                     Brush.horizontalGradient(
-                        colors = listOf(Color.Transparent, Color.White.copy(alpha = 0.9f), Color.Transparent)
+                        colors = listOf(Color.Transparent, Color.White.copy(alpha = 0.25f), Color.Transparent)
                     )
                 )
                 .align(Alignment.TopCenter)
@@ -76,7 +77,7 @@ fun CarteSombre(modifier: Modifier = Modifier, glow: Color? = null, contenu: @Co
     CarteGlass(modifier = modifier, glow = glow, contenu = contenu)
 
 /**
- * Chip de Statut Pastel (Vert / Ambre / Rouge / Violet) avec point 5px
+ * Chip de Statut Adaptatif (Vert / Ambre / Rouge / Violet)
  */
 enum class TonaliteChip { VERT, AMBRE, ROUGE, VIOLET }
 
@@ -87,11 +88,13 @@ fun ChipStatut(
     modifier: Modifier = Modifier,
     pulse: Boolean = false,
 ) {
+    val isSombre = MaterialTheme.colorScheme.background.red < 0.2f
+
     val (couleurTexte, couleurFond, couleurBordure) = when (tonalite) {
-        TonaliteChip.VERT -> Triple(VertPastelTexte, VertPastelBg, VertPastelBordure)
-        TonaliteChip.AMBRE -> Triple(AmbrePastelTexte, AmbrePastelBg, AmbrePastelBordure)
-        TonaliteChip.ROUGE -> Triple(RougePastelTexte, RougePastelBg, RougePastelBordure)
-        TonaliteChip.VIOLET -> Triple(VioletPastelTexte, VioletPastelBg, VioletPastelBordure)
+        TonaliteChip.VERT -> if (isSombre) Triple(Color(0xFF34D399), Color(0x2210B981), Color(0x4434D399)) else Triple(VertPastelTexte, VertPastelBg, VertPastelBordure)
+        TonaliteChip.AMBRE -> if (isSombre) Triple(Color(0xFFFBBF24), Color(0x22F59E0B), Color(0x44FBBF24)) else Triple(AmbrePastelTexte, AmbrePastelBg, AmbrePastelBordure)
+        TonaliteChip.ROUGE -> if (isSombre) Triple(Color(0xFFF87171), Color(0x22EF4444), Color(0x44F87171)) else Triple(RougePastelTexte, RougePastelBg, RougePastelBordure)
+        TonaliteChip.VIOLET -> if (isSombre) Triple(Color(0xFFA78BFA), Color(0x227C3AED), Color(0x44A78BFA)) else Triple(VioletPastelTexte, VioletPastelBg, VioletPastelBordure)
     }
 
     Box(
@@ -122,7 +125,7 @@ fun ChipStatut(
 }
 
 /**
- * Bouton Principal Dégradé 135° #6A6AE0 → #4C4CC9
+ * Bouton Principal Dégradé 135° #3B82F6 → #1D4ED8
  */
 @Composable
 fun BoutonNeon(
@@ -139,7 +142,7 @@ fun BoutonNeon(
 
     Box(
         modifier = modifier
-            .shadow(16.dp, RoundedCornerShape(14.dp), spotColor = NeonShadowColor)
+            .shadow(12.dp, RoundedCornerShape(14.dp), spotColor = NeonShadowColor)
             .clip(RoundedCornerShape(14.dp))
             .background(gradient)
             .clickable(enabled = actif, onClick = auClic)

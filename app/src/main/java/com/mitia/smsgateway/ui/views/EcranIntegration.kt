@@ -27,6 +27,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
@@ -59,7 +60,7 @@ fun EcranDemarrage(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondSombre),
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -75,14 +76,14 @@ fun EcranDemarrage(modifier: Modifier = Modifier) {
             Spacer(Modifier.height(20.dp))
             Text(
                 text = "SMSTSIKA",
-                color = TextePrincipal,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.ExtraBold,
             )
             Spacer(Modifier.height(2.dp))
             Text(
                 text = "passerelle autohébergée",
-                color = TexteSecondaire,
+                color = MaterialTheme.colorScheme.secondaryContainer,
                 fontSize = 12.5.sp,
             )
             Spacer(Modifier.height(24.dp))
@@ -115,7 +116,7 @@ fun EcranIntegration(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondSombre)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -125,7 +126,7 @@ fun EcranIntegration(
         ) {
             Text(
                 text = "Étape ${etape + 1}/3",
-                color = TexteSecondaire,
+                color = MaterialTheme.colorScheme.secondaryContainer,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
             )
@@ -137,7 +138,7 @@ fun EcranIntegration(
                     .height(6.dp)
                     .clip(CircleShape),
                 color = GradientIndigoStart,
-                trackColor = CouleurBordure,
+                trackColor = MaterialTheme.colorScheme.outline,
             )
             Spacer(Modifier.height(28.dp))
 
@@ -175,16 +176,16 @@ fun EcranIntegration(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(14.dp))
-                            .border(1.dp, CouleurBordure, RoundedCornerShape(14.dp))
-                            .background(FondCarte)
+                            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
+                            .background(MaterialTheme.colorScheme.surface)
                             .clickable { etape-- }
                             .padding(horizontal = 16.dp, vertical = 12.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = TextePrincipal, modifier = Modifier.size(16.dp))
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Retour", color = TextePrincipal, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            Text("Retour", color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -236,7 +237,7 @@ private fun IntegrationBienvenue() {
         Spacer(Modifier.height(20.dp))
         Text(
             text = "Bienvenue sur SMSTSIKA",
-            color = TextePrincipal,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 22.sp,
             fontWeight = FontWeight.ExtraBold,
             textAlign = TextAlign.Center,
@@ -245,7 +246,7 @@ private fun IntegrationBienvenue() {
         Text(
             text = "Ce téléphone va devenir un émetteur SMS piloté par votre serveur : " +
                 "il reçoit les tâches en push, envoie via sa carte SIM, même écran éteint.",
-            color = TexteSecondaire,
+            color = MaterialTheme.colorScheme.secondaryContainer,
             fontSize = 13.sp,
             textAlign = TextAlign.Center,
             lineHeight = 18.sp,
@@ -264,30 +265,30 @@ private fun IntegrationServeur(
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             text = "Connectez le serveur",
-            color = TextePrincipal,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 19.sp,
             fontWeight = FontWeight.ExtraBold,
         )
         Text(
             text = "Adresse de votre passerelle (pré-remplie en production).",
-            color = TexteSecondaire,
+            color = MaterialTheme.colorScheme.secondaryContainer,
             fontSize = 12.5.sp,
         )
 
         OutlinedTextField(
             value = urlServeur,
             onValueChange = auChangementUrlServeur,
-            label = { Text("Adresse serveur", color = TexteSecondaire) },
-            placeholder = { Text("https://smstsika.vercel.app", color = TexteSecondaire) },
+            label = { Text("Adresse serveur", color = MaterialTheme.colorScheme.secondaryContainer) },
+            placeholder = { Text("https://smstsika.vercel.app", color = MaterialTheme.colorScheme.secondaryContainer) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = FondSaisie,
-                unfocusedContainerColor = FondSaisie,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                 focusedBorderColor = GradientIndigoStart,
-                unfocusedBorderColor = CouleurBordure,
-                focusedTextColor = TextePrincipal,
-                unfocusedTextColor = TextePrincipal,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
             ),
             shape = RoundedCornerShape(13.dp),
         )
@@ -297,13 +298,13 @@ private fun IntegrationServeur(
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(14.dp))
-                    .border(1.dp, CouleurBordure, RoundedCornerShape(14.dp))
-                    .background(FondCarte)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.surface)
                     .clickable(onClick = aTesterConnexion)
                     .padding(vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Tester", color = TextePrincipal, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text("Tester", color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
 
             BoutonNeon(
@@ -331,13 +332,13 @@ private fun IntegrationPermissions(
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             text = "Autorisations requises",
-            color = TextePrincipal,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 19.sp,
             fontWeight = FontWeight.ExtraBold,
         )
         Text(
             text = "Sans elles, l'envoi en arrière-plan ne fonctionnera pas.",
-            color = TexteSecondaire,
+            color = MaterialTheme.colorScheme.secondaryContainer,
             fontSize = 12.5.sp,
         )
 
@@ -400,8 +401,8 @@ private fun LignePermissionIntegration(
         }
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = etiquette, color = TextePrincipal, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
-            Text(text = detail, color = TexteSecondaire, fontSize = 11.sp)
+            Text(text = etiquette, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.5.sp, fontWeight = FontWeight.Bold)
+            Text(text = detail, color = MaterialTheme.colorScheme.secondaryContainer, fontSize = 11.sp)
         }
         if (afficherAction) {
             Box(

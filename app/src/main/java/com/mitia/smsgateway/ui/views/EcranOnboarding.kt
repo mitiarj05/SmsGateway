@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -60,7 +61,7 @@ fun EcranOnboarding(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(FondSombre)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
@@ -76,7 +77,7 @@ fun EcranOnboarding(
             ) {
                 Text(
                     text = "Passer",
-                    color = TexteSecondaire,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
                     fontSize = 13.5.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -116,7 +117,7 @@ fun EcranOnboarding(
                                 if (estActif)
                                     Brush.horizontalGradient(listOf(GradientIndigoStart, Color(0xFF38BDF8)))
                                 else
-                                    Brush.horizontalGradient(listOf(CouleurBordure, CouleurBordure))
+                                    Brush.horizontalGradient(listOf(MaterialTheme.colorScheme.outline, MaterialTheme.colorScheme.outline))
                             )
                     )
                 }
@@ -149,7 +150,7 @@ fun EcranOnboarding(
                     ) {
                         Text(
                             text = "Déjà un compte ? ",
-                            color = TexteSecondaire,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                             fontSize = 12.5.sp
                         )
                         Text(
@@ -194,7 +195,7 @@ private fun SlideOnboarding1() {
         // Titre centré 23px font 800 #0F172A avec mot « poche » en dégradé
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = TextePrincipal, fontWeight = FontWeight.ExtraBold, fontSize = 23.sp)) {
+                withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.ExtraBold, fontSize = 23.sp)) {
                     append("Votre passerelle SMS\ndans votre ")
                 }
                 withStyle(
@@ -216,7 +217,7 @@ private fun SlideOnboarding1() {
         // Sous-titre centré 12.5px #64748B
         Text(
             text = "Transformez vos téléphones Android en relais d'envoi professionnels — sans abonnement, avec vos propres cartes SIM.",
-            color = TexteSecondaire,
+            color = MaterialTheme.colorScheme.secondaryContainer,
             fontSize = 12.5.sp,
             textAlign = TextAlign.Center,
             lineHeight = 18.sp,
@@ -238,7 +239,7 @@ private fun SlideOnboarding2() {
         // Titre centré 23px font 800 #0F172A avec « envoyer mieux » en dégradé
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = TextePrincipal, fontWeight = FontWeight.ExtraBold, fontSize = 23.sp)) {
+                withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.ExtraBold, fontSize = 23.sp)) {
                     append("Tout ce qu'il faut\npour ")
                 }
                 withStyle(
@@ -323,7 +324,7 @@ private fun SlideOnboarding3() {
         // Titre "Prêt en 5 minutes" avec "5 minutes" en dégradé texte
         Text(
             text = buildAnnotatedString {
-                withStyle(SpanStyle(color = TextePrincipal, fontWeight = FontWeight.ExtraBold, fontSize = 23.sp)) {
+                withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.ExtraBold, fontSize = 23.sp)) {
                     append("Prêt en ")
                 }
                 withStyle(
@@ -345,7 +346,7 @@ private fun SlideOnboarding3() {
         // Sous-titre centré
         Text(
             text = "Installez l'app sur votre téléphone, scannez le QR depuis votre console web, et votre passerelle est en ligne.",
-            color = TexteSecondaire,
+            color = MaterialTheme.colorScheme.secondaryContainer,
             fontSize = 12.5.sp,
             textAlign = TextAlign.Center,
             lineHeight = 18.sp,
@@ -399,8 +400,8 @@ private fun CarteFonctionnalite(
                 spotColor = Color(0xFF23204D).copy(alpha = 0.06f)
             )
             .clip(RoundedCornerShape(15.dp))
-            .background(FondCarte)
-            .border(1.dp, CouleurBordure, RoundedCornerShape(15.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(15.dp))
             .padding(horizontal = 13.dp, vertical = 11.dp)
     ) {
         Row(
@@ -424,14 +425,14 @@ private fun CarteFonctionnalite(
             Column {
                 Text(
                     text = titre,
-                    color = TextePrincipal,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 12.5.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(1.dp))
                 Text(
                     text = sousTitre,
-                    color = TexteAttenue,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 10.5.sp
                 )
             }
@@ -458,8 +459,8 @@ private fun CarteEtapeNumerotee(
                 spotColor = Color(0xFF23204D).copy(alpha = 0.06f)
             )
             .clip(RoundedCornerShape(15.dp))
-            .background(FondCarte)
-            .border(1.dp, CouleurBordure, RoundedCornerShape(15.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(15.dp))
             .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
         Row(
@@ -483,14 +484,14 @@ private fun CarteEtapeNumerotee(
             Column {
                 Text(
                     text = titre,
-                    color = TextePrincipal,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(1.dp))
                 Text(
                     text = sousTitre,
-                    color = TexteAttenue,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 11.sp
                 )
             }

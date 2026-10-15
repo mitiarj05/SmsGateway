@@ -2,22 +2,23 @@ package com.mitia.smsgateway.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ================= DESIGN SYSTEM MOBILE — THÈME CLAIR =================
+// ================= DESIGN SYSTEM MOBILE — PALETTE COHÉRENTE AVEC LE SERVEUR WEB =================
 val FondMobileClair = Color(0xFFEDF1F9)
 val BlancCarte = Color(0xFFFFFFFF)
 val BordureCarteClair = Color(0xFFF1F5F9)
 val BordureInputClair = Color(0xFFE2E8F0)
 val FondInputClair = Color(0xFFF8FAFC)
-// Dégradés & Accents Principal (cohérents serveur web : #3B82F6 → #1D4ED8)
-val GradientIndigoStart = Color(0xFF3B82F6)
-val GradientIndigoEnd = Color(0xFF1D4ED8)
-val NeonShadowColor = Color(0xFF7C3AED)
 
-// Carte Sombre (cohérent serveur web : indigo-950 → #110C2E)
-val FondDarkCardStart = Color(0xFF1E1B4B)
-val FondDarkCardEnd = Color(0xFF110C2E)
+// Dégradés & Accents Principal (#2563EB → #3B82F6 / #5B5BD6)
+val GradientIndigoStart = Color(0xFF5B5BD6)
+val GradientIndigoEnd = Color(0xFF4C4CC9)
+val NeonShadowColor = Color(0xFF5B5BD6)
 
-// Typographie Light Theme
+// Carte Sombre (Identique au serveur web #332C75 → #1F1A52)
+val FondDarkCardStart = Color(0xFF332C75)
+val FondDarkCardEnd = Color(0xFF1F1A52)
+
+// Typographie
 val TexteTitreClair = Color(0xFF0F172A)
 val TexteSousTitreClair = Color(0xFF94A3B8)
 val TexteLabelClair = Color(0xFF94A3B8)
@@ -40,16 +41,15 @@ val VioletPastelBg = Color(0xFFF5F3FF)
 val VioletPastelTexte = Color(0xFF7C3AED)
 val VioletPastelBordure = Color(0xFFDDD6FE)
 
-// ================= TOKENS ADAPTATIFS =================
-// Tous aliasés sur le thème clair : le mode sombre est désactivé
-// (rendu identique à avant, aucun changement visuel).
-val FondSombre = FondMobileClair
-val FondCarte = BlancCarte
-val FondCarteClair = BlancCarte
-val CouleurBordure = BordureCarteClair
-val FondCarteGlass = BlancCarte
-val CouleurBordureGlass = BordureCarteClair
-val FondSaisie = FondInputClair
+// ================= TOKENS SOMBRES EXACTS DU SERVEUR WEB =================
+// Page #0B0F19 · Cartes #131926 · Bordures #1E293B · Textes blancs/slate-400
+val FondSombre = Color(0xFF0B0F19)
+val FondCarte = Color(0xFF131926)
+val FondCarteClair = Color(0xFF1E293B)
+val CouleurBordure = Color(0xFF1E293B)
+val FondCarteGlass = Color(0xFF131926)
+val CouleurBordureGlass = Color(0xFF1E293B)
+val FondSaisie = Color(0xFF0F172A)
 
 // Accents & Compatibilité
 val VertAccent = VertPastelTexte
@@ -84,12 +84,12 @@ val NeonViolet = VioletPastelTexte
 val NeonVioletBg = VioletPastelBg
 val NeonVioletBd = VioletPastelBordure
 
-// Texte (aliasés sur le clair : rendu inchangé, voir ci-dessus)
-val TextePrincipal = TexteTitreClair
-val TexteSecondaire = TexteSousTitreClair
-val TexteAttenue = TexteLabelClair
+// Texte
+val TextePrincipal = Color(0xFFFFFFFF)
+val TexteSecondaire = Color(0xFF94A3B8)
+val TexteAttenue = Color(0xFF64748B)
 
-// Palette Claire (pour mode clair optionnel)
+// Palette Claire
 val FondClair = FondMobileClair
 val FondCarteClairMode = BlancCarte
 val CouleurBordureClair = BordureCarteClair

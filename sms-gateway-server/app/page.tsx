@@ -14,15 +14,6 @@ import QrCodeSvg from '../composants/QrCodeSvg'
 import { useReveal } from '../lib/use-reveal'
 import { useTheme } from '../lib/use-theme'
 
-const DEMO_ETAPES = [  { titre: 'Requête HTTP reçue', desc: 'Le serveur valide le corps JSON et la clé API.', icone: Code },
-  { titre: 'Mise en file d\'attente', desc: 'La tâche est assignée au relais Android disponible.', icone: Inbox },
-  { titre: 'Transmission Push FCM', desc: 'Réveil instantané du téléphone en arrière-plan.', icone: Zap },
-  { titre: 'Envoi radio SIM', desc: 'La carte SIM locale émet le SMS au destinataire.', icone: Smartphone },
-]
-
-// URL du fichier APK Android — surchargeable via NEXT_PUBLIC_URL_APK
-// (ex. lien Play Store). Par défaut : APK déposé dans public/apk/smstsika.apk.
-// Le QR exige une URL absolue : on préfixe avec l'origine du site.
 const URL_APK = process.env.NEXT_PUBLIC_URL_APK || '/apk/smstsika.apk'
 function urlApkAbsolue(): string {
   if (/^https?:\/\//i.test(URL_APK)) return URL_APK
@@ -30,55 +21,18 @@ function urlApkAbsolue(): string {
   return new URL(URL_APK, window.location.origin).href
 }
 
-export default function PageAccueilWeb() {
+export default function PageAccueilHumaine() {
   const { modeSombre, monte, basculerTheme } = useTheme()
   useReveal()
 
-  // URL du QR calculée après montage (identique serveur/client au 1er rendu).
   const [urlQrApk, setUrlQrApk] = useState(URL_APK)
   useEffect(() => { setUrlQrApk(urlApkAbsolue()) }, [])
-
-  // Simulation interactive
-  const [demoNumero, setDemoNumero] = useState('+261340000000')
-  const [demoMessage, setDemoMessage] = useState('Votre commande est prête !')
-  const [demoEnCours, setDemoEnCours] = useState(false)
-  const [demoEtape, setDemoEtape] = useState(0)
-  const [demoLogs, setDemoLogs] = useState<string[]>([])
-
-  const demoValide = demoNumero.trim().length >= 8 && demoMessage.trim().length > 0
-
-  async function lancerDemo() {
-    if (!demoValide || demoEnCours) return
-    setDemoEnCours(true)
-    setDemoEtape(0)
-    setDemoLogs([])
-
-    const ajouterLog = (txt: string) => setDemoLogs(l => [...l, `[${new Date().toLocaleTimeString()}] ${txt}`])
-
-    ajouterLog(`Démarrage de l'envoi vers ${demoNumero.trim()}...`)
-    await new Promise(r => setTimeout(r, 600))
-    setDemoEtape(1)
-    ajouterLog(`[HTTP 200 OK] Requête POST validée par le serveur.`)
-
-    await new Promise(r => setTimeout(r, 700))
-    setDemoEtape(2)
-    ajouterLog(`[FILE] Tâche enregistrée dans la base de données.`)
-
-    await new Promise(r => setTimeout(r, 800))
-    setDemoEtape(3)
-    ajouterLog(`[FCM Push] Réveil du téléphone Android (Infinix X689C)...`)
-
-    await new Promise(r => setTimeout(r, 900))
-    setDemoEtape(4)
-    ajouterLog(`[SIM OK] SMS transmis avec succès par l'opérateur.`)
-    setDemoEnCours(false)
-  }
 
   return (
     <div className="min-h-screen bg-[#FAFAFC] text-slate-800 font-sans antialiased selection:bg-blue-600 selection:text-white dark:bg-[#0B0F19] dark:text-zinc-100">
       <BarreProgressionDefilante />
 
-      {/* ================= 1. NAVBAR ================= */}
+      {/* ================= NAVBAR ================= */}
       <div className="sticky top-0 z-50 w-full">
         <header className="flex h-[72px] items-center justify-between border-b border-slate-200/60 bg-white/80 px-6 backdrop-blur-xl lg:px-12 dark:border-white/10 dark:bg-[#0B0F19]/85">
           <Link href="/" className="flex items-center gap-2.5">
@@ -118,216 +72,166 @@ export default function PageAccueilWeb() {
         </header>
       </div>
 
-      {/* ================= 2. HERO 2 COLONNES ================= */}
+      {/* ================= HERO SECTION (Avec effet Glassmorphism & Screenshot) ================= */}
       <section className="relative overflow-hidden py-16 lg:py-24">
         <div className="orbe-derive pointer-events-none absolute left-1/4 top-0 h-[480px] w-[820px] rounded-full bg-blue-500/10 blur-[130px]" />
 
-        <div className="relative grid w-full grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:gap-8 lg:px-12">
-          {/* Colonne texte */}
-          <div className="text-center lg:text-left">
-            <div className="anim-entree inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-white/70 px-4 py-1.5 text-xs font-bold text-[#1D4ED8] shadow-sm backdrop-blur-md dark:border-blue-500/25 dark:bg-blue-500/10 dark:text-blue-300">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#2563EB]" />
-              </span>
-              Passerelle SMS autohébergée
-            </div>
+        <div className="mx-auto max-w-7xl px-6 lg:px-12 text-center space-y-8 relative z-10">
 
-            <h1 className="mt-7 text-4xl font-black leading-[1.08] tracking-[-0.03em] text-[#0F172A] sm:text-5xl xl:text-6xl dark:text-white">
-              <span className="mot-anime block" style={{ animationDelay: '0ms' }}>Vos téléphones,</span>
-              <span className="mot-anime block" style={{ animationDelay: '150ms' }}>
-                deviennent votre{" "}
-                <span className="texte-degrade-anime bg-gradient-to-r from-[#2563EB] via-[#38BDF8] to-[#2563EB] bg-clip-text text-transparent">passerelle&nbsp;SMS</span>
-              </span>
-              <span className="mot-anime block" style={{ animationDelay: '300ms' }}>— sans abonnement.</span>
-            </h1>
-
-            <p className="anim-entree mx-auto mt-7 max-w-2xl text-base leading-relaxed text-[#475569] sm:text-lg lg:mx-0 dark:text-zinc-400" style={{ animationDelay: '240ms' }}>
-              Centralisez vos envois, suivez vos appareils et retrouvez vos messages. SMSTSIKA relie votre espace web à votre passerelle Android.
-            </p>
-
-            <div className="anim-entree mt-10 flex flex-wrap justify-center gap-4 lg:justify-start" style={{ animationDelay: '360ms' }}>
-              <Link
-                href="/login"
-                className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] px-8 py-4 text-[15px] font-bold text-white shadow-[0_20px_40px_-15px_rgba(124,58,237,0.5)] transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_48px_-12px_rgba(124,58,237,0.6)]"
-              >
-                Ouvrir mon espace
-                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </Link>
-              <Link
-                href="/comment-ca-marche"
-                className="btn-bordure-lumineuse inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 px-8 py-4 text-[15px] font-bold text-slate-700 shadow-sm backdrop-blur-md transition-all hover:-translate-y-0.5 dark:border-white/15 dark:bg-white/[0.06] dark:text-zinc-100"
-              >
-                Comment ça marche
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            <div className="anim-entree mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-semibold text-slate-500 lg:justify-start dark:text-zinc-400" style={{ animationDelay: '420ms' }}>
-              {['100 % autohébergé', 'Sans abonnement', 'Clé API sous 24 h'].map((g) => (
-                <span key={g} className="inline-flex items-center gap-1.5">
-                  <Check className="h-3.5 w-3.5 text-emerald-500" /> {g}
-                </span>
-              ))}
-            </div>
+          {/* Top Dark Badge */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-white/70 px-4 py-1.5 text-xs font-bold text-[#1D4ED8] shadow-sm backdrop-blur-md dark:border-blue-500/25 dark:bg-blue-500/10 dark:text-blue-300">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#2563EB]" />
+            </span>
+            Passerelle SMS sans abonnement
           </div>
 
-          {/* Colonne visuel */}
-          <div className="anim-entree relative w-full [perspective:1800px]" style={{ animationDelay: '480ms' }}>
-            <div className="pointer-events-none absolute -inset-10 rounded-[3rem] bg-gradient-to-br from-blue-500/15 via-blue-500/10 to-sky-400/10 blur-3xl" />
-            <Tilt max={5}>
-              <div className="relative grid grid-cols-1 items-center gap-6 [transform:rotateX(2deg)_rotateY(-2deg)] xl:grid-cols-[1fr_220px]">
-                {/* Console Web */}
-                <div className="relative overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/60 shadow-[0_40px_90px_-24px_rgba(124,58,237,0.35)] backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.05]">
-                  <div className="flex items-center gap-2 border-b border-slate-200/60 bg-white/60 px-5 py-3 backdrop-blur-md dark:border-white/10 dark:bg-black/20">
-                    <span className="h-3 w-3 rounded-full bg-rose-400" />
-                    <span className="h-3 w-3 rounded-full bg-amber-400" />
-                    <span className="h-3 w-3 rounded-full bg-emerald-400" />
-                    <span className="ml-3 hidden flex-1 truncate rounded-md bg-slate-100/80 px-3 py-1 text-left font-mono text-[11px] text-slate-400 sm:block dark:bg-white/10 dark:text-zinc-400">
-                      console.smstsika.local — Vue d'ensemble
-                    </span>
-                  </div>
-                  <Image
-                    src="/landing/web.png"
-                    alt="SMSTSIKA Console Web — Vue d'ensemble"
-                    width={1879}
-                    height={918}
-                    priority
-                    className="w-full h-auto"
-                  />
-                </div>
-                {/* Smartphone Android */}
-                <div className="relative z-10 mx-auto w-[230px] shrink-0 overflow-hidden rounded-[2.2rem] border-[5px] border-slate-900 bg-white shadow-[0_50px_100px_-20px_rgba(11,15,25,.55)] xl:-ml-16 xl:mt-10 xl:w-[220px] dark:border-white/15">
-                  <Image
-                    src="/landing/android.png"
-                    alt="SMSTSIKA Application Mobile — Tâches reçues"
-                    width={460}
-                    height={985}
-                    priority
-                    className="w-full h-auto"
-                  />
-                </div>
-              </div>
-            </Tilt>
+          {/* H1 Title */}
+          <h1 className="text-4xl font-black leading-[1.08] tracking-[-0.03em] text-[#0F172A] sm:text-5xl xl:text-6xl max-w-4xl mx-auto dark:text-white">
+            Vos téléphones deviennent<br />
+            <span className="texte-degrade-anime bg-gradient-to-r from-[#2563EB] via-[#38BDF8] to-[#2563EB] bg-clip-text text-transparent">votre passerelle SMS</span>.
+          </h1>
+
+          {/* Sub-headline */}
+          <p className="max-w-2xl mx-auto text-base leading-relaxed text-[#475569] sm:text-lg dark:text-zinc-400">
+            SMS IKA relie votre console web à vos appareils Android.<br />
+            Vous envoyez depuis le navigateur. Vos SIM font le travail.<br />
+            Vos tarifs, vos numéros, vos données — chez vous.
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap justify-center gap-4 pt-2">
+            <Link
+              href="/login"
+              className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] px-8 py-4 text-[15px] font-bold text-white shadow-[0_20px_40px_-15px_rgba(124,58,237,0.5)] transition-all hover:-translate-y-0.5 hover:shadow-[0_24px_48px_-12px_rgba(124,58,237,0.6)]"
+            >
+              Commencer avec SMS IKA
+              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
+            <Link
+              href="/comment-ca-marche"
+              className="btn-bordure-lumineuse inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/70 px-8 py-4 text-[15px] font-bold text-slate-700 shadow-sm backdrop-blur-md transition-all hover:-translate-y-0.5 dark:border-white/15 dark:bg-white/[0.06] dark:text-zinc-100"
+            >
+              Découvrir comment ça marche
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
           </div>
+
+          {/* Trust check bullets */}
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 pt-2 text-xs font-semibold text-slate-500 dark:text-zinc-400">
+            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-500" /> 100 % auto-hébergé</span>
+            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-500" /> Sans abonnement</span>
+            <span className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-emerald-500" /> API ouverte 24 h/24</span>
+          </div>
+
         </div>
       </section>
 
-      {/* ================= 3b. MARQUEE CAPACITÉS ================= */}
-      <div className="overflow-hidden border-y border-slate-200/60 bg-white/60 py-4 backdrop-blur dark:border-white/10 dark:bg-white/[0.02]" aria-hidden>
-        <div className="marquee-piste flex w-max items-center gap-10 pr-10">
-          {['API REST', 'Webhooks temps réel', 'Multi-SIM', 'File d\u2019attente intelligente', 'OTP & vérification', 'Reprise hors-ligne', 'Notifications push', 'SMS reçus centralisés', 'API REST', 'Webhooks temps réel', 'Multi-SIM', 'File d\u2019attente intelligente', 'OTP & vérification', 'Reprise hors-ligne', 'Notifications push', 'SMS reçus centralisés'].map((m, i) => (
-            <span key={i} className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-zinc-500">
-              <Check className="h-3.5 w-3.5 text-blue-500" /> {m}
-            </span>
+      {/* ================= SECTION FEATURES / PILIERS ================= */}
+      <section className="py-20 px-6 lg:px-12 max-w-7xl mx-auto border-t border-slate-200/60 dark:border-white/10">
+        <div data-reveal className="text-center space-y-3">
+          <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">CONCRET, PAS ABSTRAIT</span>
+          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+            Voyez ce que vos SMS deviennent.
+          </h2>
+        </div>
+
+        <div className="space-y-16 pt-12">
+          {[
+            {
+              image: '/images/serveur.webp',
+              alt: 'Console SMS IKA pilotant une flotte de téléphones Android',
+              braille: 'PILOTEZ TOUTE VOTRE FLOTTE',
+              titre: 'Chaque téléphone, sous vos yeux.',
+              texte: 'Vos Android deviennent des relais visibles depuis la console : état de connexion, file d’attente, SIM actives. Fini le pilotage à l’aveugle — vous savez toujours par où partent vos messages.',
+              lien: '/fonctionnalites',
+              libelleLien: 'Voir toutes les fonctionnalités',
+            },
+            {
+              image: '/images/sms.jpg',
+              alt: 'Main tenant un téléphone, volume de messages en croissance',
+              braille: 'DE L’ENVOI À LA CROISSANCE',
+              titre: 'Des messages qui font grandir.',
+              texte: 'Commandes prêtes, rappels, codes de vérification : chaque SMS est une occasion de faire revenir vos clients. Vous envoyez depuis la console, votre activité suit la courbe.',
+              lien: '/comment-ca-marche',
+              libelleLien: 'Découvrir le guide d’intégration',
+            },
+            {
+              image: '/images/smsrecu.jpeg',
+              alt: 'Vrai SMS reçu sur un téléphone',
+              braille: 'DE VRAIS SMS, VRAIMENT REÇUS',
+              titre: 'Vos clients le lisent vraiment.',
+              texte: 'Pas un e-mail noyé dans les spams : un SMS lu en quelques minutes sur le téléphone de votre client. Rendez-vous confirmés, commandes retirées, avis laissés — la preuve par l’écran.',
+              lien: '/cas-d-usage',
+              libelleLien: 'Explorer les cas d’usage',
+            },
+          ].map((b, i) => (
+            <div key={b.titre} data-reveal className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12">
+              <div className={`bordure-faisceau relative overflow-hidden rounded-[2rem] shadow-[0_40px_90px_-24px_rgba(37,99,235,0.35)] ${i % 2 === 1 ? 'lg:order-2' : ''}`}>
+                <Image
+                  src={b.image}
+                  alt={b.alt}
+                  width={1200}
+                  height={800}
+                  className="h-72 w-full object-cover sm:h-80 lg:h-96"
+                />
+              </div>
+              <div className={`space-y-4 ${i % 2 === 1 ? 'lg:order-1' : ''}`}>
+                <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">{b.braille}</span>
+                <h3 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
+                  {b.titre}
+                </h3>
+                <p className="text-base leading-relaxed text-slate-500 dark:text-zinc-400">
+                  {b.texte}
+                </p>
+                <Link href={b.lien} className="group inline-flex items-center gap-1.5 text-sm font-bold text-[#2563EB] hover:underline dark:text-[#60A5FA]">
+                  {b.libelleLien}
+                  <span className="transition-transform group-hover:translate-x-0.5">↗</span>
+                </Link>
+              </div>
+            </div>
           ))}
         </div>
-      </div>
-
-      {/* ================= 4. TROIS PILIERS & LIENS VERS INTERFACES DÉDIÉES ================= */}
-      <section id="fonctionnalites" className="py-16 bg-white border-t border-slate-200/60 dark:bg-[#0B0F19] dark:border-white/10">
-        <div className="w-full px-6 space-y-10 lg:px-12">
-          <div data-reveal className="mx-auto max-w-3xl space-y-3 text-center">
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">CONCRET, PAS ABSTRAIT</span>
-            <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
-              Voyez ce que vos SMS deviennent.
-            </h2>
-          </div>
-
-          <div className="space-y-16 pt-4">
-            {[
-              {
-                image: '/images/serveur.webp',
-                alt: 'Console SMSTSIKA pilotant une flotte de téléphones Android',
-                braille: 'PILOTEZ TOUTE VOTRE FLOTTE',
-                titre: 'Chaque téléphone, sous vos yeux.',
-                texte: 'Vos Android deviennent des relais visibles depuis la console : état de connexion, file d\u2019attente, SIM actives. Fini le pilotage à l\u2019aveugle — vous savez toujours par où partent vos messages.',
-                lien: '/fonctionnalites',
-                libelleLien: 'Voir toutes les fonctionnalités',
-              },
-              {
-                image: '/images/sms.jpg',
-                alt: 'Main tenant un téléphone, volume de messages en croissance',
-                braille: 'DE L\u2019ENVOI À LA CROISSANCE',
-                titre: 'Des messages qui font grandir.',
-                texte: 'Commandes prêtes, rappels, codes de vérification : chaque SMS est une occasion de faire revenir vos clients. Vous envoyez depuis la console, votre activité suit la courbe.',
-                lien: '/comment-ca-marche',
-                libelleLien: 'Découvrir le guide d\u2019intégration',
-              },
-              {
-                image: '/images/smsrecu.jpeg',
-                alt: 'Vrai SMS reçu sur un téléphone',
-                braille: 'DE VRAIS SMS, VRAIMENT REÇUS',
-                titre: 'Vos clients le lisent vraiment.',
-                texte: 'Pas un e-mail noyé dans les spams : un SMS lu en quelques minutes sur le téléphone de votre client. Rendez-vous confirmés, commandes retirées, avis laissés — la preuve par l\u2019écran.',
-                lien: '/cas-d-usage',
-                libelleLien: 'Explorer les cas d\u2019usage',
-              },
-            ].map((b, i) => (
-              <div key={b.titre} data-reveal className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12">
-                <div data-reveal={i % 2 === 1 ? 'right' : 'left'} className={`bordure-faisceau relative overflow-hidden rounded-[2rem] shadow-[0_40px_90px_-24px_rgba(37,99,235,0.35)] ${i % 2 === 1 ? 'lg:order-2' : ''}`}>
-                  <Image
-                    src={b.image}
-                    alt={b.alt}
-                    width={1200}
-                    height={800}
-                    className="h-72 w-full object-cover sm:h-80 lg:h-96"
-                  />
-                </div>
-                <div data-reveal className={`space-y-4 ${i % 2 === 1 ? 'lg:order-1' : ''}`}>
-                  <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">{b.braille}</span>
-                  <h3 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
-                    {b.titre}
-                  </h3>
-                  <p className="text-base leading-relaxed text-slate-500 dark:text-zinc-400">
-                    {b.texte}
-                  </p>
-                  <Link href={b.lien} className="group inline-flex items-center gap-1.5 text-sm font-bold text-[#2563EB] hover:underline dark:text-[#60A5FA]">
-                    {b.libelleLien}
-                    <span className="transition-transform group-hover:translate-x-0.5">↗</span>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
-      {/* ================= 4b. TÉLÉCHARGER L'APP ANDROID ================= */}
+      {/* ================= TÉLÉCHARGER L'APK ================= */}
       <section id="installer" className="py-16 bg-white border-t border-slate-200/60 dark:bg-[#0B0F19] dark:border-white/10">
-        <div className="w-full px-6 space-y-8 lg:px-12">
-          <div data-reveal className="text-center space-y-3">
+        <div className="w-full px-6 space-y-8 lg:px-12 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div className="lg:col-span-6 space-y-4 text-left">
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">INSTALLATION RAPIDE</span>
-            <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
               Téléchargez l'application Android
             </h2>
-            <p className="text-base text-slate-500 max-w-xl mx-auto dark:text-zinc-400">
+            <p className="text-base text-slate-500 dark:text-zinc-400 leading-relaxed">
               Scannez le QR code avec votre téléphone pour télécharger l'application relais.
             </p>
+            <div className="pt-2">
+              <a
+                href={URL_APK}
+                download
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] px-8 py-3.5 text-sm font-bold text-white shadow-[0_20px_40px_-15px_rgba(124,58,237,0.5)] transition-all hover:-translate-y-0.5"
+              >
+                <Download className="h-4 w-4" /> Télécharger l'APK ↗
+              </a>
+            </div>
           </div>
 
-          <div className="max-w-md mx-auto">
-            {/* QR + téléchargement uniquement */}
-            <div data-reveal="zoom" className="bordure-faisceau rounded-[1.5rem] border border-slate-100 bg-slate-50 p-8 space-y-6 text-center shadow-card dark:border-white/10 dark:bg-white/[0.04]">
+          <div className="lg:col-span-6 flex justify-center">
+            <div className="bordure-faisceau rounded-[2rem] border border-slate-100 bg-slate-50 p-8 text-center space-y-4 shadow-card max-w-sm w-full dark:border-white/10 dark:bg-white/[0.04]">
               <QrCodeSvg valeur={urlQrApk} taille={180} etiquette="QR de téléchargement de l'application Android" />
-              <div className="space-y-3">
-                <a
-                  href={URL_APK}
-                  download
-                  className="inline-flex items-center justify-center gap-2 w-full rounded-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] px-8 py-3.5 text-sm font-bold text-white shadow-[0_20px_40px_-15px_rgba(124,58,237,0.5)] transition-all hover:-translate-y-0.5"
-                >
-                  <Download className="h-4 w-4" /> Télécharger l'APK
-                </a>
-                <p className="text-[11px] text-slate-400 dark:text-zinc-500">
-                  Android 8.0+ · ~23 Mo · signature SMSTSIKA
-                </p>
-              </div>
+              <p className="text-xs font-bold text-slate-900 dark:text-white">
+                Scannez pour installer l'application
+              </p>
+              <p className="text-[11px] text-slate-400 dark:text-zinc-500">
+                Android 8.0+ · ~23 Mo · signature SMS IKA
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ================= 5. CALL TO ACTION FINAL ================= */}
+      {/* ================= CALL TO ACTION FINAL ================= */}
       <section className="relative overflow-hidden py-20 bg-gradient-to-br from-[#110C2E] via-[#0B0A1F] to-[#070613] text-white">
         <div className="orbe-derive pointer-events-none absolute left-1/2 top-0 h-[320px] w-[640px] -translate-x-1/2 rounded-full bg-blue-500/15 blur-[110px]" />
         <div data-reveal className="relative mx-auto max-w-4xl px-6 text-center space-y-6 lg:px-12">
@@ -343,7 +247,7 @@ export default function PageAccueilWeb() {
               href="/login"
               className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#2563EB] to-[#3B82F6] px-8 py-4 text-[15px] font-bold text-white shadow-[0_20px_40px_-15px_rgba(124,58,237,0.5)] transition-all hover:-translate-y-0.5"
             >
-              Commencer avec SMSTSIKA
+              Commencer avec SMS IKA
               <ArrowUpRight className="h-4 w-4" />
             </Link>
             <Link
@@ -386,12 +290,12 @@ export default function PageAccueilWeb() {
             <p className="font-bold text-slate-900 dark:text-white">Votre espace</p>
             <ul className="space-y-2">
               <li><Link href="/login" className="transition hover:text-slate-950 dark:hover:text-white">Connexion console</Link></li>
-              <li><Link href="/login?onglet=client" className="transition hover:text-slate-950 dark:hover:text-white">Espace Client</Link></li>
+              <li><Link href="/login?onglet=client" className="transition hover:text-slate-950 dark:hover:text-white">Espace client</Link></li>
             </ul>
           </div>
         </div>
         <div className="mx-auto mt-12 max-w-7xl border-t border-slate-200/60 px-6 pt-6 text-center text-[11px] text-slate-400 lg:px-12 dark:border-white/15 dark:text-zinc-500">
-          © 2026 SMSTSIKA Gateway · Mentions légales · Confidentialité
+          © 2026 SMS IKA Gateway · Mentions légales · Confidentialité
         </div>
       </footer>
 
