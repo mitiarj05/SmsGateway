@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type CSSProperties } from 'react'
 import {
   Server, Smartphone, Code, ArrowRight, ArrowUpRight, Check, CheckCircle2,
   Zap, MessageSquare, Moon, Sun, Loader2, Inbox, BarChart3, FolderKanban,
@@ -21,6 +21,42 @@ function urlApkAbsolue(): string {
   return new URL(URL_APK, window.location.origin).href
 }
 
+/* ---------- Fond animé permanent : aurores + particules + grille ---------- */
+const PARTICULES_FOND = [
+  { g: '6%', h: '16%', t: 7, duree: '8s', delai: '0s', op: 0.55 },
+  { g: '14%', h: '48%', t: 5, duree: '10s', delai: '-3s', op: 0.45 },
+  { g: '22%', h: '28%', t: 6, duree: '9s', delai: '-6s', op: 0.5 },
+  { g: '31%', h: '62%', t: 8, duree: '11s', delai: '-2s', op: 0.4 },
+  { g: '42%', h: '12%', t: 5, duree: '9s', delai: '-7s', op: 0.55 },
+  { g: '50%', h: '38%', t: 6, duree: '10s', delai: '-4s', op: 0.45 },
+  { g: '58%', h: '70%', t: 7, duree: '8.5s', delai: '-1s', op: 0.5 },
+  { g: '66%', h: '22%', t: 5, duree: '11s', delai: '-5s', op: 0.45 },
+  { g: '74%', h: '52%', t: 8, duree: '9.5s', delai: '-8s', op: 0.4 },
+  { g: '82%', h: '14%', t: 6, duree: '10s', delai: '-2.5s', op: 0.55 },
+  { g: '88%', h: '66%', t: 5, duree: '8s', delai: '-6.5s', op: 0.45 },
+  { g: '94%', h: '38%', t: 7, duree: '12s', delai: '-4.5s', op: 0.4 },
+  { g: '38%', h: '82%', t: 6, duree: '9s', delai: '-3.5s', op: 0.45 },
+  { g: '70%', h: '86%', t: 5, duree: '10.5s', delai: '-7.5s', op: 0.4 },
+]
+
+function FondAccueilAnime() {
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
+      <div className="aurore-fond left-[-10%] top-[-12%] h-[34rem] w-[34rem] bg-blue-400/30 dark:bg-blue-600/20" style={{ animationDuration: '30s' }} />
+      <div className="aurore-fond right-[-12%] top-[22%] h-[30rem] w-[30rem] bg-cyan-300/30 dark:bg-cyan-500/15" style={{ animationDuration: '24s', animationDelay: '-8s' }} />
+      <div className="aurore-fond bottom-[-14%] left-[28%] h-[32rem] w-[32rem] bg-violet-400/25 dark:bg-violet-600/15" style={{ animationDuration: '34s', animationDelay: '-15s' }} />
+      <div className="grille-fond" />
+      {PARTICULES_FOND.map((p, i) => (
+        <span
+          key={i}
+          className="particule-fond bg-[#2563EB] dark:bg-[#60A5FA]"
+          style={{ left: p.g, top: p.h, width: p.t, height: p.t, animationDuration: p.duree, animationDelay: p.delai, '--op-particule': p.op } as CSSProperties}
+        />
+      ))}
+    </div>
+  )
+}
+
 export default function PageAccueilHumaine() {
   const { modeSombre, monte, basculerTheme } = useTheme()
   useReveal()
@@ -30,6 +66,7 @@ export default function PageAccueilHumaine() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFC] text-slate-800 font-sans antialiased selection:bg-blue-600 selection:text-white dark:bg-[#0B0F19] dark:text-zinc-100">
+      <FondAccueilAnime />
       <BarreProgressionDefilante />
 
       {/* ================= NAVBAR ================= */}
@@ -129,7 +166,7 @@ export default function PageAccueilHumaine() {
       </section>
 
       {/* ================= SECTION FEATURES / PILIERS ================= */}
-      <section className="py-20 px-6 lg:px-12 max-w-7xl mx-auto border-t border-slate-200/60 dark:border-white/10">
+      <section className="relative py-20 px-6 lg:px-12 max-w-7xl mx-auto border-t border-slate-200/60 dark:border-white/10">
         <div data-reveal className="text-center space-y-3">
           <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">CONCRET, PAS ABSTRAIT</span>
           <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
@@ -196,7 +233,7 @@ export default function PageAccueilHumaine() {
       </section>
 
       {/* ================= TÉLÉCHARGER L'APK ================= */}
-      <section id="installer" className="py-16 bg-white border-t border-slate-200/60 dark:bg-[#0B0F19] dark:border-white/10">
+      <section id="installer" className="relative py-16 bg-white/70 backdrop-blur-xl border-t border-slate-200/60 dark:bg-transparent dark:border-white/10">
         <div className="w-full px-6 space-y-8 lg:px-12 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-6 space-y-4 text-left">
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">INSTALLATION RAPIDE</span>
@@ -262,7 +299,7 @@ export default function PageAccueilHumaine() {
       </section>
 
       {/* ================= FOOTER ================= */}
-      <footer className="border-t border-slate-200/60 bg-white py-12 text-xs text-slate-500 dark:border-white/10 dark:bg-[#070613] dark:text-zinc-400">
+      <footer className="relative border-t border-slate-200/60 bg-white/70 backdrop-blur-xl py-12 text-xs text-slate-500 dark:border-white/10 dark:bg-transparent dark:text-zinc-400">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 sm:grid-cols-2 lg:grid-cols-4 lg:px-12">
           <div className="space-y-4">
             <Image src="/icons/logoClair.png" alt="SMSTSIKA" width={150} height={36} className="h-9 w-auto dark:hidden" />
