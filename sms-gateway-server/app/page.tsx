@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect, type CSSProperties } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Server, Smartphone, Code, ArrowRight, ArrowUpRight, Check, CheckCircle2,
   Zap, MessageSquare, Moon, Sun, Loader2, Inbox, BarChart3, FolderKanban,
@@ -21,42 +21,6 @@ function urlApkAbsolue(): string {
   return new URL(URL_APK, window.location.origin).href
 }
 
-/* ---------- Fond animé permanent : aurores + particules + grille ---------- */
-const PARTICULES_FOND = [
-  { g: '6%', h: '16%', t: 7, duree: '8s', delai: '0s', op: 0.55 },
-  { g: '14%', h: '48%', t: 5, duree: '10s', delai: '-3s', op: 0.45 },
-  { g: '22%', h: '28%', t: 6, duree: '9s', delai: '-6s', op: 0.5 },
-  { g: '31%', h: '62%', t: 8, duree: '11s', delai: '-2s', op: 0.4 },
-  { g: '42%', h: '12%', t: 5, duree: '9s', delai: '-7s', op: 0.55 },
-  { g: '50%', h: '38%', t: 6, duree: '10s', delai: '-4s', op: 0.45 },
-  { g: '58%', h: '70%', t: 7, duree: '8.5s', delai: '-1s', op: 0.5 },
-  { g: '66%', h: '22%', t: 5, duree: '11s', delai: '-5s', op: 0.45 },
-  { g: '74%', h: '52%', t: 8, duree: '9.5s', delai: '-8s', op: 0.4 },
-  { g: '82%', h: '14%', t: 6, duree: '10s', delai: '-2.5s', op: 0.55 },
-  { g: '88%', h: '66%', t: 5, duree: '8s', delai: '-6.5s', op: 0.45 },
-  { g: '94%', h: '38%', t: 7, duree: '12s', delai: '-4.5s', op: 0.4 },
-  { g: '38%', h: '82%', t: 6, duree: '9s', delai: '-3.5s', op: 0.45 },
-  { g: '70%', h: '86%', t: 5, duree: '10.5s', delai: '-7.5s', op: 0.4 },
-]
-
-function FondAccueilAnime() {
-  return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
-      <div className="aurore-fond left-[-10%] top-[-12%] h-[34rem] w-[34rem] bg-blue-400/30 dark:bg-blue-600/20" style={{ animationDuration: '30s' }} />
-      <div className="aurore-fond right-[-12%] top-[22%] h-[30rem] w-[30rem] bg-cyan-300/30 dark:bg-cyan-500/15" style={{ animationDuration: '24s', animationDelay: '-8s' }} />
-      <div className="aurore-fond bottom-[-14%] left-[28%] h-[32rem] w-[32rem] bg-violet-400/25 dark:bg-violet-600/15" style={{ animationDuration: '34s', animationDelay: '-15s' }} />
-      <div className="grille-fond" />
-      {PARTICULES_FOND.map((p, i) => (
-        <span
-          key={i}
-          className="particule-fond bg-[#2563EB] dark:bg-[#60A5FA]"
-          style={{ left: p.g, top: p.h, width: p.t, height: p.t, animationDuration: p.duree, animationDelay: p.delai, '--op-particule': p.op } as CSSProperties}
-        />
-      ))}
-    </div>
-  )
-}
-
 export default function PageAccueilHumaine() {
   const { modeSombre, monte, basculerTheme } = useTheme()
   useReveal()
@@ -66,7 +30,6 @@ export default function PageAccueilHumaine() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFC] text-slate-800 font-sans antialiased selection:bg-blue-600 selection:text-white dark:bg-[#0B0F19] dark:text-zinc-100">
-      <FondAccueilAnime />
       <BarreProgressionDefilante />
 
       {/* ================= NAVBAR ================= */}
@@ -132,9 +95,9 @@ export default function PageAccueilHumaine() {
 
           {/* Sub-headline */}
           <p className="max-w-2xl mx-auto text-base leading-relaxed text-[#475569] sm:text-lg dark:text-zinc-400">
-            SMS IKA relie votre console web à vos appareils Android.<br />
-            Vous envoyez depuis le navigateur. Vos SIM font le travail.<br />
-            Vos tarifs, vos numéros, vos données — chez vous.
+            Branchez un téléphone Android, ouvrez votre console, envoyez.<br />
+            Pas d’abonnement, pas d’intermédiaire : vos SIM, vos tarifs,
+            vos numéros — et vos données restent chez vous.
           </p>
 
           {/* CTA Buttons */}
@@ -174,66 +137,75 @@ export default function PageAccueilHumaine() {
           </h2>
         </div>
 
-        <div className="space-y-16 pt-12">
+        <ol className="mx-auto max-w-3xl pt-12">
           {[
             {
               image: '/images/serveur.webp',
-              alt: 'Console SMS IKA pilotant une flotte de téléphones Android',
+              alt: '',
+              opacite: 'opacity-25 dark:opacity-30',
               braille: 'PILOTEZ TOUTE VOTRE FLOTTE',
               titre: 'Chaque téléphone, sous vos yeux.',
-              texte: 'Vos Android deviennent des relais visibles depuis la console : état de connexion, file d’attente, SIM actives. Fini le pilotage à l’aveugle — vous savez toujours par où partent vos messages.',
+              texte: 'État de connexion, file d’attente, SIM actives : fini le pilotage à l’aveugle — vous savez toujours par où partent vos messages.',
               lien: '/fonctionnalites',
               libelleLien: 'Voir toutes les fonctionnalités',
             },
             {
               image: '/images/sms.jpg',
-              alt: 'Main tenant un téléphone, volume de messages en croissance',
+              alt: '',
+              opacite: 'opacity-45 dark:opacity-50',
               braille: 'DE L’ENVOI À LA CROISSANCE',
               titre: 'Des messages qui font grandir.',
-              texte: 'Commandes prêtes, rappels, codes de vérification : chaque SMS est une occasion de faire revenir vos clients. Vous envoyez depuis la console, votre activité suit la courbe.',
+              texte: 'Commandes prêtes, rappels, codes de vérification : chaque SMS est une occasion de faire revenir vos clients.',
               lien: '/comment-ca-marche',
               libelleLien: 'Découvrir le guide d’intégration',
             },
             {
               image: '/images/smsrecu.jpeg',
-              alt: 'Vrai SMS reçu sur un téléphone',
+              alt: '',
+              opacite: 'opacity-45 dark:opacity-50',
               braille: 'DE VRAIS SMS, VRAIMENT REÇUS',
               titre: 'Vos clients le lisent vraiment.',
-              texte: 'Pas un e-mail noyé dans les spams : un SMS lu en quelques minutes sur le téléphone de votre client. Rendez-vous confirmés, commandes retirées, avis laissés — la preuve par l’écran.',
+              texte: 'Pas un e-mail noyé dans les spams : un SMS lu en quelques minutes. Rendez-vous confirmés, commandes retirées, avis laissés.',
               lien: '/cas-d-usage',
               libelleLien: 'Explorer les cas d’usage',
             },
           ].map((b, i) => (
-            <div key={b.titre} data-reveal className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12">
-              <div className={`bordure-faisceau relative overflow-hidden rounded-[2rem] shadow-[0_40px_90px_-24px_rgba(37,99,235,0.35)] ${i % 2 === 1 ? 'lg:order-2' : ''}`}>
+            <li key={b.titre} data-reveal className="relative overflow-hidden border-t border-slate-200/70 py-10 last:border-b dark:border-white/10">
+              <div aria-hidden className="absolute inset-0">
                 <Image
                   src={b.image}
                   alt={b.alt}
-                  width={1200}
-                  height={800}
-                  className="h-72 w-full object-cover sm:h-80 lg:h-96"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 800px"
+                  className={`object-cover object-right ${b.opacite}`}
                 />
+                <div className="absolute inset-0 bg-gradient-to-r from-white via-white/55 to-transparent dark:from-[#0B0F19] dark:via-[#0B0F19]/55 dark:to-transparent" />
               </div>
-              <div className={`space-y-4 ${i % 2 === 1 ? 'lg:order-1' : ''}`}>
-                <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">{b.braille}</span>
-                <h3 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
-                  {b.titre}
-                </h3>
-                <p className="text-base leading-relaxed text-slate-500 dark:text-zinc-400">
-                  {b.texte}
-                </p>
-                <Link href={b.lien} className="group inline-flex items-center gap-1.5 text-sm font-bold text-[#2563EB] hover:underline dark:text-[#60A5FA]">
-                  {b.libelleLien}
-                  <span className="transition-transform group-hover:translate-x-0.5">↗</span>
-                </Link>
+              <div className="relative flex gap-6">
+                <span aria-hidden className="shrink-0 font-serif text-5xl font-black italic leading-none text-slate-200 dark:text-white/15">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <div className="space-y-2">
+                  <p className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">{b.braille}</p>
+                  <h3 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
+                    {b.titre}
+                  </h3>
+                  <p className="max-w-xl text-base leading-relaxed text-slate-500 dark:text-zinc-400">
+                    {b.texte}
+                  </p>
+                  <Link href={b.lien} className="group inline-flex items-center gap-1.5 pt-1 text-sm font-bold text-[#2563EB] hover:underline dark:text-[#60A5FA]">
+                    {b.libelleLien}
+                    <span className="transition-transform group-hover:translate-x-0.5">↗</span>
+                  </Link>
+                </div>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
       </section>
 
       {/* ================= TÉLÉCHARGER L'APK ================= */}
-      <section id="installer" className="relative py-16 bg-white/70 backdrop-blur-xl border-t border-slate-200/60 dark:bg-transparent dark:border-white/10">
+      <section id="installer" className="relative py-16 bg-white border-t border-slate-200/60 dark:bg-[#0B0F19] dark:border-white/10">
         <div className="w-full px-6 space-y-8 lg:px-12 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-6 space-y-4 text-left">
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#2563EB] dark:text-[#60A5FA]">INSTALLATION RAPIDE</span>
