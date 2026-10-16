@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, useRef, type CSSProperties } from 're
 import {
   Smartphone, Inbox, History, Settings, LayoutGrid, Users, Send,
   Bell, Search, AlertTriangle, X, Receipt, MoreHorizontal, ArrowUpRight,
-  PanelLeft, Moon, Sun, ChevronsLeft
+  PanelLeft, Moon, Sun, ChevronsLeft, LogOut
 } from 'lucide-react'
 import { Modale } from './interface'
 import { useTheme } from '../lib/use-theme'
@@ -308,21 +308,24 @@ export default function CoquilleTableauDeBord({ children }: {
           )}
 
           {/* Utilisateur */}
-          <div className={`mt-4 flex items-center gap-3 border-t border-[#1C1917]/10 pt-4 dark:border-white/10 ${reduite ? 'justify-center border-t-0 pt-0' : ''}`}>
+          <div className={`mt-4 flex items-center gap-3 border-t border-[#1C1917]/10 pt-4 dark:border-white/10 ${reduite ? 'flex-col justify-center gap-2 border-t-0 pt-0' : ''}`}>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-[13px] font-bold text-white">
               A
             </div>
             {!reduite && (
-              <>
-                <div className="flex-1 leading-tight">
-                  <p className="text-[13px] font-semibold text-[#1C1917] dark:text-white">Administrateur</p>
-                  <p className="text-[11px] text-stone-500 dark:text-zinc-500">Session locale</p>
-                </div>
-                <button onClick={deconnexion} className="text-stone-400 hover:text-[#1C1917] dark:text-zinc-500 dark:hover:text-white" title="Options">
-                  <MoreHorizontal className="h-4 w-4" />
-                </button>
-              </>
+              <div className="flex-1 leading-tight">
+                <p className="text-[13px] font-semibold text-[#1C1917] dark:text-white">Administrateur</p>
+                <p className="text-[11px] text-stone-500 dark:text-zinc-500">Session locale</p>
+              </div>
             )}
+            <button
+              onClick={deconnexion}
+              title="Déconnexion"
+              aria-label="Déconnexion"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-stone-400 transition hover:bg-red-500/10 hover:text-red-600 dark:text-zinc-500 dark:hover:bg-red-500/15 dark:hover:text-red-400"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
         </div>
 
