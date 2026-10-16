@@ -18,22 +18,17 @@ function PhotoCadre({ src, alt, largeur, hauteur }: { src: string; alt: string; 
   )
 }
 
-/** Capture d'écran : ratio naturel intact, présentée dans une fenêtre. */
-function CaptureEcran({ src, alt, largeur, hauteur }: { src: string; alt: string; largeur: number; hauteur: number }) {
+/** Mockup téléphone : ratio naturel, présenté sur fond mat. */
+function MockupTelephone({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#1C1917]/10 bg-white shadow-[0_24px_60px_-30px_rgba(28,25,23,0.35)]">
-      <div className="flex items-center gap-1.5 border-b border-[#1C1917]/10 bg-[#F7F5F0] px-4 py-2.5" aria-hidden="true">
-        <span className="h-2.5 w-2.5 rounded-full bg-[#1C1917]/15" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#1C1917]/15" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#1C1917]/15" />
-      </div>
+    <div className="flex justify-center rounded-2xl border border-[#1C1917]/10 bg-[#F7F5F0] p-6">
       <Image
         src={src}
         alt={alt}
-        width={largeur}
-        height={hauteur}
-        sizes="(max-width: 768px) 100vw, 620px"
-        className="h-auto w-full"
+        width={330}
+        height={597}
+        sizes="(max-width: 768px) 60vw, 280px"
+        className="h-auto max-h-[380px] w-auto rounded-xl shadow-[0_24px_60px_-30px_rgba(28,25,23,0.4)]"
       />
     </div>
   )
@@ -56,7 +51,7 @@ const BLOCS = [
     texte: 'État de connexion, file d’attente, SIM actives : fini le pilotage à l’aveugle — vous savez toujours par où partent vos messages.',
     lien: '/fonctionnalites',
     libelleLien: 'Voir toutes les fonctionnalités',
-    visuel: <CaptureEcran src="/images/appareil.jpg" alt="Capture de la console SMSTSIKA : flotte de téléphones avec statuts En ligne et Hors ligne" largeur={1216} hauteur={875} />,
+    visuel: <MockupTelephone src="/images/flotte.jpg" alt="Téléphone Android configuré comme relais d'envoi SMSTSIKA" />,
     large: true,
   },
   {
