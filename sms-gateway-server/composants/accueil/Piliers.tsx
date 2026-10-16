@@ -34,7 +34,7 @@ const BLOCS = [
     texte: 'État de connexion, file d’attente, SIM actives : fini le pilotage à l’aveugle — vous savez toujours par où partent vos messages.',
     lien: '/fonctionnalites',
     libelleLien: 'Voir toutes les fonctionnalités',
-    visuel: <PhotoCadre src="/images/cartes-sim.jpg" alt="Cartes SIM et cartes de recharge de plusieurs opérateurs" />,
+    visuel: <PhotoCadre src="/images/appareil.jpg" alt="Capture de la console SMSTSIKA : flotte de téléphones avec statuts En ligne et Hors ligne" />,
   },
   {
     braille: 'DE L’ENVOI À LA CROISSANCE',
