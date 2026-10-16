@@ -115,7 +115,7 @@ export default function DashboardPage() {
 
   if (chargement) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-100 dark:bg-zinc-950">
+      <div className="flex h-screen items-center justify-center bg-[#1C1917]/[0.04] dark:bg-zinc-950">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     )
@@ -142,23 +142,23 @@ export default function DashboardPage() {
       {/* En-tête (Exact Screenshot) */}
       <div className="mb-6 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">Bonjour.</h1>
-          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">Votre infrastructure SMS, en un regard.</p>
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Bonjour.</h1>
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">Votre infrastructure SMS, en un regard.</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">
               Dernière synchronisation · {derniereActivite
                 ? new Date(derniereActivite).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
                 : '—'}
             </p>
-            <p className="mt-0.5 text-[13px] font-bold text-slate-800 dark:text-white capitalize">
+            <p className="mt-0.5 text-[13px] font-bold text-[#1C1917] dark:text-white capitalize">
               {dateAujourdhui}
             </p>
           </div>
           <button
             onClick={() => routeur.push('/sms/envoyer')}
-            className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#1D4ED8] transition"
+            className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg hover:bg-[#1D4ED8] transition"
           >
             <Plus className="h-4 w-4" /> Nouveau SMS
           </button>
@@ -196,25 +196,25 @@ export default function DashboardPage() {
       {/* 4 SEPARATE KPI CARDS (Exact Screenshot) */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* Card 1 */}
-        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Appareils en ligne</p>
+        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">Appareils en ligne</p>
           <p className="text-[30px] font-extrabold leading-none tracking-tight text-rose-600 dark:text-rose-400">{enLigneCount}/{totalCount}</p>
-          <p className="text-[11.5px] text-slate-400">
+          <p className="text-[11.5px] text-stone-500">
             {totalCount === 0 ? 'Aucun appareil' : horsLigneCount === 0 ? 'Tous opérationnels' : `${horsLigneCount} hors ligne`}
           </p>
         </div>
 
         {/* Card 2 */}
-        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">SMS envoyés - 24 h</p>
-          <p className="text-[30px] font-extrabold leading-none tracking-tight text-slate-900 dark:text-white"><CompteurValeur valeur={statistiques.tasks_sent} /></p>
-          <p className="text-[11.5px] text-slate-400">Total des SMS envoyés</p>
+        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">SMS envoyés - 24 h</p>
+          <p className="text-[30px] font-extrabold leading-none tracking-tight text-[#1C1917] dark:text-white"><CompteurValeur valeur={statistiques.tasks_sent} /></p>
+          <p className="text-[11.5px] text-stone-500">Total des SMS envoyés</p>
         </div>
 
         {/* Card 3 */}
-        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">En file d'attente</p>
-          <p className="text-[30px] font-extrabold leading-none tracking-tight text-slate-900 dark:text-white"><CompteurValeur valeur={statistiques.tasks_pending} /></p>
+        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">En file d'attente</p>
+          <p className="text-[30px] font-extrabold leading-none tracking-tight text-[#1C1917] dark:text-white"><CompteurValeur valeur={statistiques.tasks_pending} /></p>
           {statistiques.tasks_pending === 0 ? (
             <p className="flex items-center gap-1.5 text-[11.5px] text-emerald-600">
               <CheckCircle2 size={13} className="text-emerald-500" /> File vide
@@ -225,10 +225,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 4 */}
-        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Taux d'échec</p>
-          <p className="text-[30px] font-extrabold leading-none tracking-tight text-slate-900 dark:text-white">{tauxEchec}</p>
-          <p className="text-[11.5px] text-slate-400">{statistiques.tasks_failed} échec{statistiques.tasks_failed > 1 ? 's' : ''} au total</p>
+        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">Taux d'échec</p>
+          <p className="text-[30px] font-extrabold leading-none tracking-tight text-[#1C1917] dark:text-white">{tauxEchec}</p>
+          <p className="text-[11.5px] text-stone-500">{statistiques.tasks_failed} échec{statistiques.tasks_failed > 1 ? 's' : ''} au total</p>
         </div>
       </div>
 
@@ -244,9 +244,9 @@ export default function DashboardPage() {
             {
               cle: 'envoyes',
               libelle: 'SMS envoyés',
-              couleurLigne: '#BFDBFE',
-              couleurPoint: '#8a8ade',
-              couleurDebut: '#8a8ade',
+              couleurLigne: '#FB923C',
+              couleurPoint: '#F97316',
+              couleurDebut: '#F97316',
               points: parHeure.map((p) => ({ heure: p.hour, valeur: p.count })),
             },
           ]}
@@ -308,13 +308,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Journal du jour (Full Width Card at bottom) */}
-      <div className="mt-4 rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+      <div className="mt-4 rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">
+            <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">
               Journal du jour
             </h2>
-            <p className="mt-0.5 text-[12px] text-slate-400">
+            <p className="mt-0.5 text-[12px] text-stone-500">
               Les événements qui méritent votre attention
             </p>
           </div>
@@ -324,9 +324,9 @@ export default function DashboardPage() {
           </span>
         </div>
 
-        <div className="mt-4 space-y-1 divide-y divide-slate-100 dark:divide-zinc-800">
+        <div className="mt-4 space-y-1 divide-y divide-[#1C1917]/10 dark:divide-zinc-800">
           {taches.length === 0 && (
-            <p className="px-1 py-6 text-center text-xs text-slate-400 dark:text-zinc-500">
+            <p className="px-1 py-6 text-center text-xs text-stone-500 dark:text-zinc-500">
               Aucun événement pour le moment.
             </p>
           )}
@@ -334,19 +334,19 @@ export default function DashboardPage() {
             const envoye = t.statut === 'ENVOYE'
             const echoue = t.statut === 'ECHOUE'
             return (
-            <button key={t.id} onClick={() => setTacheDetaillee(t)} className="flex w-full items-center gap-3.5 border-t border-slate-100 pt-4 first:border-0 first:pt-0 text-left dark:border-zinc-800">
-              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${envoye ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400' : echoue ? 'bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400' : 'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400'}`}>
+            <button key={t.id} onClick={() => setTacheDetaillee(t)} className="flex w-full items-center gap-3.5 border-t border-[#1C1917]/10 pt-4 first:border-0 first:pt-0 text-left dark:border-zinc-800">
+              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full${envoye ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400' : echoue ? 'bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-400' : 'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400'}`}>
                 {envoye ? <CheckCircle2 size={17} /> : echoue ? <XCircle size={17} /> : <Clock size={17} />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[13.5px] font-bold text-slate-800 dark:text-zinc-200">
+                <p className="text-[13.5px] font-bold text-[#1C1917] dark:text-zinc-200">
                   {STATUTS_TACHES[t.statut]?.label ?? t.statut} → {t.numero_destinataire}
                 </p>
-                <p className="mt-0.5 truncate text-[12px] text-slate-500 dark:text-zinc-400">
+                <p className="mt-0.5 truncate text-[12px] text-stone-600 dark:text-zinc-400">
                   {t.message}
                 </p>
               </div>
-              <span className="shrink-0 text-[12px] text-slate-400">
+              <span className="shrink-0 text-[12px] text-stone-500">
                 {new Date(t.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
               </span>
             </button>
@@ -360,11 +360,11 @@ export default function DashboardPage() {
         {tacheDetaillee && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="font-mono text-sm font-bold text-slate-800 dark:text-zinc-200">{tacheDetaillee.numero_destinataire}</p>
+              <p className="font-mono text-sm font-bold text-[#1C1917] dark:text-zinc-200">{tacheDetaillee.numero_destinataire}</p>
               <BadgeStatut statut={tacheDetaillee.statut} config={STATUTS_TACHES} />
             </div>
-            <p className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600 dark:bg-zinc-800 dark:text-zinc-300">{tacheDetaillee.message}</p>
-            <p className="text-[11px] text-slate-400">
+            <p className="rounded-lg bg-[#F7F5F0] p-3 text-xs text-stone-600 dark:bg-zinc-800 dark:text-zinc-300">{tacheDetaillee.message}</p>
+            <p className="text-[11px] text-stone-500">
               Créée le {new Date(tacheDetaillee.created_at).toLocaleString('fr-FR')}
             </p>
           </div>

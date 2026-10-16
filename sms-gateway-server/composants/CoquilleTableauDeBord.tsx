@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef, type CSSProperties } from 'react'
 import {
   Smartphone, Inbox, History, Settings, LayoutGrid, Users, Send,
   Moon, Sun, Bell, Search, AlertTriangle, X, Receipt, MoreHorizontal, ArrowUpRight

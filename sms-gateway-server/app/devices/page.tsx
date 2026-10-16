@@ -217,7 +217,7 @@ export default function AppareilsPage() {
                       <span className="font-bold text-[#1C1917] dark:text-zinc-200">{utilises} / {quota}</span>
                     </div>
                     <div className="h-1.5 w-full rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-700">
-                      <div className="h-1.5 rounded-full" style={{ width: `${pct}%` }} />
+                      <div className="h-1.5 rounded-full bg-blue-600" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 </div>
