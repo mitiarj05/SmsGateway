@@ -189,7 +189,7 @@ export default function PageNotificationsEspace() {
         <div className="xl:col-span-2 space-y-4">
 
           {/* Card 1 : Connexion Boutique en 1 clic (#4f46e5 to #4338ca gradient) */}
-          <div className="rounded-[1.5rem] p-6 text-white shadow-card space-y-5">
+          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#4f46e5] to-[#4338ca] p-6 text-white shadow-card space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white">
@@ -399,7 +399,7 @@ export default function PageNotificationsEspace() {
           </div>
 
           {/* Bottom CTA Dark Navy Card (#1F1A52) */}
-          <div className="rounded-[1.5rem] p-6 text-white shadow-card space-y-4 text-center">
+          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4 text-center">
             <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">BESOIN D'AIDE ?</p>
             <p className="text-xs text-white/80 leading-relaxed">
               Notre équipe intègre votre boutique en moins de 24 h, gratuitement.

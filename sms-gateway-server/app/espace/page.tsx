@@ -273,7 +273,7 @@ export default function PageTableauDeBordClient() {
         />
 
         {/* Right Dark Card : MON PARC D'ENVOI (Exact Screenshot 9) */}
-        <div className="rounded-[1.5rem] p-6 text-white shadow-card flex flex-col justify-between space-y-6">
+        <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card flex flex-col justify-between space-y-6">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
               MON PARC D'ENVOI

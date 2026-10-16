@@ -100,7 +100,7 @@ export default function PageAppareilsClient() {
       </div>
 
       {/* Hero Card Informative (#1F1A52 - Exact Screenshot 8) */}
-      <div className="rounded-[1.5rem] p-6 text-white shadow-card space-y-4">
+      <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white">
