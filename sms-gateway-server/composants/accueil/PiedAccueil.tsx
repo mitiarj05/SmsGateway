@@ -57,7 +57,16 @@ export default function PiedAccueil() {
             >
               kalleboo
             </a>{' '}
-            (CC BY)
+            (CC BY) · Lecture :{' '}
+            <a
+              href="https://www.flickr.com/photos/68532869@N08/17468693762"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline decoration-stone-300 underline-offset-2 transition hover:text-[#1C1917]"
+            >
+              Japanexperterna.se
+            </a>{' '}
+            (CC BY-SA)
           </p>
           <StatutService />
         </div>

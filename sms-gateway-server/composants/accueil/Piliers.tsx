@@ -1,15 +1,18 @@
+import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowUpRight, CheckCheck, Smartphone } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 
-function LigneAppareil({ actif }: { actif: boolean }) {
+function PhotoCadre({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="flex items-center gap-2.5 rounded-lg border border-[#1C1917]/10 bg-white px-3 py-2.5">
-      <Smartphone className="h-4 w-4 shrink-0 text-stone-500" />
-      <span className="flex-1 font-mono text-[11px] text-stone-500">Appareil relais</span>
-      <span className={`flex items-center gap-1.5 font-mono text-[10px] font-bold ${actif ? 'text-[#15803B]' : 'text-stone-400'}`}>
-        <span className={`h-1.5 w-1.5 rounded-full ${actif ? 'bg-[#15803B]' : 'bg-stone-300'}`} />
-        {actif ? 'En ligne' : 'En file : 2'}
-      </span>
+    <div className="overflow-hidden rounded-xl border border-[#1C1917]/10">
+      <Image
+        src={src}
+        alt={alt}
+        width={800}
+        height={600}
+        sizes="(max-width: 768px) 100vw, 450px"
+        className="aspect-[4/3] w-full object-cover"
+      />
     </div>
   )
 }
@@ -24,19 +27,6 @@ function LigneRequete() {
   )
 }
 
-function CarteRecu() {
-  return (
-    <div className="max-w-sm space-y-2 rounded-xl border border-[#1C1917]/10 bg-white p-4">
-      <div className="rounded-lg rounded-tl-sm bg-[#F7F5F0] p-2.5 text-[12px] leading-snug text-[#1C1917]">
-        Rendez-vous confirmé pour demain 14h.
-      </div>
-      <p className="flex items-center justify-end gap-1 font-mono text-[10px] font-bold text-[#15803B]">
-        Reçu <CheckCheck className="h-3.5 w-3.5" />
-      </p>
-    </div>
-  )
-}
-
 const BLOCS = [
   {
     braille: 'PILOTEZ TOUTE VOTRE FLOTTE',
@@ -44,12 +34,7 @@ const BLOCS = [
     texte: 'État de connexion, file d’attente, SIM actives : fini le pilotage à l’aveugle — vous savez toujours par où partent vos messages.',
     lien: '/fonctionnalites',
     libelleLien: 'Voir toutes les fonctionnalités',
-    visuel: (
-      <div className="space-y-2">
-        <LigneAppareil actif />
-        <LigneAppareil actif={false} />
-      </div>
-    ),
+    visuel: <PhotoCadre src="/images/cartes-sim.jpg" alt="Cartes SIM et cartes de recharge de plusieurs opérateurs" />,
   },
   {
     braille: 'DE L’ENVOI À LA CROISSANCE',
@@ -65,7 +50,7 @@ const BLOCS = [
     texte: 'Pas un e-mail noyé dans les spams : un SMS lu en quelques minutes. Rendez-vous confirmés, commandes retirées, avis laissés.',
     lien: '/cas-d-usage',
     libelleLien: 'Explorer les cas d’usage',
-    visuel: <CarteRecu />,
+    visuel: <PhotoCadre src="/images/lecture-client.jpg" alt="Client lisant un message sur l’écran de son téléphone" />,
   },
 ]
 
