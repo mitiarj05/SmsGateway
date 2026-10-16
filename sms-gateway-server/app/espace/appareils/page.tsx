@@ -191,8 +191,8 @@ export default function PageAppareilsClient() {
                       <div className="flex items-center gap-3">
                         <div className={`relative h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-[#1C1917]/10 dark:border-white/10 ${enLigne ? '' : 'opacity-60 grayscale'}`}>
                           <Image
-                            src="/images/relais-android.jpg"
-                            alt="Smartphone Android utilisé comme relais SMS (illustration)"
+                            src="/images/flotte.jpg"
+                            alt="Téléphone de la flotte configuré comme relais d'envoi SMSTSIKA"
                             fill
                             sizes="32px"
                             className="object-cover"

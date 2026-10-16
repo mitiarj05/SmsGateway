@@ -409,19 +409,6 @@ export default function CoquilleEspace({ children }: {
             <Link href="/espace/api" className="hover:underline">Guide API</Link>
             <span>·</span>
             <a href="mailto:support@smsika.app" className="hover:underline text-[#2563EB] dark:text-blue-400 font-semibold">Écrire au support ↗</a>
-            <span>·</span>
-            <span className="hidden sm:inline">
-              Photo :{' '}
-              <a
-                href="https://commons.wikimedia.org/wiki/File:Xiaomi_Redmi_Note.JPG"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline decoration-stone-300 underline-offset-2 transition hover:text-[#1C1917] dark:hover:text-white"
-              >
-                Ilya Plekhanov
-              </a>{' '}
-              (CC BY-SA)
-            </span>
           </div>
         </footer>
       </div>
