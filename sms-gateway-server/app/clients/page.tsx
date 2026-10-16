@@ -165,7 +165,7 @@ export default function PageClientsAdmin() {
 
   if (chargement) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-100 dark:bg-zinc-950">
+      <div className="flex h-screen items-center justify-center bg-[#1C1917]/[0.04] dark:bg-zinc-950">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     )
@@ -176,16 +176,16 @@ export default function PageClientsAdmin() {
       {/* En-tête (Exact Screenshot) */}
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">
             Clients
           </h1>
-          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Les organisations qui utilisent votre infrastructure SMS.
           </p>
         </div>
         <button
           onClick={() => { setModalClient(true); setCleCreee(null) }}
-          className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#1D4ED8] transition"
+          className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg hover:bg-[#1D4ED8] transition"
         >
           <Users className="h-4 w-4" /> Inviter un client
         </button>
@@ -199,23 +199,23 @@ export default function PageClientsAdmin() {
 
       {/* Top 3 Metric Cards (Exact Screenshot) */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
             Espaces actifs
           </p>
-          <p className="mt-1.5 text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{clients.length}</p>
+          <p className="mt-1.5 text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{clients.length}</p>
         </div>
-        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
             SMS ce mois-ci
           </p>
-          <p className="mt-1.5 text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{totalSmsMois.toLocaleString('fr-FR')}</p>
+          <p className="mt-1.5 text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{totalSmsMois.toLocaleString('fr-FR')}</p>
         </div>
-        <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
             Du quota global
           </p>
-          <p className="mt-1.5 text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">
+          <p className="mt-1.5 text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">
             {pctGlobal === null ? '—' : `${pctGlobal} %`}
           </p>
         </div>
@@ -225,17 +225,17 @@ export default function PageClientsAdmin() {
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
 
         {/* Left Column (2 cols) : Organisations */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-4">
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">
+              <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">
                 Organisations
               </h2>
-              <p className="mt-0.5 text-[12px] text-slate-400">
+              <p className="mt-0.5 text-[12px] text-stone-500">
                 {clients.length} client{clients.length > 1 ? 's' : ''} enregistré{clients.length > 1 ? 's' : ''}
               </p>
             </div>
-            <div className="flex w-52 items-center gap-2 rounded-full bg-slate-50 px-4 py-2 text-[12.5px] text-slate-400 dark:bg-zinc-800 dark:border-zinc-700">
+            <div className="flex w-52 items-center gap-2 rounded-full bg-stone-100 px-4 py-2 text-[12.5px] text-stone-500 dark:bg-zinc-800 dark:border-zinc-700">
               <Search className="h-4 w-4" />
               <input
                 type="text"
@@ -249,7 +249,7 @@ export default function PageClientsAdmin() {
 
           <div className="mt-5 space-y-6">
             {clientsFiltres.length === 0 && (
-              <p className="py-8 text-center text-xs text-slate-400 dark:text-zinc-500">
+              <p className="py-8 text-center text-xs text-stone-500 dark:text-zinc-500">
                 Aucun client pour le moment — invitez votre première organisation.
               </p>
             )}
@@ -258,46 +258,46 @@ export default function PageClientsAdmin() {
                 ? Math.min(100, Math.round((c.utilise_mois / c.quota_mensuel) * 100))
                 : 0
               return (
-              <div key={c.id} className="border-t border-slate-100 pt-5 first:border-0 first:pt-0 dark:border-zinc-800">
+              <div key={c.id} className="border-t border-[#1C1917]/10 pt-5 first:border-0 first:pt-0 dark:border-zinc-800">
                 <div className="flex items-center gap-3.5">
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl text-[13px] font-extrabold ${couleurAvatar(c.nom)}`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl text-[13px] font-extrabold${couleurAvatar(c.nom)}`}
                   >
                     {c.initiales}
                   </div>
                   <div className="flex-1">
-                    <p className="text-[14.5px] font-bold text-slate-900 dark:text-white">
+                    <p className="text-[14.5px] font-bold text-[#1C1917] dark:text-white">
                       {c.nom}
                     </p>
-                    <p className="text-[11.5px] text-slate-400">
+                    <p className="text-[11.5px] text-stone-500">
                       Client depuis le {c.creeLe ? new Date(c.creeLe).toLocaleDateString('fr-FR') : '—'}
                     </p>
                   </div>
                   <span
-                    className={`rounded-full px-3 py-1 text-[10.5px] font-bold ${c.suspendu ? 'bg-slate-200 text-slate-600 dark:bg-zinc-700 dark:text-zinc-300' : c.depassement ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-300' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'}`}
+                    className={`rounded-full px-3 py-1 text-[10.5px] font-bold${c.suspendu ? 'bg-[#1C1917]/10 text-stone-600 dark:bg-zinc-700 dark:text-zinc-300' : c.depassement ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-300' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'}`}
                   >
                     {c.suspendu ? 'Suspendu' : c.depassement ? 'Quota dépassé' : 'Actif'}
                   </span>
                   <button onClick={() => basculerSuspension(c)} title={c.suspendu ? "Réactiver l'accès" : "Suspendre l'accès"}
-                    className="rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-400 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-500/10">
+                    className="rounded-lg px-2 py-1 text-[11px] font-semibold text-stone-500 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-500/10">
                     {c.suspendu ? 'Réactiver' : 'Suspendre'}
                   </button>
                   <button onClick={() => revoquerClient(c.id, c.nom)} title="Révoquer l'accès"
-                    className="rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10">
+                    className="rounded-lg px-2 py-1 text-[11px] font-semibold text-stone-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10">
                     Révoquer
                   </button>
                 </div>
 
                 <div className="mt-3 pl-[54px]">
                   <div className="flex items-center justify-between text-[11.5px]">
-                    <span className="text-slate-400">SMS ce mois-ci</span>
-                    <span className="font-bold text-slate-800 dark:text-zinc-200">
+                    <span className="text-stone-500">SMS ce mois-ci</span>
+                    <span className="font-bold text-[#1C1917] dark:text-zinc-200">
                       {c.utilise_mois.toLocaleString('fr-FR')} / {c.quota_mensuel === null ? '∞' : c.quota_mensuel.toLocaleString('fr-FR')}
                     </span>
                   </div>
-                  <div className="mt-1.5 h-1.5 w-full rounded-full bg-slate-100 dark:bg-zinc-800">
+                  <div className="mt-1.5 h-1.5 w-full rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-800">
                     <div
-                      className="h-1.5 rounded-full bg-gradient-to-r from-[#60A5FA] to-[#a855f7]"
+                      className="h-1.5 rounded-full"
                       style={{ width: `${pct}%` }}
                     ></div>
                   </div>
@@ -310,7 +310,7 @@ export default function PageClientsAdmin() {
 
         {/* Right Column (1 col) : 2 Cards (Exact Screenshot) */}
         <div className="space-y-4">
-          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-3">
+          <div className="rounded-[1.5rem] p-6 text-white shadow-card space-y-3">
             <div className="flex items-center gap-2.5 text-white/60">
               <Calendar className="h-4 w-4" />
               <p className="text-[10px] font-bold uppercase tracking-[0.15em]">
@@ -325,11 +325,11 @@ export default function PageClientsAdmin() {
             </p>
           </div>
 
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-            <p className="text-[14px] font-bold text-slate-900 dark:text-white">
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+            <p className="text-[14px] font-bold text-[#1C1917] dark:text-white">
               Un espace par organisation.
             </p>
-            <p className="text-[11.5px] leading-relaxed text-slate-400">
+            <p className="text-[11.5px] leading-relaxed text-stone-500">
               Invitez vos clients et gardez leurs accès et leur consommation à portée de main.
             </p>
             <a
@@ -346,26 +346,26 @@ export default function PageClientsAdmin() {
       {/* Modal d'invitation de client */}
       {modalClient && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-4">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Inviter un nouveau client B2B</h3>
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-zinc-900 border border-[#1C1917]/10 dark:border-zinc-800 space-y-4">
+            <h3 className="text-base font-bold text-[#1C1917] dark:text-white">Inviter un nouveau client B2B</h3>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">Nom de l'organisation</label>
+              <label className="block text-xs font-semibold text-stone-700 dark:text-zinc-300 mb-1">Nom de l'organisation</label>
               <input
                 type="text"
                 value={nouveauNom}
                 onChange={(e) => setNouveauNom(e.target.value)}
                 placeholder="Nom de l'organisation"
-                className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                className="w-full rounded-xl border border-[#1C1917]/10 p-2.5 text-xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1">E-mail du client (liaison auto à l'inscription)</label>
+              <label className="block text-xs font-semibold text-stone-700 dark:text-zinc-300 mb-1">E-mail du client (liaison auto à l'inscription)</label>
               <input
                 type="email"
                 value={nouveauEmail}
                 onChange={(e) => setNouveauEmail(e.target.value)}
                 placeholder="client@entreprise.com"
-                className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                className="w-full rounded-xl border border-[#1C1917]/10 p-2.5 text-xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
               />
             </div>
             {cleCreee && (
@@ -375,7 +375,7 @@ export default function PageClientsAdmin() {
               </div>
             )}
             <div className="flex gap-2 pt-2">
-              <button onClick={() => setModalClient(false)} className="flex-1 rounded-xl border border-slate-200 py-2 text-xs font-semibold text-slate-600 dark:border-zinc-700 dark:text-zinc-300">
+              <button onClick={() => setModalClient(false)} className="flex-1 rounded-xl border border-[#1C1917]/10 py-2 text-xs font-semibold text-stone-600 dark:border-zinc-700 dark:text-zinc-300">
                 {cleCreee ? 'Fermer' : 'Annuler'}
               </button>
               {!cleCreee && (

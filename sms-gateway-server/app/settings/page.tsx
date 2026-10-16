@@ -219,10 +219,10 @@ export default function PageParametres() {
   return (
     <CoquilleTableauDeBord>
       <div className="mb-6">
-        <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+        <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">
           Paramètres
         </h1>
-        <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+        <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
           Configurez les intégrations, quotas et accès de votre espace SMSTSIKA.
         </p>
       </div>
@@ -231,35 +231,35 @@ export default function PageParametres() {
         {/* Navigation latérale sticky */}
         <div className="sticky top-24 space-y-8">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-500">
               Intégrations
             </p>
-            <p className="mt-1.5 text-[13.5px] font-bold text-slate-800 dark:text-zinc-200">
+            <p className="mt-1.5 text-[13.5px] font-bold text-[#1C1917] dark:text-zinc-200">
               Connecter votre espace
             </p>
-            <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+            <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
               Les accès techniques et la santé de vos services essentiels.
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-500">
               Acheminement
             </p>
-            <p className="mt-1.5 text-[13.5px] font-bold text-slate-800 dark:text-zinc-200">
+            <p className="mt-1.5 text-[13.5px] font-bold text-[#1C1917] dark:text-zinc-200">
               Garder le contrôle
             </p>
-            <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+            <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
               Définissez les limites de traitement et les alertes de votre console.
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-500">
               Accès clients
             </p>
-            <p className="mt-1.5 text-[13.5px] font-bold text-slate-800 dark:text-zinc-200">
+            <p className="mt-1.5 text-[13.5px] font-bold text-[#1C1917] dark:text-zinc-200">
               Ouvrir les bons accès
             </p>
-            <p className="mt-1 text-[11px] leading-relaxed text-slate-400">
+            <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
               Créez des clés dédiées et validez les demandes de vos clients.
             </p>
           </div>
@@ -268,21 +268,21 @@ export default function PageParametres() {
         {/* Formulaires centraux */}
         <div className="space-y-4">
           {/* Quotas */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card flex items-center justify-between gap-6 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card flex items-center justify-between gap-6 p-6 dark:bg-zinc-900 dark:border-zinc-800">
             <div>
-              <h2 className="text-[14.5px] font-bold text-slate-900 dark:text-white">
+              <h2 className="text-[14.5px] font-bold text-[#1C1917] dark:text-white">
                 Quotas SMS / heure / appareil
               </h2>
-              <p className="mt-0.5 text-[12px] text-slate-400">
+              <p className="mt-0.5 text-[12px] text-stone-500">
                 Limite appliquée à chaque appareil.
               </p>
             </div>
             <div className="flex items-center gap-2.5">
-              <span className="text-[12px] text-slate-400">SMS par heure</span>
+              <span className="text-[12px] text-stone-500">SMS par heure</span>
               <input
                 value={quotaSms}
                 onChange={(e) => setQuotaSms(e.target.value)}
-                className={`${inputCls} w-20 text-center font-semibold`}
+                className={`${inputCls}w-20 text-center font-semibold`}
               />
               <button onClick={() => enregistrerReglage('sms_quota_per_hour', Number(quotaSms))} className="survol-brillance rounded-full bg-[#2563EB] px-5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#1D4ED8]">
                 Enregistrer
@@ -291,32 +291,32 @@ export default function PageParametres() {
           </div>
 
           {/* Expiration */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card flex items-center justify-between gap-6 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card flex items-center justify-between gap-6 p-6 dark:bg-zinc-900 dark:border-zinc-800">
             <div>
-              <h2 className="text-[14.5px] font-bold text-slate-900 dark:text-white">
+              <h2 className="text-[14.5px] font-bold text-[#1C1917] dark:text-white">
                 Expiration des tâches en attente
               </h2>
-              <p className="mt-0.5 text-[12px] text-slate-400">
+              <p className="mt-0.5 text-[12px] text-stone-500">
                 Durée avant abandon d'un envoi.
               </p>
             </div>
             <div className="flex items-center gap-2.5">
-              <span className="text-[12px] text-slate-400">Durée</span>
+              <span className="text-[12px] text-stone-500">Durée</span>
               <input
                 value={dureeExpiration}
                 onChange={(e) => setDureeExpiration(e.target.value)}
-                className={`${inputCls} w-16 text-center font-semibold`}
+                className={`${inputCls}w-16 text-center font-semibold`}
               />
               <div className="relative">
                 <select
                   value={uniteExpiration}
                   onChange={(e) => setUniteExpiration(e.target.value)}
-                  className={`${inputCls} flex items-center gap-1.5 font-semibold appearance-none pr-8`}
+                  className={`${inputCls}flex items-center gap-1.5 font-semibold appearance-none pr-8`}
                 >
                   <option value="heures">heures</option>
                   <option value="jours">jours</option>
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-500" />
               </div>
               <button onClick={() => enregistrerReglage('max_pending_hours', uniteExpiration === 'jours' ? Number(dureeExpiration) * 24 : Number(dureeExpiration))} className="survol-brillance rounded-full bg-[#2563EB] px-5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#1D4ED8]">
                 Enregistrer
@@ -325,21 +325,21 @@ export default function PageParametres() {
           </div>
 
           {/* Seuil d'alerte */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card flex items-center justify-between gap-6 p-6 dark:bg-zinc-900 dark:border-zinc-800">
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card flex items-center justify-between gap-6 p-6 dark:bg-zinc-900 dark:border-zinc-800">
             <div>
-              <h2 className="text-[14.5px] font-bold text-slate-900 dark:text-white">
+              <h2 className="text-[14.5px] font-bold text-[#1C1917] dark:text-white">
                 Seuil d'alerte file d'attente
               </h2>
-              <p className="mt-0.5 text-[12px] text-slate-400">
+              <p className="mt-0.5 text-[12px] text-stone-500">
                 Le tableau de bord affiche une alerte au-delà de ce nombre de tâches en attente.
               </p>
             </div>
             <div className="flex items-center gap-2.5">
-              <span className="text-[12px] text-slate-400">Tâches en attente</span>
+              <span className="text-[12px] text-stone-500">Tâches en attente</span>
               <input
                 value={seuilAlerte}
                 onChange={(e) => setSeuilAlerte(e.target.value)}
-                className={`${inputCls} w-16 text-center font-semibold`}
+                className={`${inputCls}w-16 text-center font-semibold`}
               />
               <button onClick={() => enregistrerReglage('queue_alert_threshold', Number(seuilAlerte))} className="survol-brillance rounded-full bg-[#2563EB] px-5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#1D4ED8]">
                 Enregistrer
@@ -348,52 +348,52 @@ export default function PageParametres() {
           </div>
 
           {/* Clés API serveur */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
-            <h2 className="text-[15px] font-bold text-slate-900 dark:text-white">
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
+            <h2 className="text-[15px] font-bold text-[#1C1917] dark:text-white">
               Clés API serveur
             </h2>
-            <p className="mt-0.5 text-[12px] text-slate-400">
+            <p className="mt-0.5 text-[12px] text-stone-500">
               Créez un accès sécurisé pour une application cliente.
             </p>
 
-            <p className="mt-4 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <p className="mt-4 text-[11px] font-bold uppercase tracking-wider text-stone-500">
               Nom du client
             </p>
             <input
               placeholder="Nom du client..."
               value={nomClient}
               onChange={(e) => setNomClient(e.target.value)}
-              className={`${inputCls} mt-1.5 w-full`}
+              className={`${inputCls}mt-1.5 w-full`}
             />
 
             <div className="mt-4 space-y-3">
               {clients.length === 0 && (
-                <p className="text-xs text-slate-400 dark:text-zinc-500">Aucune clé API pour le moment.</p>
+                <p className="text-xs text-stone-500 dark:text-zinc-500">Aucune clé API pour le moment.</p>
               )}
               {clients.map((c) => (
                 <div
                   key={c.id}
-                  className="rounded-xl border border-slate-100 bg-slate-50/60 px-4 py-3 dark:bg-zinc-800/60 dark:border-zinc-700"
+                  className="rounded-xl border border-[#1C1917]/10 bg-stone-100 px-4 py-3 dark:bg-zinc-800/60 dark:border-zinc-700"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[13px] font-bold text-slate-700 dark:text-zinc-200">
+                    <span className="text-[13px] font-bold text-stone-700 dark:text-zinc-200">
                       {c.nom}
                     </span>
                     <div className="flex items-center gap-2">
                       <button onClick={() => revelerCle(c.id)} disabled={revelationEnCours === c.id} title={clesRevelees[c.id] ? 'Masquer' : 'Afficher la clé'}
-                        className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-white hover:text-slate-700 disabled:opacity-50 dark:hover:bg-zinc-700">
+                        className="flex h-7 w-7 items-center justify-center rounded-full text-stone-500 hover:bg-white hover:text-stone-700 disabled:opacity-50 dark:hover:bg-zinc-700">
                         {revelationEnCours === c.id
                           ? <Loader2 className="h-4 w-4 animate-spin" />
                           : clesRevelees[c.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                       <button onClick={() => revoquerClient(c.id, c.nom)} title="Révoquer"
-                        className="flex h-7 w-7 items-center justify-center rounded-full text-slate-400 hover:bg-white hover:text-rose-500 dark:hover:bg-zinc-700">
+                        className="flex h-7 w-7 items-center justify-center rounded-full text-stone-500 hover:bg-white hover:text-rose-500 dark:hover:bg-zinc-700">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
                   {clesRevelees[c.id] && (
-                    <code className="mt-2 block break-all rounded-lg bg-white px-3 py-2 font-mono text-[11px] text-slate-700 ring-1 ring-slate-200 dark:bg-zinc-900 dark:text-zinc-200 dark:ring-zinc-700">
+                    <code className="mt-2 block break-all rounded-lg bg-white px-3 py-2 font-mono text-[11px] text-stone-700 ring-1 ring-[#1C1917]/10 dark:bg-zinc-900 dark:text-zinc-200 dark:ring-zinc-700">
                       {clesRevelees[c.id]}
                     </code>
                   )}
@@ -409,7 +409,7 @@ export default function PageParametres() {
             )}
 
             <div className="mt-4 flex items-center justify-between">
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-stone-500">
                 {clients.length} clés actives — affichées une seule fois à la création.
               </p>
               <button onClick={creerClient} disabled={creationEnCours || !nomClient.trim()} className="survol-brillance inline-flex items-center gap-1.5 rounded-full bg-[#2563EB] px-4 py-2 text-[12px] font-semibold text-white hover:bg-[#1D4ED8] disabled:opacity-50">
@@ -421,7 +421,7 @@ export default function PageParametres() {
 
         {/* Colonne droite sticky */}
         <div className="sticky top-24 space-y-4">
-          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-5 text-white shadow-card">
+          <div className="rounded-[1.5rem] p-5 text-white shadow-card">
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
               État du système
             </p>
@@ -432,7 +432,7 @@ export default function PageParametres() {
               {!sante && <p className="text-[11px] text-white/45">Vérification en cours…</p>}
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-[11px] font-semibold text-white/75">
-                  <span className={`h-1.5 w-1.5 rounded-full ${!sante || sante.checks.supabase.ok ? 'bg-emerald-400' : 'bg-red-400'}`} /> SUPABASE
+                  <span className={`h-1.5 w-1.5 rounded-full${!sante || sante.checks.supabase.ok ? 'bg-emerald-400' : 'bg-red-400'}`} /> SUPABASE
                 </span>
                 <span className="text-[11px] text-white/55">
                   {!sante ? '…' : sante.checks.supabase.ok ? `OK · ${sante.checks.supabase.latency_ms} ms` : 'KO'}
@@ -440,13 +440,13 @@ export default function PageParametres() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-[11px] font-semibold text-white/75">
-                  <span className={`h-1.5 w-1.5 rounded-full ${!sante || sante.checks.settings_table ? 'bg-emerald-400' : 'bg-red-400'}`} /> TABLE PARAMÈTRES
+                  <span className={`h-1.5 w-1.5 rounded-full${!sante || sante.checks.settings_table ? 'bg-emerald-400' : 'bg-red-400'}`} /> TABLE PARAMÈTRES
                 </span>
                 <span className="text-[11px] text-white/55">{!sante ? '…' : sante.checks.settings_table ? 'présente' : 'absente'}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-[11px] font-semibold text-white/75">
-                  <span className={`h-1.5 w-1.5 rounded-full ${!sante || sante.checks.fcm_configured ? 'bg-emerald-400' : 'bg-amber-400'}`} /> PUSH FCM
+                  <span className={`h-1.5 w-1.5 rounded-full${!sante || sante.checks.fcm_configured ? 'bg-emerald-400' : 'bg-amber-400'}`} /> PUSH FCM
                 </span>
                 <span className="text-[11px] text-white/55">{!sante ? '…' : sante.checks.fcm_configured ? 'configuré' : 'non configuré'}</span>
               </div>
@@ -459,35 +459,35 @@ export default function PageParametres() {
             </div>
           </div>
 
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800">
-            <p className="text-[13.5px] font-bold text-slate-900 dark:text-white">
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800">
+            <p className="text-[13.5px] font-bold text-[#1C1917] dark:text-white">
               Demandes d'accès
             </p>
-            <p className="mt-0.5 text-[11px] text-slate-400">
+            <p className="mt-0.5 text-[11px] text-stone-500">
               Validation des nouveaux accès clients
             </p>
             {demandes.length === 0 ? (
               <div className="flex flex-col items-center py-8 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-zinc-800">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1C1917]/[0.04] text-stone-500 dark:bg-zinc-800">
                   <UserPlus className="h-5 w-5" />
                 </div>
-                <p className="mt-3 text-[12px] text-slate-500 dark:text-zinc-400">
+                <p className="mt-3 text-[12px] text-stone-600 dark:text-zinc-400">
                   Aucune demande en attente
                 </p>
               </div>
             ) : (
               <div className="mt-4 space-y-3">
                 {demandes.map((d) => (
-                  <div key={d.id} className="rounded-xl border border-slate-100 bg-slate-50/60 p-3 dark:border-zinc-700 dark:bg-zinc-800/60">
-                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-100">{d.nom}</p>
-                    <p className="mt-0.5 truncate text-[11px] text-slate-400">{d.contact} · {d.usage_prevu}</p>
+                  <div key={d.id} className="rounded-xl border border-[#1C1917]/10 bg-stone-100 p-3 dark:border-zinc-700 dark:bg-zinc-800/60">
+                    <p className="text-xs font-bold text-[#1C1917] dark:text-zinc-100">{d.nom}</p>
+                    <p className="mt-0.5 truncate text-[11px] text-stone-500">{d.contact} · {d.usage_prevu}</p>
                     <div className="mt-2 flex gap-2">
                       <button onClick={() => traiterDemande(d.id, 'valider')}
                         className="survol-brillance rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700">
                         Valider
                       </button>
                       <button onClick={() => traiterDemande(d.id, 'refuser')}
-                        className="rounded-lg border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-100 dark:border-zinc-700 dark:text-zinc-300">
+                        className="rounded-lg border border-[#1C1917]/10 px-2.5 py-1 text-[11px] font-semibold text-stone-600 hover:bg-[#1C1917]/[0.04] dark:border-zinc-700 dark:text-zinc-300">
                         Refuser
                       </button>
                     </div>
@@ -497,11 +497,11 @@ export default function PageParametres() {
             )}
           </div>
 
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800">
-            <p className="text-[13.5px] font-bold text-slate-900 dark:text-white">
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800">
+            <p className="text-[13.5px] font-bold text-[#1C1917] dark:text-white">
               Test e-mail (SMTP)
             </p>
-            <p className="mt-0.5 text-[11px] text-slate-400">
+            <p className="mt-0.5 text-[11px] text-stone-500">
               Vérifie l'envoi des clés par e-mail
             </p>
             <div className="mt-3 flex gap-2">
@@ -511,7 +511,7 @@ export default function PageParametres() {
                 value={emailTest}
                 onChange={(e) => setEmailTest(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') testerEmail() }}
-                className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                className="min-w-0 flex-1 rounded-xl border border-[#1C1917]/10 px-3 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
               />
               <button onClick={testerEmail} disabled={envoiEmailEnCours || !emailTest.trim()}
                 className="survol-brillance shrink-0 rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50">

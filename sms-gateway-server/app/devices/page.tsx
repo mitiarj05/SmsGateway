@@ -81,7 +81,7 @@ export default function AppareilsPage() {
 
   if (chargement) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-100 dark:bg-zinc-950">
+      <div className="flex h-screen items-center justify-center bg-[#1C1917]/[0.04] dark:bg-zinc-950">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     )
@@ -101,16 +101,16 @@ export default function AppareilsPage() {
       {/* En-tête (Exact Screenshot) */}
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">
             Appareils
           </h1>
-          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Gérez vos téléphones passerelles et surveillez leur état.
           </p>
         </div>
         <button
           onClick={() => setModalAjoutOuverte(true)}
-          className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#1D4ED8] transition"
+          className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg hover:bg-[#1D4ED8] transition"
         >
           <Plus className="h-4 w-4" /> Ajouter un appareil
         </button>
@@ -119,34 +119,34 @@ export default function AppareilsPage() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Colonne Gauche (2 cols) : Flotte de téléphones */}
         <div className="xl:col-span-2 space-y-4">
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-6">
-            <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-6">
+            <div className="flex flex-col gap-3 border-b border-[#1C1917]/10 pb-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-[17px] font-bold text-slate-900 dark:text-white">Flotte de téléphones</h2>
-                <p className="text-[12px] text-slate-400 dark:text-zinc-500">{totalAppareils} appareil connecté à votre espace</p>
+                <h2 className="text-[17px] font-bold text-[#1C1917] dark:text-white">Flotte de téléphones</h2>
+                <p className="text-[12px] text-stone-500 dark:text-zinc-500">{totalAppareils} appareil connecté à votre espace</p>
               </div>
               <div className="flex items-center gap-2.5">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-500" />
                   <input
                     type="text"
                     placeholder="Rechercher un appareil"
                     value={recherche}
                     onChange={(e) => setRecherche(e.target.value)}
-                    className="w-52 rounded-full border border-slate-200 bg-white py-2 pl-8 pr-3 text-[12.5px] shadow-2xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                    className="w-52 rounded-full border border-[#1C1917]/10 bg-white py-2 pl-8 pr-3 text-[12.5px] shadow-2xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
                   />
                 </div>
                 <div className="relative">
                   <select
                     value={filtreStatut}
                     onChange={(e) => setFiltreStatut(e.target.value)}
-                    className="appearance-none rounded-full border border-slate-200 bg-white py-2 pl-3.5 pr-8 text-[12.5px] font-semibold text-slate-600 shadow-2xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                    className="appearance-none rounded-full border border-[#1C1917]/10 bg-white py-2 pl-3.5 pr-8 text-[12.5px] font-semibold text-stone-600 shadow-2xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
                   >
                     <option value="ALL">Tous les statuts</option>
                     <option value="EN_LIGNE">En ligne</option>
                     <option value="HORS_LIGNE">Hors ligne</option>
                   </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-500" />
                 </div>
               </div>
             </div>
@@ -154,7 +154,7 @@ export default function AppareilsPage() {
             {/* Carte téléphone (données temps réel) */}
             <div className="space-y-4">
               {appareilsVisibles.length === 0 && (
-                <p className="py-10 text-center text-xs text-slate-400 dark:text-zinc-500">
+                <p className="py-10 text-center text-xs text-stone-500 dark:text-zinc-500">
                   Aucun appareil enregistré — ajoutez votre premier téléphone.
                 </p>
               )}
@@ -163,13 +163,13 @@ export default function AppareilsPage() {
                 const utilises = a.sms_last_hour ?? 0
                 const pct = quota > 0 ? Math.min(100, Math.round((utilises / quota) * 100)) : 0
                 return (
-                <div key={a.id} className="relative rounded-2xl bg-slate-50/80 p-6 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800 space-y-6">
+                <div key={a.id} className="relative rounded-2xl bg-white p-6 dark:bg-zinc-800/40 border border-[#1C1917]/10 dark:border-zinc-800 space-y-6">
                   {/* Badge statut top left */}
                   <div className="flex items-center justify-between">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold ${enLigne ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400'}`}>
-                      <span className={`h-1.5 w-1.5 rounded-full ${enLigne ? 'bg-emerald-500' : 'bg-rose-500'}`} /> {enLigne ? 'En ligne' : 'Hors ligne'}
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold${enLigne ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400'}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full${enLigne ? 'bg-emerald-500' : 'bg-rose-500'}`} /> {enLigne ? 'En ligne' : 'Hors ligne'}
                     </span>
-                    <button onClick={() => setCibleSuppression(a)} className="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200">
+                    <button onClick={() => setCibleSuppression(a)} className="text-stone-500 hover:text-stone-600 dark:hover:text-zinc-200">
                       <MoreHorizontal className="h-4 w-4" />
                     </button>
                   </div>
@@ -177,31 +177,31 @@ export default function AppareilsPage() {
                   {/* Body Vector & Details */}
                   <div className="flex flex-col sm:flex-row items-center gap-6">
                     {/* Phone Vector Container */}
-                    <div className="flex h-44 w-32 shrink-0 flex-col items-center justify-center gap-2 rounded-[2.2rem] border-2 border-slate-200 bg-slate-50/60 p-3 text-center dark:border-zinc-700 dark:bg-zinc-900">
+                    <div className="flex h-44 w-32 shrink-0 flex-col items-center justify-center gap-2 rounded-[2.2rem] border-2 border-[#1C1917]/10 bg-stone-100 p-3 text-center dark:border-zinc-700 dark:bg-zinc-900">
                       {enLigne
                         ? <Smartphone size={26} className="text-emerald-500" />
-                        : <WifiOff size={26} className="text-slate-300 dark:text-zinc-600" />}
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
+                        : <WifiOff size={26} className="text-stone-400 dark:text-zinc-600" />}
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-stone-500">
                         {enLigne ? 'EN LIGNE' : 'HORS LIGNE'}
                       </span>
                     </div>
 
                     <div className="space-y-4 flex-1 text-center sm:text-left">
                       <div>
-                        <h3 className="text-[20px] font-extrabold text-slate-900 dark:text-white">{a.nom}</h3>
-                        <p className="font-mono text-[12px] text-slate-400">{a.id}</p>
+                        <h3 className="text-[20px] font-extrabold text-[#1C1917] dark:text-white">{a.nom}</h3>
+                        <p className="font-mono text-[12px] text-stone-500">{a.id}</p>
                       </div>
 
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">JETON PUSH FCM</p>
-                        <code className="mt-0.5 inline-block rounded bg-slate-200/60 px-2.5 py-1 font-mono text-[13px] text-slate-600 dark:bg-zinc-800 dark:text-zinc-300">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">JETON PUSH FCM</p>
+                        <code className="mt-0.5 inline-block rounded bg-[#1C1917]/10 px-2.5 py-1 font-mono text-[13px] text-stone-600 dark:bg-zinc-800 dark:text-zinc-300">
                           {a.fcm_token ? a.fcm_token : '—'}
                         </code>
                       </div>
 
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">DERNIÈRE ACTIVITÉ</p>
-                        <p className="text-[13.5px] font-bold text-slate-800 dark:text-zinc-200">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">DERNIÈRE ACTIVITÉ</p>
+                        <p className="text-[13.5px] font-bold text-[#1C1917] dark:text-zinc-200">
                           {a.derniere_activite && !Number.isNaN(new Date(a.derniere_activite).getTime())
                             ? new Date(a.derniere_activite).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
                             : '—'}
@@ -211,13 +211,13 @@ export default function AppareilsPage() {
                   </div>
 
                   {/* Progress bar utilisation */}
-                  <div className="pt-2 space-y-2 border-t border-slate-100 dark:border-zinc-800">
-                    <div className="flex items-center justify-between text-[11.5px] text-slate-500 dark:text-zinc-400">
+                  <div className="pt-2 space-y-2 border-t border-[#1C1917]/10 dark:border-zinc-800">
+                    <div className="flex items-center justify-between text-[11.5px] text-stone-600 dark:text-zinc-400">
                       <span className="font-medium">Utilisation SMS/h</span>
-                      <span className="font-bold text-slate-800 dark:text-zinc-200">{utilises} / {quota}</span>
+                      <span className="font-bold text-[#1C1917] dark:text-zinc-200">{utilises} / {quota}</span>
                     </div>
-                    <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-zinc-700">
-                      <div className="h-1.5 rounded-full bg-gradient-to-r from-[#60A5FA] to-[#2563EB]" style={{ width: `${pct}%` }} />
+                    <div className="h-1.5 w-full rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-700">
+                      <div className="h-1.5 rounded-full" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 </div>
@@ -232,10 +232,10 @@ export default function AppareilsPage() {
               <Info className="h-4 w-4" />
             </div>
             <div className="flex-1">
-              <p className="text-[13.5px] font-bold text-slate-800 dark:text-zinc-200">
+              <p className="text-[13.5px] font-bold text-[#1C1917] dark:text-zinc-200">
                 Gardez votre passerelle connectée.
               </p>
-              <p className="mt-0.5 text-[12px] text-slate-500 dark:text-zinc-400">
+              <p className="mt-0.5 text-[12px] text-stone-600 dark:text-zinc-400">
                 Vérifiez le réseau et l'application sur le téléphone pour reprendre les envois.
               </p>
             </div>
@@ -248,7 +248,7 @@ export default function AppareilsPage() {
         {/* Colonne Droite (1 col) : Capacité & Appareils enregistrés (Exact Screenshot) */}
         <div className="space-y-4">
           {/* Card Capacité configurée */}
-          <div className="survol-lift rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-3">
+          <div className="survol-lift rounded-[1.5rem] p-6 text-white shadow-card space-y-3">
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
               Capacité configurée
             </p>
@@ -259,7 +259,7 @@ export default function AppareilsPage() {
               Capacité totale de votre flotte, selon les quotas par appareil.
             </p>
             <p className="flex items-center gap-2 text-[11.5px] text-white/60 pt-2 border-t border-white/10">
-              <span className={`h-1.5 w-1.5 rounded-full ${enLigneCount > 0 ? 'bg-emerald-400' : 'bg-rose-400'}`}></span>
+              <span className={`h-1.5 w-1.5 rounded-full${enLigneCount > 0 ? 'bg-emerald-400' : 'bg-rose-400'}`}></span>
               {enLigneCount > 0
                 ? `${enLigneCount} appareil${enLigneCount > 1 ? 's' : ''} actif${enLigneCount > 1 ? 's' : ''} maintenant`
                 : 'Aucun appareil actif maintenant'}
@@ -267,16 +267,16 @@ export default function AppareilsPage() {
           </div>
 
           {/* Card Appareils enregistrés */}
-          <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
-            <p className="text-[12px] font-medium text-slate-400">
+          <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
+            <p className="text-[12px] font-medium text-stone-500">
               Appareils enregistrés
             </p>
-            <p className="text-[30px] font-extrabold text-slate-900 dark:text-white">{totalAppareils}</p>
+            <p className="text-[30px] font-extrabold text-[#1C1917] dark:text-white">{totalAppareils}</p>
           </div>
 
           {/* Card Actifs maintenant */}
-          <div className="survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
-            <p className="text-[12px] font-medium text-slate-400">
+          <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
+            <p className="text-[12px] font-medium text-stone-500">
               Actifs maintenant
             </p>
             <p className="text-[30px] font-extrabold text-emerald-600 dark:text-emerald-400">{enLigneCount}</p>

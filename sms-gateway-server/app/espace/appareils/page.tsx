@@ -45,7 +45,7 @@ export default function PageAppareilsClient() {
 
   if (chargement) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-100 dark:bg-zinc-950">
+      <div className="flex h-screen items-center justify-center bg-[#1C1917]/[0.04] dark:bg-zinc-950">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     )
@@ -86,21 +86,21 @@ export default function PageAppareilsClient() {
       {/* En-tête (Exact Screenshot 8) */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">Parc d'envoi</h1>
-          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Parc d'envoi</h1>
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Les téléphones qui expédient vos SMS, avec leur état en temps réel.
           </p>
         </div>
         <button
           onClick={() => setModalAjoutOuverte(true)}
-          className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#1D4ED8] transition"
+          className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg hover:bg-[#1D4ED8] transition"
         >
           <Smartphone className="h-4 w-4" /> Associer un téléphone
         </button>
       </div>
 
       {/* Hero Card Informative (#1F1A52 - Exact Screenshot 8) */}
-      <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4">
+      <div className="rounded-[1.5rem] p-6 text-white shadow-card space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white">
@@ -121,21 +121,21 @@ export default function PageAppareilsClient() {
 
       {/* 3 Metric Cards (Exact Screenshot 8) */}
       <div className="mt-4 grid grid-cols-3 gap-4">
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">TÉLÉPHONES ASSOCIÉS</p>
-          <p className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{totalAppareils}</p>
-          <p className="text-[11px] text-slate-400">{enLigneCount} en ligne · {horsLigneCount} hors ligne</p>        </div>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">TÉLÉPHONES ASSOCIÉS</p>
+          <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{totalAppareils}</p>
+          <p className="text-[11px] text-stone-500">{enLigneCount} en ligne · {horsLigneCount} hors ligne</p>        </div>
 
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">CAPACITÉ TOTALE</p>
-          <p className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{totalAppareils} <span className="text-sm font-bold text-slate-400">appareil{totalAppareils > 1 ? 's' : ''}</span></p>
-          <p className="text-[11px] text-slate-400">Vos appareils liés</p>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">CAPACITÉ TOTALE</p>
+          <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{totalAppareils} <span className="text-sm font-bold text-stone-500">appareil{totalAppareils > 1 ? 's' : ''}</span></p>
+          <p className="text-[11px] text-stone-500">Vos appareils liés</p>
         </div>
 
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">DÉBIT ACTUEL</p>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">DÉBIT ACTUEL</p>
           <p className="text-[30px] font-extrabold leading-none text-emerald-600 dark:text-emerald-400">{debitTotal}</p>
-          <p className="text-[11px] text-slate-400">SMS/h sur le parc</p>
+          <p className="text-[11px] text-stone-500">SMS/h sur le parc</p>
         </div>
       </div>
 
@@ -143,18 +143,18 @@ export default function PageAppareilsClient() {
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
 
         {/* Left Column (2 cols) : Téléphones du parc */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-zinc-800">
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-6">
+          <div className="flex items-center justify-between border-b border-[#1C1917]/10 pb-4 dark:border-zinc-800">
             <div>
-              <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">Téléphones du parc</h2>
-              <p className="text-[12px] text-slate-400">{totalAppareils} appareil visible</p>
+              <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">Téléphones du parc</h2>
+              <p className="text-[12px] text-stone-500">{totalAppareils} appareil visible</p>
             </div>
             <button
               onClick={() => chargerDonnees(false)}
               disabled={actualisation}
-              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-slate-600 shadow-2xs hover:border-slate-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-stone-600 shadow-2xs hover:border-slate-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${actualisation ? 'animate-spin' : ''}`} /> Actualiser
+              <RefreshCw className={`h-3.5 w-3.5${actualisation ? 'animate-spin' : ''}`} /> Actualiser
             </button>
           </div>
           {erreur && (
@@ -166,7 +166,7 @@ export default function PageAppareilsClient() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
                 <thead>
-                <tr className="border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:border-zinc-800">
+                <tr className="border-b border-[#1C1917]/10 text-[11px] font-semibold uppercase tracking-wide text-stone-500 dark:border-zinc-800">
                   <th className="pb-3 pr-4">TÉLÉPHONE</th>
                   <th className="pb-3 pr-4">STATUT</th>
                   <th className="pb-3 pr-4">DÉBIT (SMS/H)</th>
@@ -174,10 +174,10 @@ export default function PageAppareilsClient() {
                   <th className="pb-3 text-right">ACTIONS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+              <tbody className="divide-y divide-[#1C1917]/10 dark:divide-zinc-800">
                 {appareils.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-xs text-slate-400 dark:text-zinc-500">
+                    <td colSpan={5} className="py-10 text-center text-xs text-stone-500 dark:text-zinc-500">
                       Aucun téléphone lié — associez votre premier téléphone pour commencer à envoyer.
                     </td>
                   </tr>
@@ -185,7 +185,7 @@ export default function PageAppareilsClient() {
                 {appareils.map((a) => {
                   const enLigne = a.statut === 'EN_LIGNE'
                   return (
-                  <tr key={a.id} className="text-slate-800 dark:text-zinc-200">
+                  <tr key={a.id} className="text-[#1C1917] dark:text-zinc-200">
                     <td className="py-4 pr-4">
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
@@ -193,24 +193,24 @@ export default function PageAppareilsClient() {
                         </div>
                         <div>
                           <p className="font-bold">{a.nom}</p>
-                          <p className="font-mono text-[10px] text-slate-400">{a.id.substring(0, 8)}</p>
+                          <p className="font-mono text-[10px] text-stone-500">{a.id.substring(0, 8)}</p>
                         </div>
                       </div>
                     </td>
                     <td className="py-4 pr-4">
-                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${enLigne ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400'}`}>
-                        <span className={`h-1.5 w-1.5 rounded-full ${enLigne ? 'bg-emerald-500' : 'bg-red-500'}`} /> {enLigne ? 'En ligne' : 'Hors ligne'}
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold${enLigne ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400'}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full${enLigne ? 'bg-emerald-500' : 'bg-red-500'}`} /> {enLigne ? 'En ligne' : 'Hors ligne'}
                       </span>
                     </td>
                     <td className="py-4 pr-4 font-semibold">{a.sms_last_hour ?? 0} SMS/h</td>
-                    <td className="py-4 pr-4 text-slate-400">{tempsEcouleFr(a.derniere_activite)}</td>
+                    <td className="py-4 pr-4 text-stone-500">{tempsEcouleFr(a.derniere_activite)}</td>
                     <td className="py-4 text-right">
                       {a.supprimable && (
                         <button
                           type="button"
                           onClick={() => supprimerAppareil(a)}
                           title={`Supprimer ${a.nom} de votre parc`}
-                          className="inline-flex items-center justify-center rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"
+                          className="inline-flex items-center justify-center rounded-lg p-2 text-stone-500 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -223,8 +223,8 @@ export default function PageAppareilsClient() {
             </table>
           </div>
 
-          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-4 text-center space-y-2 dark:border-zinc-800 dark:bg-zinc-800/30">
-            <p className="text-xs text-slate-500 dark:text-zinc-400">
+          <div className="rounded-2xl border border-dashed border-[#1C1917]/10 bg-stone-100 p-4 text-center space-y-2 dark:border-zinc-800 dark:bg-zinc-800/30">
+            <p className="text-xs text-stone-600 dark:text-zinc-400">
               Ajoutez un second téléphone pour doubler votre débit et assurer la reprise sur incident.
             </p>
             <button onClick={() => setModalAjoutOuverte(true)} className="inline-flex items-center gap-1 text-xs font-bold text-[#2563EB] hover:underline dark:text-blue-400">
@@ -236,31 +236,31 @@ export default function PageAppareilsClient() {
         {/* Right Column (2 Cards) */}
         <div className="space-y-4">
           {/* Comment associer un appareil */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Comment associer un appareil ?</h3>
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+            <h3 className="text-sm font-bold text-[#1C1917] dark:text-white">Comment associer un appareil ?</h3>
 
             <div className="space-y-3 text-xs">
               <div className="flex items-start gap-3">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600 dark:bg-blue-500/20 dark:text-indigo-300">1</span>
                 <div>
-                  <p className="font-bold text-slate-800 dark:text-zinc-200">Installez l'app SMSTSIKA</p>
-                  <p className="text-[11px] text-slate-400">Disponible sur Android (APK / Play Store)</p>
+                  <p className="font-bold text-[#1C1917] dark:text-zinc-200">Installez l'app SMSTSIKA</p>
+                  <p className="text-[11px] text-stone-500">Disponible sur Android (APK / Play Store)</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600 dark:bg-blue-500/20 dark:text-indigo-300">2</span>
                 <div>
-                  <p className="font-bold text-slate-800 dark:text-zinc-200">Scannez le QR de liaison</p>
-                  <p className="text-[11px] text-slate-400">Généré automatiquement, valable 10 min</p>
+                  <p className="font-bold text-[#1C1917] dark:text-zinc-200">Scannez le QR de liaison</p>
+                  <p className="text-[11px] text-stone-500">Généré automatiquement, valable 10 min</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-600 dark:bg-blue-500/20 dark:text-indigo-300">3</span>
                 <div>
-                  <p className="font-bold text-slate-800 dark:text-zinc-200">Le relais est en ligne</p>
-                  <p className="text-[11px] text-slate-400">Vos SMS passent par la carte SIM de l'appareil</p>
+                  <p className="font-bold text-[#1C1917] dark:text-zinc-200">Le relais est en ligne</p>
+                  <p className="text-[11px] text-stone-500">Vos SMS passent par la carte SIM de l'appareil</p>
                 </div>
               </div>
             </div>
@@ -269,14 +269,14 @@ export default function PageAppareilsClient() {
           {/* QR de liaison : ouvre la modale (vrai QR, 10 min) */}
           <button
             onClick={() => setModalAjoutOuverte(true)}
-            className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 text-center space-y-3 w-full transition hover:border-[#2563EB]/40"
+            className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 text-center space-y-3 w-full transition hover:border-[#2563EB]/40"
           >
-            <p className="text-xs font-bold text-slate-900 dark:text-white">QR de liaison</p>
+            <p className="text-xs font-bold text-[#1C1917] dark:text-white">QR de liaison</p>
             <div className="flex justify-center p-4">
-              <QrCode className="h-24 w-24 text-slate-800 dark:text-white" />
+              <QrCode className="h-24 w-24 text-[#1C1917] dark:text-white" />
             </div>
-            <p className="text-[11px] text-slate-400">Flashez pour lier un téléphone à votre espace</p>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 shadow-2xs dark:border-zinc-700 dark:text-zinc-200">
+            <p className="text-[11px] text-stone-500">Flashez pour lier un téléphone à votre espace</p>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 px-4 py-2 text-xs font-semibold text-stone-700 shadow-2xs dark:border-zinc-700 dark:text-zinc-200">
               <Smartphone className="h-3.5 w-3.5" /> Associer un téléphone
             </span>
           </button>

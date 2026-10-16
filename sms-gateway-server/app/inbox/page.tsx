@@ -114,16 +114,16 @@ export default function PageBoiteReception() {
       {/* En-tête (Exact Screenshot 1) */}
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">
             SMS reçus
           </h1>
-          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Les réponses reçues par vos passerelles, avec leur statut de transmission.
           </p>
         </div>
         <button
           onClick={exporter}
-          className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#1D4ED8] transition"
+          className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg hover:bg-[#1D4ED8] transition"
         >
           <Download className="h-4 w-4" /> Exporter
         </button>
@@ -136,33 +136,33 @@ export default function PageBoiteReception() {
       )}
 
       {/* Statistiques 3 Cartes (Exact Screenshot 1) */}
-      <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card survol-lift grid grid-cols-3 divide-x divide-slate-100 px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 dark:divide-zinc-800">
+      <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card survol-lift grid grid-cols-3 divide-x divide-[#1C1917]/10 px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 dark:divide-zinc-800">
         <div className="pr-6">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
             Messages reçus
           </p>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{chargement ? '…' : messages.length}</span>
+            <span className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{chargement ? '…' : messages.length}</span>
           </div>
-          <p className="text-[11.5px] text-slate-400">SMS entrants en base</p>
+          <p className="text-[11.5px] text-stone-500">SMS entrants en base</p>
         </div>
         <div className="px-6">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
             Transmis au webhook
           </p>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{chargement ? '…' : nbTransmis}</span>
+            <span className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{chargement ? '…' : nbTransmis}</span>
           </div>
-          <p className="text-[11.5px] text-slate-400">Notifications remises</p>
+          <p className="text-[11.5px] text-stone-500">Notifications remises</p>
         </div>
         <div className="pl-6">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
             À vérifier
           </p>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="text-[30px] font-extrabold leading-none text-amber-600 dark:text-amber-400">{chargement ? '…' : nbAVerifier}</span>
           </div>
-          <p className="text-[11.5px] text-slate-400">En attente ou en échec</p>
+          <p className="text-[11.5px] text-stone-500">En attente ou en échec</p>
         </div>
       </div>
 
@@ -171,24 +171,24 @@ export default function PageBoiteReception() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setOnglet('tous')}
-            className={`rounded-full px-4 py-1.5 text-[12px] font-bold transition ${onglet === 'tous' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:bg-white dark:text-zinc-400'}`}
+            className={`rounded-full px-4 py-1.5 text-[12px] font-bold transition${onglet === 'tous' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-stone-600 hover:bg-white dark:text-zinc-400'}`}
           >
             Tous · {messages.length}
           </button>
           <button
             onClick={() => setOnglet('transmis')}
-            className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${onglet === 'transmis' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:bg-white dark:text-zinc-400'}`}
+            className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition${onglet === 'transmis' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-stone-600 hover:bg-white dark:text-zinc-400'}`}
           >
             Transmis
           </button>
           <button
             onClick={() => setOnglet('verifier')}
-            className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${onglet === 'verifier' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:bg-white dark:text-zinc-400'}`}
+            className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition${onglet === 'verifier' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-stone-600 hover:bg-white dark:text-zinc-400'}`}
           >
             À vérifier · {nbAVerifier}
           </button>
         </div>
-        <div className="flex w-64 items-center gap-2 rounded-full bg-white px-4 py-2 text-[12.5px] text-slate-400 shadow-card border border-slate-100 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400">
+        <div className="flex w-64 items-center gap-2 rounded-full bg-white px-4 py-2 text-[12.5px] text-stone-500 shadow-card border border-[#1C1917]/10 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400">
           <Search className="h-4 w-4" />
           <input
             type="text"
@@ -201,36 +201,36 @@ export default function PageBoiteReception() {
       </div>
 
       {/* Liste des messages (Exact Screenshot 1) */}
-      <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card overflow-hidden dark:bg-zinc-900 dark:border-zinc-800">
-        <div className="divide-y divide-slate-100 dark:divide-zinc-800">
+      <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card overflow-hidden dark:bg-zinc-900 dark:border-zinc-800">
+        <div className="divide-y divide-[#1C1917]/10 dark:divide-zinc-800">
           {chargement && (
-            <p className="flex items-center justify-center gap-2 px-6 py-12 text-xs text-slate-400">
+            <p className="flex items-center justify-center gap-2 px-6 py-12 text-xs text-stone-500">
               <Loader2 className="h-4 w-4 animate-spin" /> Chargement…
             </p>
           )}
           {!chargement && visibles.length === 0 && (
-            <p className="px-6 py-12 text-center text-xs text-slate-400 dark:text-zinc-500">
+            <p className="px-6 py-12 text-center text-xs text-stone-500 dark:text-zinc-500">
               Aucun message reçu pour le moment.
             </p>
           )}
           {visibles.map((m) => (
-            <div key={m.id} className="flex items-start gap-4 px-6 py-4 hover:bg-slate-50/50 dark:hover:bg-zinc-800/40">
+            <div key={m.id} className="flex items-start gap-4 px-6 py-4 hover:bg-stone-100 dark:hover:bg-zinc-800/40">
               <div
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-extrabold ${couleurAvatar(m.expediteur)}`}
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-extrabold${couleurAvatar(m.expediteur)}`}
               >
                 {m.initiales}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[13.5px] font-bold text-slate-800 dark:text-zinc-200">
+                <p className="text-[13.5px] font-bold text-[#1C1917] dark:text-zinc-200">
                   {m.expediteur}
-                  <span className="ml-2 text-[11px] font-medium text-slate-400">
+                  <span className="ml-2 text-[11px] font-medium text-stone-500">
                     {m.heure}
                   </span>
                 </p>
-                <p className="mt-0.5 text-[12.5px] leading-relaxed text-slate-600 dark:text-zinc-300">
+                <p className="mt-0.5 text-[12.5px] leading-relaxed text-stone-600 dark:text-zinc-300">
                   {m.contenu}
                 </p>
-                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-400">
+                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-stone-500">
                   <Smartphone className="h-3.5 w-3.5" />
                   Reçu sur {m.passerelle}
                 </p>
@@ -249,7 +249,7 @@ export default function PageBoiteReception() {
                   <button
                     onClick={() => relancer(m.id)}
                     disabled={relanceEnCours === m.id}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-[11px] font-semibold text-slate-500 shadow-2xs hover:border-slate-300 hover:text-slate-800 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white px-3.5 py-1.5 text-[11px] font-semibold text-stone-600 shadow-2xs hover:border-slate-300 hover:text-[#1C1917] disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
                   >
                     {relanceEnCours === m.id
                       ? <Loader2 className="h-3 w-3 animate-spin" />
@@ -261,7 +261,7 @@ export default function PageBoiteReception() {
             </div>
           ))}
         </div>
-        <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-6 py-3 text-[11px] text-slate-400 dark:border-zinc-800 dark:bg-zinc-800/40">
+        <div className="flex items-center justify-between border-t border-[#1C1917]/10 bg-stone-100 px-6 py-3 text-[11px] text-stone-500 dark:border-zinc-800 dark:bg-zinc-800/40">
           <span>{visibles.length} message{visibles.length > 1 ? 's' : ''} · Tous les résultats sont affichés</span>
           <span>Transmission au webhook : {nbTransmis}/{messages.length}</span>
         </div>

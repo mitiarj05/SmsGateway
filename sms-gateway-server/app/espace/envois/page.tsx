@@ -84,7 +84,7 @@ export default function PageEnvoisEspace() {
 
   if (chargement) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-100 dark:bg-zinc-950">
+      <div className="flex h-screen items-center justify-center bg-[#1C1917]/[0.04] dark:bg-zinc-950">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     )
@@ -101,14 +101,14 @@ export default function PageEnvoisEspace() {
       {/* En-tête (Exact Screenshot) */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">Mes envois</h1>
-          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Mes envois</h1>
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Suivez l'état de traitement et la livraison de vos SMS.
           </p>
         </div>
         <button
           onClick={exporterCsv}
-          className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#1D4ED8] transition"
+          className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg hover:bg-[#1D4ED8] transition"
         >
           <Download className="h-4 w-4" /> Exporter CSV
         </button>
@@ -117,73 +117,73 @@ export default function PageEnvoisEspace() {
       {/* 4 Stat Cards Row (Exact Screenshot) */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* Card 1 */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">TOTAL (7 JOURS)</p>
-          <p className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{totalEnvois}</p>
-          <p className="text-[11.5px] text-slate-400">{totalEnvois} envoi(s) chargé(s)</p>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">TOTAL (7 JOURS)</p>
+          <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{totalEnvois}</p>
+          <p className="text-[11.5px] text-stone-500">{totalEnvois} envoi(s) chargé(s)</p>
         </div>
 
         {/* Card 2 */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">REMIS</p>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">REMIS</p>
           <p className="text-[30px] font-extrabold leading-none text-emerald-600 dark:text-emerald-400">{remisCount}</p>
-          <p className="text-[11.5px] text-slate-400">{tauxReussite} % de réussite</p>
+          <p className="text-[11.5px] text-stone-500">{tauxReussite} % de réussite</p>
         </div>
 
         {/* Card 3 */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">EN ATTENTE</p>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">EN ATTENTE</p>
           <p className="text-[30px] font-extrabold leading-none text-amber-600 dark:text-amber-400">{attenteCount}</p>
-          <p className="text-[11.5px] text-slate-400">Dans la file</p>
+          <p className="text-[11.5px] text-stone-500">Dans la file</p>
         </div>
 
         {/* Card 4 */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">ÉCHECS</p>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">ÉCHECS</p>
           <p className="text-[30px] font-extrabold leading-none text-rose-600 dark:text-rose-400">{echecsCount}</p>
-          <p className="text-[11.5px] text-slate-400">À vérifier dans l'historique</p>
+          <p className="text-[11.5px] text-stone-500">À vérifier dans l'historique</p>
         </div>
       </div>
 
       {/* Main Table Card (Exact Screenshot) */}
-      <div className="mt-4 rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+      <div className="mt-4 rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
 
         {/* Header filtres & recherche */}
-        <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-[#1C1917]/10 pb-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">Historique d'expédition</h2>
-            <p className="text-[12px] text-slate-400">{totalEnvois} envoi(s) répertorié(s)</p>
+            <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">Historique d'expédition</h2>
+            <p className="text-[12px] text-stone-500">{totalEnvois} envoi(s) répertorié(s)</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setFiltreStatut('tous')}
-                className={`rounded-full px-4 py-1.5 text-[12px] font-bold transition ${filtreStatut === 'tous' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 dark:text-zinc-400'}`}
+                className={`rounded-full px-4 py-1.5 text-[12px] font-bold transition${filtreStatut === 'tous' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-stone-600 hover:bg-[#1C1917]/[0.04] dark:text-zinc-400'}`}
               >
                 Tous
               </button>
               <button
                 onClick={() => setFiltreStatut('remis')}
-                className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${filtreStatut === 'remis' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 dark:text-zinc-400'}`}
+                className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition${filtreStatut === 'remis' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-stone-600 hover:bg-[#1C1917]/[0.04] dark:text-zinc-400'}`}
               >
                 Remis
               </button>
               <button
                 onClick={() => setFiltreStatut('attente')}
-                className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${filtreStatut === 'attente' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 dark:text-zinc-400'}`}
+                className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition${filtreStatut === 'attente' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-stone-600 hover:bg-[#1C1917]/[0.04] dark:text-zinc-400'}`}
               >
                 En attente
               </button>
               <button
                 onClick={() => setFiltreStatut('echecs')}
-                className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${filtreStatut === 'echecs' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 dark:text-zinc-400'}`}
+                className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition${filtreStatut === 'echecs' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-stone-600 hover:bg-[#1C1917]/[0.04] dark:text-zinc-400'}`}
               >
                 Échecs
               </button>
             </div>
 
-            <div className="flex w-52 items-center gap-2 rounded-full bg-slate-50 px-4 py-2 text-[12.5px] text-slate-400 dark:bg-zinc-800 dark:border-zinc-700">
+            <div className="flex w-52 items-center gap-2 rounded-full bg-stone-100 px-4 py-2 text-[12.5px] text-stone-500 dark:bg-zinc-800 dark:border-zinc-700">
               <Search className="h-4 w-4" />
               <input
                 type="text"
@@ -197,9 +197,9 @@ export default function PageEnvoisEspace() {
             <button
               onClick={() => chargerDonnees(false)}
               disabled={actualisationEnCours}
-              className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-[12.5px] font-semibold text-slate-600 shadow-2xs hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white px-4 py-2 text-[12.5px] font-semibold text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${actualisationEnCours ? 'animate-spin' : ''}`} /> Actualiser
+              <RefreshCw className={`h-3.5 w-3.5${actualisationEnCours ? 'animate-spin' : ''}`} /> Actualiser
             </button>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function PageEnvoisEspace() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:border-zinc-800">
+              <tr className="border-b border-[#1C1917]/10 text-[11px] font-semibold uppercase tracking-wide text-stone-500 dark:border-zinc-800">
                 <th className="pb-3 pr-4">DATE</th>
                 <th className="pb-3 pr-4">DESTINATAIRE</th>
                 <th className="pb-3 pr-4">MESSAGE</th>
@@ -217,10 +217,10 @@ export default function PageEnvoisEspace() {
                 <th className="pb-3 text-right"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+            <tbody className="divide-y divide-[#1C1917]/10 dark:divide-zinc-800">
               {visibles.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400">Aucun envoi pour le moment.</td>
+                  <td colSpan={6} className="py-8 text-center text-stone-500">Aucun envoi pour le moment.</td>
                 </tr>
               )}
               {pageItems.map((t) => {
@@ -232,10 +232,10 @@ export default function PageEnvoisEspace() {
                     }).replace(':', 'h').replace(' ', ' ')
                   : '—'
                 return (
-                  <tr key={t.id} className="text-slate-700 dark:text-zinc-300 hover:bg-slate-50/50 dark:hover:bg-zinc-800/40">
-                    <td className="py-3.5 pr-4 text-slate-500 font-mono text-[11px]">{dateStr}</td>
-                    <td className="py-3.5 pr-4 font-mono font-bold text-slate-800 dark:text-zinc-200">{t.numero_destinataire || '—'}</td>
-                    <td className="py-3.5 pr-4 max-w-xs truncate text-slate-600 dark:text-zinc-300" title={t.contenu || ''}>{t.contenu || '—'}</td>
+                  <tr key={t.id} className="text-stone-700 dark:text-zinc-300 hover:bg-stone-100 dark:hover:bg-zinc-800/40">
+                    <td className="py-3.5 pr-4 text-stone-600 font-mono text-[11px]">{dateStr}</td>
+                    <td className="py-3.5 pr-4 font-mono font-bold text-[#1C1917] dark:text-zinc-200">{t.numero_destinataire || '—'}</td>
+                    <td className="py-3.5 pr-4 max-w-xs truncate text-stone-600 dark:text-zinc-300" title={t.contenu || ''}>{t.contenu || '—'}</td>
                     <td className="py-3.5 pr-4 text-center">
                       {estRemis && (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
@@ -253,11 +253,11 @@ export default function PageEnvoisEspace() {
                         </span>
                       )}
                     </td>
-                    <td className="py-3.5 pr-4 text-slate-500">—</td>
+                    <td className="py-3.5 pr-4 text-stone-600">—</td>
                     <td className="py-3.5 text-right">
                       <button
                         onClick={() => setTacheDetaillee(t)}
-                        className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-300"
+                        className="rounded-full border border-[#1C1917]/10 px-3 py-1 text-[11px] font-semibold text-stone-600 hover:bg-stone-100 dark:border-zinc-700 dark:text-zinc-300"
                       >
                         Détails
                       </button>
@@ -270,13 +270,13 @@ export default function PageEnvoisEspace() {
         </div>
 
         {/* Bottom Pagination Row (Exact Screenshot) */}
-        <div className="flex items-center justify-between border-t border-slate-100 pt-4 text-xs text-slate-400 dark:border-zinc-800">
+        <div className="flex items-center justify-between border-t border-[#1C1917]/10 pt-4 text-xs text-stone-500 dark:border-zinc-800">
           <span>{visibles.length} résultat(s) — page {pageCourante} sur {totalPages}</span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={pageCourante <= 1}
-              className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600 disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300"
+              className="rounded-full border border-[#1C1917]/10 px-3 py-1 text-[11px] font-semibold text-stone-600 disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300"
             >
               ‹ Préc.
             </button>
@@ -286,10 +286,10 @@ export default function PageEnvoisEspace() {
               <button
                 key={n}
                 onClick={() => setPage(n)}
-                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
+                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold${
                   n === pageCourante
                     ? 'bg-[#2563EB] font-bold text-white shadow-sm'
-                    : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-300'
+                    : 'text-stone-600 hover:bg-[#1C1917]/[0.04] dark:text-zinc-300'
                 }`}
               >
                 {n}
@@ -298,7 +298,7 @@ export default function PageEnvoisEspace() {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={pageCourante >= totalPages}
-              className="rounded-full border border-slate-200 px-3 py-1 text-[11px] font-semibold text-slate-600 disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300"
+              className="rounded-full border border-[#1C1917]/10 px-3 py-1 text-[11px] font-semibold text-stone-600 disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300"
             >
               Suiv. ›
             </button>
@@ -308,28 +308,28 @@ export default function PageEnvoisEspace() {
 
       {/* 3 Mini-Cards Insight (Exact Screenshot) */}
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
             <BarChart3 className="h-4 w-4" />
           </div>
-          <p className="text-xs font-bold text-slate-900 dark:text-white">Taux de remise</p>
-          <p className="text-[11.5px] text-slate-400">{remisCount} remis sur {totalEnvois} · {tauxReussite} % de réussite</p>
+          <p className="text-xs font-bold text-[#1C1917] dark:text-white">Taux de remise</p>
+          <p className="text-[11.5px] text-stone-500">{remisCount} remis sur {totalEnvois} · {tauxReussite} % de réussite</p>
         </div>
 
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
             <Zap className="h-4 w-4" />
           </div>
-          <p className="text-xs font-bold text-slate-900 dark:text-white">Volume chargé</p>
-          <p className="text-[11.5px] text-slate-400">{totalEnvois} SMS sur la période chargée</p>
+          <p className="text-xs font-bold text-[#1C1917] dark:text-white">Volume chargé</p>
+          <p className="text-[11.5px] text-stone-500">{totalEnvois} SMS sur la période chargée</p>
         </div>
 
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400">
             <Eye className="h-4 w-4" />
           </div>
-          <p className="text-xs font-bold text-slate-900 dark:text-white">Échecs à vérifier</p>
-          <p className="text-[11.5px] text-slate-400">{echecsCount} envoi(s) en échec dans l'historique</p>
+          <p className="text-xs font-bold text-[#1C1917] dark:text-white">Échecs à vérifier</p>
+          <p className="text-[11.5px] text-stone-500">{echecsCount} envoi(s) en échec dans l'historique</p>
         </div>
       </div>
 
@@ -338,14 +338,14 @@ export default function PageEnvoisEspace() {
         {tacheDetaillee && (
           <div className="space-y-3 text-xs">
             <div className="flex items-center justify-between">
-              <p className="font-mono font-bold text-sm text-slate-900 dark:text-white">{tacheDetaillee.numero_destinataire || '—'}</p>
+              <p className="font-mono font-bold text-sm text-[#1C1917] dark:text-white">{tacheDetaillee.numero_destinataire || '—'}</p>
               <span className="font-bold text-emerald-600">{tacheDetaillee.statut}</span>
             </div>
-            <p className="rounded-xl bg-slate-50 p-3 text-slate-700 dark:bg-zinc-800 dark:text-zinc-200">{tacheDetaillee.contenu || '—'}</p>
+            <p className="rounded-xl bg-stone-100 p-3 text-stone-700 dark:bg-zinc-800 dark:text-zinc-200">{tacheDetaillee.contenu || '—'}</p>
             {tacheDetaillee.message_erreur && (
               <p className="text-red-500">{tacheDetaillee.message_erreur}</p>
             )}
-            <p className="text-[11px] text-slate-400">Date : {tacheDetaillee.date_creation ? new Date(tacheDetaillee.date_creation).toLocaleString('fr-FR') : '—'}</p>
+            <p className="text-[11px] text-stone-500">Date : {tacheDetaillee.date_creation ? new Date(tacheDetaillee.date_creation).toLocaleString('fr-FR') : '—'}</p>
           </div>
         )}
       </Modale>

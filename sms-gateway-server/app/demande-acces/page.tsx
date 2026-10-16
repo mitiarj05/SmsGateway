@@ -5,8 +5,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
-  Send, Loader2, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft,
-  Check, User, Phone, Eye, EyeOff, Lock
+  Loader2, AlertTriangle,
+  Check, Eye, EyeOff
 } from 'lucide-react'
 import { creerSupabaseNavigateur } from '../../lib/supabase-navigateur'
 import { useReveal } from '../../lib/use-reveal'
@@ -97,80 +97,52 @@ export default function PageDemandeAcces() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFC] text-slate-800 font-sans antialiased flex flex-col justify-between p-6 sm:p-12 selection:bg-blue-600 selection:text-white dark:bg-[#0B0F19] dark:text-zinc-100">
+    <div className="min-h-screen bg-[#F7F5F0] font-sans text-[#1C1917] antialiased selection:bg-[#2563EB] selection:text-white">
+      <div className="mx-auto grid w-full max-w-6xl flex-1 grid-cols-1 items-center gap-12 px-6 py-14 lg:grid-cols-2 lg:px-8">
 
-      {/* 2-Column Main Container (Exact Screenshot Layout) */}
-      <div className="mx-auto max-w-6xl w-full my-auto grid grid-cols-1 gap-12 lg:grid-cols-2 items-center">
-
-        {/* Left Column (Value Proposition & Features Checklist) */}
-        <div className="space-y-8 pr-0 lg:pr-6">
-          <Link href="/" title="Retour à l'accueil" className="inline-block transition-opacity hover:opacity-80">
-            <Image src="/icons/SMSTSIKA.png" alt="SMSTSIKA — retour à l'accueil" width={64} height={64} className="h-16 w-16" />
+        {/* Colonne marque */}
+        <div className="space-y-7">
+          <Link href="/" title="Retour à l'accueil" className="inline-block">
+            <Image src="/icons/logoClair.png" alt="SMSTSIKA — retour à l'accueil" width={180} height={42} className="h-10 w-auto" />
           </Link>
 
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl leading-tight">
+          <h1 className="max-w-md font-sans text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
             Créez votre compte SMSTSIKA :
           </h1>
 
-          <div className="space-y-3 text-sm text-slate-500 font-medium dark:text-zinc-400">
-            <p className="flex items-center gap-3">
-              <Check className="h-4 w-4 text-blue-400 shrink-0" />
+          <ul className="space-y-3 text-sm font-medium text-stone-600">
+            <li className="flex items-center gap-3">
+              <Check className="h-4 w-4 shrink-0 text-[#15803B]" />
               <span>Aucune carte bancaire requise</span>
-            </p>
-            <p className="flex items-center gap-3">
-              <Check className="h-4 w-4 text-blue-400 shrink-0" />
+            </li>
+            <li className="flex items-center gap-3">
+              <Check className="h-4 w-4 shrink-0 text-[#15803B]" />
               <span>Compte créé instantanément</span>
-            </p>
-            <p className="flex items-center gap-3">
-              <Check className="h-4 w-4 text-blue-400 shrink-0" />
+            </li>
+            <li className="flex items-center gap-3">
+              <Check className="h-4 w-4 shrink-0 text-[#15803B]" />
               <span>Votre clé API dans votre espace</span>
-            </p>
-          </div>
+            </li>
+          </ul>
 
-          <div className="space-y-3 pt-2">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Obtenez votre accès en quelques minutes</h2>
-            <div className="space-y-2.5 text-sm text-slate-500 font-medium dark:text-zinc-400">
-              <p className="flex items-center gap-3">
-                <Check className="h-4 w-4 text-blue-400 shrink-0" />
-                <span>Indiquez votre nom et votre contact</span>
-              </p>
-              <p className="flex items-center gap-3">
-                <Check className="h-4 w-4 text-blue-400 shrink-0" />
-                <span>Indiquez votre usage prévu</span>
-              </p>
-              <p className="flex items-center gap-3">
-                <Check className="h-4 w-4 text-blue-400 shrink-0" />
-                <span>Recevez votre clé API</span>
-              </p>
-            </div>
-          </div>
-
-          <p className="text-[11px] text-slate-400 pt-4 dark:text-zinc-500">
+          <p className="font-mono text-[11px] text-stone-500">
             *Votre téléphone, votre SIM : vous gérez vos envois.
           </p>
         </div>
 
-        {/* Right Column (Exact White Card Matching Zoomed Screenshot) */}
-        <div className="flex flex-col items-center">
-          <Link
-            href="/login"
-            className="mb-6 inline-flex items-center gap-1.5 self-start text-xs font-bold text-slate-400 transition hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-200"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" /> Retour à la connexion
-          </Link>
-          <div data-reveal="zoom" className="w-full max-w-md rounded-3xl bg-white p-8 sm:p-10 shadow-2xl text-slate-900 space-y-5">
+        {/* Carte formulaire */}
+        <div className="w-full">
+          <div data-reveal="zoom" className="mx-auto w-full max-w-md space-y-5 rounded-2xl border border-[#1C1917]/10 bg-white p-8 shadow-[0_24px_60px_-30px_rgba(28,25,23,0.25)] sm:p-10">
 
-            {/* Header Text */}
-            <div className="text-center space-y-1">
-              <h2 className="text-2xl font-bold text-slate-900">
+            <div className="space-y-1 text-center">
+              <h2 className="font-sans text-2xl font-extrabold tracking-tight text-[#1C1917]">
                 S'inscrire
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-stone-500">
                 Remplissez le formulaire — accès immédiat.
               </p>
             </div>
 
-            {/* Form Inputs (Exact Order from Screenshot) */}
             <form onSubmit={soumettre} className="space-y-3">
               <div className="space-y-1">
                 <input
@@ -178,8 +150,8 @@ export default function PageDemandeAcces() {
                   type="text"
                   value={prenom}
                   onChange={(e) => setPrenom(e.target.value)}
-                  placeholder="First name"
-                  className="w-full rounded-xl border border-slate-300 bg-white p-3 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-medium transition"
+                  placeholder="Prénom"
+                  className="w-full rounded-lg border border-[#1C1917]/15 bg-white p-3 text-xs font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB]"
                 />
               </div>
 
@@ -190,8 +162,8 @@ export default function PageDemandeAcces() {
                   required
                   value={nom}
                   onChange={(e) => setNom(e.target.value)}
-                  placeholder="Last name / Société*"
-                  className="w-full rounded-xl border border-slate-300 bg-white p-3 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-medium transition"
+                  placeholder="Nom / Société*"
+                  className="w-full rounded-lg border border-[#1C1917]/15 bg-white p-3 text-xs font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB]"
                 />
               </div>
 
@@ -203,11 +175,11 @@ export default function PageDemandeAcces() {
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
                       placeholder="Adresse e-mail*"
-                  className="w-full rounded-xl border border-slate-300 bg-white p-3 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-medium transition"
+                  className="w-full rounded-lg border border-[#1C1917]/15 bg-white p-3 text-xs font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB]"
                 />
               </div>
 
-              <div className="space-y-1 relative">
+              <div className="relative space-y-1">
                 <input
                   id="motDePasse"
                   type={afficherMotDePasse ? 'text' : 'password'}
@@ -215,87 +187,85 @@ export default function PageDemandeAcces() {
                   value={motDePasse}
                   onChange={(e) => setMotDePasse(e.target.value)}
                       placeholder="Mot de passe*"
-                  className="w-full rounded-xl border border-slate-300 bg-white p-3 pr-10 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-medium transition"
+                  className="w-full rounded-lg border border-[#1C1917]/15 bg-white p-3 pr-10 text-xs font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB]"
                 />
                 <button
                   type="button"
                   onClick={() => setAfficherMotDePasse(!afficherMotDePasse)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 transition hover:text-[#1C1917]"
                 >
                   {afficherMotDePasse ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
 
-              {/* Success Box matching Screenshot */}
               {resultat && (
-                <div className={`rounded-xl border p-3 flex items-center gap-2.5 text-xs font-bold ${
+                <div className={`flex items-center gap-2.5 rounded-xl border p-3 text-xs font-bold ${
                   resultat.reussi
-                    ? 'bg-emerald-50 border-slate-300 text-emerald-800'
-                    : 'bg-rose-50 border-rose-200 text-rose-800'
+                    ? 'border-[#15803B]/25 bg-[#15803B]/[.07] text-[#15803B]'
+                    : 'border-rose-200 bg-rose-50 text-rose-800'
                 }`}>
                   {resultat.reussi ? (
                     <>
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white shrink-0">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#15803B] text-white">
                         ✓
                       </div>
-                      <span>Success! {resultat.texte}</span>
+                      <span>Succès ! {resultat.texte}</span>
                     </>
                   ) : (
                     <>
-                      <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+                      <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
                       <span>{resultat.texte}</span>
                     </>
                   )}
                 </div>
               )}
 
-              {/* Terms Checkbox matching Screenshot */}
-              <div className="flex items-start gap-2 text-[11px] text-slate-500 pt-1 leading-tight">
+              <div className="flex items-start gap-2 pt-1 text-[11px] leading-tight text-stone-500">
                 <input
                   type="checkbox"
                   checked={conditionsAcceptees}
                   onChange={(e) => setConditionsAcceptees(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 shrink-0"
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#1C1917]/20 accent-[#2563EB]"
                 />
                 <span>
-                  En cliquant sur Continuer, vous acceptez les Conditions d'utilisation et la Politique de confidentialité SMSTSIKA.
+                  En cliquant sur Continuer, vous acceptez les{' '}
+                  <Link href="/mentions-legales" className="font-bold text-[#1D4ED8] hover:underline">Conditions d'utilisation</Link>
+                  {' '}et la{' '}
+                  <Link href="/confidentialite" className="font-bold text-[#1D4ED8] hover:underline">Politique de confidentialité</Link>
+                  {' '}SMSTSIKA.
                 </span>
               </div>
 
-              {/* Case anti-robot (visible seulement si clés configurées) */}
               <CaseAntiRobot ref={captchaRef} cleSite={cleSiteCaptcha} change={setCaptcha} />
 
-              {/* Primary Electric Blue Button */}
               <button
                 type="submit"
                 disabled={envoiEnCours}
-                className="w-full rounded-xl bg-gradient-to-r from-[#2563EB] to-[#3B82F6] py-3.5 text-xs font-bold text-white shadow-[0_20px_40px_-15px_rgba(124,58,237,0.5)] hover:-translate-y-0.5 disabled:opacity-60 transition flex items-center justify-center gap-2 mt-2"
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] py-3.5 text-xs font-bold text-white transition hover:bg-[#1D4ED8] disabled:opacity-60"
               >
                 {envoiEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Envoyer la demande'}
               </button>
             </form>
 
-            <div className="text-center text-xs text-slate-500">
+            <div className="text-center text-xs text-stone-500">
               Déjà un compte ?{' '}
-              <Link href="/login" className="font-bold text-blue-600 hover:underline">
+              <Link href="/login" className="font-bold text-[#1D4ED8] hover:underline">
                 Se connecter
               </Link>
             </div>
 
-            {/* Separator OR */}
-            <div className="relative flex items-center justify-center text-center my-3">
-              <div className="w-full border-t border-slate-200" />
-              <span className="absolute bg-white px-3 text-[10.5px] font-bold text-slate-400 uppercase">
+            <div className="relative my-3 flex items-center justify-center text-center">
+              <div className="w-full border-t border-[#1C1917]/10" />
+              <span className="absolute bg-white px-3 text-[10.5px] font-bold uppercase text-stone-400">
                 OR
               </span>
             </div>
 
-            {/* Google Button */}
             <button
               type="button"
               onClick={connexionGoogle}
               disabled={googleEnCours}
-              className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-300 bg-white py-3 text-xs font-bold text-slate-700 shadow-2xs hover:bg-slate-50 transition disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-[#1C1917]/15 bg-white py-3 text-xs font-bold text-[#1C1917] transition hover:bg-[#F7F5F0] disabled:opacity-60"
             >
               {googleEnCours ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -312,14 +282,13 @@ export default function PageDemandeAcces() {
             </button>
           </div>
 
-          {/* Under Card Footer */}
-          <div className="mt-6 text-center text-xs text-slate-400 space-y-2 dark:text-zinc-500">
-            <div className="flex justify-center gap-3">
-              <span>Conditions d'utilisation</span>
+          <div className="mx-auto mt-6 max-w-md space-y-2 text-center">
+            <div className="flex justify-center gap-3 font-mono text-[11px] text-stone-500">
+              <Link href="/mentions-legales" className="transition hover:text-[#1C1917] hover:underline">Mentions légales</Link>
               <span>|</span>
-              <span>Politique de confidentialité</span>
+              <Link href="/confidentialite" className="transition hover:text-[#1C1917] hover:underline">Politique de confidentialité</Link>
             </div>
-            <p className="text-[11px] text-slate-400 dark:text-zinc-500">© 2026 SMSTSIKA · Tous droits réservés</p>
+            <p className="font-mono text-[11px] text-stone-400">© 2026 SMSTSIKA · Tous droits réservés</p>
           </div>
         </div>
 

@@ -165,21 +165,21 @@ export default function PageTableauDeBordClient() {
       {/* En-tête (Exact Screenshot 9) */}
       <div className="mb-6 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">
             Bonjour, {moi?.nom ?? '…'}
           </h1>
-          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Votre activité SMS, en un regard.
           </p>
         </div>
         <div className="flex items-center gap-4">
           <div className="text-right hidden sm:block">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Nous sommes le</p>
-            <p className="mt-0.5 text-[13px] font-bold text-slate-800 dark:text-white capitalize">{dateAujourdhui}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-stone-500">Nous sommes le</p>
+            <p className="mt-0.5 text-[13px] font-bold text-[#1C1917] dark:text-white capitalize">{dateAujourdhui}</p>
           </div>
           <Link
             href="/espace/envoyer"
-            className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#1D4ED8] transition"
+            className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg hover:bg-[#1D4ED8] transition"
           >
             <Plus className="h-4 w-4" /> Nouveau SMS
           </Link>
@@ -207,31 +207,31 @@ export default function PageTableauDeBordClient() {
       {/* 4 KPI Cards (Exact Screenshot 9) */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* Card 1 */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">SMS ENVOYÉS</p>
-          <p className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{moi ? <CompteurValeur valeur={moi.stats.envoyes} /> : '…'}</p>
-          <p className="text-[11.5px] text-slate-400">Traités avec succès</p>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">SMS ENVOYÉS</p>
+          <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{moi ? <CompteurValeur valeur={moi.stats.envoyes} /> : '…'}</p>
+          <p className="text-[11.5px] text-stone-500">Traités avec succès</p>
         </div>
 
         {/* Card 2 */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">EN FILE D'ATTENTE</p>
-          <p className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{moi ? <CompteurValeur valeur={moi.stats.attente} /> : '…'}</p>
-          <p className="text-[11.5px] text-slate-400">En cours d'expédition</p>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">EN FILE D'ATTENTE</p>
+          <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{moi ? <CompteurValeur valeur={moi.stats.attente} /> : '…'}</p>
+          <p className="text-[11.5px] text-stone-500">En cours d'expédition</p>
         </div>
 
         {/* Card 3 */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">ÉCHECS</p>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">ÉCHECS</p>
           <p className="text-[30px] font-extrabold leading-none text-rose-600 dark:text-rose-400">{moi ? <CompteurValeur valeur={moi.stats.echoue} /> : '…'}</p>
-          <p className="text-[11.5px] text-slate-400">Non distribués</p>
+          <p className="text-[11.5px] text-stone-500">Non distribués</p>
         </div>
 
         {/* Card 4 */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">SMS REÇUS</p>
-          <p className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{moi ? <CompteurValeur valeur={moi.stats.recus} /> : '…'}</p>
-          <p className="text-[11.5px] text-slate-400">Réponses répertoriées</p>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">SMS REÇUS</p>
+          <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{moi ? <CompteurValeur valeur={moi.stats.recus} /> : '…'}</p>
+          <p className="text-[11.5px] text-stone-500">Réponses répertoriées</p>
         </div>
       </div>
 
@@ -273,7 +273,7 @@ export default function PageTableauDeBordClient() {
         />
 
         {/* Right Dark Card : MON PARC D'ENVOI (Exact Screenshot 9) */}
-        <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card flex flex-col justify-between space-y-6">
+        <div className="rounded-[1.5rem] p-6 text-white shadow-card flex flex-col justify-between space-y-6">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
               MON PARC D'ENVOI
@@ -319,35 +319,35 @@ export default function PageTableauDeBordClient() {
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
 
         {/* Derniers événements (2 cols) */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-4">
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">Derniers événements</h2>
-              <p className="mt-0.5 text-[12px] text-slate-400">Envois et réponses récents</p>
+              <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">Derniers événements</h2>
+              <p className="mt-0.5 text-[12px] text-stone-500">Envois et réponses récents</p>
             </div>
             <span className="flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> En direct
             </span>
           </div>
 
-          <div className="divide-y divide-slate-100 dark:divide-zinc-800 pt-2">
+          <div className="divide-y divide-[#1C1917]/10 dark:divide-zinc-800 pt-2">
             {evenements.length === 0 && (
-              <p className="py-8 text-center text-xs text-slate-400 dark:text-zinc-500">
+              <p className="py-8 text-center text-xs text-stone-500 dark:text-zinc-500">
                 Aucun événement pour le moment.
               </p>
             )}
             {evenements.map((ev) => (
               <div key={ev.id} className="flex items-center justify-between py-3">
                 <div className="flex items-center gap-3">
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${ev.iconBg}`}>
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-xl${ev.iconBg}`}>
                     <ev.icone className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-[13px] font-bold text-slate-800 dark:text-zinc-200">{ev.title}</p>
-                    <p className="text-[11px] text-slate-400">{ev.sub}</p>
+                    <p className="text-[13px] font-bold text-[#1C1917] dark:text-zinc-200">{ev.title}</p>
+                    <p className="text-[11px] text-stone-500">{ev.sub}</p>
                   </div>
                 </div>
-                <span className="text-[11px] text-slate-400">{ev.time}</span>
+                <span className="text-[11px] text-stone-500">{ev.time}</span>
               </div>
             ))}
           </div>
@@ -355,22 +355,22 @@ export default function PageTableauDeBordClient() {
 
         <div className="space-y-4">
           {/* Card Quota mensuel */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-slate-900 dark:text-white">Quota mensuel</span>
-              <span className="font-bold text-slate-800 dark:text-zinc-200">
+              <span className="font-bold text-[#1C1917] dark:text-white">Quota mensuel</span>
+              <span className="font-bold text-[#1C1917] dark:text-zinc-200">
                 {moi ? `${moi.utilise_mois} / ${moi.quota_mensuel ?? '∞'} SMS` : '…'}
               </span>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-zinc-800">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-800">
               <div className="h-full rounded-full bg-cyan-400" style={{ width: `${pctQuota}%` }} />
             </div>
-            <p className="text-[11px] text-slate-400">Consommation et limite de votre compte client</p>
+            <p className="text-[11px] text-stone-500">Consommation et limite de votre compte client</p>
           </div>
 
           {/* Card Actions rapides */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
-            <p className="text-xs font-bold text-slate-900 dark:text-white">Actions rapides</p>
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+            <p className="text-xs font-bold text-[#1C1917] dark:text-white">Actions rapides</p>
             <div className="space-y-2 text-xs font-semibold">
               <Link href="/espace/envoyer" className="flex items-center gap-2 text-blue-600 hover:underline dark:text-blue-400">
                 <Send className="h-3.5 w-3.5" /> Envoyer un SMS

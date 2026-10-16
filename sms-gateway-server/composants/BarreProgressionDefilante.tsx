@@ -26,7 +26,7 @@ export default function BarreProgressionDefilante() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-1">
       <div
-        className="h-full bg-gradient-to-r from-[#2563EB] via-[#38BDF8] to-[#2563EB]"
+        className="h-full bg-[#2563EB]"
         style={{ width: `${progression * 100}%` }}
       />
     </div>

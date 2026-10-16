@@ -164,7 +164,7 @@ export default function PageNotificationsEspace() {
 
   if (chargement) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-100 dark:bg-zinc-950">
+      <div className="flex h-screen items-center justify-center bg-[#1C1917]/[0.04] dark:bg-zinc-950">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     )
@@ -175,8 +175,8 @@ export default function PageNotificationsEspace() {
       {/* En-tête (Exact Screenshot) */}
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">Connexion Boutique & Webhooks</h1>
-          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Connexion Boutique & Webhooks</h1>
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Reliez votre site marchand en 1 clic ou configurez votre URL de Webhook personnalisée.
           </p>
         </div>
@@ -189,7 +189,7 @@ export default function PageNotificationsEspace() {
         <div className="xl:col-span-2 space-y-4">
 
           {/* Card 1 : Connexion Boutique en 1 clic (#4f46e5 to #4338ca gradient) */}
-          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#4f46e5] to-[#4338ca] p-6 text-white shadow-card space-y-5">
+          <div className="rounded-[1.5rem] p-6 text-white shadow-card space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white">
@@ -219,7 +219,7 @@ export default function PageNotificationsEspace() {
                   <button
                     key={p.id}
                     onClick={() => setPlateformeChoisie(p.id)}
-                    className={`rounded-xl p-3 text-left transition ${plateformeChoisie === p.id ? 'bg-white text-blue-950 font-bold shadow-md' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                    className={`rounded-xl p-3 text-left transition${plateformeChoisie === p.id ? 'bg-white text-blue-950 font-bold shadow-md' : 'bg-white/10 text-white hover:bg-white/20'}`}
                   >
                     {p.label}
                   </button>
@@ -235,12 +235,12 @@ export default function PageNotificationsEspace() {
                   value={urlBoutique}
                   onChange={(e) => setUrlBoutique(e.target.value)}
                   placeholder="https://mon-magasin.com"
-                  className="flex-1 rounded-2xl border border-white/20 bg-white/10 p-3 text-xs text-white placeholder-blue-200 outline-none backdrop-blur focus:bg-white focus:text-slate-900 font-mono"
+                  className="flex-1 rounded-2xl border border-white/20 bg-white/10 p-3 text-xs text-white placeholder-blue-200 outline-none backdrop-blur focus:bg-white focus:text-[#1C1917] font-mono"
                 />
                 <button
                   onClick={connecterBoutiqueAuto}
                   disabled={connexionEnCours}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-400 px-6 py-3 text-xs font-bold text-slate-950 shadow-md hover:bg-amber-300 disabled:opacity-60 transition shrink-0"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-400 px-6 py-3 text-xs font-bold text-[#1C1917] shadow-md hover:bg-amber-300 disabled:opacity-60 transition shrink-0"
                 >
                   {connexionEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4 fill-slate-950" />}
                   Connecter en 1 clic
@@ -250,22 +250,22 @@ export default function PageNotificationsEspace() {
           </div>
 
           {/* Card 2 : Configuration Manuelle Webhook HTTP POST */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-5">
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-5">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
                 <Webhook className="h-4 w-4" />
               </div>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">Configuration Manuelle Webhook HTTP POST</h2>
+              <h2 className="text-sm font-bold text-[#1C1917] dark:text-white">Configuration Manuelle Webhook HTTP POST</h2>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">URL de Webhook personnalisée</label>
+              <label className="block text-xs font-semibold text-stone-700 dark:text-zinc-300">URL de Webhook personnalisée</label>
               <div className="flex gap-2">
                 <input
                   type="url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  className="flex-1 rounded-2xl border border-slate-200 bg-white p-3 text-xs text-slate-800 font-mono focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                  className="flex-1 rounded-2xl border border-[#1C1917]/10 bg-white p-3 text-xs text-[#1C1917] font-mono focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
                 />
                 <button
                   onClick={enregistrer}
@@ -278,8 +278,8 @@ export default function PageNotificationsEspace() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">Événements souscrits</label>
-              <div className="flex flex-wrap items-center gap-6 text-xs text-slate-700 dark:text-zinc-300">
+              <label className="block text-xs font-semibold text-stone-700 dark:text-zinc-300">Événements souscrits</label>
+              <div className="flex flex-wrap items-center gap-6 text-xs text-stone-700 dark:text-zinc-300">
                 {EVENEMENTS_DISPONIBLES.map((ev) => (
                   <label key={ev.id} className="flex cursor-pointer items-center gap-2">
                     <input
@@ -294,7 +294,7 @@ export default function PageNotificationsEspace() {
               </div>
             </div>
 
-            <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-700 dark:text-zinc-300">
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-stone-700 dark:text-zinc-300">
               <input
                 type="checkbox"
                 checked={actifs}
@@ -312,23 +312,23 @@ export default function PageNotificationsEspace() {
             )}
 
             {resultatTest && (
-              <p className="text-xs font-semibold text-slate-600 dark:text-zinc-300">Test : {resultatTest}</p>
+              <p className="text-xs font-semibold text-stone-600 dark:text-zinc-300">Test : {resultatTest}</p>
             )}
 
-            <div className="flex items-center gap-3 pt-2 border-t border-slate-100 dark:border-zinc-800">
-              <button onClick={regenererSecret} className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 shadow-2xs hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-300">
+            <div className="flex items-center gap-3 pt-2 border-t border-[#1C1917]/10 dark:border-zinc-800">
+              <button onClick={regenererSecret} className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 px-4 py-2 text-xs font-semibold text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:text-zinc-300">
                 <KeyRound className="h-3.5 w-3.5" /> Générer un secret
               </button>
-              <button onClick={tester} className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 shadow-2xs hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-300">
+              <button onClick={tester} className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 px-4 py-2 text-xs font-semibold text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:text-zinc-300">
                 <FlaskConical className="h-3.5 w-3.5" /> Tester le webhook
               </button>
             </div>
           </div>
 
           {/* Card 3 : Dernières livraisons webhook */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-zinc-800">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">Dernières livraisons webhook</h2>
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+            <div className="flex items-center justify-between border-b border-[#1C1917]/10 pb-3 dark:border-zinc-800">
+              <h2 className="text-sm font-bold text-[#1C1917] dark:text-white">Dernières livraisons webhook</h2>
               {envois.length > 0 && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -340,25 +340,25 @@ export default function PageNotificationsEspace() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:border-zinc-800">
+                  <tr className="border-b border-[#1C1917]/10 text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:border-zinc-800">
                     <th className="pb-2.5 pr-4">ÉVÉNEMENT</th>
                     <th className="pb-2.5 pr-4">HEURE</th>
                     <th className="pb-2.5 pr-4">CODE</th>
                     <th className="pb-2.5 text-right">TENTATIVES</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+                <tbody className="divide-y divide-[#1C1917]/10 dark:divide-zinc-800">
                   {envois.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-xs text-slate-400 dark:text-zinc-500">
+                      <td colSpan={4} className="py-8 text-center text-xs text-stone-500 dark:text-zinc-500">
                         Aucune livraison pour le moment.
                       </td>
                     </tr>
                   )}
                   {envois.map((l) => (
-                    <tr key={l.id} className="text-slate-700 dark:text-zinc-300">
+                    <tr key={l.id} className="text-stone-700 dark:text-zinc-300">
                       <td className="py-3 pr-4 font-mono font-bold">{l.type_evenement}</td>
-                      <td className="py-3 pr-4 text-slate-400">
+                      <td className="py-3 pr-4 text-stone-500">
                         {new Date(l.date_creation).toLocaleTimeString('fr-FR')}
                       </td>
                       <td className="py-3 pr-4">
@@ -372,7 +372,7 @@ export default function PageNotificationsEspace() {
                           </span>
                         )}
                       </td>
-                      <td className="py-3 text-right font-mono text-slate-500">{l.tentatives}</td>
+                      <td className="py-3 text-right font-mono text-stone-600">{l.tentatives}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -391,7 +391,7 @@ export default function PageNotificationsEspace() {
               <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               Boutique connectée
             </div>
-            <p className="leading-relaxed text-slate-600 dark:text-zinc-400">
+            <p className="leading-relaxed text-stone-600 dark:text-zinc-400">
               {boutiqueConnectee
                 ? `Votre boutique est reliée : les notifications partent vers ${url || 'votre webhook'}.`
                 : 'Aucune boutique reliée pour le moment. Connectez WooCommerce, Shopify ou PrestaShop pour recevoir vos notifications.'}
@@ -399,12 +399,12 @@ export default function PageNotificationsEspace() {
           </div>
 
           {/* Bottom CTA Dark Navy Card (#1F1A52) */}
-          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4 text-center">
+          <div className="rounded-[1.5rem] p-6 text-white shadow-card space-y-4 text-center">
             <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">BESOIN D'AIDE ?</p>
             <p className="text-xs text-white/80 leading-relaxed">
               Notre équipe intègre votre boutique en moins de 24 h, gratuitement.
             </p>
-            <a href="mailto:support@smsika.app" className="block w-full rounded-full bg-amber-400 py-3 text-xs font-bold text-slate-950 shadow-md hover:bg-amber-300 transition">
+            <a href="mailto:support@smsika.app" className="block w-full rounded-full bg-amber-400 py-3 text-xs font-bold text-[#1C1917] shadow-md hover:bg-amber-300 transition">
               Demander une intégration
             </a>
           </div>

@@ -108,16 +108,16 @@ export default function PageFacturation() {
       {/* En-tête (Exact Screenshot) */}
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">
             Facturation et quotas
           </h1>
-          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             La consommation du mois, répartie entre vos clients.
           </p>
         </div>
         <button
           onClick={exporterCsv}
-          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-[12.5px] font-semibold text-slate-600 shadow-sm hover:border-slate-300 hover:text-slate-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+          className="inline-flex items-center gap-2 rounded-full border border-[#1C1917]/10 bg-white px-4 py-2 text-[12.5px] font-semibold text-stone-600 shadow-sm hover:border-slate-300 hover:text-[#1C1917] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
         >
           <Download className="h-4 w-4" /> Exporter le relevé
         </button>
@@ -126,8 +126,8 @@ export default function PageFacturation() {
       {/* Top Hero Grid (Exact Screenshot) */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         {/* Left Hero Card (2 cols) */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card survol-lift p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-6">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card survol-lift p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-6">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-500">
             {libelleMois()}
           </p>
 
@@ -155,51 +155,51 @@ export default function PageFacturation() {
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[30px] font-extrabold text-slate-900 dark:text-white">
+                <span className="text-[30px] font-extrabold text-[#1C1917] dark:text-white">
                   {chargement ? '…' : totalConsomme}
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-stone-500">
                   {capaciteConnue ? `sur ${capaciteTotale} SMS` : 'consommés'}
                 </span>
               </div>
             </div>
 
             <div className="flex-1">
-              <h2 className="text-[19px] font-extrabold text-slate-900 dark:text-white">
+              <h2 className="text-[19px] font-extrabold text-[#1C1917] dark:text-white">
                 {chargement ? '…' : `${totalConsomme} SMS consommés`}
               </h2>
-              <p className="mt-1 text-[12px] text-slate-400">
+              <p className="mt-1 text-[12px] text-stone-500">
                 {capaciteConnue
                   ? `Sur une capacité mensuelle de ${capaciteTotale} messages.`
                   : 'Aucun quota mensuel défini.'}
               </p>
-              <div className="mt-3 h-1.5 w-full rounded-full bg-slate-100 dark:bg-zinc-800">
+              <div className="mt-3 h-1.5 w-full rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-800">
                 <div
                   className="h-1.5 rounded-full bg-[#2563EB]"
                   style={{ width: `${capaciteConnue && capaciteTotale > 0 ? Math.min(100, (totalConsomme / capaciteTotale) * 100) : 0}%` }}
                 ></div>
               </div>
-              <p className="mt-2.5 text-[12.5px] font-semibold text-slate-700 dark:text-zinc-200">
+              <p className="mt-2.5 text-[12.5px] font-semibold text-stone-700 dark:text-zinc-200">
                 {resteSMS === null ? 'Capacité illimitée' : `Il reste ${resteSMS} SMS`}
               </p>
-              <p className="mt-0.5 text-[11.5px] text-slate-400">
+              <p className="mt-0.5 text-[11.5px] text-stone-500">
                 Renouvellement le {premierJourMoisSuivant()}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-10 border-t border-slate-100 pt-4 text-[12.5px] text-slate-600 dark:border-zinc-800 dark:text-zinc-300">
+          <div className="flex items-center gap-10 border-t border-[#1C1917]/10 pt-4 text-[12.5px] text-stone-600 dark:border-zinc-800 dark:text-zinc-300">
             <span className="flex items-center gap-2">
-              <Send className="h-4 w-4 text-slate-400" /> {totalConsomme} SMS envoyés ce mois.
+              <Send className="h-4 w-4 text-stone-500" /> {totalConsomme} SMS envoyés ce mois.
             </span>
             <span className="flex items-center gap-2">
-              <Inbox className="h-4 w-4 text-slate-400" /> {totalRecus} SMS reçus ce mois.
+              <Inbox className="h-4 w-4 text-stone-500" /> {totalRecus} SMS reçus ce mois.
             </span>
           </div>
         </div>
 
         {/* Right Estimation Card (1 col) */}
-        <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card survol-lift flex flex-col justify-between">
+        <div className="rounded-[1.5rem] p-6 text-white shadow-card survol-lift flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
               Estimation du mois
@@ -223,13 +223,13 @@ export default function PageFacturation() {
       </div>
 
       {/* Main Répartition des Quotas Card (Exact Screenshot) */}
-      <div className="mt-4 rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
+      <div className="mt-4 rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">
+            <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">
               Répartition des quotas
             </h2>
-            <p className="mt-0.5 text-[12px] text-slate-400">
+            <p className="mt-0.5 text-[12px] text-stone-500">
               Ajustez les limites sans interrompre les envois
             </p>
           </div>
@@ -252,49 +252,49 @@ export default function PageFacturation() {
         <div className="mt-5 overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:border-zinc-800">
+              <tr className="border-b border-[#1C1917]/10 text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:border-zinc-800">
                 <th className="pb-2.5 pr-4">Client</th>
                 <th className="w-1/3 pb-2.5 pr-4">Consommation</th>
                 <th className="pb-2.5 pr-4">Quota</th>
                 <th className="pb-2.5 text-right">Réception</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50 dark:divide-zinc-800/60">
+            <tbody className="divide-y divide-[#1C1917]/10 dark:divide-zinc-800/60">
               {lignes.map((l) => (
                 <tr key={l.id}>
                   <td className="py-4 pr-4">
-                    <p className="text-[13.5px] font-bold text-slate-800 dark:text-zinc-200">
+                    <p className="text-[13.5px] font-bold text-[#1C1917] dark:text-zinc-200">
                       {l.nom}
                     </p>
-                    <p className="text-[11px] text-slate-400">Quota mensuel</p>
+                    <p className="text-[11px] text-stone-500">Quota mensuel</p>
                   </td>
                   <td className="py-4 pr-4">
                     <div className="flex items-center gap-3">
-                      <div className="h-1.5 flex-1 rounded-full bg-slate-100 dark:bg-zinc-800">
+                      <div className="h-1.5 flex-1 rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-800">
                         <div
                           className="h-1.5 rounded-full bg-[#2563EB]"
                           style={{ width: `${l.pct}%` }}
                         ></div>
                       </div>
-                      <span className="w-16 text-right text-[11.5px] text-slate-400">
+                      <span className="w-16 text-right text-[11.5px] text-stone-500">
                         {l.utilises} utilisé
                       </span>
                     </div>
                   </td>
-                  <td className="py-4 pr-4 text-[13px] font-bold text-slate-800 dark:text-zinc-200">
+                  <td className="py-4 pr-4 text-[13px] font-bold text-[#1C1917] dark:text-zinc-200">
                     {editionQuotas ? (
                       <input
                         type="number" min={1}
                         value={quotasEdit[l.id] ?? ''}
                         placeholder="Illimité"
                         onChange={(e) => setQuotasEdit((p) => ({ ...p, [l.id]: e.target.value }))}
-                        className="w-24 rounded-lg border border-slate-200 px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                        className="w-24 rounded-lg border border-[#1C1917]/10 px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
                       />
                     ) : (
                       <>{l.quota === null ? 'Illimité' : `${l.quota} SMS`}</>
                     )}
                   </td>
-                  <td className="py-4 text-right text-[12px] text-slate-500 dark:text-zinc-400">
+                  <td className="py-4 text-right text-[12px] text-stone-600 dark:text-zinc-400">
                     {l.recus} reçu
                   </td>
                 </tr>

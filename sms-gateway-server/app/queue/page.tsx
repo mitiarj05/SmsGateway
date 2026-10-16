@@ -143,24 +143,24 @@ export default function PageFileAttente() {
       {/* En-tête (Exact Screenshot) */}
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">
             File d'attente
           </h1>
-          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Suivez le passage de chaque message, de l'API jusqu'au téléphone.
           </p>
         </div>
         <button
           onClick={charger}
           disabled={actualisation}
-          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-[12.5px] font-semibold text-slate-600 shadow-sm hover:border-slate-300 hover:text-slate-900 transition disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+          className="inline-flex items-center gap-2 rounded-full border border-[#1C1917]/10 bg-white px-4 py-2 text-[12.5px] font-semibold text-stone-600 shadow-sm hover:border-slate-300 hover:text-[#1C1917] transition disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
         >
-          <RefreshCw className={`h-3.5 w-3.5 ${actualisation ? 'animate-spin' : ''}`} /> Rafraîchir
+          <RefreshCw className={`h-3.5 w-3.5${actualisation ? 'animate-spin' : ''}`} /> Rafraîchir
         </button>
       </div>
 
-      {/* Bandeau état (Dark Navy Gradient Card #332c75 to #1f1a52 - Exact Screenshot) */}
-      <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card survol-lift">
+      {/* Bandeau état file d'attente */}
+      <div className="rounded-[1.5rem] p-6 text-white shadow-card survol-lift">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-emerald-400/40 bg-emerald-400/10 text-emerald-300">
@@ -233,13 +233,13 @@ export default function PageFileAttente() {
       </div>
 
       {/* Règles d'acheminement Card (Exact Screenshot) */}
-      <div className="mt-4 survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
+      <div className="mt-4 survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">
+            <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">
               Règles d'acheminement
             </h2>
-            <p className="mt-0.5 text-[12px] text-slate-400">
+            <p className="mt-0.5 text-[12px] text-stone-500">
               Appliquées automatiquement
             </p>
           </div>
@@ -258,13 +258,13 @@ export default function PageFileAttente() {
                 <r.icon size={17} />
               </div>
               <div>
-                <p className="text-[13.5px] font-bold text-slate-800 dark:text-zinc-200">{r.title}</p>
-                <p className="mt-0.5 text-[11.5px] leading-relaxed text-slate-400">
+                <p className="text-[13.5px] font-bold text-[#1C1917] dark:text-zinc-200">{r.title}</p>
+                <p className="mt-0.5 text-[11.5px] leading-relaxed text-stone-500">
                   {r.sub}
                 </p>
               </div>
               {i < rules.length - 1 && (
-                <span className="absolute -right-3 top-1/2 hidden h-1 w-1 -translate-y-1/2 rounded-full bg-slate-200 lg:block"></span>
+                <span className="absolute -right-3 top-1/2 hidden h-1 w-1 -translate-y-1/2 rounded-full bg-[#1C1917]/10 lg:block"></span>
               )}
             </div>
           ))}
@@ -272,13 +272,13 @@ export default function PageFileAttente() {
       </div>
 
       {/* Derniers passages Card (Exact Screenshot) */}
-      <div className="mt-4 survol-lift rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
+      <div className="mt-4 survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">
+            <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">
               Derniers passages
             </h2>
-            <p className="mt-0.5 text-[12px] text-slate-400">
+            <p className="mt-0.5 text-[12px] text-stone-500">
               {passages.length === 0 ? 'Aucun message' : `${passages.length} message${passages.length > 1 ? 's' : ''} traité${passages.length > 1 ? 's' : ''}`}
             </p>
           </div>
@@ -293,7 +293,7 @@ export default function PageFileAttente() {
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:border-zinc-800">
+              <tr className="border-b border-[#1C1917]/10 text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:border-zinc-800">
                 <th className="pb-2.5 pr-4">Destinataire</th>
                 <th className="pb-2.5 pr-4">Type</th>
                 <th className="pb-2.5 pr-4">Passerelle</th>
@@ -301,25 +301,25 @@ export default function PageFileAttente() {
                 <th className="pb-2.5 text-right">Résultat</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50 dark:divide-zinc-800/60">
+            <tbody className="divide-y divide-[#1C1917]/10 dark:divide-zinc-800/60">
               {passages.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-xs text-slate-400 dark:text-zinc-500">
+                  <td colSpan={5} className="py-8 text-center text-xs text-stone-500 dark:text-zinc-500">
                     Aucun message dans la file.
                   </td>
                 </tr>
               )}
               {passages.map((p) => (
-                <tr key={p.id} className="text-[13px] text-slate-700 dark:text-zinc-300">
+                <tr key={p.id} className="text-[13px] text-stone-700 dark:text-zinc-300">
                   <td className="py-3.5 pr-4 font-mono text-[12.5px] font-bold">
                     {p.destinataire}
                   </td>
                   <td className="py-3.5 pr-4 font-medium">{p.type}</td>
-                  <td className="py-3.5 pr-4 text-slate-500 dark:text-zinc-400">{p.passerelle}</td>
+                  <td className="py-3.5 pr-4 text-stone-600 dark:text-zinc-400">{p.passerelle}</td>
                   <td className="py-3.5 pr-4 font-mono">{formaterDuree(p.dureeMs)}</td>
                   <td className="py-3.5 text-right">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${p.statut === 'ENVOYE' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : p.statut === 'ECHOUE' ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'}`}>
-                      <span className={`h-1.5 w-1.5 rounded-full ${p.statut === 'ENVOYE' ? 'bg-emerald-500' : p.statut === 'ECHOUE' ? 'bg-red-500' : 'bg-amber-500'}`}></span>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold${p.statut === 'ENVOYE' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : p.statut === 'ECHOUE' ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full${p.statut === 'ENVOYE' ? 'bg-emerald-500' : p.statut === 'ECHOUE' ? 'bg-red-500' : 'bg-amber-500'}`}></span>
                       {p.statut === 'ENVOYE' ? 'Remis' : p.statut === 'ECHOUE' ? 'Échec' : 'En cours'}
                     </span>
                   </td>

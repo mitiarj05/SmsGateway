@@ -87,42 +87,42 @@ export default function PageFacturationEspace() {
       {/* En-tête (Exact Screenshot) */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">Facturation</h1>
-          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Facturation</h1>
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Consultez le relevé détaillé de votre consommation mensuelle.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">PÉRIODE</span>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500">PÉRIODE</span>
           <input
             type="month"
             value={mois}
             max={moisCourantId()}
             onChange={(e) => { if (e.target.value) setMois(e.target.value) }}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] font-semibold text-slate-700 shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+            className="rounded-xl border border-[#1C1917]/10 bg-white px-3 py-2 text-[13px] font-semibold text-stone-700 shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
           />
         </div>
       </div>
 
       {/* 4 Stat Cards Row (Exact Screenshot) */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">SMS ENVOYÉS</p>
-          <p className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{envoyes}</p>
-          <p className="text-[11.5px] text-slate-400">Ce mois-ci</p>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">SMS ENVOYÉS</p>
+          <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{envoyes}</p>
+          <p className="text-[11.5px] text-stone-500">Ce mois-ci</p>
         </div>
 
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">SMS REÇUS</p>
-          <p className="text-[30px] font-extrabold leading-none text-slate-900 dark:text-white">{recus}</p>
-          <p className="text-[11.5px] text-slate-400">Transmis au webhook</p>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">SMS REÇUS</p>
+          <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{recus}</p>
+          <p className="text-[11.5px] text-stone-500">Transmis au webhook</p>
         </div>
 
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">ÉCHECS</p>
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">ÉCHECS</p>
           <p className="text-[30px] font-extrabold leading-none text-rose-600 dark:text-rose-400">{echecs}</p>
-          <p className="text-[11.5px] text-slate-400">Non facturés</p>
+          <p className="text-[11.5px] text-stone-500">Non facturés</p>
         </div>
       </div>
 
@@ -133,43 +133,43 @@ export default function PageFacturationEspace() {
         <div className="xl:col-span-2 space-y-4">
 
           {/* Card 1 : Relevé du mois courant réel */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-5">
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-indigo-400">
                   <Receipt className="h-4 w-4" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-slate-900 dark:text-white">Relevé de {idMois}</h2>
-                  <p className="text-xs text-slate-400">{total} unité(s) consommée(s)</p>
+                  <h2 className="text-base font-bold text-[#1C1917] dark:text-white">Relevé de {idMois}</h2>
+                  <p className="text-xs text-stone-500">{total} unité(s) consommée(s)</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-800 dark:text-zinc-200">Quota de votre compte</span>
-                <span className="font-bold text-slate-800 dark:text-zinc-200">{total} / {quota ?? '∞'} SMS</span>
+                <span className="font-bold text-[#1C1917] dark:text-zinc-200">Quota de votre compte</span>
+                <span className="font-bold text-[#1C1917] dark:text-zinc-200">{total} / {quota ?? '∞'} SMS</span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-zinc-800">
-                <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400" style={{ width: `${pctQuota}%` }} />
+              <div className="h-2 w-full overflow-hidden rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-800">
+                <div className="h-full rounded-full" style={{ width: `${pctQuota}%` }} />
               </div>
             </div>
 
-            <div className="pt-2 border-t border-slate-100 dark:border-zinc-800">
-              <p className="text-[11.5px] text-slate-400">
+            <div className="pt-2 border-t border-[#1C1917]/10 dark:border-zinc-800">
+              <p className="text-[11.5px] text-stone-500">
                 1 unité correspond à 1 SMS créé dans le mois. Votre crédit : la carte SIM de vos téléphones.
               </p>
             </div>
           </div>
 
           {/* Card 2 : Consommation quotidienne — mois courant réel */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-bold text-slate-900 dark:text-white">Consommation quotidienne — {nomMoisCourt}</h2>
+                <h2 className="text-sm font-bold text-[#1C1917] dark:text-white">Consommation quotidienne — {nomMoisCourt}</h2>
               </div>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-600 dark:bg-zinc-800 dark:text-zinc-300">
+              <span className="rounded-full bg-[#1C1917]/[0.04] px-3 py-1 text-[11px] font-semibold text-stone-600 dark:bg-zinc-800 dark:text-zinc-300">
                 7 premiers jours
               </span>
             </div>
@@ -178,20 +178,20 @@ export default function PageFacturationEspace() {
               {quotidien.map((nombre, i) => (
                 <div key={i} className="flex flex-col items-center gap-2 h-full justify-end flex-1">
                   <div className="w-7 rounded-lg bg-[#2563EB]" style={{ height: `${nombre > 0 ? Math.max(8, Math.round((nombre / maxQuotidien) * 100)) : 0}%` }} />
-                  <span className="text-[10px] text-slate-400 font-semibold">{i + 1}</span>
+                  <span className="text-[10px] text-stone-500 font-semibold">{i + 1}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Card 3 : Historique des relevés (mois courant réel uniquement) */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
-            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Historique des relevés</h2>
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+            <h2 className="text-sm font-bold text-[#1C1917] dark:text-white">Historique des relevés</h2>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:border-zinc-800">
+                  <tr className="border-b border-[#1C1917]/10 text-[11px] font-semibold uppercase tracking-wide text-stone-500 dark:border-zinc-800">
                     <th className="pb-3 pr-4">MOIS</th>
                     <th className="pb-3 pr-4">ENVOYÉS</th>
                     <th className="pb-3 pr-4">REÇUS</th>
@@ -200,9 +200,9 @@ export default function PageFacturationEspace() {
                     <th className="pb-3 text-right"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
-                  <tr className="text-slate-700 dark:text-zinc-300">
-                    <td className="py-3.5 pr-4 font-bold text-slate-900 dark:text-white">{nomMois}</td>
+                <tbody className="divide-y divide-[#1C1917]/10 dark:divide-zinc-800">
+                  <tr className="text-stone-700 dark:text-zinc-300">
+                    <td className="py-3.5 pr-4 font-bold text-[#1C1917] dark:text-white">{nomMois}</td>
                     <td className="py-3.5 pr-4 font-mono">{envoyes.toLocaleString('fr-FR')}</td>
                     <td className="py-3.5 pr-4 font-mono">{recus}</td>
                     <td className="py-3.5 pr-4 font-semibold">— en cours</td>
@@ -212,15 +212,15 @@ export default function PageFacturationEspace() {
                     <td className="py-3.5 text-right">
                       <button
                         onClick={() => setDetailOuvert((v) => !v)}
-                        className="rounded-full border border-slate-200 px-3.5 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-50 dark:border-zinc-700 dark:text-zinc-300"
+                        className="rounded-full border border-[#1C1917]/10 px-3.5 py-1 text-[11px] font-semibold text-stone-600 hover:bg-stone-100 dark:border-zinc-700 dark:text-zinc-300"
                       >
                         {detailOuvert ? 'Masquer' : 'Détails'}
                       </button>
                     </td>
                   </tr>
                   {detailOuvert && (
-                    <tr className="bg-slate-50/60 dark:bg-zinc-800/40">
-                      <td colSpan={6} className="px-4 py-3 text-[11px] text-slate-500 dark:text-zinc-400">
+                    <tr className="bg-stone-100 dark:bg-zinc-800/40">
+                      <td colSpan={6} className="px-4 py-3 text-[11px] text-stone-600 dark:text-zinc-400">
                         Échecs : <b>{conso?.echecs ?? 0}</b> ·
                         Unités facturées : <b>{conso?.total_facture ?? 0}</b>
                       </td>
@@ -237,7 +237,7 @@ export default function PageFacturationEspace() {
         <div className="space-y-4">
 
           {/* Top Card : Estimation du mois (calculée depuis la vraie conso) */}
-          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4">
+          <div className="rounded-[1.5rem] p-6 text-white shadow-card space-y-4">
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">ESTIMATION DU MOIS</p>
             <div>
               <p className="text-[40px] font-extrabold leading-none">

@@ -85,7 +85,7 @@ export default function PageEntreesEspace() {
 
   if (chargement) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-100 dark:bg-zinc-950">
+      <div className="flex h-screen items-center justify-center bg-[#1C1917]/[0.04] dark:bg-zinc-950">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     )
@@ -120,14 +120,14 @@ export default function PageEntreesEspace() {
       {/* En-tête (Exact Screenshot) */}
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">SMS reçus</h1>
-          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">SMS reçus</h1>
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Consultez les messages entrants adressés à votre compte.
           </p>
         </div>
         <button
           onClick={() => {}}
-          className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 transition"
+          className="inline-flex items-center gap-2 rounded-full border border-[#1C1917]/10 bg-white px-5 py-2.5 text-[13px] font-semibold text-stone-700 shadow-sm hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 transition"
         >
           <Settings className="h-4 w-4" /> Configurer le webhook
         </button>
@@ -137,15 +137,15 @@ export default function PageEntreesEspace() {
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
 
         {/* Left Column (2 cols) : Boîte de réception */}
-        <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-4">
-          <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-4">
+          <div className="flex flex-col gap-3 border-b border-[#1C1917]/10 pb-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">Boîte de réception</h2>
-              <p className="text-[12px] text-slate-400">{totalEntrants} message(s) au total</p>
+              <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">Boîte de réception</h2>
+              <p className="text-[12px] text-stone-500">{totalEntrants} message(s) au total</p>
             </div>
 
             <div className="flex items-center gap-2.5">
-              <div className="flex w-52 items-center gap-2 rounded-full bg-slate-50 px-4 py-2 text-[12.5px] text-slate-400 dark:bg-zinc-800">
+              <div className="flex w-52 items-center gap-2 rounded-full bg-stone-100 px-4 py-2 text-[12.5px] text-stone-500 dark:bg-zinc-800">
                 <Search className="h-3.5 w-3.5" />
                 <input
                   type="text"
@@ -158,9 +158,9 @@ export default function PageEntreesEspace() {
               <button
                 onClick={() => charger(false)}
                 disabled={actualisationEnCours}
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-[12.5px] font-semibold text-slate-600 shadow-2xs hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white px-4 py-2 text-[12.5px] font-semibold text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
               >
-                <RefreshCw className={`h-3.5 w-3.5 ${actualisationEnCours ? 'animate-spin' : ''}`} /> Actualiser
+                <RefreshCw className={`h-3.5 w-3.5${actualisationEnCours ? 'animate-spin' : ''}`} /> Actualiser
               </button>
             </div>
           </div>
@@ -169,44 +169,44 @@ export default function PageEntreesEspace() {
           <div className="flex items-center gap-2 pt-1">
             <button
               onClick={() => setOnglet('tous')}
-              className={`rounded-full px-4 py-1.5 text-[12px] font-bold transition ${onglet === 'tous' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 dark:text-zinc-400'}`}
+              className={`rounded-full px-4 py-1.5 text-[12px] font-bold transition${onglet === 'tous' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-stone-600 hover:bg-[#1C1917]/[0.04] dark:text-zinc-400'}`}
             >
               Tous · {totalEntrants}
             </button>
             <button
               onClick={() => setOnglet('transmis')}
-              className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${onglet === 'transmis' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 dark:text-zinc-400'}`}
+              className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition${onglet === 'transmis' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-stone-600 hover:bg-[#1C1917]/[0.04] dark:text-zinc-400'}`}
             >
               Transmis · {transmisCount}
             </button>
             <button
               onClick={() => setOnglet('verifier')}
-              className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition ${onglet === 'verifier' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100 dark:text-zinc-400'}`}
+              className={`rounded-full px-4 py-1.5 text-[12px] font-semibold transition${onglet === 'verifier' ? 'bg-[#2563EB] text-white shadow-sm' : 'text-stone-600 hover:bg-[#1C1917]/[0.04] dark:text-zinc-400'}`}
             >
               À vérifier · {verifierCount}
             </button>
           </div>
 
           {/* Liste des messages */}
-          <div className="divide-y divide-slate-100 dark:divide-zinc-800 pt-2 space-y-2">
+          <div className="divide-y divide-[#1C1917]/10 dark:divide-zinc-800 pt-2 space-y-2">
             {visibles.length === 0 && (
-              <p className="py-8 text-center text-xs text-slate-400">Aucun message pour le moment.</p>
+              <p className="py-8 text-center text-xs text-stone-500">Aucun message pour le moment.</p>
             )}
             {visibles.map((m) => {
               const estTransmis = m.statut === 'transmis'
               return (
-                <div key={m.id} className="flex items-center justify-between rounded-xl p-4 hover:bg-slate-50/80 dark:hover:bg-zinc-800/40">
+                <div key={m.id} className="flex items-center justify-between rounded-xl p-4 hover:bg-stone-100 dark:hover:bg-zinc-800/40">
                   <div className="flex items-start gap-4">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-100 font-bold text-xs text-slate-700 dark:bg-zinc-800 dark:text-zinc-300">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1C1917]/[0.04] font-bold text-xs text-stone-700 dark:bg-zinc-800 dark:text-zinc-300">
                       {m.initiales}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="text-[13px] font-bold text-slate-900 dark:text-white">{m.expediteur}</p>
-                        <span className="text-[10px] text-slate-400">{m.heure}</span>
+                        <p className="text-[13px] font-bold text-[#1C1917] dark:text-white">{m.expediteur}</p>
+                        <span className="text-[10px] text-stone-500">{m.heure}</span>
                       </div>
-                      <p className="mt-0.5 text-[12.5px] font-medium text-slate-700 dark:text-zinc-300 max-w-md">{m.contenu || '—'}</p>
-                      <p className="mt-1 text-[11px] text-slate-400">Reçu sur {m.passerelle}</p>
+                      <p className="mt-0.5 text-[12.5px] font-medium text-stone-700 dark:text-zinc-300 max-w-md">{m.contenu || '—'}</p>
+                      <p className="mt-1 text-[11px] text-stone-500">Reçu sur {m.passerelle}</p>
                     </div>
                   </div>
 
@@ -223,7 +223,7 @@ export default function PageEntreesEspace() {
                     <button
                       onClick={() => retenter(m.id)}
                       disabled={retenteId === m.id}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1 text-[11px] font-semibold text-slate-600 shadow-2xs hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white px-3.5 py-1 text-[11px] font-semibold text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 disabled:opacity-50"
                     >
                       {retenteId === m.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
                       Retenter
@@ -239,20 +239,20 @@ export default function PageEntreesEspace() {
         <div className="space-y-4">
 
           {/* Card 1 : Répartition */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Répartition</h3>
-            <div className="space-y-2 text-xs divide-y divide-slate-100 dark:divide-zinc-800">
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+            <h3 className="text-sm font-bold text-[#1C1917] dark:text-white">Répartition</h3>
+            <div className="space-y-2 text-xs divide-y divide-[#1C1917]/10 dark:divide-zinc-800">
               <div className="flex items-center justify-between pt-1">
-                <span className="text-slate-500">Transmis au webhook</span>
-                <span className="font-bold text-slate-800 dark:text-zinc-200">{transmisCount}</span>
+                <span className="text-stone-600">Transmis au webhook</span>
+                <span className="font-bold text-[#1C1917] dark:text-zinc-200">{transmisCount}</span>
               </div>
               <div className="flex items-center justify-between pt-2">
-                <span className="text-slate-500">En attente de reprise</span>
+                <span className="text-stone-600">En attente de reprise</span>
                 <span className="font-bold text-amber-600 dark:text-amber-400">{verifierCount}</span>
               </div>
               <div className="flex items-center justify-between pt-2">
-                <span className="text-slate-500">Ce jour</span>
-                <span className="font-bold text-slate-800 dark:text-zinc-200">{ceJourCount}</span>
+                <span className="text-stone-600">Ce jour</span>
+                <span className="font-bold text-[#1C1917] dark:text-zinc-200">{ceJourCount}</span>
               </div>
             </div>
           </div>
@@ -263,8 +263,8 @@ export default function PageEntreesEspace() {
               <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-500/20 text-xs">⚡</span>
               Webhook actif
             </div>
-            <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed">
-              Vos réponses sont transmises en POST à <code className="font-mono font-semibold text-slate-800 dark:text-zinc-100 text-[11px]">{urlWebhook ?? '—'}</code>
+            <p className="text-xs text-stone-600 dark:text-zinc-300 leading-relaxed">
+              Vos réponses sont transmises en POST à <code className="font-mono font-semibold text-[#1C1917] dark:text-zinc-100 text-[11px]">{urlWebhook ?? '—'}</code>
             </p>
             <a href="/espace/notifications" className="inline-flex items-center gap-1 text-xs font-bold text-[#2563EB] hover:underline dark:text-blue-400 pt-1">
               Modifier <ArrowUpRight className="h-3.5 w-3.5" />
@@ -272,22 +272,22 @@ export default function PageEntreesEspace() {
           </div>
 
           {/* Card 3 : Contact fréquent */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Contact fréquent</h3>
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+            <h3 className="text-sm font-bold text-[#1C1917] dark:text-white">Contact fréquent</h3>
             <div className="flex items-center justify-between pt-1">
               <div>
                 {contactFrequent ? (
                   <>
-                    <span className="inline-flex items-center justify-center rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:bg-zinc-800 dark:text-zinc-300 mb-1">+{echangesFrequent}</span>
-                    <p className="font-mono font-bold text-xs text-slate-900 dark:text-white">{contactFrequent}</p>
-                    <p className="text-[11px] text-slate-400">{echangesFrequent} échange(s) reçu(s)</p>
+                    <span className="inline-flex items-center justify-center rounded-lg bg-[#1C1917]/[0.04] px-2 py-0.5 text-[10px] font-bold text-stone-600 dark:bg-zinc-800 dark:text-zinc-300 mb-1">+{echangesFrequent}</span>
+                    <p className="font-mono font-bold text-xs text-[#1C1917] dark:text-white">{contactFrequent}</p>
+                    <p className="text-[11px] text-stone-500">{echangesFrequent} échange(s) reçu(s)</p>
                   </>
                 ) : (
-                  <p className="text-[11px] text-slate-400">Aucun échange pour le moment.</p>
+                  <p className="text-[11px] text-stone-500">Aucun échange pour le moment.</p>
                 )}
               </div>
             </div>
-            <a href="/espace/envoyer" className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-slate-200 bg-white py-2 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+            <a href="/espace/envoyer" className="inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white py-2 text-xs font-semibold text-stone-700 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
               <Send className="h-3.5 w-3.5" /> Répondre
             </a>
           </div>

@@ -81,15 +81,15 @@ export default function PageEnvoyerSmsAdmin() {
     <CoquilleTableauDeBord>
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-slate-900 dark:text-white">Envoyer un SMS</h1>
-          <p className="mt-1 text-[13.5px] text-slate-500 dark:text-zinc-400">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Envoyer un SMS</h1>
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Envoyé au nom de l'espace choisi — compté dans son historique et son quota.
           </p>
         </div>
       </div>
 
       {resultat && (
-        <div className={`mb-6 rounded-2xl p-4 text-xs font-medium border ${
+        <div className={`mb-6 rounded-2xl p-4 text-xs font-medium border${
           resultat.reussi
             ? 'bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300'
             : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-300'
@@ -103,18 +103,18 @@ export default function PageEnvoyerSmsAdmin() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Formulaire principal à gauche (Exact Screenshot) */}
-        <section className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2">
+        <section className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2">
           <form onSubmit={soumettre} className="space-y-6">
 
             {/* Espace d'envoi (admin uniquement) */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300">
+              <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300">
                 Espace d'envoi
               </label>
               <select
                 value={espaceId}
                 onChange={(e) => setEspaceId(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-white p-3.5 text-xs font-semibold text-slate-700 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                className="w-full rounded-2xl border border-[#1C1917]/10 bg-white p-3.5 text-xs font-semibold text-stone-700 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
               >
                 <option value="">— Choisir un espace —</option>
                 {espaces.map((e) => (
@@ -125,8 +125,8 @@ export default function PageEnvoyerSmsAdmin() {
 
             {/* Destinataires */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300">
-                Destinataires <span className="text-[11px] font-normal text-slate-400">(un par ligne ou séparés par virgules)</span>
+              <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300">
+                Destinataires <span className="text-[11px] font-normal text-stone-500">(un par ligne ou séparés par virgules)</span>
               </label>
               <textarea
                 required
@@ -134,9 +134,9 @@ export default function PageEnvoyerSmsAdmin() {
                 value={destinataires}
                 onChange={(e) => setDestinataires(e.target.value)}
                 placeholder="+261340000000&#10;+261330000000"
-                className="w-full resize-y rounded-2xl border border-slate-200 p-3.5 font-mono text-xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                className="w-full resize-y rounded-2xl border border-[#1C1917]/10 p-3.5 font-mono text-xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
               />
-              <p className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-zinc-400 font-semibold">
+              <p className="flex items-center gap-1.5 text-[11px] text-stone-600 dark:text-zinc-400 font-semibold">
                 <Users className="h-3.5 w-3.5 text-blue-600" />
                 <span><strong className="text-blue-600 dark:text-blue-400">{nombreDestinataires} destinataires</strong> détectés · jusqu'à 100 par lot</span>
               </p>
@@ -144,7 +144,7 @@ export default function PageEnvoyerSmsAdmin() {
 
             {/* Message SMS */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300">
+              <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300">
                 Message SMS
               </label>
               <textarea
@@ -153,9 +153,9 @@ export default function PageEnvoyerSmsAdmin() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Rédigez votre message ici..."
-                className="w-full resize-none rounded-2xl border border-slate-200 p-3.5 text-xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                className="w-full resize-none rounded-2xl border border-[#1C1917]/10 p-3.5 text-xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
               />
-              <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-zinc-500">
+              <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-zinc-500">
                 <span />
                 <span>{nbCaracteres} / 160 caractères · {nbSegments} segment{nbSegments > 1 ? 's' : ''}</span>
               </div>
@@ -163,18 +163,18 @@ export default function PageEnvoyerSmsAdmin() {
 
             {/* Programmation */}
             <div className="space-y-2">
-              <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">Programmation</p>
+              <p className="text-xs font-bold text-stone-700 dark:text-zinc-300">Programmation</p>
               <div className="flex items-center gap-3">
-                <div className="flex flex-1 items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 text-xs text-slate-700 shadow-2xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-                  <Clock className="h-4 w-4 text-slate-400" />
+                <div className="flex flex-1 items-center gap-2 rounded-2xl border border-[#1C1917]/10 bg-white p-3 text-xs text-stone-700 shadow-2xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+                  <Clock className="h-4 w-4 text-stone-500" />
                   <span className="font-medium">Envoi immédiat</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setModeProgrammation(modeProgrammation === 'immediat' ? 'programmer' : 'immediat')}
-                  className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  className="inline-flex items-center gap-1.5 rounded-2xl border border-[#1C1917]/10 bg-white px-4 py-3 text-xs font-semibold text-stone-700 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
                 >
-                  <Calendar className="h-4 w-4 text-slate-400" /> Programmer
+                  <Calendar className="h-4 w-4 text-stone-500" /> Programmer
                 </button>
               </div>
               {modeProgrammation === 'programmer' && (
@@ -182,7 +182,7 @@ export default function PageEnvoyerSmsAdmin() {
                   type="datetime-local"
                   value={programme}
                   onChange={(e) => setProgramme(e.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 bg-white p-3 text-xs text-slate-700 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  className="w-full rounded-2xl border border-[#1C1917]/10 bg-white p-3 text-xs text-stone-700 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
                 />
               )}
             </div>
@@ -191,7 +191,7 @@ export default function PageEnvoyerSmsAdmin() {
             <button
               type="submit"
               disabled={!monte || envoiEnCours || !espaceId}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#2563EB] py-3.5 text-[13px] font-bold text-white shadow-lg shadow-indigo-300/45 hover:bg-[#1D4ED8] disabled:opacity-60 transition"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#2563EB] py-3.5 text-[13px] font-bold text-white shadow-lg hover:bg-[#1D4ED8] disabled:opacity-60 transition"
             >
               {envoiEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               {envoiEnCours ? 'Expédition en cours...' : 'Envoyer les messages'}
@@ -203,26 +203,26 @@ export default function PageEnvoyerSmsAdmin() {
         <div className="space-y-6">
 
           {/* Card 1 : Aperçu sur mobile */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white">Aperçu sur mobile</h3>
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+            <h3 className="text-xs font-bold text-[#1C1917] dark:text-white">Aperçu sur mobile</h3>
 
             <div className="rounded-[2.2rem] bg-slate-950 p-4 border-4 border-slate-900 shadow-xl space-y-3">
-              <p className="text-[10px] text-slate-400 text-center">SMS · aujourd'hui 09:12</p>
+              <p className="text-[10px] text-stone-500 text-center">SMS · aujourd'hui 09:12</p>
 
-              <div className="rounded-2xl bg-[#1d1947] p-3 text-xs text-white leading-relaxed border border-indigo-900/50 space-y-2">
+              <div className="rounded-2xl bg-[#1C1917] p-3 text-xs leading-relaxed text-[#F7F5F0] space-y-2">
                 <p>
                   {message.trim() || "Rédigez votre message ici..."}
                 </p>
-                <p className="text-[9px] text-slate-400 text-right">✓✓ Remis</p>
+                <p className="text-[9px] text-stone-500 text-right">✓✓ Remis</p>
               </div>
             </div>
           </div>
 
           {/* Card 2 : Règles d'envoi */}
-          <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white">Règles d'envoi</h3>
+          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+            <h3 className="text-xs font-bold text-[#1C1917] dark:text-white">Règles d'envoi</h3>
 
-            <ul className="space-y-2.5 text-xs text-slate-600 dark:text-zinc-400 leading-relaxed">
+            <ul className="space-y-2.5 text-xs text-stone-600 dark:text-zinc-400 leading-relaxed">
               <li className="flex items-start gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
                 <span><b>Espace</b> : imputé à l'espace choisi (historique + quota).</span>
