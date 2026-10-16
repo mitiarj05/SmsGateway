@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import {
   Smartphone, RefreshCw, Loader2, QrCode, Zap, ArrowUpRight, Trash2
 } from 'lucide-react'
@@ -188,8 +189,14 @@ export default function PageAppareilsClient() {
                   <tr key={a.id} className="text-[#1C1917] dark:text-zinc-200">
                     <td className="py-4 pr-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-                          <Smartphone className="h-4 w-4" />
+                        <div className={`relative h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-[#1C1917]/10 dark:border-white/10 ${enLigne ? '' : 'opacity-60 grayscale'}`}>
+                          <Image
+                            src="/images/relais-android.jpg"
+                            alt="Smartphone Android utilisé comme relais SMS (illustration)"
+                            fill
+                            sizes="32px"
+                            className="object-cover"
+                          />
                         </div>
                         <div>
                           <p className="font-bold">{a.nom}</p>
