@@ -244,9 +244,9 @@ export default function DashboardPage() {
             {
               cle: 'envoyes',
               libelle: 'SMS envoyés',
-              couleurLigne: '#FB923C',
-              couleurPoint: '#F97316',
-              couleurDebut: '#F97316',
+              couleurLigne: '#6ee7b7',
+              couleurPoint: '#34d399',
+              couleurDebut: '#34d399',
               points: parHeure.map((p) => ({ heure: p.hour, valeur: p.count })),
             },
           ]}
