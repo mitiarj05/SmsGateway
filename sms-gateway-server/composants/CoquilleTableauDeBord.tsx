@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef, type CSSProperties } from 'react'
 import {
   Smartphone, Inbox, History, Settings, LayoutGrid, Users, Send,
-  Moon, Sun, Bell, Search, AlertTriangle, X, Receipt, MoreHorizontal, ArrowUpRight
+  Bell, Search, AlertTriangle, X, Receipt, MoreHorizontal, ArrowUpRight,
+  PanelLeft, Moon, Sun
 } from 'lucide-react'
 import { Modale } from './interface'
 import { useTheme } from '../lib/use-theme'
@@ -68,6 +69,55 @@ export default function CoquilleTableauDeBord({ children }: {
   const [paletteOuverte, setPaletteOuverte] = useState(false)
   const [requete, setRequete] = useState('')
 
+  /* Sidebar repliable + largeur ajustable (préférences persistées) */
+  const LARG_MIN = 200
+  const LARG_MAX = 340
+  const LARG_REPLIEE = 76
+  const [reduite, setReduite] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('smsika-sidebar-reduite') === '1'
+  })
+  const [largeur, setLargeur] = useState(() => {
+    if (typeof window === 'undefined') return 240
+    const v = Number(localStorage.getItem('smsika-sidebar-largeur'))
+    return v >= LARG_MIN && v <= LARG_MAX ? v : 240
+  })
+  const [redimensionne, setRedimensionne] = useState(false)
+  const refAside = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    localStorage.setItem('smsika-sidebar-reduite', reduite ? '1' : '0')
+  }, [reduite])
+  useEffect(() => {
+    localStorage.setItem('smsika-sidebar-largeur', String(largeur))
+  }, [largeur])
+
+  const largeurAffichee = reduite ? LARG_REPLIEE : largeur
+
+  function demarrerRedimensionnement(e: React.MouseEvent | React.TouchEvent) {
+    e.preventDefault()
+    if (reduite) setReduite(false)
+    setRedimensionne(true)
+    const tactile = 'touches' in e
+    const x0 = tactile ? e.touches[0].clientX : (e as React.MouseEvent).clientX
+    const w0 = refAside.current?.getBoundingClientRect().width ?? largeur
+    const bouger = (ev: MouseEvent | TouchEvent) => {
+      const x = ev instanceof MouseEvent ? ev.clientX : ev.touches[0].clientX
+      setLargeur(Math.min(LARG_MAX, Math.max(LARG_MIN, Math.round(w0 + (x - x0)))))
+    }
+    const finir = () => {
+      setRedimensionne(false)
+      window.removeEventListener('mousemove', bouger)
+      window.removeEventListener('mouseup', finir)
+      window.removeEventListener('touchmove', bouger)
+      window.removeEventListener('touchend', finir)
+    }
+    window.addEventListener('mousemove', bouger)
+    window.addEventListener('mouseup', finir)
+    window.addEventListener('touchmove', bouger, { passive: false })
+    window.addEventListener('touchend', finir)
+  }
+
   const chargerAlertes = useCallback(async () => {
     try {
       const [statRes, setRes, santeRes] = await Promise.all([
@@ -126,20 +176,34 @@ export default function CoquilleTableauDeBord({ children }: {
   const alerteActive = alerteFile || echoues > 0
 
   return (
-    <div className="flex min-h-screen bg-white text-[#1C1917] dark:bg-[#0B0F19] dark:text-zinc-100 antialiased font-sans transition-colors duration-200">
+    <div
+      className={`flex min-h-screen bg-white text-[#1C1917] antialiased font-sans transition-colors duration-200 dark:bg-[#0B0F19] dark:text-zinc-100 ${redimensionne ? 'select-none' : ''}`}
+      style={{ '--sbw': `${largeurAffichee}px` } as CSSProperties}
+    >
 
-      {/* SIDEBAR */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[240px] flex-col justify-between border-r border-[#1C1917]/10 bg-white px-4 py-5 text-[#1C1917] md:flex dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-100">
+      {/* SIDEBAR repliable / redimensionnable */}
+      <aside
+        ref={refAside}
+        className={`group/sb fixed inset-y-0 left-0 z-40 hidden flex-col justify-between border-r border-[#1C1917]/10 bg-white px-4 py-5 text-[#1C1917] md:flex dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-100 md:w-[var(--sbw)] ${redimensionne ? '' : 'transition-[width] duration-300 ease-in-out'}`}
+      >
         <div>
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-3 px-2" title="Tableau de bord">
-            <Image src="/icons/logoClair.png" alt="SMSTSIKA" width={200} height={48} className="h-12 w-auto shrink-0 dark:hidden" />
-            <Image src="/icons/logoSombre.png" alt="SMSTSIKA" width={200} height={48} className="hidden h-12 w-auto shrink-0 dark:block" />
+          <Link href="/dashboard" className={`flex items-center gap-3 px-2 ${reduite ? 'justify-center px-0' : ''}`} title="Tableau de bord">
+            {reduite ? (
+              <Image src="/icons/SMSTSIKA.png" alt="SMSTSIKA" width={40} height={40} className="h-10 w-10 shrink-0" />
+            ) : (
+              <>
+                <Image src="/icons/logoClair.png" alt="SMSTSIKA" width={200} height={48} className="h-12 w-auto shrink-0 dark:hidden" />
+                <Image src="/icons/logoSombre.png" alt="SMSTSIKA" width={200} height={48} className="hidden h-12 w-auto shrink-0 dark:block" />
+              </>
+            )}
           </Link>
 
-          <p className="mb-2 mt-7 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400 dark:text-zinc-500">
-            Espace admin
-          </p>
+          {!reduite && (
+            <p className="mb-2 mt-7 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400 dark:text-zinc-500">
+              Espace admin
+            </p>
+          )}
 
           {/* Navigation Admin */}
           <nav className="flex flex-col gap-1">
@@ -153,11 +217,13 @@ export default function CoquilleTableauDeBord({ children }: {
                     active
                       ? 'bg-[#2563EB]/10 font-semibold text-[#1D4ED8] dark:bg-white/10 dark:text-white'
                       : 'text-stone-500 hover:bg-stone-100 hover:text-[#1C1917] dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white'
-                  }`}
+                  }${reduite ? ' justify-center px-0' : ''}`}
                 >
-                  <Icon size={17} className={active ? 'text-[#2563EB] dark:text-[#93C5FD]' : 'text-stone-400 dark:text-zinc-500'} />
-                  <span className="flex-1">{etiquette}</span>
-                  {pastille && (
+                  <span title={etiquette} className="flex shrink-0">
+                    <Icon size={17} className={active ? 'text-[#2563EB] dark:text-[#93C5FD]' : 'text-stone-400 dark:text-zinc-500'} />
+                  </span>
+                  <span className={`flex-1 overflow-hidden whitespace-nowrap transition-all duration-200 ${reduite ? 'max-w-0 opacity-0' : 'max-w-[180px] opacity-100'}`}>{etiquette}</span>
+                  {pastille && !reduite && (
                     <span
                       className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold${
                         active ? 'bg-[#2563EB]/10 text-[#1D4ED8] dark:bg-white/15 dark:text-white' : 'bg-[#1C1917]/5 text-stone-500 dark:bg-white/15 dark:text-zinc-300'
@@ -171,9 +237,11 @@ export default function CoquilleTableauDeBord({ children }: {
             })}
           </nav>
 
-          <p className="mb-2 mt-6 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400 dark:text-zinc-500">
-            Configuration
-          </p>
+          {!reduite && (
+            <p className="mb-2 mt-6 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400 dark:text-zinc-500">
+              Configuration
+            </p>
+          )}
 
           {/* Navigation Config */}
           <nav className="flex flex-col gap-1">
@@ -187,10 +255,12 @@ export default function CoquilleTableauDeBord({ children }: {
                     active
                       ? 'bg-[#2563EB]/10 font-semibold text-[#1D4ED8] dark:bg-white/10 dark:text-white'
                       : 'text-stone-500 hover:bg-stone-100 hover:text-[#1C1917] dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white'
-                  }`}
+                  }${reduite ? ' justify-center px-0' : ''}`}
                 >
-                  <Icon size={17} className={active ? 'text-[#2563EB] dark:text-[#93C5FD]' : 'text-stone-400 dark:text-zinc-500'} />
-                  <span className="flex-1">{etiquette}</span>
+                  <span title={etiquette} className="flex shrink-0">
+                    <Icon size={17} className={active ? 'text-[#2563EB] dark:text-[#93C5FD]' : 'text-stone-400 dark:text-zinc-500'} />
+                  </span>
+                  <span className={`flex-1 overflow-hidden whitespace-nowrap transition-all duration-200 ${reduite ? 'max-w-0 opacity-0' : 'max-w-[180px] opacity-100'}`}>{etiquette}</span>
                 </Link>
               )
             })}
@@ -200,44 +270,73 @@ export default function CoquilleTableauDeBord({ children }: {
         {/* Bottom Section : Aide & Utilisateur */}
         <div>
           {/* Card Aide */}
-          <div className="rounded-2xl border border-[#1C1917]/10 bg-stone-100 p-4 dark:border-white/10 dark:bg-white/5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#1C1917]/15 text-sm font-bold text-stone-500 dark:border-white/25 dark:text-zinc-300">
-              ?
+          {!reduite && (
+            <div className="rounded-2xl border border-[#1C1917]/10 bg-stone-100 p-4 dark:border-white/10 dark:bg-white/5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#1C1917]/15 text-sm font-bold text-stone-500 dark:border-white/25 dark:text-zinc-300">
+                ?
+              </div>
+              <p className="mt-2.5 text-[13px] font-bold text-[#1C1917] dark:text-white">Besoin d'aide ?</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-stone-500 dark:text-zinc-400">
+                Consultez la documentation ou contactez le support.
+              </p>
+              <a
+                href="/espace/api"
+                className="mt-2.5 inline-flex items-center gap-1 text-[12px] font-semibold text-[#1D4ED8] hover:underline dark:text-[#93C5FD]"
+              >
+                Centre d'aide <ArrowUpRight className="h-3.5 w-3.5" />
+              </a>
             </div>
-            <p className="mt-2.5 text-[13px] font-bold text-[#1C1917] dark:text-white">Besoin d'aide ?</p>
-            <p className="mt-1 text-[11px] leading-relaxed text-stone-500 dark:text-zinc-400">
-              Consultez la documentation ou contactez le support.
-            </p>
-            <a
-              href="/espace/api"
-              className="mt-2.5 inline-flex items-center gap-1 text-[12px] font-semibold text-[#1D4ED8] hover:underline dark:text-[#93C5FD]"
-            >
-              Centre d'aide <ArrowUpRight className="h-3.5 w-3.5" />
-            </a>
-          </div>
+          )}
 
           {/* Utilisateur */}
-          <div className="mt-4 flex items-center gap-3 border-t border-[#1C1917]/10 pt-4 dark:border-white/10">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2563EB] text-[13px] font-bold text-white">
+          <div className={`mt-4 flex items-center gap-3 border-t border-[#1C1917]/10 pt-4 dark:border-white/10 ${reduite ? 'justify-center border-t-0 pt-0' : ''}`}>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-[13px] font-bold text-white">
               A
             </div>
-            <div className="flex-1 leading-tight">
-              <p className="text-[13px] font-semibold text-[#1C1917] dark:text-white">Administrateur</p>
-              <p className="text-[11px] text-stone-500 dark:text-zinc-500">Session locale</p>
-            </div>
-            <button onClick={deconnexion} className="text-stone-400 hover:text-[#1C1917] dark:text-zinc-500 dark:hover:text-white" title="Options">
-              <MoreHorizontal className="h-4 w-4" />
-            </button>
+            {!reduite && (
+              <>
+                <div className="flex-1 leading-tight">
+                  <p className="text-[13px] font-semibold text-[#1C1917] dark:text-white">Administrateur</p>
+                  <p className="text-[11px] text-stone-500 dark:text-zinc-500">Session locale</p>
+                </div>
+                <button onClick={deconnexion} className="text-stone-400 hover:text-[#1C1917] dark:text-zinc-500 dark:hover:text-white" title="Options">
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+              </>
+            )}
           </div>
         </div>
+
+        {/* Poignée de redimensionnement */}
+        <span
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Ajuster la largeur du menu"
+          title="Glisser pour ajuster • double-clic pour réduire / agrandir"
+          onMouseDown={demarrerRedimensionnement}
+          onTouchStart={demarrerRedimensionnement}
+          onDoubleClick={() => setReduite((r) => !r)}
+          className="absolute -right-[7px] bottom-0 top-0 hidden w-[14px] cursor-ew-resize touch-none md:block"
+        >
+          <span className={`absolute inset-y-8 left-1/2 w-[3px] -translate-x-1/2 rounded-full transition-opacity ${redimensionne ? 'bg-[#2563EB] opacity-100' : 'bg-[#2563EB]/40 opacity-0 group-hover/sb:opacity-100'}`} />
+        </span>
       </aside>
 
       {/* CONTENU PRINCIPAL */}
-      <div className="flex-1 md:pl-[240px] flex flex-col justify-between min-h-screen">
+      <div className={`flex min-h-screen flex-1 flex-col justify-between ${redimensionne ? '' : 'transition-[padding] duration-300 ease-in-out'} md:pl-[var(--sbw)]`}>
         <div>
           {/* TOPBAR HEADER EXACT TEMPLATE MATCH */}
           <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#1C1917]/10 bg-white/85 px-8 backdrop-blur dark:border-zinc-800/80 dark:bg-[#0B0F19]/80">
             <div className="flex items-center gap-2 text-[13px]">
+              <button
+                type="button"
+                onClick={() => setReduite((r) => !r)}
+                title={reduite ? 'Afficher le menu' : 'Réduire le menu'}
+                aria-label={reduite ? 'Afficher le menu' : 'Réduire le menu'}
+                className="hidden h-9 w-9 items-center justify-center rounded-full border border-[#1C1917]/10 bg-white text-stone-500 transition hover:text-[#1C1917] md:flex dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+              >
+                <PanelLeft className="h-4 w-4" />
+              </button>
               <span className="font-semibold text-[#1C1917] dark:text-zinc-200">Console</span>
               <span className="text-stone-500">&gt;</span>
               <span className="text-stone-600 dark:text-zinc-400">
