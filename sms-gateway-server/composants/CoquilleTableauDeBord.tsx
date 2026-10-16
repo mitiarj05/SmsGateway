@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, useRef, type CSSProperties } from 're
 import {
   Smartphone, Inbox, History, Settings, LayoutGrid, Users, Send,
   Bell, Search, AlertTriangle, X, Receipt, MoreHorizontal, ArrowUpRight,
-  PanelLeft, Moon, Sun
+  PanelLeft, Moon, Sun, ChevronsLeft
 } from 'lucide-react'
 import { Modale } from './interface'
 import { useTheme } from '../lib/use-theme'
@@ -188,16 +188,35 @@ export default function CoquilleTableauDeBord({ children }: {
       >
         <div>
           {/* Logo */}
-          <Link href="/dashboard" className={`flex items-center gap-3 px-2 ${reduite ? 'justify-center px-0' : ''}`} title="Tableau de bord">
+          <div className={`flex items-center gap-2 px-2 ${reduite ? 'justify-center px-0' : ''}`}>
             {reduite ? (
-              <Image src="/icons/SMSTSIKA.png" alt="SMSTSIKA" width={40} height={40} className="h-10 w-10 shrink-0" />
+              <button
+                type="button"
+                onClick={() => setReduite(false)}
+                title="Afficher le menu"
+                aria-label="Afficher le menu"
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#1C1917]/10 bg-white text-stone-500 transition hover:text-[#1C1917] dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+              >
+                <PanelLeft className="h-5 w-5" />
+              </button>
             ) : (
               <>
-                <Image src="/icons/logoClair.png" alt="SMSTSIKA" width={200} height={48} className="h-12 w-auto shrink-0 dark:hidden" />
-                <Image src="/icons/logoSombre.png" alt="SMSTSIKA" width={200} height={48} className="hidden h-12 w-auto shrink-0 dark:block" />
+                <Link href="/dashboard" className="flex min-w-0 flex-1 items-center gap-3" title="Tableau de bord">
+                  <Image src="/icons/logoClair.png" alt="SMSTSIKA" width={200} height={48} className="h-12 w-auto shrink-0 dark:hidden" />
+                  <Image src="/icons/logoSombre.png" alt="SMSTSIKA" width={200} height={48} className="hidden h-12 w-auto shrink-0 dark:block" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setReduite(true)}
+                  title="Réduire le menu"
+                  aria-label="Réduire le menu"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-stone-400 transition hover:bg-stone-100 hover:text-[#1C1917] dark:text-zinc-500 dark:hover:bg-white/10 dark:hover:text-white"
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </button>
               </>
             )}
-          </Link>
+          </div>
 
           {!reduite && (
             <p className="mb-2 mt-7 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400 dark:text-zinc-500">
@@ -328,15 +347,6 @@ export default function CoquilleTableauDeBord({ children }: {
           {/* TOPBAR HEADER EXACT TEMPLATE MATCH */}
           <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-[#1C1917]/10 bg-white/85 px-8 backdrop-blur dark:border-zinc-800/80 dark:bg-[#0B0F19]/80">
             <div className="flex items-center gap-2 text-[13px]">
-              <button
-                type="button"
-                onClick={() => setReduite((r) => !r)}
-                title={reduite ? 'Afficher le menu' : 'Réduire le menu'}
-                aria-label={reduite ? 'Afficher le menu' : 'Réduire le menu'}
-                className="hidden h-9 w-9 items-center justify-center rounded-full border border-[#1C1917]/10 bg-white text-stone-500 transition hover:text-[#1C1917] md:flex dark:border-white/10 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-              >
-                <PanelLeft className="h-4 w-4" />
-              </button>
               <span className="font-semibold text-[#1C1917] dark:text-zinc-200">Console</span>
               <span className="text-stone-500">&gt;</span>
               <span className="text-stone-600 dark:text-zinc-400">
