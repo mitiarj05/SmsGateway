@@ -184,7 +184,7 @@ export default function CoquilleTableauDeBord({ children }: {
       {/* SIDEBAR repliable / redimensionnable */}
       <aside
         ref={refAside}
-        className={`group/sb fixed inset-y-0 left-0 z-40 hidden flex-col justify-between border-r border-[#1C1917]/10 bg-white px-4 py-5 text-[#1C1917] md:flex dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-100 md:w-[var(--sbw)] ${redimensionne ? '' : 'transition-[width] duration-300 ease-in-out'}`}
+        className={`group/sb fixed inset-y-0 left-0 z-40 hidden flex-col justify-between overflow-hidden border-r border-[#1C1917]/10 bg-white px-4 py-5 text-[#1C1917] md:flex dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-100 md:w-[var(--sbw)] ${redimensionne ? '' : 'transition-[width] duration-300 ease-in-out'}`}
       >
         <div>
           {/* Logo */}
@@ -217,7 +217,10 @@ export default function CoquilleTableauDeBord({ children }: {
               </>
             )}
           </div>
+        </div>
 
+        {/* Liens défilants : logo et bas de menu restent toujours visibles */}
+        <div className="min-h-0 flex-1 overflow-y-auto py-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/15 dark:[&::-webkit-scrollbar-thumb]:bg-white/15">
           {!reduite && (
             <p className="mb-2 mt-7 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400 dark:text-zinc-500">
               Espace admin
@@ -290,7 +293,7 @@ export default function CoquilleTableauDeBord({ children }: {
         <div>
           {/* Card Aide */}
           {!reduite && (
-            <div className="rounded-2xl border border-[#1C1917]/10 bg-stone-100 p-4 dark:border-white/10 dark:bg-white/5">
+            <div className="rounded-2xl border border-[#1C1917]/10 bg-stone-100 p-4 [@media(max-height:780px)]:hidden dark:border-white/10 dark:bg-white/5">
               <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#1C1917]/15 text-sm font-bold text-stone-500 dark:border-white/25 dark:text-zinc-300">
                 ?
               </div>
