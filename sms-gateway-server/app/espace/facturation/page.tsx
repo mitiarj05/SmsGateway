@@ -174,11 +174,17 @@ export default function PageFacturationEspace() {
               </span>
             </div>
 
-            <div className="pt-6 pb-2 flex items-end justify-between h-36 px-6">
+            <div className="flex items-end justify-between gap-2 px-2 pt-2">
               {quotidien.map((nombre, i) => (
-                <div key={i} className="flex flex-col items-center gap-2 h-full justify-end flex-1">
-                  <div className="w-7 rounded-lg bg-[#2563EB]" style={{ height: `${nombre > 0 ? Math.max(8, Math.round((nombre / maxQuotidien) * 100)) : 0}%` }} />
-                  <span className="text-[10px] text-stone-500 font-semibold">{i + 1}</span>
+                <div key={i} className="flex flex-1 flex-col items-center gap-2">
+                  <div className="flex h-28 w-full items-end justify-center rounded-lg bg-[#1C1917]/5 dark:bg-zinc-800">
+                    <div
+                      title={`${nombre} SMS le ${i + 1} ${nomMoisCourt}`}
+                      className="w-7 rounded-lg bg-[#2563EB] transition-all"
+                      style={{ height: `${nombre > 0 ? Math.max(6, Math.round((nombre / maxQuotidien) * 100)) : 0}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-semibold text-stone-500">{i + 1}</span>
                 </div>
               ))}
             </div>
