@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef, type CSSProperties } from 'react'
 import {
   Smartphone, Inbox, History, Settings, LayoutGrid, Users, Send,
-  Bell, Search, AlertTriangle, X, Receipt, MoreHorizontal, ArrowUpRight,
+  Bell, Search, AlertTriangle, X, Receipt, ArrowUpRight,
   PanelLeft, Moon, Sun, ChevronsLeft, LogOut
 } from 'lucide-react'
 import { Modale } from './interface'
