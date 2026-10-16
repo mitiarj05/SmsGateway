@@ -310,7 +310,7 @@ export default function PageClientsAdmin() {
 
         {/* Right Column (1 col) : 2 Cards (Exact Screenshot) */}
         <div className="space-y-4">
-          <div className="rounded-[1.5rem] p-6 text-white shadow-card space-y-3">
+          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-3">
             <div className="flex items-center gap-2.5 text-white/60">
               <Calendar className="h-4 w-4" />
               <p className="text-[10px] font-bold uppercase tracking-[0.15em]">

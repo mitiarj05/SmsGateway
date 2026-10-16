@@ -248,7 +248,7 @@ export default function AppareilsPage() {
         {/* Colonne Droite (1 col) : Capacité & Appareils enregistrés (Exact Screenshot) */}
         <div className="space-y-4">
           {/* Card Capacité configurée */}
-          <div className="survol-lift rounded-[1.5rem] p-6 text-white shadow-card space-y-3">
+          <div className="survol-lift rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-3">
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
               Capacité configurée
             </p>

@@ -199,7 +199,7 @@ export default function PageFacturation() {
         </div>
 
         {/* Right Estimation Card (1 col) */}
-        <div className="rounded-[1.5rem] p-6 text-white shadow-card survol-lift flex flex-col justify-between">
+        <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card survol-lift flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
               Estimation du mois

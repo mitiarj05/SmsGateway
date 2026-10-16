@@ -421,7 +421,7 @@ export default function PageParametres() {
 
         {/* Colonne droite sticky */}
         <div className="sticky top-24 space-y-4">
-          <div className="rounded-[1.5rem] p-5 text-white shadow-card">
+          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-5 text-white shadow-card">
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
               État du système
             </p>

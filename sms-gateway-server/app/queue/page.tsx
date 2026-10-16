@@ -160,7 +160,7 @@ export default function PageFileAttente() {
       </div>
 
       {/* Bandeau état file d'attente */}
-      <div className="rounded-[1.5rem] p-6 text-white shadow-card survol-lift">
+      <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card survol-lift">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-emerald-400/40 bg-emerald-400/10 text-emerald-300">
