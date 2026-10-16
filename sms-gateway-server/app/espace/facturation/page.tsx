@@ -27,7 +27,8 @@ function libelleMois(id: string): string {
 
 export default function PageFacturationEspace() {
   const [conso, setConso] = useState<ConsoMensuelle | null>(null)
-  const [quotidien, setQuotidien] = useState<number[]>([0, 0, 0, 0, 0, 0, 0])
+  const [compteursJours, setCompteursJours] = useState<Record<string, number>>({})
+  const [plage, setPlage] = useState<'7j' | 'mois'>('7j')
   const [mois, setMois] = useState(moisCourantId())
   const [detailOuvert, setDetailOuvert] = useState(false)
 
@@ -55,18 +56,18 @@ export default function PageFacturationEspace() {
         }
       })
       .catch(() => null)
-    fetch('/api/espace/envois?limit=200')
+    fetch('/api/espace/envois?limit=1000')
       .then((r) => r.json())
       .then((d) => {
         if (!Array.isArray(d.taches)) return
-        const compteurs = [0, 0, 0, 0, 0, 0, 0]
+        const compteurs: Record<string, number> = {}
         for (const t of d.taches as { date_creation?: string }[]) {
-          if (typeof t.date_creation === 'string' && t.date_creation.startsWith(idMois)) {
-            const jour = Number(t.date_creation.slice(8, 10))
-            if (jour >= 1 && jour <= 7) compteurs[jour - 1] += 1
+          if (typeof t.date_creation === 'string' && t.date_creation.length >= 10) {
+            const cle = t.date_creation.slice(0, 10)
+            compteurs[cle] = (compteurs[cle] ?? 0) + 1
           }
         }
-        setQuotidien(compteurs)
+        setCompteursJours(compteurs)
       })
       .catch(() => null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -78,7 +79,34 @@ export default function PageFacturationEspace() {
   const echecs = conso?.echecs ?? 0
   const quota = conso?.quota_mensuel ?? null
   const pctQuota = quota && quota > 0 ? Math.min(100, Math.round((total / quota) * 100)) : 0
-  const maxQuotidien = Math.max(1, ...quotidien)
+  const [anneeVue, moisVue] = idMois.split('-').map(Number)
+  const nbJoursMois = new Date(anneeVue, moisVue, 0).getDate()
+  const estMoisCourant = idMois === moisCourantId()
+  const maintenantJour = new Date().getDate()
+  const finPeriode = new Date(anneeVue, moisVue - 1, estMoisCourant ? maintenantJour : nbJoursMois)
+  const clesVisibles = plage === 'mois'
+    ? Array.from({ length: nbJoursMois }, (_, k) => {
+        const d = new Date(anneeVue, moisVue - 1, k + 1)
+        return {
+          cle: `${anneeVue}-${String(moisVue).padStart(2, '0')}-${String(k + 1).padStart(2, '0')}`,
+          numero: k + 1,
+          libelle: d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
+        }
+      })
+    : Array.from({ length: 7 }, (_, k) => {
+        const d = new Date(finPeriode)
+        d.setDate(finPeriode.getDate() - (6 - k))
+        const cle = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        return {
+          cle,
+          numero: d.getDate(),
+          libelle: d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
+        }
+      })
+  const valeurs = clesVisibles.map((j) => compteursJours[j.cle] ?? 0)
+  const maxQuotidien = Math.max(1, ...valeurs)
+  const moyenne = valeurs.reduce((s, v) => s + v, 0) / valeurs.length
+  const moyenneFr = moyenne.toFixed(1).replace('.', ',')
   const estimation = (total * 100).toLocaleString('fr-FR')
   const projectionJour = new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit' })
 
@@ -169,24 +197,49 @@ export default function PageFacturationEspace() {
               <div>
                 <h2 className="text-sm font-bold text-[#1C1917] dark:text-white">Consommation quotidienne — {nomMoisCourt}</h2>
               </div>
-              <span className="rounded-full bg-[#1C1917]/[0.04] px-3 py-1 text-[11px] font-semibold text-stone-600 dark:bg-zinc-800 dark:text-zinc-300">
-                7 premiers jours
-              </span>
+              <div className="flex items-center gap-1 rounded-full border border-[#1C1917]/10 bg-[#F7F5F0] p-1 dark:border-zinc-800 dark:bg-zinc-800">
+                {(['7j', 'mois'] as const).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setPlage(p)}
+                    className={`rounded-full px-3 py-1 text-[11px] font-bold transition ${plage === p ? 'bg-white text-[#1C1917] shadow-sm dark:bg-zinc-950 dark:text-white' : 'text-stone-500 hover:text-[#1C1917] dark:text-zinc-400 dark:hover:text-white'}`}
+                  >
+                    {p === '7j' ? '7 derniers jours' : 'Mois complet'}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="flex items-end justify-between gap-2 px-2 pt-2">
-              {quotidien.map((nombre, i) => (
-                <div key={i} className="flex flex-1 flex-col items-center gap-2">
-                  <div className="flex h-28 w-full items-end justify-center rounded-lg bg-[#1C1917]/5 dark:bg-zinc-800">
-                    <div
-                      title={`${nombre} SMS le ${i + 1} ${nomMoisCourt}`}
-                      className="w-7 rounded-lg bg-[#2563EB] transition-all"
-                      style={{ height: `${nombre > 0 ? Math.max(6, Math.round((nombre / maxQuotidien) * 100)) : 0}%` }}
-                    />
-                  </div>
-                  <span className="text-[10px] font-semibold text-stone-500">{i + 1}</span>
+            <div className="relative px-2 pt-5">
+              <div className="relative">
+                <div className="flex items-end gap-1.5 sm:gap-2">
+                  {valeurs.map((nombre, i) => (
+                    <div key={clesVisibles[i].cle} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
+                      <div className="flex h-28 w-full items-end justify-center rounded-full bg-[#1C1917]/5 dark:bg-zinc-800">
+                        <div
+                          title={`${nombre} SMS le ${clesVisibles[i].libelle}`}
+                          className="w-full max-w-7 rounded-full bg-[#2563EB] transition-all"
+                          style={{ height: `${nombre > 0 ? Math.max(6, Math.round((nombre / maxQuotidien) * 100)) : 0}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-semibold text-stone-500">
+                        {plage === 'mois' ? ((clesVisibles[i].numero - 1) % 7 === 0 ? clesVisibles[i].numero : '') : clesVisibles[i].numero}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+                {moyenne > 0 && (
+                  <div
+                    className="pointer-events-none absolute inset-x-0 border-t border-dashed border-stone-400 dark:border-zinc-500"
+                    style={{ top: `${(1 - Math.min(1, moyenne / maxQuotidien)) * 100}%` }}
+                  >
+                    <span className="absolute -top-5 right-0 font-mono text-[10px] font-bold text-stone-500 dark:text-zinc-400">
+                      moy. {moyenneFr}/j
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
