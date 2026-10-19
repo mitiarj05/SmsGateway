@@ -18,6 +18,7 @@ export default function PiedAccueil() {
             <li><Link href="/fonctionnalites" className="transition hover:text-[#1C1917]">Fonctionnalités</Link></li>
             <li><Link href="/comment-ca-marche" className="transition hover:text-[#1C1917]">Comment ça marche</Link></li>
             <li><Link href="/cas-d-usage" className="transition hover:text-[#1C1917]">Cas d’usage</Link></li>
+            <li><Link href="/demo" className="transition hover:text-[#1C1917]">Démo en direct</Link></li>
           </ul>
         </div>
         <div className="space-y-3">

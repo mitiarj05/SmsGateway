@@ -7,6 +7,7 @@ import { Menu, X } from 'lucide-react'
 const LIENS = [
   { href: '/fonctionnalites', libelle: 'Fonctionnalités' },
   { href: '/comment-ca-marche', libelle: 'Comment ça marche' },
+  { href: '/demo', libelle: 'Démo en direct' },
   { href: '#installer', libelle: 'Installer' },
   { href: '/faq', libelle: 'FAQ' },
   { href: '/login', libelle: 'Connexion' },

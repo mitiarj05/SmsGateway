@@ -21,6 +21,13 @@ export default function AppelFinal() {
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <Link
+            href="/demo"
+            className="group inline-flex items-center gap-1.5 text-[15px] font-bold text-[#F7F5F0] underline decoration-white/30 underline-offset-[6px] transition hover:decoration-white"
+          >
+            Tester la démo en direct
+            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </Link>
+          <Link
             href="/faq"
             className="group inline-flex items-center gap-1.5 text-[15px] font-bold text-[#F7F5F0] underline decoration-white/30 underline-offset-[6px] transition hover:decoration-white"
           >
