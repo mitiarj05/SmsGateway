@@ -14,5 +14,9 @@ export const metadata: Metadata = {
 }
 
 export default function PageDemo() {
-  return <DemoClient />
+  // Le numéro de la SIM passerelle n'est pas stocké en base : il s'affiche si
+  // l'exploitant le renseigne. Sans lui, la démo « SMS entrant » reste utilisable
+  // mais le visiteur doit connaître le numéro de la carte.
+  const numeroPasserelle = process.env.DEMO_NUMERO_PASSERELLE?.trim() || null
+  return <DemoClient numeroPasserelle={numeroPasserelle} />
 }

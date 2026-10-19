@@ -37,7 +37,7 @@ function Alerte({ children }: { children: React.ReactNode }) {
   )
 }
 
-export default function DemoClient() {
+export default function DemoClient({ numeroPasserelle }: { numeroPasserelle: string | null }) {
   const [onglet, setOnglet] = useState<'otp' | 'commande'>('otp')
 
   // Module 1 — SMS sortant (code de vérification)
@@ -454,8 +454,18 @@ export default function DemoClient() {
                     </div>
 
                     <p className="mt-4 text-[13.5px] leading-relaxed text-stone-300">
-                      Envoyez un SMS depuis n’importe quel téléphone vers le numéro de la
-                      passerelle, avec exactement ce texte :
+                      {numeroPasserelle ? (
+                        <>
+                          Envoyez un SMS depuis n’importe quel téléphone au{' '}
+                          <span className="font-mono font-bold text-white">{numeroPasserelle}</span>,
+                          avec exactement ce texte :
+                        </>
+                      ) : (
+                        <>
+                          Envoyez un SMS depuis n’importe quel téléphone vers le numéro de la SIM
+                          de la passerelle, avec exactement ce texte :
+                        </>
+                      )}
                     </p>
 
                     <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-white/15 bg-black/30 px-4 py-3">
