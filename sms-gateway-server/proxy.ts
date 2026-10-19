@@ -7,8 +7,13 @@ import { createServerClient } from '@supabase/ssr'
  * avec repli Basic Auth pour les scripts (curl, etc.).
  *
  * Publiques (auth propre) : /login, /api/auth/*, /api/sms/send,
- * /api/devices/register, /api/devices/[id]/tasks|ping|fcm-token.
+ * /api/devices/register, /api/devices/[id]/tasks|ping|fcm-token|quota|offline|inbox|solde-sim.
  * Tout le reste du matcher exige : cookie valide OU Basic valide.
+ *
+ * Attention : la liste ci-dessus est un filtre par nom. Un point d'entrée du
+ * téléphone oublié ici se fait refuser en 401 par ce proxy avant même
+ * d'atteindre sa route (cas du relevé de solde, qui ne parvenait jamais au
+ * serveur et laissait la console sur « non suivi »).
  */
 
 // --- Vérification HMAC du cookie, dupliquée ici plutôt qu'importée :
@@ -71,7 +76,7 @@ function estApiPublique(pathname: string): boolean {
   if (pathname === '/api/devices/register' || pathname.startsWith('/api/devices/register/')) {
     return true
   }
-  if (/\/api\/devices\/[^/]+\/(tasks|ping|fcm-token|quota|offline|inbox)/.test(pathname)) {
+  if (/\/api\/devices\/[^/]+\/(tasks|ping|fcm-token|quota|offline|inbox|solde-sim)/.test(pathname)) {
     return true
   }
   return false
