@@ -77,7 +77,7 @@ class ControleurTaches(
             }
 
             val abonnementId = GestionnaireSim.resoudreAbonnementId(context)
-            val envoye = ExpediteurSms.envoyerSms(
+            val resultat = ExpediteurSms.envoyerSms(
                 context = context,
                 numero = tache.numero_destinataire,
                 message = tache.message,
@@ -87,7 +87,7 @@ class ControleurTaches(
             )
             GestionnaireSim.noterEnvoi(context)
 
-            if (envoye) {
+            if (resultat.accepte) {
                 Log.d(etiquette, "SMS envoyé à ${tache.numero_destinataire}")
                 taches.enregistrerStatut(tache.id, Statuts.ENVOYE)
                 journaux.journaliser("sms envoyé > ${tache.numero_destinataire}")
@@ -101,10 +101,17 @@ class ControleurTaches(
                     auTexteStatut("SMS envoyé, confirmation en attente...")
                 }
             } else {
-                Log.e(etiquette, "Échec de l'envoi du SMS")
-                val messageErreur = "SmsManager a retourné un échec"
+                Log.e(etiquette, "Échec de l'envoi du SMS : ${resultat.motif}")
+                // Le verdict de la radio part au serveur : c'est lui qui dit s'il
+                // faut recharger la SIM, chercher du réseau ou corriger le numéro.
+                // Un simple « échec » ne laisserait rien à corriger.
+                val messageErreur = if (resultat.codeRadio != null) {
+                    "Radio ${resultat.codeRadio} : ${resultat.motif}"
+                } else {
+                    resultat.motif.ifBlank { "SmsManager a retourné un échec" }
+                }
                 taches.enregistrerStatut(tache.id, Statuts.ECHOUE, messageErreur)
-                journaux.journaliser("sms échoué > ${tache.numero_destinataire}")
+                journaux.journaliser("sms échoué > ${tache.numero_destinataire} (${resultat.motif})")
                 val confirme = taches.confirmerAvecReessai(appareilId, jeton, tache.id, Statuts.ECHOUE, messageErreur)
                 if (confirme) {
                     journaux.journaliser("rapport d'échec envoyé au serveur")

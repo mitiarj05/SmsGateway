@@ -20,11 +20,29 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withTimeoutOrNull
 
 /**
+ * Verdict d'un envoi : la radio a-t-elle accepté le SMS, et sinon le code brut
+ * qu'elle a renvoyé.
+ *
+ * Le code est conservé parce qu'il est la seule information qui distingue
+ * « pas de réseau » de « crédit insuffisant » : sans lui, on ne peut afficher
+ * qu'un « échec » qui n'indique rien à corriger.
+ *
+ * @param codeRadio code de l'intentionEnvoi (SmsManager.RESULT_ERROR_*),
+ *   null quand l'échec est local (permission, SmsManager absent, exception).
+ * @param motif traduction lisible du code, prête à être transmise au serveur.
+ */
+data class ResultatEnvoiSms(
+    val accepte: Boolean,
+    val codeRadio: Int? = null,
+    val motif: String = ""
+)
+
+/**
  * Envoie des SMS via la carte SIM du téléphone.
  *
- * Retourne true UNIQUEMENT si la couche radio accepte le SMS
- * (résultat via intentionEnvoi). Sans intentionEnvoi, sendTextMessage()
- * ne garantit rien : le réseau peut rejeter après.
+ * Accepte UNIQUEMENT si la couche radio valide le SMS (résultat via
+ * intentionEnvoi). Sans intentionEnvoi, sendTextMessage() ne garantit rien :
+ * le réseau peut rejeter après.
  *
  * @param tacheId identifiant de la tâche, transmis à l'accusé de réception réseau.
  * @param demanderAccuseLivraison si vrai, une intention de remise est fournie à
@@ -43,7 +61,7 @@ object ExpediteurSms {
         abonnementId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID,
         tacheId: String? = null,
         demanderAccuseLivraison: Boolean = false
-    ): Boolean {
+    ): ResultatEnvoiSms {
         // 0. Permission
         if (ContextCompat.checkSelfPermission(
                 context,
@@ -51,7 +69,7 @@ object ExpediteurSms {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             Log.e(ETIQUETTE, "Permission SEND_SMS non accordée, envoi annulé vers $numero")
-            return false
+            return ResultatEnvoiSms(false, motif = "Permission SEND_SMS refusée par le système")
         }
 
         // 0bis. Diagnostic SIM / abonnement (explique 90% des "ENVOYE mais non reçu")
@@ -87,7 +105,7 @@ object ExpediteurSms {
 
             if (gestionnaireSms == null) {
                 Log.e(ETIQUETTE, "SmsManager indisponible")
-                return false
+                return ResultatEnvoiSms(false, motif = "SmsManager indisponible pour cet abonnement")
             }
 
             val parties = gestionnaireSms.divideMessage(message)
@@ -99,17 +117,19 @@ object ExpediteurSms {
                 Log.w(ETIQUETTE, "Message long (${parties.size} parties), envoi multipart sans accusé de remise")
                 gestionnaireSms.sendMultipartTextMessage(numero, null, parties, null, null)
                 Log.d(ETIQUETTE, "SMS multipart transmis au système : $numero")
-                return true
+                // Aucun accusé de réception radio n'est demandé ici : on ne peut
+                // constater que la remise au système, pas l'acceptation par la radio.
+                return ResultatEnvoiSms(true, motif = "SMS multipart transmis au système (sans accusé)")
             }
 
             // --- Envoi single-part avec intentionEnvoi pour vrai résultat radio ---
             val action = "com.mitia.smsgateway.SMS_SENT_${System.currentTimeMillis()}"
-            val differe = CompletableDeferred<Boolean>()
+            val differe = CompletableDeferred<Int>()
             val recepteur = object : BroadcastReceiver() {
                 override fun onReceive(contexte: Context?, intent: Intent?) {
                     val codeRetour = resultCode
                     Log.d(ETIQUETTE, "intentionEnvoi codeRetour=$codeRetour (${resultatEnvoiEnTexte(codeRetour)}) vers $numero")
-                    differe.complete(codeRetour == Activity.RESULT_OK)
+                    differe.complete(codeRetour)
                 }
             }
             val filtre = IntentFilter(action)
@@ -154,9 +174,22 @@ object ExpediteurSms {
                         if (intentionLivraison != null) " (accusé de remise demandé)" else ""
                 )
 
-                val reussi = withTimeoutOrNull(TIMEOUT_ENVOI_MS) { differe.await() } ?: false
-                if (!reussi) Log.e(ETIQUETTE, "Radio a refusé le SMS (voir codeRetour ci-dessus)")
-                reussi
+                val codeRetour = withTimeoutOrNull(TIMEOUT_ENVOI_MS) { differe.await() }
+                if (codeRetour == null) {
+                    Log.e(ETIQUETTE, "Aucune réponse de la radio en ${TIMEOUT_ENVOI_MS / 1000} s vers $numero")
+                    return ResultatEnvoiSms(
+                        false,
+                        motif = "Pas de réponse de la radio en ${TIMEOUT_ENVOI_MS / 1000} s (le SMS est peut-être parti : l'accusé de remise tranchera)"
+                    )
+                }
+                if (codeRetour != Activity.RESULT_OK) {
+                    Log.e(ETIQUETTE, "Radio a refusé le SMS (codeRetour=$codeRetour) vers $numero")
+                }
+                ResultatEnvoiSms(
+                    accepte = codeRetour == Activity.RESULT_OK,
+                    codeRadio = codeRetour,
+                    motif = resultatEnvoiEnTexte(codeRetour)
+                )
             } finally {
                 try {
                     context.unregisterReceiver(recepteur)
@@ -165,10 +198,10 @@ object ExpediteurSms {
             }
         } catch (e: SecurityException) {
             Log.e(ETIQUETTE, "Refus système (permission révoquée ?)", e)
-            false
+            ResultatEnvoiSms(false, motif = "Refus du système (permission révoquée ?)")
         } catch (e: Exception) {
             Log.e(ETIQUETTE, "Erreur d'envoi de SMS", e)
-            false
+            ResultatEnvoiSms(false, motif = "Erreur d'envoi : ${e.message ?: e.javaClass.simpleName}")
         }
     }
 
