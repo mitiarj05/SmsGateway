@@ -23,11 +23,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Message
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SimCard
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Wifi
@@ -97,6 +99,9 @@ fun EcranParametres(
     // dans Diagnostic → Multi-SIM. Ici ne reste que la politique globale.
     verificationSoldeAuto: Boolean = true,
     auChangementVerificationSoldeAuto: (Boolean) -> Unit = {},
+    // La présentation du premier lancement ne s'affiche qu'une fois : ce
+    // raccourci la rejoue (le clip est dedans) sans effacer les réglages.
+    aRevoirOnboarding: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var copie by remember { mutableStateOf(false) }
@@ -634,6 +639,46 @@ fun EcranParametres(
                                 uncheckedThumbColor = MaterialTheme.colorScheme.secondaryContainer,
                                 uncheckedTrackColor = MaterialTheme.colorScheme.outline
                             )
+                        )
+                    }
+
+                    Spacer(Modifier.height(14.dp))
+
+                    // Raccourci vers la présentation du premier lancement : le
+                    // clip y est, et l'écran ne se montre plus de lui-même.
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable(onClick = aRevoirOnboarding)
+                            .padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(RoundedCornerShape(11.dp))
+                                    .background(prefIconBg)
+                                    .border(1.dp, prefIconBd, RoundedCornerShape(11.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Filled.PlayArrow, contentDescription = null, tint = prefIconTxt, modifier = Modifier.size(16.dp))
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text("Revoir la présentation", fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                Spacer(Modifier.height(1.dp))
+                                Text("Les 3 écrans d'accueil et le clip", fontSize = 11.sp, color = MaterialTheme.colorScheme.secondaryContainer)
+                            }
+                        }
+
+                        Icon(
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
