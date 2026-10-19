@@ -2,8 +2,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 
-import VideoLibre from './VideoLibre'
-
 /** Photo réelle : ratio d'origine respecté, zoom doux au survol. */
 function PhotoCadre({ src, alt, largeur, hauteur }: { src: string; alt: string; largeur: number; hauteur: number }) {
   return (
@@ -50,6 +48,51 @@ function PhotoLibre({
         sizes="(max-width: 768px) 100vw, 420px"
         className="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-[1.04]"
       />
+    </div>
+  )
+}
+
+/**
+ * Vidéo : muette, en boucle, lancée par le navigateur lui-même.
+ *
+ * `autoPlay` et `loop` sont dans le HTML, sans une ligne de JavaScript : une
+ * boucle ne doit dépendre ni de l'hydratation, ni d'un réglage de l'appareil.
+ * Corollaire assumé : le réglage « moins d'animations » n'arrête pas cette
+ * vidéo — c'est le prix d'une boucle garantie.
+ *
+ * `preload="auto"` : le fichier entier est mis en mémoire avant de jouer (43 ko,
+ * c'est gratuit ici), sinon la boucle marque un temps d'arrêt à chaque tour.
+ * `width`/`height` réservent la place pour que la page ne saute pas.
+ */
+function VideoLibre({
+  src,
+  largeur,
+  hauteur,
+  className = '',
+}: {
+  src: string
+  largeur: number
+  hauteur: number
+  className?: string
+}) {
+  return (
+    <div
+      className={`overflow-hidden rounded-2xl border border-[#1C1917]/10 shadow-[0_24px_60px_-30px_rgba(28,25,23,0.35)] ${className}`}
+    >
+      <video
+        src={src}
+        width={largeur}
+        height={hauteur}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+        className="h-auto w-full"
+      >
+        Votre navigateur ne peut pas lire cette vidéo.
+      </video>
     </div>
   )
 }
