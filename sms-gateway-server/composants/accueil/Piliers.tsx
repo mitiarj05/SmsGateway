@@ -106,7 +106,7 @@ const BLOCS = [
     texte: 'Commandes prêtes, rappels, codes de vérification : chaque SMS est une occasion de faire revenir vos clients.',
     lien: '/comment-ca-marche',
     libelleLien: 'Découvrir le guide d’intégration',
-    visuel: <VideoLibre src="/videos/client-telephone.mp4" largeur={1280} hauteur={720} className="mx-auto max-w-[480px]" />,
+    visuel: <VideoLibre src="/videos/grandir.mp4" largeur={480} hauteur={270} className="mx-auto max-w-[480px]" />,
     large: false,
   },
   {
