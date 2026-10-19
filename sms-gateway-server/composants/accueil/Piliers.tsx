@@ -2,6 +2,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 
+import VideoLibre from './VideoLibre'
+
 /** Photo réelle : ratio d'origine respecté, zoom doux au survol. */
 function PhotoCadre({ src, alt, largeur, hauteur }: { src: string; alt: string; largeur: number; hauteur: number }) {
   return (
@@ -52,16 +54,6 @@ function PhotoLibre({
   )
 }
 
-function LigneRequete() {
-  return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 overflow-hidden rounded-lg bg-[#1C1917] px-4 py-3.5 font-mono text-[11.5px]">
-      <span className="font-bold text-stone-100">POST /api/sms/send</span>
-      <span className="text-stone-500">→</span>
-      <span className="text-[#4ADE80]">200 · {"{"}"statut": "accepte"{"}"}</span>
-    </div>
-  )
-}
-
 const BLOCS = [
   {
     braille: 'PILOTEZ TOUTE VOTRE FLOTTE',
@@ -86,7 +78,9 @@ const BLOCS = [
     texte: 'Commandes prêtes, rappels, codes de vérification : chaque SMS est une occasion de faire revenir vos clients.',
     lien: '/comment-ca-marche',
     libelleLien: 'Découvrir le guide d’intégration',
-    visuel: <LigneRequete />,
+    visuel: (
+      <VideoLibre src="/videos/grandir.mp4" largeur={480} hauteur={270} className="mx-auto max-w-[480px]" />
+    ),
     large: false,
   },
   {
