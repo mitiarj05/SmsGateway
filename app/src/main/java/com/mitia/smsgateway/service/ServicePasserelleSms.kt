@@ -14,6 +14,7 @@ import com.mitia.smsgateway.data.local.PreferencesAppareil
 import com.mitia.smsgateway.di.ConteneurApp
 import com.mitia.smsgateway.domain.model.ResultatTaches
 import com.mitia.smsgateway.util.Constantes
+import com.mitia.smsgateway.widget.RenduWidgetPasserelle
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -93,6 +94,9 @@ class ServicePasserelleSms : Service() {
         }
         tacheScrutation?.cancel()
         porteeService.cancel()
+        // Le widget doit cesser d'afficher « En ligne » : petit délai, le temps
+        // que le système nous retire de sa liste de services en cours.
+        RenduWidgetPasserelle.rafraichirEnArrierePlan(applicationContext, delaiMs = 2_500)
         super.onDestroy()
     }
 
@@ -199,6 +203,11 @@ class ServicePasserelleSms : Service() {
                         }
                     }
                 }
+
+                // Le widget d'accueil est un miroir de cet état : redessiné à
+                // chaque cycle (donc ~toutes les 30 s), quel que soit le
+                // résultat — y compris quand le réseau est coupé.
+                RenduWidgetPasserelle.rafraichirEnArrierePlan(applicationContext)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

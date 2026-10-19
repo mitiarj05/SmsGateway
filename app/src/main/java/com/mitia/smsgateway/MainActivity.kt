@@ -43,6 +43,7 @@ import com.mitia.smsgateway.ui.batterieSansRestriction
 import com.mitia.smsgateway.ui.serviceEnCoursExecution
 import com.mitia.smsgateway.ui.typeReseau
 import com.mitia.smsgateway.ui.theme.ThemePasserelleSms
+import com.mitia.smsgateway.widget.RenduWidgetPasserelle
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -131,6 +132,9 @@ class MainActivity : ComponentActivity() {
                         portee.launch {
                             PreferencesAppareil.enregistrerThemeSombre(context, nouveau)
                         }
+                        // Le widget d'accueil suit le thème : sans cela il
+                        // garderait l'ancien rendu jusqu'au cycle suivant.
+                        RenduWidgetPasserelle.rafraichirEnArrierePlan(context)
                     },
                     aDemanderPermissionSms = {
                         demandePermissionSms.launch(Manifest.permission.SEND_SMS)
@@ -328,6 +332,9 @@ fun EcranPrincipal(
         }
         chargerSoldeDeLaCarteCourante()
         actualiser()
+        // Le widget peut dater d'un service disparu : l'ouverture de l'app est
+        // l'occasion de le remettre à l'heure sans attendre le cycle suivant.
+        RenduWidgetPasserelle.rafraichirEnArrierePlan(context)
     }
 
     LaunchedEffect(compteurPermissions) { if (compteurPermissions > 0) actualiser() }

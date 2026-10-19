@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Widget d'écran d'accueil : état de la passerelle + bouton Marche/Arrêt.
+
+  Contrainte : un widget distant ne peut utiliser qu'une poignée de vues
+  (pas de Compose ici). D'où les LinearLayout imbriqués et les TextView
+  déguisés en bouton — c'est le seul vocabulaire que RemoteViews sait gonfler.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_racine"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/fond_widget"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <!-- Ligne 1 : état du service, et la marque discrètement à droite -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/widget_pastille"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
+            android:contentDescription="@null"
+            android:src="@drawable/pastille_hors_ligne" />
+
+        <TextView
+            android:id="@+id/widget_statut"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Hors ligne"
+            android:textColor="#1C1917"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/widget_marque"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:letterSpacing="0.08"
+            android:text="SMSTSIKA"
+            android:textColor="#A8A29E"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Ligne 2 : le chiffre qui compte, le nombre de SMS partis aujourd'hui -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="bottom"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/widget_compteur"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textColor="#1C1917"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_libelle_compteur"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="5dp"
+            android:text="SMS envoyés aujourd'hui"
+            android:textColor="#78716C"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- Ligne 3 : fraîcheur de la dernière synchro + commande du service -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/widget_detail"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="service arrêté"
+            android:textColor="#A8A29E"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/widget_bouton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/fond_bouton_widget"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="7dp"
+            android:text="Marche"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</LinearLayout>

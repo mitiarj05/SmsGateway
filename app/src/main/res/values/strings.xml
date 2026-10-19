@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SMSTSIKA</string>
+    <!-- Libellé du widget dans le sélecteur du lanceur. -->
+    <string name="widget_description">SMSTSIKA : état de la passerelle et marche/arrêt du service</string>
 </resources>

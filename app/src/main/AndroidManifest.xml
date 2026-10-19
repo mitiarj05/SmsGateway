@@ -80,6 +80,20 @@
             android:name=".service.RecepteurAccuseLivraison"
             android:enabled="true"
             android:exported="false" />
+        <!-- Widget d'écran d'accueil : état de la passerelle + Marche/Arrêt.
+             non exporté : les commandes passent par des PendingIntent explicites
+             que seul le lanceur (avec notre identité) peut déclencher. -->
+        <receiver
+            android:name=".widget.WidgetPasserelle"
+            android:exported="false"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_passerelle_info" />
+        </receiver>
     </application>
 
 </manifest>
