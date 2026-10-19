@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 
@@ -45,6 +46,20 @@ object ExecuteurUssd {
     /** Au-delà, l'opérateur ne répondra plus : inutile de bloquer la boucle. */
     private const val DELAI_MAX_MS = 30_000L
 
+    /**
+     * Délai de garde après un échec de la radio. Deux demandes USSD trop
+     * rapprochées reviennent presque toujours en échec -1 : cinq appuis en
+     * dix-huit secondes ont été constatés sur le terrain. Attendre vaut mieux
+     * qu'insister.
+     */
+    private const val DELAI_GARDE_APRES_ECHEC_MS = 20_000L
+
+    /** Une seule demande USSD à la fois : la radio n'en accepte pas deux. */
+    private val verrou = Mutex()
+
+    @Volatile
+    private var dernierEchecRadioMs = 0L
+
     fun permissionTelephoneAccordee(context: Context): Boolean =
         ContextCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) ==
             PackageManager.PERMISSION_GRANTED
@@ -58,6 +73,39 @@ object ExecuteurUssd {
             return ResultatUssd.Echec("Permission « Téléphone » non accordée")
         }
 
+        val attente = attenteAvantNouvelleTentativeMs()
+        if (attente > 0L) {
+            return ResultatUssd.Echec(
+                "Demande précédente refusée par la radio : nouvelle tentative dans " +
+                    "${(attente + 999L) / 1000L} s."
+            )
+        }
+
+        // Deux appuis rapides — ou un appui pendant la vérification quotidienne —
+        // ne doivent pas créer deux sessions USSD concurrentes.
+        if (!verrou.tryLock()) {
+            return ResultatUssd.Echec("Une interrogation USSD est déjà en cours sur cet appareil")
+        }
+        return try {
+            val resultat = executerSurRadio(context, demande, souscriptionId)
+            if (resultat is ResultatUssd.Echec) dernierEchecRadioMs = System.currentTimeMillis()
+            resultat
+        } finally {
+            verrou.unlock()
+        }
+    }
+
+    private fun attenteAvantNouvelleTentativeMs(): Long {
+        if (dernierEchecRadioMs == 0L) return 0L
+        val reste = DELAI_GARDE_APRES_ECHEC_MS - (System.currentTimeMillis() - dernierEchecRadioMs)
+        return if (reste > 0L) reste else 0L
+    }
+
+    private suspend fun executerSurRadio(
+        context: Context,
+        demande: String,
+        souscriptionId: Int
+    ): ResultatUssd {
         val gestionnaire = try {
             val base = context.getSystemService(TelephonyManager::class.java)
             // createForSubscriptionId est une méthode d'INSTANCE : on part du
@@ -98,9 +146,7 @@ object ExecuteurUssd {
                             codeEchec: Int
                         ) {
                             if (suite.isActive) {
-                                suite.resume(
-                                    ResultatUssd.Echec("L'opérateur a refusé la demande (code $codeEchec)")
-                                )
+                                suite.resume(ResultatUssd.Echec(messageEchec(codeEchec)))
                             }
                         }
                     }
@@ -120,6 +166,25 @@ object ExecuteurUssd {
 
         return resultat
             ?: ResultatUssd.Echec("Pas de réponse de l'opérateur après ${DELAI_MAX_MS / 1000} s")
+    }
+
+    /**
+     * Traduction honnête des codes d'échec de la radio.
+     *
+     * -1 (USSD_RETURN_FAILURE) n'est PAS un refus de l'opérateur : il arrive en
+     * quelques dizaines de millisecondes, bien trop vite pour un aller-retour
+     * réseau (33 ms et 242 ms constatés). La demande n'a donc jamais quitté le
+     * téléphone — le plus souvent un menu USSD est resté ouvert sur cette carte,
+     * et c'est la demande suivante qui est refusée. Annoncer « l'opérateur a
+     * refusé » ferait chercher la panne au mauvais endroit.
+     */
+    private fun messageEchec(codeEchec: Int): String = when (codeEchec) {
+        TelephonyManager.USSD_RETURN_FAILURE ->
+            "La demande n'est pas partie : une session USSD (menu) est peut-être restée " +
+                "ouverte sur cette carte. Fermez la fenêtre USSD du téléphone, puis réessayez."
+        TelephonyManager.USSD_ERROR_SERVICE_UNAVAIL ->
+            "Service USSD momentanément indisponible sur cette carte : réessayez dans un instant."
+        else -> "L'opérateur a refusé la demande (code $codeEchec)"
     }
 
     @SuppressLint("MissingPermission")

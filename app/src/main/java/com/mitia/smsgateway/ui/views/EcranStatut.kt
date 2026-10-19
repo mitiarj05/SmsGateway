@@ -33,13 +33,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mitia.smsgateway.domain.model.CarteUssd
+import com.mitia.smsgateway.domain.model.SoldeSim
 import com.mitia.smsgateway.ui.components.BoutonNeon
 import com.mitia.smsgateway.ui.components.CarteGlass
 import com.mitia.smsgateway.ui.components.ChipStatut
 import com.mitia.smsgateway.ui.components.TonaliteChip
 import com.mitia.smsgateway.ui.theme.*
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun EcranStatut(
@@ -58,6 +64,7 @@ fun EcranStatut(
     aArretService: () -> Unit,
     aActualiser: () -> Unit = {},
     permissionSms: Boolean = false,
+    cartesUssd: List<CarteUssd> = emptyList(),
     modifier: Modifier = Modifier,
     themeSombre: Boolean = true,
     auChangementTheme: () -> Unit = {},
@@ -234,6 +241,118 @@ fun EcranStatut(
                     Text(
                         text = "en file d'attente",
                         fontSize = 10.5.sp,
+                        color = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        // Solde de la SIM : c'est le seul vrai crédit de la passerelle (le quota
+        // serveur, lui, peut être illimité). On montre la carte la PLUS BASSE,
+        // car c'est elle qui arrêtera les envois la première.
+        val soldesAvecMontant = cartesUssd.filter { !it.solde?.montant.isNullOrBlank() }
+        val carteCritique = soldesAvecMontant.minByOrNull {
+            montantNumerique(it.solde) ?: Double.MAX_VALUE
+        }
+        val releveSansMontant = cartesUssd.firstOrNull {
+            it.solde != null && it.solde.montant.isNullOrBlank()
+        }
+
+        CarteGlass(modifier = Modifier.fillMaxWidth()) {
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "SOLDE DE LA SIM",
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.4.sp
+                    )
+                    if (cartesUssd.isNotEmpty()) {
+                        ChipStatut(
+                            libelle = when {
+                                carteCritique == null -> "sans montant"
+                                cartesUssd.size > 1 -> "la plus basse"
+                                else -> "relevé"
+                            },
+                            tonalite = if (carteCritique != null) TonaliteChip.VERT else TonaliteChip.AMBRE,
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                if (carteCritique != null) {
+                    Text(
+                        text = listOfNotNull(
+                            carteCritique.solde?.montant,
+                            carteCritique.solde?.devise
+                        ).joinToString(" "),
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = NeonCyan
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = buildList {
+                            add(libelleCarte(carteCritique))
+                            if (cartesUssd.size > 1) add("la plus basse des ${cartesUssd.size} cartes")
+                            carteCritique.solde?.horodatage?.takeIf { it > 0L }?.let {
+                                add(
+                                    "relevé le " +
+                                        SimpleDateFormat("dd/MM 'à' HH:mm", Locale.FRANCE).format(Date(it))
+                                )
+                            }
+                        }.joinToString(" · "),
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                    // La réponse brute de l'opérateur reste lisible : si le
+                    // montant a été mal lu, le client peut s'en apercevoir.
+                    val brut = carteCritique.solde?.texte
+                    if (!brut.isNullOrBlank()) {
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            text = "« $brut »",
+                            fontSize = 10.5.sp,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                } else if (releveSansMontant != null) {
+                    Text(
+                        text = "relevé sans montant",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = "L'opérateur a répondu, mais aucun montant n'a été reconnu. " +
+                            "Diagnostic → Multi-SIM pour lire la réponse telle quelle.",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                } else {
+                    Text(
+                        text = "aucun relevé",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = "Renseignez le code USSD de chaque carte dans " +
+                            "Diagnostic → Multi-SIM. Les SMS de solde de l'opérateur " +
+                            "sont lus automatiquement.",
+                        fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.secondaryContainer
                     )
                 }
@@ -422,3 +541,23 @@ private fun LigneSante(
         chip()
     }
 }
+
+/**
+ * « 5 000 » → 5000.0 ; null si le montant n'est pas un nombre lisible.
+ *
+ * Sert uniquement à classer les cartes pour afficher la plus basse : jamais à
+ * réécrire ce que l'opérateur a envoyé (le montant affiché reste sa chaîne).
+ */
+private fun montantNumerique(solde: SoldeSim?): Double? =
+    solde?.montant
+        ?.replace("\u00A0", "")
+        ?.replace("\u202F", "")
+        ?.replace(" ", "")
+        ?.replace(",", ".")
+        ?.toDoubleOrNull()
+
+private fun libelleCarte(carte: CarteUssd): String = buildList {
+    if (carte.emplacement > 0) add("SIM ${carte.emplacement}")
+    if (carte.operateur.isNotBlank()) add(carte.operateur)
+    if (isEmpty()) add("carte SIM")
+}.joinToString(" · ")

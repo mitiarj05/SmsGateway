@@ -21,10 +21,14 @@ object AnalyseurSolde {
      * Alternatives ordonnées du plus long au plus court pour que « FCFA » ne
      * soit pas lu comme « F », et le suffixe `(?!\p{L})` évite d'attraper le
      * début d'un mot (« F » dans « Facture »).
+     *
+     * L'ariary malgache figure sous ses trois écritures (MGA, ARIARY, Ar) : sans
+     * lui, une vraie réponse « Votre solde est de 5 000 Ar » n'était pas reconnue
+     * comme un montant AVEC devise, et le relevé restait sans unité.
      */
     private val MOTIF_MONTANT_ET_DEVISE = Regex(
         """(?<![\d/])(\d{1,3}(?:[ .]\d{3})+(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)[ ]*""" +
-            """(FCFA|CFA|XOF|XAF|GNF|FG|MAD|DH|DZD|DA|TND|EUR|USD|NGN|GHS|KES|MZN|RWF|CDF|FRANCS|F)(?!\p{L})""",
+            """(FCFA|CFA|XOF|XAF|GNF|FG|MGA|ARIARY|MAD|DH|DZD|DA|TND|EUR|USD|NGN|GHS|KES|MZN|RWF|CDF|AR|FRANCS|F)(?!\p{L})""",
         RegexOption.IGNORE_CASE
     )
 

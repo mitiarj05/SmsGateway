@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Message
@@ -56,7 +57,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -66,17 +69,42 @@ import com.mitia.smsgateway.data.remote.ClientApi
 import com.mitia.smsgateway.data.sms.ExpediteurSms
 import com.mitia.smsgateway.data.sms.GestionnaireSim
 import com.mitia.smsgateway.data.sms.InfoSim
+import com.mitia.smsgateway.domain.model.CarteUssd
 import com.mitia.smsgateway.ui.components.BoutonNeon
 import com.mitia.smsgateway.ui.components.CarteGlass
 import com.mitia.smsgateway.ui.components.ChipStatut
 import com.mitia.smsgateway.ui.components.TonaliteChip
 import com.mitia.smsgateway.ui.theme.*
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlinx.coroutines.launch
 
+/**
+ * Écran Diagnostic : « tests locaux, sans dépendre du serveur ».
+ *
+ * La consultation du solde a sa place ici : c'est un test de la carte, qui ne
+ * dépend d'aucun serveur. Chaque carte SIM porte SON code USSD, SON dernier
+ * relevé et SON bouton de vérification — deux SIM peuvent appartenir à deux
+ * opérateurs, donc avoir deux codes et deux soldes différents.
+ */
 @Composable
-fun EcranDiagnostic(modifier: Modifier = Modifier) {
+fun EcranDiagnostic(
+    cartesUssd: List<CarteUssd> = emptyList(),
+    permissionUssd: Boolean = false,
+    relevageSoldeEnCours: Int? = null,
+    messagesSolde: Map<Int, String> = emptyMap(),
+    aDemanderPermissionUssd: () -> Unit = {},
+    aEnregistrerCodeUssd: (Int, String) -> Unit = { _, _ -> },
+    aVerifierSolde: (Int) -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     val portee = rememberCoroutineScope()
+
+    // Brouillon du code par carte : le champ ne suit pas les rafraîchissements
+    // périodiques de MainActivity, sinon une saisie en cours serait effacée.
+    var codesSaisis by remember { mutableStateOf(emptyMap<Int, String>()) }
 
     var permissionSms by remember { mutableStateOf(false) }
 
@@ -87,7 +115,20 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
     var souscriptionSimId by remember { mutableStateOf(-1) }
     var cartesSim by remember { mutableStateOf(emptyList<InfoSim>()) }
     var emplacements by remember { mutableStateOf(3) }
+
+    /** READ_PHONE_STATE : lire la liste des cartes (distinct de `permissionUssd`). */
     var permissionTelephone by remember { mutableStateOf(false) }
+
+    // Un relevé arrivé par SMS, ou par la vérification quotidienne, ne doit pas
+    // écraser ce que l'utilisateur est en train de taper : le brouillon n'est
+    // semé qu'une fois par carte.
+    LaunchedEffect(cartesUssd) {
+        cartesUssd.forEach { carte ->
+            if (!codesSaisis.containsKey(carte.souscriptionId)) {
+                codesSaisis = codesSaisis + (carte.souscriptionId to carte.code)
+            }
+        }
+    }
 
     val isSombre = MaterialTheme.colorScheme.background.red < 0.2f
 
@@ -349,6 +390,7 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                     }
                     cartesSim.forEach { sim ->
                         val selectionnee = modeSim == "manual" && souscriptionSimId == sim.abonnementId
+                        val carte = cartesUssd.firstOrNull { it.souscriptionId == sim.abonnementId }
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -369,47 +411,315 @@ fun EcranDiagnostic(modifier: Modifier = Modifier) {
                                 }
                                 .padding(14.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .clip(CircleShape)
-                                        .border(2.dp, if (selectionnee) GradientIndigoStart else MaterialTheme.colorScheme.outline, CircleShape)
-                                        .background(if (selectionnee) GradientIndigoStart else Color.Transparent),
-                                    contentAlignment = Alignment.Center
+                            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    if (selectionnee) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(8.dp)
-                                                .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.surface)
+                                    Box(
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .clip(CircleShape)
+                                            .border(2.dp, if (selectionnee) GradientIndigoStart else MaterialTheme.colorScheme.outline, CircleShape)
+                                            .background(if (selectionnee) GradientIndigoStart else Color.Transparent),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        if (selectionnee) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(8.dp)
+                                                    .clip(CircleShape)
+                                                    .background(MaterialTheme.colorScheme.surface)
+                                            )
+                                        }
+                                    }
+                                    Spacer(Modifier.width(12.dp))
+                                    Column {
+                                        Text(
+                                            text = "SIM ${sim.indexEmplacement + 1} · ${sim.operateur ?: "Opérateur inconnu"}",
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            fontSize = 13.5.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(Modifier.height(1.dp))
+                                        Text(
+                                            text = sim.numero ?: "numéro indisponible",
+                                            color = MaterialTheme.colorScheme.secondaryContainer,
+                                            fontSize = 11.sp
                                         )
                                     }
                                 }
-                                Spacer(Modifier.width(12.dp))
-                                Column {
-                                    Text(
-                                        text = "SIM ${sim.indexEmplacement + 1} · ${sim.operateur ?: "Opérateur inconnu"}",
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        fontSize = 13.5.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Spacer(Modifier.height(1.dp))
-                                    Text(
-                                        text = sim.numero ?: "numéro indisponible",
-                                        color = MaterialTheme.colorScheme.secondaryContainer,
-                                        fontSize = 11.sp
-                                    )
-                                }
+
+                                BlocSoldeCarte(
+                                    carte = carte,
+                                    codeSaisi = codesSaisis[sim.abonnementId]
+                                        ?: carte?.code.orEmpty(),
+                                    auChangementCode = { valeur ->
+                                        codesSaisis = codesSaisis + (sim.abonnementId to valeur)
+                                    },
+                                    aEnregistrerCode = {
+                                        aEnregistrerCodeUssd(
+                                            sim.abonnementId,
+                                            codesSaisis[sim.abonnementId] ?: carte?.code.orEmpty()
+                                        )
+                                    },
+                                    aVerifier = { aVerifierSolde(sim.abonnementId) },
+                                    verificationEnCours = relevageSoldeEnCours == sim.abonnementId,
+                                    message = messagesSolde[sim.abonnementId].orEmpty(),
+                                    permissionUssd = permissionUssd,
+                                    aDemanderPermissionUssd = aDemanderPermissionUssd,
+                                )
                             }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+/**
+ * Relevé du solde d'UNE carte : code de consultation, dernier solde connu et
+ * demande.
+ *
+ * Le code n'est jamais deviné : tant que l'utilisateur n'a rien saisi, aucune
+ * demande n'est possible. Un code erroné peut souscrire à un service payant.
+ */
+@Composable
+private fun BlocSoldeCarte(
+    carte: CarteUssd?,
+    codeSaisi: String,
+    auChangementCode: (String) -> Unit,
+    aEnregistrerCode: () -> Unit,
+    aVerifier: () -> Unit,
+    verificationEnCours: Boolean,
+    message: String,
+    permissionUssd: Boolean,
+    aDemanderPermissionUssd: () -> Unit,
+) {
+    val isSombre = MaterialTheme.colorScheme.background.red < 0.2f
+    val fondAmbre = if (isSombre) Color(0x22F59E0B) else AmbrePastelBg
+    val bordureAmbre = if (isSombre) Color(0x44F59E0B) else AmbrePastelBordure
+    val texteAmbre = if (isSombre) Color(0xFFFBBF24) else AmbrePastelTexte
+
+    val solde = carte?.solde
+    val dateSolde = solde?.horodatage
+        ?.takeIf { it > 0L }
+        ?.let { SimpleDateFormat("dd/MM 'à' HH:mm", Locale.FRANCE).format(Date(it)) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(13.dp))
+            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.55f))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "SOLDE",
+                fontSize = 9.5.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.2.sp,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+            )
+            ChipStatut(
+                libelle = when {
+                    solde?.montant != null -> "RELEVÉ"
+                    solde != null -> "SANS MONTANT"
+                    else -> "JAMAIS RELEVÉ"
+                },
+                tonalite = if (solde?.montant != null) TonaliteChip.VERT else TonaliteChip.AMBRE,
+            )
+        }
+
+        Text(
+            text = when {
+                solde?.montant != null -> listOfNotNull(solde.montant, solde.devise).joinToString(" ")
+                !solde?.texte.isNullOrBlank() -> solde!!.texte!!
+                else -> "Aucun relevé pour cette carte"
+            },
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = dateSolde?.let { "relevé le $it" } ?: "jamais interrogée",
+            fontSize = 10.5.sp,
+            color = MaterialTheme.colorScheme.secondaryContainer,
+        )
+        // La réponse brute reste visible : si le montant n'a pas pu être extrait,
+        // mieux vaut montrer ce que l'opérateur a dit qu'un chiffre inventé.
+        val brut = solde?.texte
+        if (solde?.montant != null && !brut.isNullOrBlank()) {
+            Text(
+                text = "« $brut »",
+                fontSize = 10.sp,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+
+        OutlinedTextField(
+            value = codeSaisi,
+            onValueChange = auChangementCode,
+            singleLine = true,
+            placeholder = {
+                Text(
+                    text = "code de consultation, ex. #357#",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                )
+            },
+            // Clavier téléphonique : il donne # et * sans passer par les symboles.
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                focusedBorderColor = GradientIndigoStart,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            ),
+            shape = RoundedCornerShape(12.dp),
+        )
+
+        val suggestions = carte?.suggestions.orEmpty().filter { it != codeSaisi }
+        if (suggestions.isNotEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Text(
+                    text = "PROPOSÉ POUR ${carte?.operateur.orEmpty().uppercase()} — À VÉRIFIER",
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    suggestions.forEach { suggestion ->
+                        PuceCodeUssd(libelle = suggestion, auClic = { auChangementCode(suggestion) })
+                    }
+                }
+            }
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(13.dp))
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(13.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .clickable(onClick = aEnregistrerCode)
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "enregistrer le code",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+
+            if (!permissionUssd) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(13.dp))
+                        .background(fondAmbre)
+                        .border(1.dp, bordureAmbre, RoundedCornerShape(13.dp))
+                        .clickable(onClick = aDemanderPermissionUssd)
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "autoriser le téléphone",
+                        color = texteAmbre,
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+            } else {
+                // Actif seulement si un code est déjà enregistré : le contrôleur
+                // lit le stockage, pas le brouillon en cours de saisie.
+                val codeEnregistre = !carte?.code.isNullOrBlank()
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(13.dp))
+                        .background(if (verificationEnCours) MaterialTheme.colorScheme.surface else GradientIndigoStart)
+                        .border(
+                            1.dp,
+                            if (verificationEnCours) MaterialTheme.colorScheme.outline else GradientIndigoStart,
+                            RoundedCornerShape(13.dp)
+                        )
+                        .clickable(enabled = !verificationEnCours && codeEnregistre, onClick = aVerifier)
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Filled.Refresh,
+                            contentDescription = null,
+                            tint = if (verificationEnCours) MaterialTheme.colorScheme.secondaryContainer else Color.White,
+                            modifier = Modifier.size(14.dp),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = if (verificationEnCours) "interrogation…" else "vérifier le solde",
+                            color = if (verificationEnCours) MaterialTheme.colorScheme.secondaryContainer else Color.White,
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+            }
+        }
+
+        if (message.isNotEmpty()) {
+            Text(
+                text = message,
+                color = if (solde?.montant != null) GradientIndigoStart else texteAmbre,
+                fontSize = 11.5.sp,
+                fontWeight = FontWeight.Medium,
+            )
+        }
+    }
+}
+
+/**
+ * Puce d'un code USSD proposé pour l'opérateur détecté.
+ *
+ * Un appui remplit le champ de saisie, et c'est tout : la suggestion n'est
+ * jamais appliquée d'elle-même. Un code erroné peut souscrire à un service
+ * payant — le geste de l'utilisateur doit rester explicite.
+ */
+@Composable
+private fun PuceCodeUssd(
+    libelle: String,
+    auClic: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp))
+            .clickable(onClick = auClic)
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+    ) {
+        Text(
+            text = libelle,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }

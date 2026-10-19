@@ -16,6 +16,12 @@ object AnnuaireUssd {
 
     /** Nom d'opérateur (fragment, en minuscules) → codes proposés. */
     private val PROPOSITIONS: List<Pair<String, List<String>>> = listOf(
+        // Madagascar : Yas et Telma (même réseau) consultent le crédit par #357#.
+        // #359# et #111# circulent mais ne donnent PAS le solde : #359# est faux,
+        // #111# ouvre un menu à choix (une session qui reste ouverte et bloque la
+        // demande suivante).
+        "yas" to listOf("#357#"),
+        "telma" to listOf("#357#"),
         "orange" to listOf("#123#"),
         "mtn" to listOf("*133#"),
         "moov" to listOf("*155#"),

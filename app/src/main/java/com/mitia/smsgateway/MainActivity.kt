@@ -32,7 +32,7 @@ import com.mitia.smsgateway.data.local.PreferencesAppareil
 import com.mitia.smsgateway.data.sms.AnnuaireUssd
 import com.mitia.smsgateway.data.sms.ExecuteurUssd
 import com.mitia.smsgateway.data.sms.GestionnaireSim
-import com.mitia.smsgateway.domain.model.SoldeSim
+import com.mitia.smsgateway.domain.model.CarteUssd
 import com.mitia.smsgateway.service.ServicePasserelleSms
 import com.mitia.smsgateway.ui.NavigationApp
 import com.mitia.smsgateway.ui.views.EcranDemarrage
@@ -247,16 +247,13 @@ fun EcranPrincipal(
     var cadenceEnvoiMs by remember { mutableStateOf(PreferencesAppareil.CADENCE_ENVOI_DEFAUT_MS) }
     var demarrageAuto by remember { mutableStateOf(true) }
     var accuseLivraison by remember { mutableStateOf(true) }
-    // Solde de la SIM (code USSD) : la carte visée est celle qui enverra le
-    // prochain SMS, car chaque opérateur a son propre code.
-    var codeUssdSolde by remember { mutableStateOf("") }
-    var souscriptionActive by remember { mutableStateOf(-1) }
-    var soldeSim by remember { mutableStateOf<SoldeSim?>(null) }
-    var operateurSim by remember { mutableStateOf("") }
-    var suggestionsUssd by remember { mutableStateOf<List<String>>(emptyList()) }
+    // Solde de la SIM : tout est PAR CARTE (chaque opérateur a son propre code,
+    // donc son propre relevé). L'écran Diagnostic affiche une ligne par carte,
+    // chacune portant son code, son relevé et son bouton de vérification.
+    var cartesUssd by remember { mutableStateOf<List<CarteUssd>>(emptyList()) }
     var verificationSoldeAuto by remember { mutableStateOf(true) }
-    var relevageSoldeEnCours by remember { mutableStateOf(false) }
-    var messageSolde by remember { mutableStateOf("") }
+    var relevageSoldeEnCours by remember { mutableStateOf<Int?>(null) }
+    var messagesSolde by remember { mutableStateOf<Map<Int, String>>(emptyMap()) }
     var permissionTelephone by remember { mutableStateOf(false) }
     var pret by remember { mutableStateOf(false) }
 
@@ -267,6 +264,44 @@ fun EcranPrincipal(
 
     val historique by conteneur.depotTaches.observerHistorique().collectAsState(initial = emptyList())
     val evenements by conteneur.depotJournaux.observer().collectAsState(initial = emptyList())
+
+    /**
+     * Codes et relevés de toutes les cartes, relus depuis le stockage.
+     *
+     * Déclaré AVANT `actualiser()` : une fonction locale doit être connue avant
+     * son premier appel.
+     *
+     * Le stockage reste la seule vérité : ce que l'écran Diagnostic enregistre
+     * pour une carte se retrouve ici au rafraîchissement suivant.
+     */
+    suspend fun chargerCartesUssd(): List<CarteUssd> {
+        val sims = GestionnaireSim.listerSims(context)
+        if (sims.isEmpty()) {
+            // Sans la permission téléphone, la liste des cartes est vide : les
+            // relevés déjà connus restent consultables (tableau de bord).
+            return MagasinUssd.obtenirSoldes(context).map { releve ->
+                CarteUssd(
+                    souscriptionId = releve.souscriptionId,
+                    emplacement = 0,
+                    operateur = "",
+                    numero = null,
+                    code = MagasinUssd.obtenirCode(context, releve.souscriptionId) ?: "",
+                    solde = releve
+                )
+            }
+        }
+        return sims.map { sim ->
+            CarteUssd(
+                souscriptionId = sim.abonnementId,
+                emplacement = sim.indexEmplacement + 1,
+                operateur = sim.operateur,
+                numero = sim.numero,
+                code = MagasinUssd.obtenirCode(context, sim.abonnementId) ?: "",
+                solde = MagasinUssd.obtenirSolde(context, sim.abonnementId),
+                suggestions = AnnuaireUssd.suggestions(sim.operateur)
+            )
+        }
+    }
 
     fun actualiser() {
         permissionSms = ContextCompat.checkSelfPermission(
@@ -291,30 +326,12 @@ fun EcranPrincipal(
             val (quotaLu, usageLu) = conteneur.depotAppareils.chargerInstantaneQuota()
             quota = quotaLu
             usageQuota = usageLu
-            // Solde de la carte qui enverra ensuite : lecture seule, le champ de
-            // saisie du code n'est JAMAIS écrasé ici (l'utilisateur peut être
-            // en train d'y taper).
-            val souscription = GestionnaireSim.resoudreAbonnementId(context)
-            souscriptionActive = souscription
-            operateurSim = GestionnaireSim.listerSims(context)
-                .firstOrNull { it.abonnementId == souscription }?.operateur ?: ""
-            suggestionsUssd = AnnuaireUssd.suggestions(operateurSim)
-            soldeSim = MagasinUssd.obtenirSolde(context, souscription)
+            // Les relevés peuvent changer sans passer par cet écran (SMS de
+            // l'opérateur lu en arrière-plan, vérification quotidienne) : on les
+            // relit à chaque rafraîchissement. Le code en cours de saisie n'est
+            // jamais écrasé, l'écran Diagnostic gardant son brouillon à part.
+            cartesUssd = chargerCartesUssd()
             pret = true
-        }
-    }
-
-    /** Recharge le code et le relevé de la carte SIM qui enverra ensuite. */
-    fun chargerSoldeDeLaCarteCourante() {
-        portee.launch {
-            val souscription = GestionnaireSim.resoudreAbonnementId(context)
-            souscriptionActive = souscription
-            codeUssdSolde = MagasinUssd.obtenirCode(context, souscription) ?: ""
-            soldeSim = MagasinUssd.obtenirSolde(context, souscription)
-            operateurSim = GestionnaireSim.listerSims(context)
-                .firstOrNull { it.abonnementId == souscription }?.operateur ?: ""
-            suggestionsUssd = AnnuaireUssd.suggestions(operateurSim)
-            verificationSoldeAuto = MagasinUssd.estVerificationAutoActive(context)
         }
     }
 
@@ -330,7 +347,7 @@ fun EcranPrincipal(
             demarrageAuto = PreferencesAppareil.estDemarrageAuto(context)
             accuseLivraison = PreferencesAppareil.estAccuseLivraisonActif(context)
         }
-        chargerSoldeDeLaCarteCourante()
+        verificationSoldeAuto = MagasinUssd.estVerificationAutoActive(context)
         actualiser()
         // Le widget peut dater d'un service disparu : l'ouverture de l'app est
         // l'occasion de le remettre à l'heure sans attendre le cycle suivant.
@@ -406,11 +423,7 @@ fun EcranPrincipal(
                     PreferencesAppareil.enregistrerAccuseLivraison(context, valeur)
                 }
             },
-            codeUssdSolde = codeUssdSolde,
-            auChangementCodeUssdSolde = { codeUssdSolde = it; messageSolde = "" },
-            soldeSim = soldeSim,
-            operateurSim = operateurSim,
-            suggestionsUssd = suggestionsUssd,
+            cartesUssd = cartesUssd,
             verificationSoldeAuto = verificationSoldeAuto,
             auChangementVerificationSoldeAuto = { actif ->
                 verificationSoldeAuto = actif
@@ -419,50 +432,39 @@ fun EcranPrincipal(
                 }
             },
             relevageSoldeEnCours = relevageSoldeEnCours,
-            messageSolde = messageSolde,
-            permissionTelephone = permissionTelephone,
-            aDemanderPermissionTelephone = aDemanderPermissionTelephone,
-            aEnregistrerCodeUssdSolde = {
-                val saisi = codeUssdSolde
+            messagesSolde = messagesSolde,
+            permissionUssd = permissionTelephone,
+            aDemanderPermissionUssd = aDemanderPermissionTelephone,
+            aEnregistrerCodeUssd = { souscriptionId, code ->
                 portee.launch {
-                    MagasinUssd.enregistrerCode(context, souscriptionActive, saisi)
-                    messageSolde = if (saisi.isBlank()) {
+                    MagasinUssd.enregistrerCode(context, souscriptionId, code)
+                    cartesUssd = chargerCartesUssd()
+                    messagesSolde = messagesSolde + (souscriptionId to if (code.isBlank()) {
                         "Code effacé : plus aucune vérification pour cette carte."
                     } else {
                         "Code enregistré pour cette carte."
-                    }
+                    })
                 }
             },
-            aVerifierSolde = {
+            aVerifierSolde = { souscriptionId ->
                 portee.launch {
-                    relevageSoldeEnCours = true
-                    messageSolde = ""
+                    relevageSoldeEnCours = souscriptionId
+                    messagesSolde = messagesSolde - souscriptionId
                     try {
-                        // La carte visée est recalculée MAINTENANT : en mode
-                        // automatique la rotation a pu la changer depuis
-                        // l'affichage du champ de saisie.
-                        val souscription = GestionnaireSim.resoudreAbonnementId(context)
                         val identifiants = conteneur.depotAppareils.obtenirIdentifiants()
-                        when (val resultat = conteneur.controleurSoldeSim.verifierSolde(
+                        val resultat = conteneur.controleurSoldeSim.verifierSolde(
                             context,
                             identifiants?.first,
                             identifiants?.second,
-                            souscription
-                        )) {
-                            is ControleurSoldeSim.Resultat.Releve -> {
-                                messageSolde = "Solde relevé auprès de l'opérateur."
-                                soldeSim = resultat.solde
-                            }
-                            is ControleurSoldeSim.Resultat.Echec -> {
-                                messageSolde = resultat.message
-                            }
-                        }
-                        if (souscription != souscriptionActive) {
-                            // Autre carte : le champ doit montrer SON code.
-                            chargerSoldeDeLaCarteCourante()
-                        }
+                            souscriptionId
+                        )
+                        messagesSolde = messagesSolde + (souscriptionId to when (resultat) {
+                            is ControleurSoldeSim.Resultat.Releve -> "Solde relevé auprès de l'opérateur."
+                            is ControleurSoldeSim.Resultat.Echec -> resultat.message
+                        })
                     } finally {
-                        relevageSoldeEnCours = false
+                        relevageSoldeEnCours = null
+                        cartesUssd = chargerCartesUssd()
                     }
                 }
             },

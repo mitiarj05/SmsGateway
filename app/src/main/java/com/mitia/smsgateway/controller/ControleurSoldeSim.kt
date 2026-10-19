@@ -19,9 +19,11 @@ import com.mitia.smsgateway.util.Constantes
  * passerelle (le quota serveur peut être illimité). Un relevé dit au client
  * quand recharger avant que ses SMS ne partent plus.
  *
- * Deux déclencheurs : le bouton « Vérifier le solde » (écran Paramètres) et un
- * passage automatique, une fois par jour et par carte, depuis la boucle du
- * service — uniquement quand la radio est libre (aucune tâche à envoyer).
+ * Trois sources : le bouton « vérifier le solde » de chaque carte (écran
+ * Diagnostic), un passage automatique une fois par jour et par carte depuis la
+ * boucle du service — uniquement quand la radio est libre (aucune tâche à
+ * envoyer) — et la lecture des SMS que l'opérateur envoie de lui-même (recharge,
+ * notification de solde), qui ne demande aucune session USSD.
  */
 class ControleurSoldeSim(
     private val appareils: DepotAppareils,
@@ -71,6 +73,37 @@ class ControleurSoldeSim(
     }
 
     /**
+     * Enregistre un solde trouvé dans un SMS de l'opérateur.
+     *
+     * C'est le canal le plus confortable : le message est déjà là, il n'y a rien
+     * à demander et aucune session USSD à ouvrir — donc aucun menu qui reste
+     * ouvert et bloque les demandes suivantes. Le message doit avoir été
+     * reconnu comme une notification de solde (voir DetecteurSoldeSms) : un SMS
+     * de client ne devient jamais un solde.
+     *
+     * @param texteBrut message tel que reçu, conservé pour vérification à l'œil.
+     * @param montant montant lu dans la phrase de solde (jamais réinventé ici).
+     * @param devise devise annoncée à côté du montant (null si l'opérateur tait).
+     */
+    suspend fun enregistrerSoldeDepuisSms(
+        context: Context,
+        appareilId: String?,
+        jeton: String?,
+        souscriptionId: Int,
+        texteBrut: String,
+        montant: String,
+        devise: String?
+    ): Resultat {
+        journaux.journaliser("solde SIM lu dans un SMS de l'opérateur")
+        // Le montant provient de la fenêtre reconnue autour du mot « solde » : on
+        // ne réanalyse pas le message entier, qui peut citer un autre montant
+        // ailleurs (publicité, frais, offre).
+        return enregistrerReleve(
+            context, appareilId, jeton, souscriptionId, texteBrut, montant to devise
+        )
+    }
+
+    /**
      * À appeler à chaque cycle de scrutation, radio libre.
      *
      * @return le nombre de cartes effectivement interrogées (0 le plus souvent).
@@ -108,9 +141,12 @@ class ControleurSoldeSim(
         appareilId: String?,
         jeton: String?,
         souscriptionId: Int,
-        texteBrut: String
+        texteBrut: String,
+        mesure: Pair<String?, String?>? = null
     ): Resultat {
-        val (montant, devise) = AnalyseurSolde.analyser(texteBrut)
+        // `mesure` est fournie quand la lecture a déjà été faite (SMS de
+        // l'opérateur) ; sinon on analyse la réponse USSD brute.
+        val (montant, devise) = mesure ?: AnalyseurSolde.analyser(texteBrut)
         val solde = SoldeSim(
             souscriptionId = souscriptionId,
             montant = montant,
