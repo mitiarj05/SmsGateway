@@ -1,11 +1,7 @@
 package com.mitia.smsgateway.ui.views
 
-import android.net.Uri
-import android.provider.Settings
-import android.widget.VideoView
 import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,7 +10,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,8 +29,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,10 +44,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.mitia.smsgateway.R
 import com.mitia.smsgateway.ui.components.BoutonNeon
 import com.mitia.smsgateway.ui.theme.*
@@ -234,73 +223,6 @@ private fun SlideOnboarding1() {
             lineHeight = 18.sp,
             modifier = Modifier.padding(horizontal = 12.dp)
         )
-
-        Spacer(Modifier.height(18.dp))
-
-        ClipPresentation(
-            modifier = Modifier
-                .fillMaxWidth(0.6f)
-                .aspectRatio(16f / 9f)
-        )
-    }
-}
-
-/**
- * Clip muet en boucle, dans un cadre arrondi.
- *
- * Trois garde-fous, parce qu'un téléphone passerelle doit rester sobre :
- *  - rien n'est affiché si les animations système sont désactivées ;
- *  - la lecture s'arrête dès que l'app passe en arrière-plan ;
- *  - le lecteur est libéré quand l'écran quitte la composition.
- */
-@Composable
-private fun ClipPresentation(modifier: Modifier = Modifier) {
-    val contexte = LocalContext.current
-    val cycleDeVie = LocalLifecycleOwner.current.lifecycle
-    val animationsSysteme = remember(contexte) {
-        Settings.Global.getFloat(
-            contexte.contentResolver,
-            Settings.Global.ANIMATOR_DURATION_SCALE,
-            1f
-        ) > 0f
-    }
-
-    // « Moins d'animations » : pas de clip du tout, plutôt qu'une image figée.
-    if (!animationsSysteme) return
-
-    val lecteur = remember(contexte) {
-        VideoView(contexte).apply {
-            setOnPreparedListener { mp ->
-                mp.isLooping = true
-                mp.setVolume(0f, 0f) // muet : aucun son, donc aucune permission
-            }
-            setVideoURI(Uri.parse("android.resource://${contexte.packageName}/${R.raw.presentation}"))
-        }
-    }
-
-    DisposableEffect(cycleDeVie, lecteur) {
-        val observateur = LifecycleEventObserver { _, evenement ->
-            when (evenement) {
-                Lifecycle.Event.ON_RESUME -> lecteur.start()
-                Lifecycle.Event.ON_PAUSE -> lecteur.pause()
-                else -> Unit
-            }
-        }
-        cycleDeVie.addObserver(observateur)
-        if (cycleDeVie.currentState.isAtLeast(Lifecycle.State.RESUMED)) lecteur.start()
-        onDispose {
-            cycleDeVie.removeObserver(observateur)
-            lecteur.stopPlayback()
-        }
-    }
-
-    Box(
-        modifier = modifier
-            .shadow(20.dp, RoundedCornerShape(20.dp), spotColor = NeonShadowColor)
-            .clip(RoundedCornerShape(20.dp))
-            .background(Color.Black),
-    ) {
-        AndroidView(factory = { lecteur }, modifier = Modifier.fillMaxSize())
     }
 }
 

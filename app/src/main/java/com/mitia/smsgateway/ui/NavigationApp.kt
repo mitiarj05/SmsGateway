@@ -87,7 +87,6 @@ fun NavigationApp(
     messagesSolde: Map<Int, String> = emptyMap(),
     verificationSoldeAuto: Boolean = true,
     auChangementVerificationSoldeAuto: (Boolean) -> Unit = {},
-    aRevoirOnboarding: () -> Unit = {},
     // Permission « Téléphone » (CALL_PHONE) : exigée par Android pour envoyer un
     // code USSD. Ce n'est pas un accès aux appels — l'app ne compose jamais.
     permissionUssd: Boolean = false,
@@ -188,7 +187,6 @@ fun NavigationApp(
                     auChangementAccuseLivraison = auChangementAccuseLivraison,
                     verificationSoldeAuto = verificationSoldeAuto,
                     auChangementVerificationSoldeAuto = auChangementVerificationSoldeAuto,
-                    aRevoirOnboarding = aRevoirOnboarding,
                 )
             }
         }

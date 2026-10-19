@@ -436,12 +436,6 @@ fun EcranPrincipal(
                     MagasinUssd.enregistrerVerificationAutoActive(context, actif)
                 }
             },
-            aRevoirOnboarding = {
-                portee.launch {
-                    PreferencesAppareil.enregistrerOnboardingVu(context, false)
-                    onboardingVu = false
-                }
-            },
             relevageSoldeEnCours = relevageSoldeEnCours,
             messagesSolde = messagesSolde,
             permissionUssd = permissionTelephone,
