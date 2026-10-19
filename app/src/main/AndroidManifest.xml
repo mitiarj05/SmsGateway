@@ -70,6 +70,12 @@
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
+        <!-- Accusés de réception réseau (DLR) : la téléphonie envoie l'intention
+             de remise à ce récepteur, qui doit exister même app fermée. -->
+        <receiver
+            android:name=".service.RecepteurAccuseLivraison"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

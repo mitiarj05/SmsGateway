@@ -74,6 +74,10 @@ fun NavigationApp(
     auChangementTheme: () -> Unit = {},
     cadenceEnvoiMs: Int = 0,
     auChangementCadence: (Int) -> Unit = {},
+    demarrageAuto: Boolean = true,
+    auChangementDemarrageAuto: (Boolean) -> Unit = {},
+    accuseLivraison: Boolean = true,
+    auChangementAccuseLivraison: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var onglet by remember { mutableStateOf(OngletTableauDeBord.STATUT) }
@@ -155,6 +159,10 @@ fun NavigationApp(
                     auChangementTheme = auChangementTheme,
                     cadenceEnvoiMs = cadenceEnvoiMs,
                     auChangementCadence = auChangementCadence,
+                    demarrageAuto = demarrageAuto,
+                    auChangementDemarrageAuto = auChangementDemarrageAuto,
+                    accuseLivraison = accuseLivraison,
+                    auChangementAccuseLivraison = auChangementAccuseLivraison,
                 )
             }
         }

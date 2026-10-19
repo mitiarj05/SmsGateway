@@ -30,7 +30,9 @@ export async function GET(request: NextRequest) {
 
     let requete = supabaseAdmin
       .from('taches')
-      .select('id, numero_destinataire, contenu, statut, message_erreur, id_appareil, date_creation, date_modification')
+      // select('*') : tolère l'absence des colonnes d'accusé de livraison
+      // (migration non exécutée) au lieu de casser tout l'export CSV.
+      .select('*')
       .order('date_creation', { ascending: false })
       .limit(limit)
 
@@ -62,7 +64,7 @@ export async function GET(request: NextRequest) {
     }
 
     const cellule = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`
-    const entete = 'id;destinataire;message;statut;erreur;appareil_id;cree_le;mis_a_jour\n'
+    const entete = 'id;destinataire;message;statut;erreur;appareil_id;livraison;livre_le;cree_le;mis_a_jour\n'
     const lignes = (data ?? [])
       .map((t) => [
         t.id,
@@ -71,6 +73,8 @@ export async function GET(request: NextRequest) {
         t.statut,
         cellule(t.message_erreur),
         t.id_appareil ?? '',
+        t.livraison ?? '',
+        t.livre_le ?? '',
         t.date_creation,
         t.date_modification,
       ].join(';'))

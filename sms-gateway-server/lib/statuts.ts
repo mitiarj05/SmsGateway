@@ -30,3 +30,20 @@ export const STATUT_TACHE = {
 } as const
 export type StatutTache =
   (typeof STATUT_TACHE)[keyof typeof STATUT_TACHE]
+
+/**
+ * Accusés de réception réseau (DLR) — colonne `taches.livraison`.
+ *
+ * Ce n'est PAS l'enum `statut_message` : le statut reste la vérité de l'ENVOI
+ * (ENVOYE / ECHOUE) et c'est lui qui compte pour la facturation et les quotas.
+ * `livraison` rapporte ce que l'opérateur a confirmé ensuite, souvent plusieurs
+ * minutes plus tard : le SMS est-il arrivé sur le téléphone du destinataire ?
+ *
+ * NULL = aucun accusé reçu (opérateur sans DLR, ou accusé pas encore arrivé).
+ */
+export const LIVRAISON = {
+  LIVRE: 'LIVRE',
+  ECHEC_LIVRAISON: 'ECHEC_LIVRAISON',
+} as const
+export type Livraison = (typeof LIVRAISON)[keyof typeof LIVRAISON]
+export const LIVRAISON_VALEURS: readonly string[] = Object.values(LIVRAISON)

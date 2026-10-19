@@ -22,7 +22,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -45,12 +44,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import com.mitia.smsgateway.domain.model.Statuts
 import com.mitia.smsgateway.domain.model.TacheHistorique
 import com.mitia.smsgateway.ui.components.CarteGlass
 import com.mitia.smsgateway.ui.components.ChipStatut
+import com.mitia.smsgateway.ui.components.LigneTache
 import com.mitia.smsgateway.ui.components.TonaliteChip
+import com.mitia.smsgateway.ui.components.statutTacheDe
 import com.mitia.smsgateway.ui.theme.*
 
 @Composable
@@ -82,6 +86,23 @@ fun EcranTaches(
     val totalAujourdhui = taches.count { it.horodatage >= debutJournee }
     val enAttenteCount = taches.count { it.statut == Statuts.EN_ATTENTE || it.statut == Statuts.RECLAME }
     val echecsCount = taches.count { it.statut == Statuts.ECHOUE }
+
+    // Liste réellement affichée : filtres et recherche agissent enfin sur les
+    // vraies tâches (auparavant une ligne d'exemple figée était rendue ici).
+    val tachesAffichees = taches.filter { tache ->
+        val correspondFiltre = when (filtre) {
+            null -> true
+            Statuts.EN_ATTENTE -> tache.statut == Statuts.EN_ATTENTE || tache.statut == Statuts.RECLAME
+            else -> tache.statut == filtre
+        }
+        val requete = recherche.trim()
+        val correspondRecherche = requete.isEmpty() ||
+            tache.numeroDestinataire.contains(requete, ignoreCase = true) ||
+            tache.message.contains(requete, ignoreCase = true)
+        correspondFiltre && correspondRecherche
+    }.take(50)
+
+    val formatHeure = remember { SimpleDateFormat("HH:mm", Locale.FRANCE) }
 
     Box(
         modifier = modifier
@@ -282,95 +303,67 @@ fun EcranTaches(
 
             Spacer(Modifier.height(10.dp))
 
-            // Carte liste avec exemple récent + État vide « Tout est à jour »
+            // Carte liste : les vraies tâches reçues par cet appareil, ou l'état
+            // vide « Tout est à jour » quand il n'y a rien à afficher.
             CarteGlass(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                    // Ligne d'exemple récente
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(if (isSombre) Color(0x2210B981) else VertPastelBg)
-                                .border(1.dp, if (isSombre) Color(0x4434D399) else VertPastelBordure, RoundedCornerShape(12.dp)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Inbox,
-                                contentDescription = null,
-                                tint = if (isSombre) Color(0xFF34D399) else VertPastelTexte,
-                                modifier = Modifier.size(20.dp)
+                    if (tachesAffichees.isNotEmpty()) {
+                        tachesAffichees.forEachIndexed { index, tache ->
+                            if (index > 0) {
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
+                            }
+                            LigneTache(
+                                numero = tache.numeroDestinataire,
+                                message = tache.message,
+                                statut = statutTacheDe(tache.statut),
+                                erreur = tache.erreur,
+                                horaire = formatHeure.format(Date(tache.horodatage)),
+                                livraison = tache.livraison,
                             )
                         }
-                        Spacer(Modifier.width(12.dp))
-                        Column(modifier = Modifier.weight(1f)) {
+                    }
+
+                    // État vide : cercle sombre/gris avec icône avion
+                    if (tachesAffichees.isEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(50.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.Send,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.secondaryContainer,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                            Spacer(Modifier.height(12.dp))
                             Text(
-                                text = "0345726237",
+                                text = "Tout est à jour",
                                 color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 14.sp,
+                                fontSize = 14.5.sp,
                                 fontWeight = FontWeight.Bold,
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
-                                text = "commande reçue",
+                                text = if (taches.isEmpty()) {
+                                    "Les prochaines tâches apparaîtront ici automatiquement"
+                                } else {
+                                    "Aucune tâche ne correspond à ce filtre"
+                                },
                                 color = MaterialTheme.colorScheme.secondaryContainer,
-                                fontSize = 12.sp,
+                                fontSize = 11.5.sp,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                             )
                         }
-                        Spacer(Modifier.width(8.dp))
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text(
-                                text = "08:56",
-                                color = MaterialTheme.colorScheme.secondaryContainer,
-                                fontSize = 11.sp,
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            ChipStatut(libelle = "envoyé", tonalite = TonaliteChip.VERT)
-                        }
-                    }
-
-                    Spacer(Modifier.height(14.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline, thickness = 1.dp)
-                    Spacer(Modifier.height(18.dp))
-
-                    // État vide : cercle sombre/gris avec icône avion
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(50.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Send,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.secondaryContainer,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
-                        Spacer(Modifier.height(12.dp))
-                        Text(
-                            text = "Tout est à jour",
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = 14.5.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Spacer(Modifier.height(2.dp))
-                        Text(
-                            text = "Les prochaines tâches apparaîtront ici automatiquement",
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            fontSize = 11.5.sp,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                        )
                     }
                 }
             }

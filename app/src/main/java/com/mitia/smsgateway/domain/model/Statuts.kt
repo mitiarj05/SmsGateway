@@ -19,4 +19,14 @@ object Statuts {
     const val ECHOUE = "ECHOUE"
     const val PROGRAMME = "PROGRAMME"
     const val ASSIGNE = "ASSIGNE"
+
+    /**
+     * Accusés de réception RÉSEAU (DLR) — champ `livraison`, distinct du statut.
+     *
+     * Le statut dit ce que l'appareil a fait (ENVOYE = remis à la radio) ;
+     * la livraison dit ce que l'opérateur a confirmé ensuite. Un SMS ENVOYE
+     * peut n'être jamais livré (téléphone éteint, hors réseau).
+     */
+    const val LIVRE = "LIVRE"
+    const val ECHEC_LIVRAISON = "ECHEC_LIVRAISON"
 }

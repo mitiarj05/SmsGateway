@@ -14,6 +14,8 @@ import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.mitia.smsgateway.service.RecepteurAccuseLivraison
+import com.mitia.smsgateway.util.Constantes
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.withTimeoutOrNull
 
@@ -23,6 +25,11 @@ import kotlinx.coroutines.withTimeoutOrNull
  * Retourne true UNIQUEMENT si la couche radio accepte le SMS
  * (résultat via intentionEnvoi). Sans intentionEnvoi, sendTextMessage()
  * ne garantit rien : le réseau peut rejeter après.
+ *
+ * @param tacheId identifiant de la tâche, transmis à l'accusé de réception réseau.
+ * @param demanderAccuseLivraison si vrai, une intention de remise est fournie à
+ *   la radio : l'opérateur signalera plus tard si le SMS est bien ARRIVÉ chez le
+ *   destinataire (voir RecepteurAccuseLivraison), pas seulement accepté.
  */
 object ExpediteurSms {
 
@@ -33,7 +40,9 @@ object ExpediteurSms {
         context: Context,
         numero: String,
         message: String,
-        abonnementId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID
+        abonnementId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID,
+        tacheId: String? = null,
+        demanderAccuseLivraison: Boolean = false
     ): Boolean {
         // 0. Permission
         if (ContextCompat.checkSelfPermission(
@@ -83,9 +92,11 @@ object ExpediteurSms {
 
             val parties = gestionnaireSms.divideMessage(message)
             if (parties.size > 1) {
-                // Multipart avec intentions multiples : hors scope de l'essai, on envoie simple
-                // et on signale pour découper côté serveur plus tard si besoin.
-                Log.w(ETIQUETTE, "Message long (${parties.size} parties), envoi multipart sans accusé détaillé")
+                // Multipart : hors scope de l'essai, on envoie simple et on
+                // signale pour découper côté serveur plus tard si besoin.
+                // Pas d'accusé de remise ici : un accusé par partie donnerait un
+                // verdict ambigu (il faudrait que TOUTES les parties arrivent).
+                Log.w(ETIQUETTE, "Message long (${parties.size} parties), envoi multipart sans accusé de remise")
                 gestionnaireSms.sendMultipartTextMessage(numero, null, parties, null, null)
                 Log.d(ETIQUETTE, "SMS multipart transmis au système : $numero")
                 return true
@@ -116,8 +127,28 @@ object ExpediteurSms {
                     Intent(action).setPackage(context.packageName),
                     PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
                 )
-                gestionnaireSms.sendTextMessage(numero, null, message, intentionEnvoi, null)
-                Log.d(ETIQUETTE, "SMS transmis à la radio, attente intentionEnvoi : $numero")
+
+                // Accusé de réception réseau : intention explicite vers notre
+                // récepteur (elle survit à la mort du processus et à un reboot).
+                val intentionLivraison = if (demanderAccuseLivraison && tacheId != null) {
+                    PendingIntent.getBroadcast(
+                        context,
+                        ("dlr:" + tacheId).hashCode(),
+                        Intent(context, RecepteurAccuseLivraison::class.java)
+                            .setAction(Constantes.ACTION_SMS_LIVRE)
+                            .putExtra(Constantes.EXTRA_TACHE_ID, tacheId),
+                        PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                } else {
+                    null
+                }
+
+                gestionnaireSms.sendTextMessage(numero, null, message, intentionEnvoi, intentionLivraison)
+                Log.d(
+                    ETIQUETTE,
+                    "SMS transmis à la radio, attente intentionEnvoi : $numero" +
+                        if (intentionLivraison != null) " (accusé de remise demandé)" else ""
+                )
 
                 val reussi = withTimeoutOrNull(TIMEOUT_ENVOI_MS) { differe.await() } ?: false
                 if (!reussi) Log.e(ETIQUETTE, "Radio a refusé le SMS (voir codeRetour ci-dessus)")

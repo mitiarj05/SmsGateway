@@ -384,6 +384,55 @@ object ClientApi {
     }
 
     /**
+     * Remonte un accusé de réception RÉSEAU (DLR) pour une tâche déjà envoyée.
+     *
+     * Route dédiée côté serveur : le statut d'envoi (ENVOYE) n'est jamais
+     * réécrit par un accusé de livraison, qui arrive souvent bien plus tard.
+     */
+    suspend fun signalerLivraisonTache(
+        appareilId: String,
+        jeton: String,
+        tacheId: String,
+        livraison: String,
+        code: Int? = null
+    ): ResultatStatut = withContext(Dispatchers.IO) {
+        try {
+            val charge = JsonObject().apply {
+                addProperty("livraison", livraison)
+                if (code != null) addProperty("code", code)
+            }
+
+            val requete = Request.Builder()
+                .url("$urlBase/api/devices/$appareilId/tasks/$tacheId/livraison")
+                .header("Authorization", "Bearer $jeton")
+                .post(gson.toJson(charge).toRequestBody(TYPE_JSON))
+                .build()
+
+            clientHttp.newCall(requete).execute().use { reponse ->
+                if (reponse.isSuccessful) {
+                    Log.d(ETIQUETTE, "Accusé de livraison transmis : $tacheId -> $livraison")
+                    return@withContext ResultatStatut.Succes
+                }
+                if (reponse.code == 409) {
+                    val brut = try { reponse.body?.string() } catch (_: Exception) { null }
+                    val assigneA = try {
+                        JsonParser.parseString(brut)
+                            ?.asJsonObject?.get("assigned_to")
+                            ?.takeIf { !it.isJsonNull }?.asString
+                    } catch (_: Exception) { null }
+                    Log.w(ETIQUETTE, "Accusé $tacheId refusé (409): tâche assignée à $assigneA")
+                    return@withContext ResultatStatut.AssigneAUnAutre(assigneA)
+                }
+                Log.e(ETIQUETTE, "signalerLivraisonTache échoué : ${reponse.code} ${reponse.message}")
+                return@withContext ResultatStatut.ErreurHttp(reponse.code)
+            }
+        } catch (e: Exception) {
+            Log.e(ETIQUETTE, "Erreur signalerLivraisonTache (réseau coupé ?), tâche=$tacheId", e)
+            return@withContext ResultatStatut.ErreurReseau
+        }
+    }
+
+    /**
      * Envoie le jeton FCM au serveur.
      */
     suspend fun mettreAJourJetonFcm(

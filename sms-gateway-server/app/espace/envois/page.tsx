@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Send, RefreshCw, Loader2, Search, Download, CheckCircle2, AlertTriangle, BarChart3, Zap, Eye } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import { Toast, Modale } from '../../../composants/interface'
+import { BadgeLivraison } from '../../../composants/interface'
 
 interface Tache {
   id: string
@@ -13,6 +14,8 @@ interface Tache {
   message_erreur: string | null
   programme_a: string | null
   date_creation: string
+  livraison?: string | null
+  livre_le?: string | null
 }
 
 export default function PageEnvoisEspace() {
@@ -252,6 +255,13 @@ export default function PageEnvoisEspace() {
                           <span className="h-1.5 w-1.5 rounded-full bg-rose-500" /> Échec
                         </span>
                       )}
+                      {/* Accusé de réception réseau : seulement pour un envoi remis
+                          à l'opérateur (un échec d'envoi n'aura jamais d'accusé). */}
+                      {estRemis && (
+                        <div className="mt-1.5 flex justify-center">
+                          <BadgeLivraison livraison={t.livraison} avecAttente />
+                        </div>
+                      )}
                     </td>
                     <td className="py-3.5 pr-4 text-stone-600">—</td>
                     <td className="py-3.5 text-right">
@@ -346,6 +356,19 @@ export default function PageEnvoisEspace() {
               <p className="text-red-500">{tacheDetaillee.message_erreur}</p>
             )}
             <p className="text-[11px] text-stone-500">Date : {tacheDetaillee.date_creation ? new Date(tacheDetaillee.date_creation).toLocaleString('fr-FR') : '—'}</p>
+            <div className="flex items-center justify-between border-t border-[#1C1917]/10 pt-3 dark:border-zinc-800">
+              <span className="font-semibold text-stone-600 dark:text-zinc-300">Accusé réseau</span>
+              {tacheDetaillee.livraison ? (
+                <BadgeLivraison livraison={tacheDetaillee.livraison} />
+              ) : (
+                <span className="text-[11px] text-stone-500">Aucun accusé reçu</span>
+              )}
+            </div>
+            {tacheDetaillee.livre_le && (
+              <p className="text-[11px] text-stone-500">
+                Accusé reçu le {new Date(tacheDetaillee.livre_le).toLocaleString('fr-FR')}
+              </p>
+            )}
           </div>
         )}
       </Modale>

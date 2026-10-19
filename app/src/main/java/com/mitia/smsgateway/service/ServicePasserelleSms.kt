@@ -132,6 +132,10 @@ class ServicePasserelleSms : Service() {
                 // 2a. Rejouer les confirmations en attente (voir ControleurConfirmationsEnAttente).
                 cont.controleurConfirmationsEnAttente.rejouerConfirmationsEnAttente(appareilId, jeton)
 
+                // 2abis. Remonter les accusés de réception réseau (DLR) reçus de
+                // la téléphonie, même si l'application était fermée à ce moment-là.
+                cont.controleurLivraisons.remonterAccuses(appareilId, jeton)
+
                 when (val resultatTaches = cont.depotTaches.recupererTaches(appareilId, jeton)) {
                     is ResultatTaches.Succes -> {
                         if (!etaitConnecte) {
@@ -168,12 +172,15 @@ class ServicePasserelleSms : Service() {
                             // l'écran Paramètres s'applique dès la synchro suivante.
                             val cadenceEnvoiMs =
                                 PreferencesAppareil.obtenirCadenceEnvoiMs(applicationContext)
+                            val accuseLivraison =
+                                PreferencesAppareil.estAccuseLivraisonActif(applicationContext)
                             cont.controleurTaches.traiterTaches(
                                 applicationContext,
                                 appareilId,
                                 jeton,
                                 resultatTaches.taches,
-                                cadenceEnvoiMs
+                                cadenceEnvoiMs,
+                                accuseLivraison
                             ) { texte -> mettreAJourNotification(texte) }
                         } else {
                             Log.d(ETIQUETTE, "Scrutation des tâches... aucune")

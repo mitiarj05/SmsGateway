@@ -121,6 +121,14 @@ ALTER TABLE appareils ADD COLUMN IF NOT EXISTS uid_firebase TEXT UNIQUE;
 ALTER TABLE appareils ADD COLUMN IF NOT EXISTS sms_envoyes_heure INTEGER DEFAULT 0;
 ALTER TABLE appareils ADD COLUMN IF NOT EXISTS id_application uuid REFERENCES public.applications(id);
 ALTER TABLE taches ADD COLUMN IF NOT EXISTS programme_a TIMESTAMPTZ;
+
+-- Accusés de réception réseau (DLR) : suivi SÉPARÉ du statut d'envoi.
+-- statut_message reste la vérité de l'envoi (ENVOYE / ECHOUE) : facturation,
+-- quotas et statistiques s'appuient dessus. Ces colonnes disent seulement ce
+-- que l'opérateur a confirmé APRÈS coup. NULL = aucun accusé reçu.
+ALTER TABLE taches ADD COLUMN IF NOT EXISTS livraison TEXT;       -- LIVRE | ECHEC_LIVRAISON
+ALTER TABLE taches ADD COLUMN IF NOT EXISTS livre_le TIMESTAMPTZ; -- date de l'accusé
+ALTER TABLE taches ADD COLUMN IF NOT EXISTS livraison_code INTEGER; -- code brut SmsManager (diagnostic)
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS url_notification text;
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS secret_notification text;
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS evenements_notification text[] NOT NULL DEFAULT '{sms.recu}';

@@ -1,10 +1,12 @@
 package com.mitia.smsgateway.data.repository
 
 import android.content.Context
+import com.mitia.smsgateway.data.local.MagasinAccusesLivraison
 import com.mitia.smsgateway.data.local.MagasinConfirmationsEnAttente
 import com.mitia.smsgateway.data.local.MagasinHistoriqueTaches
 import com.mitia.smsgateway.data.remote.ClientApi
 import com.mitia.smsgateway.domain.model.TacheHistorique
+import com.mitia.smsgateway.domain.model.AccuseLivraisonEnAttente
 import com.mitia.smsgateway.domain.model.ConfirmationEnAttente
 import com.mitia.smsgateway.domain.model.ResultatStatut
 import com.mitia.smsgateway.domain.model.TacheDto
@@ -57,4 +59,30 @@ class DepotTachesImpl(private val context: Context) : DepotTaches {
 
     override suspend fun retirerConfirmationEnAttente(tacheId: String) =
         MagasinConfirmationsEnAttente.retirer(context, tacheId)
+
+    // --- Accusés de réception réseau (DLR) ---
+
+    override suspend fun signalerLivraison(
+        appareilId: String,
+        jeton: String,
+        tacheId: String,
+        livraison: String,
+        code: Int?
+    ): ResultatStatut =
+        ClientApi.signalerLivraisonTache(appareilId, jeton, tacheId, livraison, code)
+
+    override suspend fun chargerAccusesEnAttente(): List<AccuseLivraisonEnAttente> =
+        MagasinAccusesLivraison.chargerTout(context)
+
+    override suspend fun ajouterAccuseEnAttente(tacheId: String, livraison: String, code: Int?) =
+        MagasinAccusesLivraison.ajouter(context, tacheId, livraison, code)
+
+    override suspend fun retirerAccuseEnAttente(tacheId: String) =
+        MagasinAccusesLivraison.retirer(context, tacheId)
+
+    override suspend fun purgerAccusesExpires(): Int =
+        MagasinAccusesLivraison.purgerExpires(context)
+
+    override suspend fun enregistrerLivraison(tacheId: String, livraison: String) =
+        MagasinHistoriqueTaches.marquerLivraison(context, tacheId, livraison)
 }

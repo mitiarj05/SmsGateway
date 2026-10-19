@@ -7,5 +7,7 @@ data class TacheHistorique(
     val message: String,
     val statut: String,
     val erreur: String?,
-    val horodatage: Long
+    val horodatage: Long,
+    /** Accusé de réception réseau : Statuts.LIVRE | ECHEC_LIVRAISON | null. */
+    val livraison: String? = null
 )

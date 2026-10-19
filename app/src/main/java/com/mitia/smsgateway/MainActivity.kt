@@ -219,6 +219,8 @@ fun EcranPrincipal(
     var usageQuota by remember { mutableStateOf(0) }
     var messageParametres by remember { mutableStateOf("") }
     var cadenceEnvoiMs by remember { mutableStateOf(PreferencesAppareil.CADENCE_ENVOI_DEFAUT_MS) }
+    var demarrageAuto by remember { mutableStateOf(true) }
+    var accuseLivraison by remember { mutableStateOf(true) }
     var pret by remember { mutableStateOf(false) }
 
     // États du flux d'accueil
@@ -264,6 +266,8 @@ fun EcranPrincipal(
             onboardingVu = PreferencesAppareil.estOnboardingVu(context)
             connecteSession = PreferencesAppareil.estConnecteSession(context)
             cadenceEnvoiMs = PreferencesAppareil.obtenirCadenceEnvoiMs(context)
+            demarrageAuto = PreferencesAppareil.estDemarrageAuto(context)
+            accuseLivraison = PreferencesAppareil.estAccuseLivraisonActif(context)
         }
         actualiser()
     }
@@ -321,6 +325,20 @@ fun EcranPrincipal(
                 cadenceEnvoiMs = valeur
                 portee.launch {
                     PreferencesAppareil.enregistrerCadenceEnvoiMs(context, valeur)
+                }
+            },
+            demarrageAuto = demarrageAuto,
+            auChangementDemarrageAuto = { valeur ->
+                demarrageAuto = valeur
+                portee.launch {
+                    PreferencesAppareil.enregistrerDemarrageAuto(context, valeur)
+                }
+            },
+            accuseLivraison = accuseLivraison,
+            auChangementAccuseLivraison = { valeur ->
+                accuseLivraison = valeur
+                portee.launch {
+                    PreferencesAppareil.enregistrerAccuseLivraison(context, valeur)
                 }
             },
             nomAppareil = nomAppareil,

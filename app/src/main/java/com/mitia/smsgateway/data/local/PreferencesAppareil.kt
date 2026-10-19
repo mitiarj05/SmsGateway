@@ -41,6 +41,7 @@ object PreferencesAppareil {
     private val CLE_THEME_SOMBRE = booleanPreferencesKey("dark_theme")
     private val CLE_DEMARRAGE_AUTO = booleanPreferencesKey("demarrage_auto")
     private val CLE_CADENCE_ENVOI_MS = intPreferencesKey("cadence_envoi_ms")
+    private val CLE_ACCUSE_LIVRAISON = booleanPreferencesKey("accuse_livraison")
 
     const val DEFAUT_SERVEUR_HOTE = "192.168.4.147"
     const val DEFAUT_SERVEUR_PORT = "3000"
@@ -110,6 +111,21 @@ object PreferencesAppareil {
             // de scrutation trop longtemps (l'appareil ne verrait plus les pushs).
             prefs[CLE_CADENCE_ENVOI_MS] = millisecondes.coerceIn(0, 60_000)
         }
+    }
+
+    /**
+     * Accusés de réception réseau (DLR) : demander à l'opérateur de confirmer
+     * la remise du SMS au destinataire. Activé par défaut.
+     *
+     * Sans DLR, on sait seulement que la radio a accepté le SMS (ENVOYE) —
+     * pas qu'il est réellement arrivé sur le téléphone du client.
+     */
+    suspend fun estAccuseLivraisonActif(context: Context): Boolean {
+        return context.magasinDonnees.data.first()[CLE_ACCUSE_LIVRAISON] ?: true
+    }
+
+    suspend fun enregistrerAccuseLivraison(context: Context, actif: Boolean) {
+        context.magasinDonnees.edit { prefs -> prefs[CLE_ACCUSE_LIVRAISON] = actif }
     }
 
     /**

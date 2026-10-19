@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Wifi
@@ -85,10 +86,13 @@ fun EcranParametres(
     auChangementTheme: () -> Unit = {},
     cadenceEnvoiMs: Int = 0,
     auChangementCadence: (Int) -> Unit = {},
+    demarrageAuto: Boolean = true,
+    auChangementDemarrageAuto: (Boolean) -> Unit = {},
+    accuseLivraison: Boolean = true,
+    auChangementAccuseLivraison: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
     var copie by remember { mutableStateOf(false) }
-    var demarrageAuto by remember { mutableStateOf(true) }
     var confirmerDeconnexion by remember { mutableStateOf(false) }
 
     val isSombre = MaterialTheme.colorScheme.background.red < 0.2f
@@ -441,7 +445,7 @@ fun EcranParametres(
 
                         Switch(
                             checked = demarrageAuto,
-                            onCheckedChange = { demarrageAuto = it },
+                            onCheckedChange = { auChangementDemarrageAuto(it) },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
                                 checkedTrackColor = GradientIndigoStart,
@@ -480,6 +484,50 @@ fun EcranParametres(
                         Switch(
                             checked = themeSombre,
                             onCheckedChange = { auChangementTheme() },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = GradientIndigoStart,
+                                uncheckedThumbColor = MaterialTheme.colorScheme.secondaryContainer,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.outline
+                            )
+                        )
+                    }
+
+                    Spacer(Modifier.height(14.dp))
+
+                    // Accusés de réception réseau : sans eux, on sait seulement que
+                    // la radio a accepté le SMS, pas qu'il est arrivé au destinataire.
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(RoundedCornerShape(11.dp))
+                                    .background(prefIconBg)
+                                    .border(1.dp, prefIconBd, RoundedCornerShape(11.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Filled.DoneAll, contentDescription = null, tint = prefIconTxt, modifier = Modifier.size(16.dp))
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            Column {
+                                Text("Accusés de livraison", fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                                Spacer(Modifier.height(1.dp))
+                                Text(
+                                    if (accuseLivraison) "L'opérateur confirme la remise" else "Suivi arrêté à l'envoi",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.secondaryContainer
+                                )
+                            }
+                        }
+
+                        Switch(
+                            checked = accuseLivraison,
+                            onCheckedChange = { auChangementAccuseLivraison(it) },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
                                 checkedTrackColor = GradientIndigoStart,

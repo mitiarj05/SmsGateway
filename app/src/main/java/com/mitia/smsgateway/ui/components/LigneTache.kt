@@ -45,6 +45,10 @@ fun statutTacheDe(statut: String): StatutTache = when (statut) {
     else -> StatutTache.EN_ATTENTE
 }
 
+/**
+ * Ligne d'une tâche réelle : numéro, message, heure, état d'envoi et — quand
+ * l'opérateur l'a signalé — l'accusé de réception réseau.
+ */
 @Composable
 fun LigneTache(
     numero: String,
@@ -52,6 +56,8 @@ fun LigneTache(
     statut: StatutTache,
     modifier: Modifier = Modifier,
     erreur: String? = null,
+    horaire: String? = null,
+    livraison: String? = null,
 ) {
     Row(
         modifier = modifier
@@ -99,17 +105,43 @@ fun LigneTache(
                 )
             }
         }
-        Surface(
-            color = statut.couleur.copy(alpha = 0.15f),
-            shape = RoundedCornerShape(8.dp),
-        ) {
-            Text(
-                text = statut.label,
-                color = statut.couleur,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-            )
+        Spacer(Modifier.width(8.dp))
+        Column(horizontalAlignment = Alignment.End) {
+            if (!horaire.isNullOrBlank()) {
+                Text(
+                    text = horaire,
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    fontSize = 11.sp,
+                )
+                Spacer(Modifier.height(4.dp))
+            }
+            Surface(
+                color = statut.couleur.copy(alpha = 0.15f),
+                shape = RoundedCornerShape(8.dp),
+            ) {
+                Text(
+                    text = statut.label,
+                    color = statut.couleur,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                )
+            }
+            // Accusé de réception réseau : affiché seulement quand il est connu.
+            if (livraison == Statuts.LIVRE || livraison == Statuts.ECHEC_LIVRAISON) {
+                val livre = livraison == Statuts.LIVRE
+                val teinte = if (livre) VertAccent else RougeAccent
+                Spacer(Modifier.height(4.dp))
+                Surface(color = teinte.copy(alpha = 0.15f), shape = RoundedCornerShape(8.dp)) {
+                    Text(
+                        text = if (livre) "livré" else "non livré",
+                        color = teinte,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                    )
+                }
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ import {
   RefreshCw, Check, ChevronRight, Loader2, Code, List, Smartphone, Clock, SlidersHorizontal, TriangleAlert, ArrowUpRight
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
+import { BadgeLivraison } from '../../composants/interface'
 
 interface Passage {
   id: string
@@ -14,6 +15,8 @@ interface Passage {
   passerelle: string
   dureeMs: number | null
   statut: string
+  /** Accusé de réception réseau : 'LIVRE' | 'ECHEC_LIVRAISON' | null. */
+  livraison?: string | null
 }
 
 function masquerNumero(numero: string): string {
@@ -81,6 +84,7 @@ export default function PageFileAttente() {
             passerelle: (t.device_id && nomsAppareils.get(t.device_id)) || 'Automatique',
             dureeMs: duree !== null && duree >= 0 ? duree : null,
             statut: t.statut,
+            livraison: t.livraison ?? null,
           }
         })
       )
@@ -318,10 +322,16 @@ export default function PageFileAttente() {
                   <td className="py-3.5 pr-4 text-stone-600 dark:text-zinc-400">{p.passerelle}</td>
                   <td className="py-3.5 pr-4 font-mono">{formaterDuree(p.dureeMs)}</td>
                   <td className="py-3.5 text-right">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold${p.statut === 'ENVOYE' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : p.statut === 'ECHOUE' ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'}`}>
-                      <span className={`h-1.5 w-1.5 rounded-full${p.statut === 'ENVOYE' ? 'bg-emerald-500' : p.statut === 'ECHOUE' ? 'bg-red-500' : 'bg-amber-500'}`}></span>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${p.statut === 'ENVOYE' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : p.statut === 'ECHOUE' ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400'}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${p.statut === 'ENVOYE' ? 'bg-emerald-500' : p.statut === 'ECHOUE' ? 'bg-red-500' : 'bg-amber-500'}`}></span>
                       {p.statut === 'ENVOYE' ? 'Remis' : p.statut === 'ECHOUE' ? 'Échec' : 'En cours'}
                     </span>
+                    {/* Accusé de réception réseau : seulement pour un envoi accepté par la radio. */}
+                    {p.statut === 'ENVOYE' && (
+                      <div className="mt-1.5 flex justify-end">
+                        <BadgeLivraison livraison={p.livraison} avecAttente />
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}

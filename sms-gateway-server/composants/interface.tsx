@@ -25,6 +25,10 @@ export interface Tache {
   scheduled_at?: string | null
   created_at: string
   updated_at?: string
+  /** Accusé de réception réseau : 'LIVRE' | 'ECHEC_LIVRAISON' | null. */
+  livraison?: string | null
+  /** Date de l'accusé de réception réseau. */
+  livre_le?: string | null
 }
 
 export interface PointHoraire {
@@ -52,6 +56,16 @@ export const STATUTS_TACHES: Record<string, { label: string; badge: string }> = 
   ECHOUE:    { label: 'Échoué',     badge: 'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-400/20' },
 }
 
+/**
+ * Accusés de réception réseau (DLR) : « l'opérateur a-t-il remis le SMS au
+ * destinataire ? ». C'est une information DIFFÉRENTE du statut d'envoi :
+ * un SMS ENVOYE peut n'être jamais livré (téléphone éteint, hors réseau).
+ */
+export const LIVRAISONS: Record<string, { label: string; badge: string; court: string }> = {
+  LIVRE:           { label: 'Livré',      court: 'Livré',     badge: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-400/20' },
+  ECHEC_LIVRAISON: { label: 'Non livré',  court: 'Non livré', badge: 'bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-400/20' },
+}
+
 /* ============================ HELPERS ============================ */
 
 export function tempsEcoule(date: string | null): string {
@@ -74,6 +88,30 @@ export function BadgeStatut({ statut, config }: { statut: string; config: Record
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${c.badge}`}>
       {c.point && <span className={`h-1.5 w-1.5 rounded-full ${c.point}`} />}
+      {c.label}
+    </span>
+  )
+}
+
+/**
+ * Pastille d'accusé de réception réseau (DLR).
+ * Sans accusé, rien ne s'affiche — sauf `avecAttente` qui rend l'attente
+ * visible (utile dans la file, où l'absence d'accusé est une information).
+ */
+export function BadgeLivraison({ livraison, avecAttente = false }: { livraison?: string | null; avecAttente?: boolean }) {
+  const c = livraison ? LIVRAISONS[livraison] : null
+  if (!c) {
+    if (!avecAttente) return null
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-2.5 py-0.5 text-xs font-medium text-stone-500 ring-1 ring-inset ring-stone-500/20 dark:bg-zinc-500/10 dark:text-zinc-400 dark:ring-zinc-400/20">
+        <span className="h-1.5 w-1.5 rounded-full bg-stone-400" />
+        Accusé en attente
+      </span>
+    )
+  }
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${c.badge}`}>
+      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
       {c.label}
     </span>
   )

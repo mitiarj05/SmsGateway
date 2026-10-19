@@ -26,6 +26,7 @@ import kotlin.random.Random
  * anti-spam opérateur repèrent (et qui peut couper la carte SIM).
  *
  * @param cadenceEnvoiMs délai visé entre deux SMS (0 = aucune temporisation).
+ * @param accuseLivraison demander à l'opérateur un accusé de remise (DLR).
  * @param auTexteStatut met à jour la notification foreground (côté service).
  */
 class ControleurTaches(
@@ -41,6 +42,7 @@ class ControleurTaches(
         jeton: String,
         listeTaches: List<TacheDto>,
         cadenceEnvoiMs: Int = 0,
+        accuseLivraison: Boolean = false,
         auTexteStatut: (String) -> Unit
     ) {
         if (listeTaches.isEmpty()) {
@@ -79,7 +81,9 @@ class ControleurTaches(
                 context = context,
                 numero = tache.numero_destinataire,
                 message = tache.message,
-                abonnementId = abonnementId
+                abonnementId = abonnementId,
+                tacheId = tache.id,
+                demanderAccuseLivraison = accuseLivraison
             )
             GestionnaireSim.noterEnvoi(context)
 

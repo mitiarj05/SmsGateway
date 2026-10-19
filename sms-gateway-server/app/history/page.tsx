@@ -5,7 +5,7 @@ import {
   Download, Search, RefreshCw, ChevronDown, Package, Loader2,
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
-import { Appareil, Tache, BadgeStatut, STATUTS_TACHES } from '../../composants/interface'
+import { Appareil, Tache, BadgeStatut, STATUTS_TACHES, BadgeLivraison } from '../../composants/interface'
 
 export default function PageHistorique() {
   const [taches, setTaches] = useState<Tache[]>([])
@@ -145,6 +145,7 @@ export default function PageHistorique() {
                   <th className="px-6 py-3">DESTINATAIRE</th>
                   <th className="px-6 py-3">MESSAGE</th>
                   <th className="px-6 py-3">ÉTAT</th>
+                  <th className="px-6 py-3">LIVRAISON</th>
                   <th className="px-6 py-3">CRÉÉE LE</th>
                 </tr>
               </thead>
@@ -156,6 +157,12 @@ export default function PageHistorique() {
                     <td className="px-6 py-4 font-mono font-semibold text-[#1C1917] dark:text-zinc-200">{t.numero_destinataire}</td>
                     <td className="px-6 py-4 max-w-xs truncate text-stone-600 dark:text-zinc-300" title={t.message}>{t.message}</td>
                     <td className="px-6 py-4"><BadgeStatut statut={t.statut} config={STATUTS_TACHES} /></td>
+                    <td className="px-6 py-4">
+                      {/* Accusé réseau : pertinent seulement pour un envoi accepté par la radio. */}
+                      {t.statut === 'ENVOYE'
+                        ? <BadgeLivraison livraison={t.livraison} avecAttente />
+                        : <span className="text-stone-400 dark:text-zinc-600">—</span>}
+                    </td>
                     <td className="px-6 py-4 text-stone-600 dark:text-zinc-400">
                       {new Date(t.created_at).toLocaleString('fr-FR', {
                         day: '2-digit', month: '2-digit', year: 'numeric',

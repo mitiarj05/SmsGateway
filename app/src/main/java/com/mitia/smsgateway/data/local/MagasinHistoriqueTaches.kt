@@ -53,7 +53,10 @@ object MagasinHistoriqueTaches {
                             it == Statuts.ENVOYE || it == Statuts.ECHOUE
                         } ?: t.statut,
                         erreur = precedente?.erreur,
-                        horodatage = precedente?.horodatage ?: maintenant
+                        horodatage = precedente?.horodatage ?: maintenant,
+                        // L'accusé de livraison ne doit jamais être perdu par une
+                        // resynchronisation des tâches en attente.
+                        livraison = precedente?.livraison
                     )
                 }
                 prefs[CLE_TACHES] = gson.toJson(
@@ -69,6 +72,19 @@ object MagasinHistoriqueTaches {
             context.magasinHistoriqueTaches.edit { prefs ->
                 val misesAJour = lire(prefs[CLE_TACHES]).map {
                     if (it.id == id) it.copy(statut = statut, erreur = erreur) else it
+                }
+                prefs[CLE_TACHES] = gson.toJson(misesAJour)
+            }
+        } catch (_: Exception) {
+        }
+    }
+
+    /** Enregistre l'accusé de réception réseau d'une tâche (écran Tâches). */
+    suspend fun marquerLivraison(context: Context, id: String, livraison: String) {
+        try {
+            context.magasinHistoriqueTaches.edit { prefs ->
+                val misesAJour = lire(prefs[CLE_TACHES]).map {
+                    if (it.id == id) it.copy(livraison = livraison) else it
                 }
                 prefs[CLE_TACHES] = gson.toJson(misesAJour)
             }

@@ -47,7 +47,9 @@ export async function GET(request: NextRequest) {
 
     let requete = supabaseAdmin
       .from('taches')
-      .select('id, numero_destinataire, contenu, statut, message_erreur, id_appareil, date_creation, date_modification')
+      // select('*') : la colonne `livraison` peut être absente si la migration
+      // n'a pas encore été exécutée — la nommer ferait échouer toute la réponse.
+      .select('*')
       .eq('id_application', client.id)
       .order('date_creation', { ascending: false })
       .limit(limit)
@@ -80,6 +82,9 @@ export async function GET(request: NextRequest) {
       device_id: t.id_appareil,
       created_at: t.date_creation,
       updated_at: t.date_modification,
+      // Accusé de réception réseau (NULL tant que l'opérateur n'a rien confirmé).
+      livraison: t.livraison ?? null,
+      livre_le: t.livre_le ?? null,
     }))
 
     return NextResponse.json(
