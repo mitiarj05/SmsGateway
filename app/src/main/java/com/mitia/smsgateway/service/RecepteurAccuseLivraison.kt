@@ -42,9 +42,11 @@ class RecepteurAccuseLivraison : BroadcastReceiver() {
         }
 
         val codeResultat = resultCode
-        val livre = codeResultat == Activity.RESULT_OK
-        val livraison = if (livre) Statuts.LIVRE else Statuts.ECHEC_LIVRAISON
         val code = lireCodeStatut(intent)
+        // Le rapport de remise de l'opérateur fait foi quand il est lisible
+        // (0 = remis) ; sinon on retombe sur le résultat du broadcast.
+        val livre = if (code != null) code == CODE_REMIS else codeResultat == Activity.RESULT_OK
+        val livraison = if (livre) Statuts.LIVRE else Statuts.ECHEC_LIVRAISON
 
         Log.d(
             ETIQUETTE,
@@ -74,12 +76,8 @@ class RecepteurAccuseLivraison : BroadcastReceiver() {
      * uniquement : le booléen livré/non livré vient du resultCode du broadcast.
      */
     private fun lireCodeStatut(intent: Intent): Int? {
-        // Extra posé par la téléphonie sur certains appareils.
-        val direct = intent.getIntExtra("status", -1)
-        if (direct != -1) return direct
-
-        // Sinon : lecture du rapport de remise dans le PDU.
-        return try {
+        // 1) Rapport de remise lu dans le PDU : la source la plus fiable.
+        val depuisPdu = try {
             val pdus = intent.extras?.get("pdu") as? Array<*>
             val premier = pdus?.firstOrNull() as? ByteArray
             @Suppress("DEPRECATION")
@@ -88,6 +86,11 @@ class RecepteurAccuseLivraison : BroadcastReceiver() {
             Log.d(ETIQUETTE, "Code de statut illisible depuis le PDU", e)
             null
         }
+        if (depuisPdu != null) return depuisPdu
+
+        // 2) Repli : extra posé par certains appareils.
+        val direct = intent.getIntExtra("status", -1)
+        return if (direct != -1) direct else null
     }
 
     /** Réveille la boucle de scrutation pour remonter l'accusé sans attendre. */
@@ -108,5 +111,8 @@ class RecepteurAccuseLivraison : BroadcastReceiver() {
 
     private companion object {
         const val ETIQUETTE = "RecepteurAccuseLivraison"
+
+        /** Code de statut d'un rapport de remise réussi. */
+        const val CODE_REMIS = 0
     }
 }

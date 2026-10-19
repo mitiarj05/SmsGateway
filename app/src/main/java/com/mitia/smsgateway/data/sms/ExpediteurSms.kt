@@ -130,6 +130,10 @@ object ExpediteurSms {
 
                 // Accusé de réception réseau : intention explicite vers notre
                 // récepteur (elle survit à la mort du processus et à un reboot).
+                //
+                // FLAG_MUTABLE et non IMMUTABLE : c'est le cas prévu par Android
+                // 12+, la téléphonie doit pouvoir garnir l'intention (pdu/format)
+                // pour que le code de statut du rapport de remise soit lisible.
                 val intentionLivraison = if (demanderAccuseLivraison && tacheId != null) {
                     PendingIntent.getBroadcast(
                         context,
@@ -137,7 +141,7 @@ object ExpediteurSms {
                         Intent(context, RecepteurAccuseLivraison::class.java)
                             .setAction(Constantes.ACTION_SMS_LIVRE)
                             .putExtra(Constantes.EXTRA_TACHE_ID, tacheId),
-                        PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+                        PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_MUTABLE
                     )
                 } else {
                     null
