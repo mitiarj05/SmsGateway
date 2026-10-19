@@ -18,22 +18,35 @@ function PhotoCadre({ src, alt, largeur, hauteur }: { src: string; alt: string; 
   )
 }
 
-/** Capture d'écran : ratio naturel intact, présentée dans une fenêtre. */
-function CaptureEcran({ src, alt, largeur, hauteur }: { src: string; alt: string; largeur: number; hauteur: number }) {
+/**
+ * Photo : ratio naturel intact — un portrait n'est jamais rogné en paysage.
+ * La largeur se règle par `className` (une photo verticale pleine largeur
+ * deviendrait plus haute que l'écran).
+ */
+function PhotoLibre({
+  src,
+  alt,
+  largeur,
+  hauteur,
+  className = '',
+}: {
+  src: string
+  alt: string
+  largeur: number
+  hauteur: number
+  className?: string
+}) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#1C1917]/10 bg-white shadow-[0_24px_60px_-30px_rgba(28,25,23,0.35)]">
-      <div className="flex items-center gap-1.5 border-b border-[#1C1917]/10 bg-[#F7F5F0] px-4 py-2.5" aria-hidden="true">
-        <span className="h-2.5 w-2.5 rounded-full bg-[#1C1917]/15" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#1C1917]/15" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#1C1917]/15" />
-      </div>
+    <div
+      className={`group overflow-hidden rounded-2xl border border-[#1C1917]/10 shadow-[0_24px_60px_-30px_rgba(28,25,23,0.35)] ${className}`}
+    >
       <Image
         src={src}
         alt={alt}
         width={largeur}
         height={hauteur}
-        sizes="(max-width: 768px) 100vw, 620px"
-        className="h-auto w-full"
+        sizes="(max-width: 768px) 100vw, 420px"
+        className="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-[1.04]"
       />
     </div>
   )
@@ -56,7 +69,15 @@ const BLOCS = [
     texte: 'État de connexion, file d’attente, SIM actives : fini le pilotage à l’aveugle — vous savez toujours par où partent vos messages.',
     lien: '/fonctionnalites',
     libelleLien: 'Voir toutes les fonctionnalités',
-    visuel: <CaptureEcran src="/images/appareil.jpg" alt="Capture de la console SMSTSIKA : flotte de téléphones avec statuts En ligne et Hors ligne" largeur={1216} hauteur={875} />,
+    visuel: (
+      <PhotoLibre
+        src="/images/SousVosYeux.jpg"
+        alt="Tableau de bord affiché sur un ordinateur, téléphone tenu à la main"
+        largeur={842}
+        hauteur={1264}
+        className="mx-auto max-w-[380px]"
+      />
+    ),
     large: true,
   },
   {
