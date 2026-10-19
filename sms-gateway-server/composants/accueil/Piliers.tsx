@@ -2,22 +2,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 
-/** Photo réelle : ratio d'origine respecté, zoom doux au survol. */
-function PhotoCadre({ src, alt, largeur, hauteur }: { src: string; alt: string; largeur: number; hauteur: number }) {
-  return (
-    <div className="group overflow-hidden rounded-2xl border border-[#1C1917]/10 shadow-[0_24px_60px_-30px_rgba(28,25,23,0.35)]">
-      <Image
-        src={src}
-        alt={alt}
-        width={largeur}
-        height={hauteur}
-        sizes="(max-width: 768px) 100vw, 450px"
-        className="aspect-[3/2] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-      />
-    </div>
-  )
-}
-
 /**
  * Photo : ratio naturel intact — un portrait n'est jamais rogné en paysage.
  * La largeur se règle par `className` (une photo verticale pleine largeur
@@ -60,8 +44,9 @@ function PhotoLibre({
  * Corollaire assumé : le réglage « moins d'animations » n'arrête pas cette
  * vidéo — c'est le prix d'une boucle garantie.
  *
- * `preload="auto"` : le fichier entier est mis en mémoire avant de jouer (43 ko,
- * c'est gratuit ici), sinon la boucle marque un temps d'arrêt à chaque tour.
+ * `preload="auto"` : le fichier entier est mis en mémoire avant de jouer, sinon
+ * la boucle marque un temps d'arrêt à chaque tour. Les clips sont courts et
+ * sans piste audio (le conteneur est vérifié : une seule piste vidéo).
  * `width`/`height` réservent la place pour que la page ne saute pas.
  */
 function VideoLibre({
@@ -121,9 +106,7 @@ const BLOCS = [
     texte: 'Commandes prêtes, rappels, codes de vérification : chaque SMS est une occasion de faire revenir vos clients.',
     lien: '/comment-ca-marche',
     libelleLien: 'Découvrir le guide d’intégration',
-    visuel: (
-      <VideoLibre src="/videos/grandir.mp4" largeur={480} hauteur={270} className="mx-auto max-w-[480px]" />
-    ),
+    visuel: <VideoLibre src="/videos/client-telephone.mp4" largeur={1280} hauteur={720} className="mx-auto max-w-[480px]" />,
     large: false,
   },
   {
@@ -132,7 +115,7 @@ const BLOCS = [
     texte: 'Pas un e-mail noyé dans les spams : un SMS lu en quelques minutes. Rendez-vous confirmés, commandes retirées, avis laissés.',
     lien: '/cas-d-usage',
     libelleLien: 'Explorer les cas d’usage',
-    visuel: <PhotoCadre src="/images/lecture-client.jpg" alt="Client lisant un message sur l’écran de son téléphone" largeur={1024} hauteur={683} />,
+    visuel: <VideoLibre src="/videos/lire.mp4" largeur={1280} hauteur={720} className="mx-auto max-w-[480px]" />,
     large: false,
   },
 ]
