@@ -184,6 +184,12 @@ class ServicePasserelleSms : Service() {
                             ) { texte -> mettreAJourNotification(texte) }
                         } else {
                             Log.d(ETIQUETTE, "Scrutation des tâches... aucune")
+                            // Radio libre : c'est le seul bon moment pour interroger
+                            // l'opérateur en USSD (une fois par jour et par carte,
+                            // jamais au milieu d'un envoi).
+                            cont.controleurSoldeSim.verifierSiNecessaire(
+                                applicationContext, appareilId, jeton
+                            )
                         }
                     }
                     ResultatTaches.ErreurReseau -> {

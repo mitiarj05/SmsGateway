@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.SimCard
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.AlertDialog
@@ -52,13 +54,18 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mitia.smsgateway.domain.model.SoldeSim
 import com.mitia.smsgateway.ui.components.BoutonNeon
 import com.mitia.smsgateway.ui.components.CarteGlass
 import com.mitia.smsgateway.ui.components.ChipStatut
 import com.mitia.smsgateway.ui.components.TonaliteChip
 import com.mitia.smsgateway.ui.theme.*
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun EcranParametres(
@@ -90,6 +97,20 @@ fun EcranParametres(
     auChangementDemarrageAuto: (Boolean) -> Unit = {},
     accuseLivraison: Boolean = true,
     auChangementAccuseLivraison: (Boolean) -> Unit = {},
+    // Solde de la SIM (codes USSD) — le code dépend de l'opérateur, il est saisi.
+    codeUssdSolde: String = "",
+    auChangementCodeUssdSolde: (String) -> Unit = {},
+    aEnregistrerCodeUssdSolde: () -> Unit = {},
+    aVerifierSolde: () -> Unit = {},
+    relevageSoldeEnCours: Boolean = false,
+    messageSolde: String = "",
+    soldeSim: SoldeSim? = null,
+    operateurSim: String = "",
+    suggestionsUssd: List<String> = emptyList(),
+    verificationSoldeAuto: Boolean = true,
+    auChangementVerificationSoldeAuto: (Boolean) -> Unit = {},
+    permissionTelephone: Boolean = false,
+    aDemanderPermissionTelephone: () -> Unit = {},
 ) {
     val context = LocalContext.current
     var copie by remember { mutableStateOf(false) }
@@ -100,6 +121,11 @@ fun EcranParametres(
     val fondRougeBtn = if (isSombre) Color(0x22EF4444) else RougePastelBg
     val bordureRougeBtn = if (isSombre) Color(0x44EF4444) else RougePastelBordure
     val texteRougeBtn = if (isSombre) Color(0xFFF87171) else RougePastelTexte
+
+    // Ambre : état « à renseigner / à autoriser » du relevé de solde.
+    val fondAmbreBtn = if (isSombre) Color(0x22F59E0B) else AmbrePastelBg
+    val bordureAmbreBtn = if (isSombre) Color(0x44F59E0B) else AmbrePastelBordure
+    val texteAmbreBtn = if (isSombre) Color(0xFFFBBF24) else AmbrePastelTexte
 
     val prefIconBg = if (isSombre) Color(0x227C3AED) else VioletPastelBg
     val prefIconBd = if (isSombre) Color(0x44A78BFA) else VioletPastelBordure
@@ -406,7 +432,232 @@ fun EcranParametres(
 
             Spacer(Modifier.height(14.dp))
 
-            // Carte 4 : Préférences
+            // Carte 4 : Solde de la SIM (relevé par code USSD)
+            CarteGlass(modifier = Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    val dateSolde = soldeSim?.horodatage
+                        ?.takeIf { it > 0L }
+                        ?.let { SimpleDateFormat("dd/MM 'à' HH:mm", Locale.FRANCE).format(Date(it)) }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "SOLDE DE LA SIM",
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.2.sp
+                        )
+
+                        ChipStatut(
+                            libelle = when {
+                                soldeSim?.montant != null -> "RELEVÉ"
+                                soldeSim != null -> "RÉPONSE SANS MONTANT"
+                                codeUssdSolde.isBlank() -> "NON RENSEIGNÉ"
+                                else -> "JAMAIS RELEVÉ"
+                            },
+                            tonalite = if (soldeSim?.montant != null) TonaliteChip.VERT else TonaliteChip.AMBRE,
+                        )
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(prefIconBg)
+                                .border(1.dp, prefIconBd, RoundedCornerShape(11.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Filled.SimCard, contentDescription = null, tint = prefIconTxt, modifier = Modifier.size(16.dp))
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = when {
+                                    soldeSim?.montant != null ->
+                                        listOfNotNull(soldeSim.montant, soldeSim.devise).joinToString(" ")
+                                    !soldeSim?.texte.isNullOrBlank() -> soldeSim!!.texte!!
+                                    else -> "Aucun relevé pour l'instant"
+                                },
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Spacer(Modifier.height(1.dp))
+                            Text(
+                                text = buildList {
+                                    if (operateurSim.isNotBlank()) add(operateurSim)
+                                    if (dateSolde != null) add("relevé le $dateSolde")
+                                }.joinToString(" · ").ifBlank { "Carte SIM de cet appareil" },
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.secondaryContainer
+                            )
+                            // La réponse brute reste visible : si le montant n'a pas
+                            // pu être extrait, on montre ce que l'opérateur a dit
+                            // plutôt qu'un chiffre inventé.
+                            val brut = soldeSim?.texte
+                            if (soldeSim?.montant != null && !brut.isNullOrBlank()) {
+                                Spacer(Modifier.height(3.dp))
+                                Text(
+                                    text = "« $brut »",
+                                    fontSize = 10.5.sp,
+                                    color = MaterialTheme.colorScheme.secondaryContainer,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
+                    }
+
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("CODE USSD DE CONSULTATION DU SOLDE", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondaryContainer)
+                        OutlinedTextField(
+                            value = codeUssdSolde,
+                            onValueChange = auChangementCodeUssdSolde,
+                            singleLine = true,
+                            placeholder = { Text("ex. #123# (selon votre opérateur)", fontSize = 13.sp, color = MaterialTheme.colorScheme.secondaryContainer) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                focusedBorderColor = GradientIndigoStart,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            ),
+                            shape = RoundedCornerShape(13.dp)
+                        )
+                    }
+
+                    if (suggestionsUssd.isNotEmpty()) {
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(
+                                text = "PROPOSÉ POUR ${operateurSim.uppercase()} — À VÉRIFIER CHEZ VOTRE OPÉRATEUR",
+                                fontSize = 9.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                suggestionsUssd.forEach { code ->
+                                    PuceCodeUssd(
+                                        libelle = code,
+                                        auClic = { auChangementCodeUssdSolde(code) },
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(14.dp))
+                                .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .clickable(onClick = aEnregistrerCodeUssdSolde)
+                                .padding(vertical = 11.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("enregistrer le code", color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+
+                        if (!permissionTelephone) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(fondAmbreBtn)
+                                    .border(1.dp, bordureAmbreBtn, RoundedCornerShape(14.dp))
+                                    .clickable(onClick = aDemanderPermissionTelephone)
+                                    .padding(vertical = 11.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("autoriser le téléphone", color = texteAmbreBtn, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(if (relevageSoldeEnCours) MaterialTheme.colorScheme.surface else GradientIndigoStart)
+                                    .border(1.dp, if (relevageSoldeEnCours) MaterialTheme.colorScheme.outline else GradientIndigoStart, RoundedCornerShape(14.dp))
+                                    .clickable(enabled = !relevageSoldeEnCours, onClick = aVerifierSolde)
+                                    .padding(vertical = 11.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        Icons.Filled.Refresh,
+                                        contentDescription = null,
+                                        tint = if (relevageSoldeEnCours) MaterialTheme.colorScheme.secondaryContainer else Color.White,
+                                        modifier = Modifier.size(15.dp)
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        text = if (relevageSoldeEnCours) "interrogation…" else "vérifier le solde",
+                                        color = if (relevageSoldeEnCours) MaterialTheme.colorScheme.secondaryContainer else Color.White,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    if (messageSolde.isNotEmpty()) {
+                        Text(
+                            text = messageSolde,
+                            color = if (soldeSim?.montant != null) GradientIndigoStart else texteAmbreBtn,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    // Vérification quotidienne automatique, radio libre.
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Vérification automatique", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                            Spacer(Modifier.height(1.dp))
+                            Text(
+                                "Une fois par jour et par carte, sans interrompre les envois",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.secondaryContainer
+                            )
+                        }
+                        Switch(
+                            checked = verificationSoldeAuto,
+                            onCheckedChange = { auChangementVerificationSoldeAuto(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = GradientIndigoStart,
+                                uncheckedThumbColor = MaterialTheme.colorScheme.secondaryContainer,
+                                uncheckedTrackColor = MaterialTheme.colorScheme.outline
+                            )
+                        )
+                    }
+
+                    Text(
+                        text = "Chaque opérateur a son propre code de consultation du solde, et le résultat n'est pas normalisé : l'appareil envoie le code que vous avez saisi, puis retransmet la réponse de l'opérateur au tableau de bord. Un code erroné peut déclencher un service payant — vérifiez-le avant d'enregistrer.",
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        fontSize = 11.sp
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(14.dp))
+
+            // Carte 5 : Préférences
             CarteGlass(modifier = Modifier.fillMaxWidth()) {
                 Column {
                     Text(
@@ -541,7 +792,7 @@ fun EcranParametres(
 
             Spacer(Modifier.height(14.dp))
 
-            // Carte 5 : Compte — déconnexion
+            // Carte 6 : Compte — déconnexion
             CarteGlass(modifier = Modifier.fillMaxWidth()) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
@@ -632,6 +883,36 @@ private fun ChoixCadence(
             color = if (actif) Color.White else MaterialTheme.colorScheme.onSurface,
             fontSize = 11.5.sp,
             fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+/**
+ * Puce d'un code USSD proposé pour l'opérateur détecté.
+ *
+ * Un appui remplit le champ de saisie, et c'est tout : la suggestion n'est
+ * jamais appliquée d'elle-même. Un code erroné peut souscrire à un service
+ * payant — le geste de l'utilisateur doit rester explicite.
+ */
+@Composable
+private fun PuceCodeUssd(
+    libelle: String,
+    auClic: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp))
+            .clickable(onClick = auClic)
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+    ) {
+        Text(
+            text = libelle,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }

@@ -6,9 +6,13 @@ import { obtenirUsageAppareil } from '@/lib/selection-appareil'
 export async function GET() {
   try {
     await marquerAppareilsInactifs()
+    // select('*') volontaire : les colonnes de solde SIM peuvent ne pas exister
+    // encore (migration non exécutée). Les nommer ferait échouer toute la page
+    // des appareils ; le mapping ci-dessous reste explicite, donc rien de
+    // sensible (jeton) ne sort de ce route handler.
     const { data, error } = await supabaseAdmin
       .from('appareils')
-      .select('id, nom, statut, jeton_fcm, sms_envoyes_heure, derniere_activite, date_creation')
+      .select('*')
       .order('statut', { ascending: false })
       .order('derniere_activite', { ascending: false })
 
@@ -29,6 +33,11 @@ export async function GET() {
         fcm_present: !!d.jeton_fcm,
         derniere_activite: d.derniere_activite,
         created_at: d.date_creation,
+        // Relevé du solde SIM (code USSD) — null tant qu'aucun relevé n'existe.
+        solde_sim: d.solde_sim ?? null,
+        solde_devise: d.solde_devise ?? null,
+        solde_texte: d.solde_texte ?? null,
+        solde_maj_le: d.solde_maj_le ?? null,
       }))
     )
 

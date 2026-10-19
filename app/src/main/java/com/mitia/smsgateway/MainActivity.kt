@@ -26,7 +26,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.auth.FirebaseAuth
+import com.mitia.smsgateway.controller.ControleurSoldeSim
+import com.mitia.smsgateway.data.local.MagasinUssd
 import com.mitia.smsgateway.data.local.PreferencesAppareil
+import com.mitia.smsgateway.data.sms.AnnuaireUssd
+import com.mitia.smsgateway.data.sms.ExecuteurUssd
+import com.mitia.smsgateway.data.sms.GestionnaireSim
+import com.mitia.smsgateway.domain.model.SoldeSim
 import com.mitia.smsgateway.service.ServicePasserelleSms
 import com.mitia.smsgateway.ui.NavigationApp
 import com.mitia.smsgateway.ui.views.EcranDemarrage
@@ -62,6 +68,18 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.RequestPermission()
     ) { accorde ->
         Log.d("MainActivity", "Permission RECEIVE_SMS accordée=$accorde")
+        compteurPermissions++
+    }
+
+    /**
+     * Permission exigée par TelephonyManager.sendUssdRequest depuis l'API 26
+     * (relevé du solde de la SIM). Ce n'est pas un accès aux appels : l'app ne
+     * compose jamais de numéro.
+     */
+    private val demandePermissionTelephone = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { accorde ->
+        Log.d("MainActivity", "Permission CALL_PHONE accordée=$accorde")
         compteurPermissions++
     }
 
@@ -121,6 +139,9 @@ class MainActivity : ComponentActivity() {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                             demandePermissionNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                         }
+                    },
+                    aDemanderPermissionTelephone = {
+                        demandePermissionTelephone.launch(Manifest.permission.CALL_PHONE)
                     },
                     auDemarrageService = { demarrerServicePasserelle() },
                     aArretService = { deconnecterEtArreter() },
@@ -191,6 +212,7 @@ fun EcranPrincipal(
     auChangementTheme: () -> Unit = {},
     aDemanderPermissionSms: () -> Unit = {},
     aDemanderPermissionNotifications: () -> Unit = {},
+    aDemanderPermissionTelephone: () -> Unit = {},
     auDemarrageService: () -> Unit = {},
     aArretService: () -> Unit = {},
     auRedemarrageService: () -> Unit = {},
@@ -221,6 +243,17 @@ fun EcranPrincipal(
     var cadenceEnvoiMs by remember { mutableStateOf(PreferencesAppareil.CADENCE_ENVOI_DEFAUT_MS) }
     var demarrageAuto by remember { mutableStateOf(true) }
     var accuseLivraison by remember { mutableStateOf(true) }
+    // Solde de la SIM (code USSD) : la carte visée est celle qui enverra le
+    // prochain SMS, car chaque opérateur a son propre code.
+    var codeUssdSolde by remember { mutableStateOf("") }
+    var souscriptionActive by remember { mutableStateOf(-1) }
+    var soldeSim by remember { mutableStateOf<SoldeSim?>(null) }
+    var operateurSim by remember { mutableStateOf("") }
+    var suggestionsUssd by remember { mutableStateOf<List<String>>(emptyList()) }
+    var verificationSoldeAuto by remember { mutableStateOf(true) }
+    var relevageSoldeEnCours by remember { mutableStateOf(false) }
+    var messageSolde by remember { mutableStateOf("") }
+    var permissionTelephone by remember { mutableStateOf(false) }
     var pret by remember { mutableStateOf(false) }
 
     // États du flux d'accueil
@@ -239,6 +272,7 @@ fun EcranPrincipal(
             ContextCompat.checkSelfPermission(
                 context, Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
+        permissionTelephone = ExecuteurUssd.permissionTelephoneAccordee(context)
         batterieOk = batterieSansRestriction(context)
         val batterie = infosBatterie(context)
         pourcentageBatterie = batterie.pourcentage
@@ -253,7 +287,30 @@ fun EcranPrincipal(
             val (quotaLu, usageLu) = conteneur.depotAppareils.chargerInstantaneQuota()
             quota = quotaLu
             usageQuota = usageLu
+            // Solde de la carte qui enverra ensuite : lecture seule, le champ de
+            // saisie du code n'est JAMAIS écrasé ici (l'utilisateur peut être
+            // en train d'y taper).
+            val souscription = GestionnaireSim.resoudreAbonnementId(context)
+            souscriptionActive = souscription
+            operateurSim = GestionnaireSim.listerSims(context)
+                .firstOrNull { it.abonnementId == souscription }?.operateur ?: ""
+            suggestionsUssd = AnnuaireUssd.suggestions(operateurSim)
+            soldeSim = MagasinUssd.obtenirSolde(context, souscription)
             pret = true
+        }
+    }
+
+    /** Recharge le code et le relevé de la carte SIM qui enverra ensuite. */
+    fun chargerSoldeDeLaCarteCourante() {
+        portee.launch {
+            val souscription = GestionnaireSim.resoudreAbonnementId(context)
+            souscriptionActive = souscription
+            codeUssdSolde = MagasinUssd.obtenirCode(context, souscription) ?: ""
+            soldeSim = MagasinUssd.obtenirSolde(context, souscription)
+            operateurSim = GestionnaireSim.listerSims(context)
+                .firstOrNull { it.abonnementId == souscription }?.operateur ?: ""
+            suggestionsUssd = AnnuaireUssd.suggestions(operateurSim)
+            verificationSoldeAuto = MagasinUssd.estVerificationAutoActive(context)
         }
     }
 
@@ -269,6 +326,7 @@ fun EcranPrincipal(
             demarrageAuto = PreferencesAppareil.estDemarrageAuto(context)
             accuseLivraison = PreferencesAppareil.estAccuseLivraisonActif(context)
         }
+        chargerSoldeDeLaCarteCourante()
         actualiser()
     }
 
@@ -339,6 +397,66 @@ fun EcranPrincipal(
                 accuseLivraison = valeur
                 portee.launch {
                     PreferencesAppareil.enregistrerAccuseLivraison(context, valeur)
+                }
+            },
+            codeUssdSolde = codeUssdSolde,
+            auChangementCodeUssdSolde = { codeUssdSolde = it; messageSolde = "" },
+            soldeSim = soldeSim,
+            operateurSim = operateurSim,
+            suggestionsUssd = suggestionsUssd,
+            verificationSoldeAuto = verificationSoldeAuto,
+            auChangementVerificationSoldeAuto = { actif ->
+                verificationSoldeAuto = actif
+                portee.launch {
+                    MagasinUssd.enregistrerVerificationAutoActive(context, actif)
+                }
+            },
+            relevageSoldeEnCours = relevageSoldeEnCours,
+            messageSolde = messageSolde,
+            permissionTelephone = permissionTelephone,
+            aDemanderPermissionTelephone = aDemanderPermissionTelephone,
+            aEnregistrerCodeUssdSolde = {
+                val saisi = codeUssdSolde
+                portee.launch {
+                    MagasinUssd.enregistrerCode(context, souscriptionActive, saisi)
+                    messageSolde = if (saisi.isBlank()) {
+                        "Code effacé : plus aucune vérification pour cette carte."
+                    } else {
+                        "Code enregistré pour cette carte."
+                    }
+                }
+            },
+            aVerifierSolde = {
+                portee.launch {
+                    relevageSoldeEnCours = true
+                    messageSolde = ""
+                    try {
+                        // La carte visée est recalculée MAINTENANT : en mode
+                        // automatique la rotation a pu la changer depuis
+                        // l'affichage du champ de saisie.
+                        val souscription = GestionnaireSim.resoudreAbonnementId(context)
+                        val identifiants = conteneur.depotAppareils.obtenirIdentifiants()
+                        when (val resultat = conteneur.controleurSoldeSim.verifierSolde(
+                            context,
+                            identifiants?.first,
+                            identifiants?.second,
+                            souscription
+                        )) {
+                            is ControleurSoldeSim.Resultat.Releve -> {
+                                messageSolde = "Solde relevé auprès de l'opérateur."
+                                soldeSim = resultat.solde
+                            }
+                            is ControleurSoldeSim.Resultat.Echec -> {
+                                messageSolde = resultat.message
+                            }
+                        }
+                        if (souscription != souscriptionActive) {
+                            // Autre carte : le champ doit montrer SON code.
+                            chargerSoldeDeLaCarteCourante()
+                        }
+                    } finally {
+                        relevageSoldeEnCours = false
+                    }
                 }
             },
             nomAppareil = nomAppareil,

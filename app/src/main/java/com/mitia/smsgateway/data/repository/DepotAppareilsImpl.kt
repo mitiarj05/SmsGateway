@@ -71,6 +71,20 @@ class DepotAppareilsImpl(private val context: Context) : DepotAppareils {
             ResultatQuota.ErreurReseau -> null
         }
 
+    override suspend fun signalerSoldeSim(
+        appareilId: String,
+        jeton: String,
+        montant: String?,
+        devise: String?,
+        texte: String?,
+        horodatage: Long
+    ): Boolean {
+        // L'URL de base doit être à jour : un relevé peut partir du service
+        // comme de l'écran Paramètres, sans passer par obtenirUrlServeur().
+        ClientApi.definirUrlBase(PreferencesAppareil.obtenirUrlServeur(context))
+        return ClientApi.signalerSoldeSim(appareilId, jeton, montant, devise, texte, horodatage)
+    }
+
     override suspend fun enregistrerSynchro(horodatage: Long, compteur: Int) =
         PreferencesAppareil.enregistrerSynchro(context, horodatage, compteur)
 

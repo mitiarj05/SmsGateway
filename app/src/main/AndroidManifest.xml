@@ -15,6 +15,10 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <!-- Exécution de codes USSD (relevé du solde de la SIM) : exigée par
+         TelephonyManager.sendUssdRequest depuis l'API 26. Ce n'est PAS un
+         accès aux appels : l'app ne compose jamais de numéro. -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application

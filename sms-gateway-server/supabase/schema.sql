@@ -129,6 +129,15 @@ ALTER TABLE taches ADD COLUMN IF NOT EXISTS programme_a TIMESTAMPTZ;
 ALTER TABLE taches ADD COLUMN IF NOT EXISTS livraison TEXT;       -- LIVRE | ECHEC_LIVRAISON
 ALTER TABLE taches ADD COLUMN IF NOT EXISTS livre_le TIMESTAMPTZ; -- date de l'accusé
 ALTER TABLE taches ADD COLUMN IF NOT EXISTS livraison_code INTEGER; -- code brut SmsManager (diagnostic)
+
+-- Solde de la carte SIM, relevé par code USSD depuis l'appareil.
+-- Un seul vrai crédit existe : la SIM du client. Ces colonnes disent où elle en
+-- est, pour qu'on sache quand recharger avant que les envois ne s'arrêtent.
+-- NULL = aucun relevé (code USSD non renseigné, ou opérateur muet).
+ALTER TABLE appareils ADD COLUMN IF NOT EXISTS solde_sim TEXT;        -- montant tel que lu
+ALTER TABLE appareils ADD COLUMN IF NOT EXISTS solde_devise TEXT;     -- FCFA, €, DH…
+ALTER TABLE appareils ADD COLUMN IF NOT EXISTS solde_texte TEXT;      -- réponse brute de l'opérateur
+ALTER TABLE appareils ADD COLUMN IF NOT EXISTS solde_maj_le TIMESTAMPTZ;
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS url_notification text;
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS secret_notification text;
 ALTER TABLE applications ADD COLUMN IF NOT EXISTS evenements_notification text[] NOT NULL DEFAULT '{sms.recu}';

@@ -7,7 +7,7 @@ import {
   Check, MoreHorizontal, Loader2, QrCode, Search, ChevronDown, Info, ArrowUpRight, WifiOff
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
-import { Appareil, Toast, DialogueConfirmation, QUOTA_SMS_PAR_HEURE } from '../../composants/interface'
+import { Appareil, Toast, DialogueConfirmation, QUOTA_SMS_PAR_HEURE, SoldeSim } from '../../composants/interface'
 import ModalAjouterAppareil from '../../composants/ModalAjouterAppareil'
 
 export default function AppareilsPage() {
@@ -206,6 +206,18 @@ export default function AppareilsPage() {
                             ? new Date(a.derniere_activite).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
                             : '—'}
                         </p>
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">SOLDE DE LA SIM</p>
+                        <div className="mt-1">
+                          <SoldeSim
+                            montant={a.solde_sim}
+                            devise={a.solde_devise}
+                            texte={a.solde_texte}
+                            majLe={a.solde_maj_le}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>

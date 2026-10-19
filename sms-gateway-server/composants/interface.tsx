@@ -13,6 +13,12 @@ export interface Appareil {
   sms_last_hour: number
   derniere_activite: string | null
   created_at: string
+  /** Solde SIM relevé par code USSD : montant tel que lu chez l'opérateur. */
+  solde_sim?: string | null
+  solde_devise?: string | null
+  /** Réponse brute de l'opérateur (servie en infobulle : jamais de chiffre inventé). */
+  solde_texte?: string | null
+  solde_maj_le?: string | null
 }
 
 export interface Tache {
@@ -89,6 +95,55 @@ export function BadgeStatut({ statut, config }: { statut: string; config: Record
     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${c.badge}`}>
       {c.point && <span className={`h-1.5 w-1.5 rounded-full ${c.point}`} />}
       {c.label}
+    </span>
+  )
+}
+
+/**
+ * Solde de la carte SIM, relevé sur le téléphone par code USSD.
+ *
+ * L'extraction du montant peut échouer (formats d'opérateurs très variables) :
+ * dans ce cas on l'annonce au lieu d'inventer un chiffre, et la réponse brute de
+ * l'opérateur reste consultable en infobulle.
+ */
+export function SoldeSim({
+  montant,
+  devise,
+  texte,
+  majLe,
+}: {
+  montant?: string | null
+  devise?: string | null
+  texte?: string | null
+  majLe?: string | null
+}) {
+  const quand =
+    majLe && !Number.isNaN(new Date(majLe).getTime())
+      ? new Date(majLe).toLocaleString('fr-FR', {
+          day: '2-digit',
+          month: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : null
+
+  if (!montant && !texte) {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-stone-100 px-2.5 py-0.5 text-[11px] font-medium text-stone-500 ring-1 ring-inset ring-stone-500/20 dark:bg-zinc-500/10 dark:text-zinc-400 dark:ring-zinc-400/20">
+        Non suivi
+      </span>
+    )
+  }
+
+  return (
+    <span className="inline-flex flex-col items-start gap-0.5">
+      <span
+        title={texte ?? undefined}
+        className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-400/20"
+      >
+        {montant ? `${montant}${devise ? ` ${devise}` : ''}` : 'Relevé sans montant'}
+      </span>
+      {quand && <span className="text-[10px] text-stone-500 dark:text-zinc-500">{quand}</span>}
     </span>
   )
 }

@@ -12,6 +12,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.mitia.smsgateway.domain.model.ElementEvenement
+import com.mitia.smsgateway.domain.model.SoldeSim
 import com.mitia.smsgateway.domain.model.TacheHistorique
 import com.mitia.smsgateway.domain.model.Statuts
 import com.mitia.smsgateway.ui.components.BarreNavigationBasse
@@ -78,6 +79,20 @@ fun NavigationApp(
     auChangementDemarrageAuto: (Boolean) -> Unit = {},
     accuseLivraison: Boolean = true,
     auChangementAccuseLivraison: (Boolean) -> Unit = {},
+    // Solde de la SIM (réglages + dernier relevé)
+    codeUssdSolde: String = "",
+    auChangementCodeUssdSolde: (String) -> Unit = {},
+    aEnregistrerCodeUssdSolde: () -> Unit = {},
+    aVerifierSolde: () -> Unit = {},
+    relevageSoldeEnCours: Boolean = false,
+    messageSolde: String = "",
+    soldeSim: SoldeSim? = null,
+    operateurSim: String = "",
+    suggestionsUssd: List<String> = emptyList(),
+    verificationSoldeAuto: Boolean = true,
+    auChangementVerificationSoldeAuto: (Boolean) -> Unit = {},
+    permissionTelephone: Boolean = false,
+    aDemanderPermissionTelephone: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var onglet by remember { mutableStateOf(OngletTableauDeBord.STATUT) }
@@ -163,6 +178,19 @@ fun NavigationApp(
                     auChangementDemarrageAuto = auChangementDemarrageAuto,
                     accuseLivraison = accuseLivraison,
                     auChangementAccuseLivraison = auChangementAccuseLivraison,
+                    codeUssdSolde = codeUssdSolde,
+                    auChangementCodeUssdSolde = auChangementCodeUssdSolde,
+                    aEnregistrerCodeUssdSolde = aEnregistrerCodeUssdSolde,
+                    aVerifierSolde = aVerifierSolde,
+                    relevageSoldeEnCours = relevageSoldeEnCours,
+                    messageSolde = messageSolde,
+                    soldeSim = soldeSim,
+                    operateurSim = operateurSim,
+                    suggestionsUssd = suggestionsUssd,
+                    verificationSoldeAuto = verificationSoldeAuto,
+                    auChangementVerificationSoldeAuto = auChangementVerificationSoldeAuto,
+                    permissionTelephone = permissionTelephone,
+                    aDemanderPermissionTelephone = aDemanderPermissionTelephone,
                 )
             }
         }

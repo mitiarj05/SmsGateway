@@ -30,6 +30,19 @@ interface DepotAppareils {
     // Quota serveur
     suspend fun obtenirQuota(appareilId: String, jeton: String): QuotaDto?
 
+    /**
+     * Transmet au serveur le solde de la SIM relevé par code USSD.
+     * @return true si le serveur a enregistré le relevé.
+     */
+    suspend fun signalerSoldeSim(
+        appareilId: String,
+        jeton: String,
+        montant: String?,
+        devise: String?,
+        texte: String?,
+        horodatage: Long
+    ): Boolean
+
     // Instantanés d'état (écrans)
     suspend fun enregistrerSynchro(horodatage: Long, compteur: Int)
     suspend fun chargerSynchro(): Pair<Long, Int>

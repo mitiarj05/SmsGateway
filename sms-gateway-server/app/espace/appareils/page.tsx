@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import ModalAjouterAppareil from '../../../composants/ModalAjouterAppareil'
+import { SoldeSim } from '../../../composants/interface'
 
 interface AppareilParc {
   id: string
@@ -15,6 +16,10 @@ interface AppareilParc {
   sms_last_hour: number
   derniere_activite: string | null
   supprimable?: boolean
+  solde_sim?: string | null
+  solde_devise?: string | null
+  solde_texte?: string | null
+  solde_maj_le?: string | null
 }
 
 export default function PageAppareilsClient() {
@@ -170,6 +175,7 @@ export default function PageAppareilsClient() {
                 <tr className="border-b border-[#1C1917]/10 text-[11px] font-semibold uppercase tracking-wide text-stone-500 dark:border-zinc-800">
                   <th className="pb-3 pr-4">TÉLÉPHONE</th>
                   <th className="pb-3 pr-4">STATUT</th>
+                  <th className="pb-3 pr-4">SOLDE SIM</th>
                   <th className="pb-3 pr-4">DÉBIT (SMS/H)</th>
                   <th className="pb-3 pr-4">DERNIÈRE ACTIVITÉ</th>
                   <th className="pb-3 text-right">ACTIONS</th>
@@ -178,7 +184,7 @@ export default function PageAppareilsClient() {
               <tbody className="divide-y divide-[#1C1917]/10 dark:divide-zinc-800">
                 {appareils.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-xs text-stone-500 dark:text-zinc-500">
+                    <td colSpan={6} className="py-10 text-center text-xs text-stone-500 dark:text-zinc-500">
                       Aucun téléphone lié — associez votre premier téléphone pour commencer à envoyer.
                     </td>
                   </tr>
@@ -208,6 +214,14 @@ export default function PageAppareilsClient() {
                       <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold${enLigne ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400'}`}>
                         <span className={`h-1.5 w-1.5 rounded-full${enLigne ? 'bg-emerald-500' : 'bg-red-500'}`} /> {enLigne ? 'En ligne' : 'Hors ligne'}
                       </span>
+                    </td>
+                    <td className="py-4 pr-4">
+                      <SoldeSim
+                        montant={a.solde_sim}
+                        devise={a.solde_devise}
+                        texte={a.solde_texte}
+                        majLe={a.solde_maj_le}
+                      />
                     </td>
                     <td className="py-4 pr-4 font-semibold">{a.sms_last_hour ?? 0} SMS/h</td>
                     <td className="py-4 pr-4 text-stone-500">{tempsEcouleFr(a.derniere_activite)}</td>

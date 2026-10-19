@@ -25,4 +25,22 @@ object Constantes {
      * certains opérateurs n'émettent aucun DLR, on ne garde pas ça pour toujours.
      */
     const val EXPIRATION_ACCUSE_LIVRAISON_MS = 48 * 60 * 60 * 1000L
+
+    // --- Solde de la carte SIM (codes USSD) ---
+
+    /**
+     * Délai minimum entre deux relevés automatiques d'une même carte SIM.
+     * Un jour : la question n'est pas de suivre le solde à la minute (la
+     * consommation réelle, c'est la passerelle qui l'écrit dans ses logs), mais
+     * de savoir quand recharger AVANT que les envois ne s'arrêtent. Interroger
+     * l'opérateur plus souvent n'apporterait rien et multiplierait les USSD.
+     */
+    const val INTERVALLE_RELEVE_SOLDE_MS = 24 * 60 * 60 * 1000L
+
+    /**
+     * Nombre d'échecs de transmission d'un relevé de solde au serveur avant
+     * d'abandonner : au-delà, le relevé est périmé et une nouvelle mesure
+     * l'aura remplacé de toute façon.
+     */
+    const val MAX_TRANSMISSIONS_SOLDE = 5
 }

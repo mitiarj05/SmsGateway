@@ -433,6 +433,52 @@ object ClientApi {
     }
 
     /**
+     * Remonte au serveur le solde relevé par code USSD sur la carte SIM.
+     *
+     * Route dédiée et sans effet sur le statut de l'appareil : un relevé de
+     * solde n'est pas un battement de cœur, il ne doit pas faire croire que le
+     * téléphone vient de scruter.
+     *
+     * `montant` ou `texte` au moins est requis (le serveur refuse un vide).
+     */
+    suspend fun signalerSoldeSim(
+        appareilId: String,
+        jeton: String,
+        montant: String?,
+        devise: String?,
+        texte: String?,
+        horodatage: Long
+    ): Boolean = withContext(Dispatchers.IO) {
+        if (montant.isNullOrBlank() && texte.isNullOrBlank()) return@withContext false
+        try {
+            val charge = JsonObject().apply {
+                if (!montant.isNullOrBlank()) addProperty("montant", montant)
+                if (!devise.isNullOrBlank()) addProperty("devise", devise)
+                if (!texte.isNullOrBlank()) addProperty("texte", texte)
+                addProperty("horodatage", horodatage)
+            }
+
+            val requete = Request.Builder()
+                .url("$urlBase/api/devices/$appareilId/solde-sim")
+                .header("Authorization", "Bearer $jeton")
+                .post(gson.toJson(charge).toRequestBody(TYPE_JSON))
+                .build()
+
+            clientHttp.newCall(requete).execute().use { reponse ->
+                if (reponse.isSuccessful) {
+                    Log.d(ETIQUETTE, "Solde SIM transmis ($montant ${devise ?: ""})")
+                    return@withContext true
+                }
+                Log.e(ETIQUETTE, "signalerSoldeSim échoué : ${reponse.code} ${reponse.message}")
+                return@withContext false
+            }
+        } catch (e: Exception) {
+            Log.e(ETIQUETTE, "Erreur signalerSoldeSim (réseau coupé ?)", e)
+            return@withContext false
+        }
+    }
+
+    /**
      * Envoie le jeton FCM au serveur.
      */
     suspend fun mettreAJourJetonFcm(

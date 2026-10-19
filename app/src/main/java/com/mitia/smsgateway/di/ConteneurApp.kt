@@ -4,6 +4,7 @@ import android.content.Context
 import com.mitia.smsgateway.controller.ControleurAppareils
 import com.mitia.smsgateway.controller.ControleurConfirmationsEnAttente
 import com.mitia.smsgateway.controller.ControleurLivraisons
+import com.mitia.smsgateway.controller.ControleurSoldeSim
 import com.mitia.smsgateway.controller.ControleurTaches
 import com.mitia.smsgateway.data.repository.DepotAppareilsImpl
 import com.mitia.smsgateway.data.repository.DepotJournauxImpl
@@ -31,4 +32,5 @@ class ConteneurApp(context: Context) {
     val controleurTaches = ControleurTaches(depotTaches, depotJournaux)
     val controleurConfirmationsEnAttente = ControleurConfirmationsEnAttente(depotTaches)
     val controleurLivraisons = ControleurLivraisons(depotTaches, depotJournaux)
+    val controleurSoldeSim = ControleurSoldeSim(depotAppareils, depotJournaux)
 }

@@ -16,9 +16,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
     await marquerAppareilsInactifs()
+    // select('*') : tolère l'absence des colonnes de solde SIM (migration non
+    // exécutée). Le mapping renvoyé reste explicite.
     const { data, error } = await supabaseAdmin
       .from('appareils')
-      .select('id, nom, statut, derniere_activite, date_creation, id_application')
+      .select('*')
       .eq('id_application', idApplication)
       .order('statut', { ascending: false })
       .order('derniere_activite', { ascending: false })
@@ -33,6 +35,12 @@ export async function GET(request: NextRequest) {
         sms_last_hour: await obtenirUsageAppareil(d.id),
         derniere_activite: d.derniere_activite,
         created_at: d.date_creation,
+        // Relevé du solde SIM : c'est le client qui paie la recharge, il doit
+        // pouvoir voir venir la panne sèche.
+        solde_sim: d.solde_sim ?? null,
+        solde_devise: d.solde_devise ?? null,
+        solde_texte: d.solde_texte ?? null,
+        solde_maj_le: d.solde_maj_le ?? null,
         // Liste déjà restreinte à MON espace : tout est supprimable.
         supprimable: true,
       }))
