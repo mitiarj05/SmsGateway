@@ -35,9 +35,13 @@ object AnalyseurSolde {
     /**
      * Repli : une réponse qui parle de « solde » sans devise explicite
      * (« Votre solde est 5000 »). On prend le premier nombre qui suit.
+     *
+     * Le nombre est refusé s'il appartient à une date : sans cette garde, un
+     * simple « Votre solde expire le 12/12/2026 » aurait affiché « 12 » comme
+     * solde au client. Une date n'est pas un montant, même sans devise.
      */
     private val MOTIF_APRES_SOLDE = Regex(
-        """(?:solde|cr[eé]dit|balance)[^0-9]{0,24}(\d[\d .]*)""",
+        """(?:solde|cr[eé]dit|balance)[^0-9]{0,24}(\d[\d .]*)(?![\d/]*/)""",
         RegexOption.IGNORE_CASE
     )
 
