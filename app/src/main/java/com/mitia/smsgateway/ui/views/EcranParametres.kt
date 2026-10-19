@@ -26,6 +26,7 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -82,6 +83,8 @@ fun EcranParametres(
     modifier: Modifier = Modifier,
     themeSombre: Boolean = true,
     auChangementTheme: () -> Unit = {},
+    cadenceEnvoiMs: Int = 0,
+    auChangementCadence: (Int) -> Unit = {},
 ) {
     val context = LocalContext.current
     var copie by remember { mutableStateOf(false) }
@@ -327,7 +330,79 @@ fun EcranParametres(
 
             Spacer(Modifier.height(14.dp))
 
-            // Carte 3 : Préférences
+            // Carte 3 : Cadence d'envoi (temporisation anti-ban)
+            CarteGlass(modifier = Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "CADENCE D'ENVOI",
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.2.sp
+                        )
+
+                        ChipStatut(
+                            libelle = if (cadenceEnvoiMs > 0) "ESPACÉ" else "AU PLUS VITE",
+                            tonalite = if (cadenceEnvoiMs > 0) TonaliteChip.VERT else TonaliteChip.AMBRE,
+                        )
+                    }
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(prefIconBg)
+                                .border(1.dp, prefIconBd, RoundedCornerShape(11.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Filled.Timer, contentDescription = null, tint = prefIconTxt, modifier = Modifier.size(16.dp))
+                        }
+                        Spacer(Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = if (cadenceEnvoiMs > 0) "≈ ${cadenceEnvoiMs / 1000f} s entre deux SMS"
+                                else "Aucune pause entre les SMS",
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(Modifier.height(1.dp))
+                            Text(
+                                text = "Variation aléatoire ±25 % incluse",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.secondaryContainer
+                            )
+                        }
+                    }
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ChoixCadence("Aucune", 0, cadenceEnvoiMs, auChangementCadence, Modifier.weight(1f))
+                        ChoixCadence("1 s", 1_000, cadenceEnvoiMs, auChangementCadence, Modifier.weight(1f))
+                        ChoixCadence("3 s", 3_000, cadenceEnvoiMs, auChangementCadence, Modifier.weight(1f))
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ChoixCadence("8 s", 8_000, cadenceEnvoiMs, auChangementCadence, Modifier.weight(1f))
+                        ChoixCadence("15 s", 15_000, cadenceEnvoiMs, auChangementCadence, Modifier.weight(1f))
+                        ChoixCadence("30 s", 30_000, cadenceEnvoiMs, auChangementCadence, Modifier.weight(1f))
+                    }
+
+                    Text(
+                        text = "Espace les envois d'un même lot pour imiter un usage humain et éviter le blocage de la carte SIM par l'opérateur. Sans effet si une seule tâche arrive.",
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        fontSize = 11.sp
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(14.dp))
+
+            // Carte 4 : Préférences
             CarteGlass(modifier = Modifier.fillMaxWidth()) {
                 Column {
                     Text(
@@ -418,7 +493,7 @@ fun EcranParametres(
 
             Spacer(Modifier.height(14.dp))
 
-            // Carte 4 : Compte — déconnexion
+            // Carte 5 : Compte — déconnexion
             CarteGlass(modifier = Modifier.fillMaxWidth()) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
@@ -475,5 +550,40 @@ fun EcranParametres(
                 )
             }
         }
+    }
+}
+
+/**
+ * Case de choix d'une cadence d'envoi (préréglage en millisecondes).
+ * L'option active est peinte en dégradé indigo, les autres en surface neutre.
+ */
+@Composable
+private fun ChoixCadence(
+    libelle: String,
+    valeurMs: Int,
+    valeurActiveMs: Int,
+    auChoix: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val actif = valeurActiveMs == valeurMs
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (actif) GradientIndigoStart else MaterialTheme.colorScheme.surface)
+            .border(
+                1.dp,
+                if (actif) GradientIndigoStart else MaterialTheme.colorScheme.outline,
+                RoundedCornerShape(12.dp)
+            )
+            .clickable { auChoix(valeurMs) }
+            .padding(vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = libelle,
+            color = if (actif) Color.White else MaterialTheme.colorScheme.onSurface,
+            fontSize = 11.5.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }

@@ -72,6 +72,8 @@ fun NavigationApp(
     aOuvrirReglagesBatterie: () -> Unit,
     themeSombre: Boolean = true,
     auChangementTheme: () -> Unit = {},
+    cadenceEnvoiMs: Int = 0,
+    auChangementCadence: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var onglet by remember { mutableStateOf(OngletTableauDeBord.STATUT) }
@@ -151,6 +153,8 @@ fun NavigationApp(
                     aOuvrirReglagesBatterie = aOuvrirReglagesBatterie,
                     themeSombre = themeSombre,
                     auChangementTheme = auChangementTheme,
+                    cadenceEnvoiMs = cadenceEnvoiMs,
+                    auChangementCadence = auChangementCadence,
                 )
             }
         }

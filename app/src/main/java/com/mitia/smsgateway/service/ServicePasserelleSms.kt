@@ -10,6 +10,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.mitia.smsgateway.AppPasserelleSms
+import com.mitia.smsgateway.data.local.PreferencesAppareil
 import com.mitia.smsgateway.di.ConteneurApp
 import com.mitia.smsgateway.domain.model.ResultatTaches
 import com.mitia.smsgateway.util.Constantes
@@ -163,11 +164,16 @@ class ServicePasserelleSms : Service() {
                             cont.depotJournaux.journaliser(
                                 "sync file d'attente · ${resultatTaches.taches.size} tâche(s)"
                             )
+                            // Cadence relue à chaque lot : un réglage changé dans
+                            // l'écran Paramètres s'applique dès la synchro suivante.
+                            val cadenceEnvoiMs =
+                                PreferencesAppareil.obtenirCadenceEnvoiMs(applicationContext)
                             cont.controleurTaches.traiterTaches(
                                 applicationContext,
                                 appareilId,
                                 jeton,
-                                resultatTaches.taches
+                                resultatTaches.taches,
+                                cadenceEnvoiMs
                             ) { texte -> mettreAJourNotification(texte) }
                         } else {
                             Log.d(ETIQUETTE, "Scrutation des tâches... aucune")

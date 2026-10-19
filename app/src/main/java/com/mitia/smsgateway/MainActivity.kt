@@ -218,6 +218,7 @@ fun EcranPrincipal(
     var quota by remember { mutableStateOf(20) }
     var usageQuota by remember { mutableStateOf(0) }
     var messageParametres by remember { mutableStateOf("") }
+    var cadenceEnvoiMs by remember { mutableStateOf(PreferencesAppareil.CADENCE_ENVOI_DEFAUT_MS) }
     var pret by remember { mutableStateOf(false) }
 
     // États du flux d'accueil
@@ -262,6 +263,7 @@ fun EcranPrincipal(
             conteneur.depotAppareils.marquerIntegrationTerminee(true)
             onboardingVu = PreferencesAppareil.estOnboardingVu(context)
             connecteSession = PreferencesAppareil.estConnecteSession(context)
+            cadenceEnvoiMs = PreferencesAppareil.obtenirCadenceEnvoiMs(context)
         }
         actualiser()
     }
@@ -314,6 +316,13 @@ fun EcranPrincipal(
             modifier = modifier,
             themeSombre = themeSombre,
             auChangementTheme = auChangementTheme,
+            cadenceEnvoiMs = cadenceEnvoiMs,
+            auChangementCadence = { valeur ->
+                cadenceEnvoiMs = valeur
+                portee.launch {
+                    PreferencesAppareil.enregistrerCadenceEnvoiMs(context, valeur)
+                }
+            },
             nomAppareil = nomAppareil,
             estEnLigne = connecte,
             serviceActif = serviceActif,

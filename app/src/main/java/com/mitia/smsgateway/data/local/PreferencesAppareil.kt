@@ -40,9 +40,13 @@ object PreferencesAppareil {
     private val CLE_SIM_COMPTEUR = intPreferencesKey("sim_counter")
     private val CLE_THEME_SOMBRE = booleanPreferencesKey("dark_theme")
     private val CLE_DEMARRAGE_AUTO = booleanPreferencesKey("demarrage_auto")
+    private val CLE_CADENCE_ENVOI_MS = intPreferencesKey("cadence_envoi_ms")
 
     const val DEFAUT_SERVEUR_HOTE = "192.168.4.147"
     const val DEFAUT_SERVEUR_PORT = "3000"
+
+    /** Cadence d'envoi par défaut : 3 s entre deux SMS (anti-blocage SIM). */
+    const val CADENCE_ENVOI_DEFAUT_MS = 3_000
 
     /** Serveur de production : aucune saisie nécessaire par défaut. */
     const val DEFAUT_SERVEUR_URL = "https://smstsika.vercel.app"
@@ -86,6 +90,26 @@ object PreferencesAppareil {
 
     suspend fun enregistrerDemarrageAuto(context: Context, actif: Boolean) {
         context.magasinDonnees.edit { prefs -> prefs[CLE_DEMARRAGE_AUTO] = actif }
+    }
+
+    /**
+     * Cadence d'envoi : délai visé entre deux SMS consécutifs, en millisecondes.
+     *
+     * 0 = aucun espacement (envoi au plus vite). Toute valeur > 0 est appliquée
+     * avec une variation aléatoire de ±25 % par ControleurTaches, pour ne pas
+     * reproduire une cadence mécanique reconnue par les filtres opérateur.
+     */
+    suspend fun obtenirCadenceEnvoiMs(context: Context): Int {
+        return context.magasinDonnees.data.first()[CLE_CADENCE_ENVOI_MS]
+            ?: CADENCE_ENVOI_DEFAUT_MS
+    }
+
+    suspend fun enregistrerCadenceEnvoiMs(context: Context, millisecondes: Int) {
+        context.magasinDonnees.edit { prefs ->
+            // Plafond 60 s : au-delà, un lot de 5 tâches immobiliserait la boucle
+            // de scrutation trop longtemps (l'appareil ne verrait plus les pushs).
+            prefs[CLE_CADENCE_ENVOI_MS] = millisecondes.coerceIn(0, 60_000)
+        }
     }
 
     /**
