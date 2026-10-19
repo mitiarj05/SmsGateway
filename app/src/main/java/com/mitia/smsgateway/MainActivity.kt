@@ -276,6 +276,11 @@ fun EcranPrincipal(
      */
     suspend fun chargerCartesUssd(): List<CarteUssd> {
         val sims = GestionnaireSim.listerSims(context)
+        if (sims.size == 1) {
+            // Une seule carte : les réglages enregistrés avant qu'Android sache la
+            // nommer (clé « defaut ») la rejoignent ici, une fois pour toutes.
+            MagasinUssd.reprendreDonneesDefaut(context, sims.first().abonnementId)
+        }
         if (sims.isEmpty()) {
             // Sans la permission téléphone, la liste des cartes est vide : les
             // relevés déjà connus restent consultables (tableau de bord).

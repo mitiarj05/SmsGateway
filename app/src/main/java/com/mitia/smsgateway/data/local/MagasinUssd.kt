@@ -66,27 +66,24 @@ object MagasinUssd {
 
     // -------------------- Derniers relevés --------------------
 
+    /**
+     * Relevé d'une carte, lu PAR SA CLÉ — comme l'écriture.
+     *
+     * Chercher sur le champ `souscriptionId` de l'objet serait fragile : après
+     * une reprise de données (voir reprendreDonneesDefaut), la clé et le champ
+     * peuvent différer une fraction de seconde, et le relevé deviendrait
+     * invisible. La clé, elle, ne ment jamais.
+     */
     suspend fun obtenirSolde(context: Context, souscriptionId: Int): SoldeSim? =
-        obtenirSoldes(context).firstOrNull { it.souscriptionId == souscriptionId }
+        decoderSoldes(context.magasinPrefsPartage.data.first()[CLE_SOLDES])[cle(souscriptionId)]
 
     /** Tous les relevés connus (une entrée par carte relevée). */
-    suspend fun obtenirSoldes(context: Context): List<SoldeSim> {
-        val brut = context.magasinPrefsPartage.data.first()[CLE_SOLDES] ?: return emptyList()
-        return runCatching {
-            gson.fromJson<Map<String, SoldeSim>>(brut, typeSoldes).values.toList()
-        }.getOrElse {
-            Log.w(ETIQUETTE, "Relevés illisibles, ignorés", it)
-            emptyList()
-        }
-    }
+    suspend fun obtenirSoldes(context: Context): List<SoldeSim> =
+        decoderSoldes(context.magasinPrefsPartage.data.first()[CLE_SOLDES]).values.toList()
 
     suspend fun enregistrerSolde(context: Context, solde: SoldeSim) {
         context.magasinPrefsPartage.edit { prefs ->
-            val carte = runCatching {
-                prefs[CLE_SOLDES]?.let {
-                    gson.fromJson<Map<String, SoldeSim>>(it, typeSoldes).toMutableMap()
-                } ?: mutableMapOf()
-            }.getOrElse { mutableMapOf() }
+            val carte = decoderSoldes(prefs[CLE_SOLDES]).toMutableMap()
             carte[cle(solde.souscriptionId)] = solde
             prefs[CLE_SOLDES] = gson.toJson(carte)
         }
@@ -135,4 +132,72 @@ object MagasinUssd {
         runCatching {
             brut?.let { gson.fromJson<Map<String, Long>>(it, typeTentatives) } ?: emptyMap()
         }.getOrElse { emptyMap() }
+
+    private fun decoderSoldes(brut: String?): Map<String, SoldeSim> =
+        runCatching {
+            brut?.let { gson.fromJson<Map<String, SoldeSim>>(it, typeSoldes) } ?: emptyMap()
+        }.getOrElse {
+            Log.w(ETIQUETTE, "Relevés illisibles, ignorés", it)
+            emptyMap()
+        }
+
+    // -------------------- Reprise des données « defaut » --------------------
+
+    /**
+     * Fait rejoindre à une VRAIE carte les données enregistrées sous la clé « defaut ».
+     *
+     * La clé « defaut » sert quand l'appareil ne sait pas encore nommer sa carte
+     * (permission « Téléphone » non accordée) : code, relevé et date de tentative
+     * s'y retrouvent, sans lien avec un identifiant d'abonnement. Dès que la
+     * carte devient identifiable, ces données doivent la suivre — sinon
+     * l'utilisateur verrait un champ vide alors que son code est bien enregistré.
+     *
+     * Trois garde-fous : rien n'est repris sans identifiant valide, rien n'est
+     * repris si la carte visée a DÉJÀ une valeur (on n'écrase jamais un réglage
+     * fait exprès pour cette carte), et l'entrée « defaut » n'est retirée
+     * qu'après recopie.
+     *
+     * @return vrai si quelque chose a été repris.
+     */
+    suspend fun reprendreDonneesDefaut(context: Context, souscriptionId: Int): Boolean {
+        if (souscriptionId < 0) return false
+        val source = cle(-1)
+        val cible = cle(souscriptionId)
+        if (source == cible) return false
+
+        var repris = false
+        context.magasinPrefsPartage.edit { prefs ->
+            val codes = decoderCarte(prefs[CLE_CODES])
+            codes[source]?.let { ancien ->
+                if (codes[cible] == null) {
+                    codes[cible] = ancien
+                    codes.remove(source)
+                    prefs[CLE_CODES] = gson.toJson(codes)
+                    repris = true
+                }
+            }
+
+            val soldes = decoderSoldes(prefs[CLE_SOLDES]).toMutableMap()
+            soldes[source]?.let { ancien ->
+                if (soldes[cible] == null) {
+                    soldes[cible] = ancien.copy(souscriptionId = souscriptionId)
+                    soldes.remove(source)
+                    prefs[CLE_SOLDES] = gson.toJson(soldes)
+                    repris = true
+                }
+            }
+
+            val tentatives = decoderTentatives(prefs[CLE_TENTATIVES]).toMutableMap()
+            tentatives[source]?.let { ancienne ->
+                if (tentatives[cible] == null) {
+                    tentatives[cible] = ancienne
+                    tentatives.remove(source)
+                    prefs[CLE_TENTATIVES] = gson.toJson(tentatives)
+                    repris = true
+                }
+            }
+        }
+        if (repris) Log.d(ETIQUETTE, "Données « defaut » reprises pour la carte $souscriptionId")
+        return repris
+    }
 }

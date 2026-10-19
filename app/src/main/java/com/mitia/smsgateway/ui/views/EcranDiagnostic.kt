@@ -472,6 +472,83 @@ fun EcranDiagnostic(
                             }
                         }
                     }
+
+                    // Cartes connues du stockage mais que la liste matérielle ne
+                    // montre pas : sans la permission « Téléphone », Android ne
+                    // révèle AUCUNE carte. Le relevé déjà obtenu doit pourtant
+                    // rester consultable — et son code modifiable.
+                    cartesUssd
+                        .filter { connue -> cartesSim.none { it.abonnementId == connue.souscriptionId } }
+                        .forEach { carte ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
+                                    .padding(14.dp)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(34.dp)
+                                                .clip(RoundedCornerShape(11.dp))
+                                                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                Icons.Filled.SimCard,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.secondaryContainer,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                        Spacer(Modifier.width(12.dp))
+                                        Column {
+                                            Text(
+                                                text = if (carte.operateur.isNotBlank()) {
+                                                    "Carte ${carte.operateur}"
+                                                } else {
+                                                    "Carte SIM de cet appareil"
+                                                },
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                fontSize = 13.5.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            Spacer(Modifier.height(1.dp))
+                                            Text(
+                                                text = "emplacement illisible sans la permission « Téléphone »",
+                                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                                fontSize = 11.sp
+                                            )
+                                        }
+                                    }
+
+                                    BlocSoldeCarte(
+                                        carte = carte,
+                                        codeSaisi = codesSaisis[carte.souscriptionId] ?: carte.code,
+                                        auChangementCode = { valeur ->
+                                            codesSaisis = codesSaisis + (carte.souscriptionId to valeur)
+                                        },
+                                        aEnregistrerCode = {
+                                            aEnregistrerCodeUssd(
+                                                carte.souscriptionId,
+                                                codesSaisis[carte.souscriptionId] ?: carte.code
+                                            )
+                                        },
+                                        aVerifier = { aVerifierSolde(carte.souscriptionId) },
+                                        verificationEnCours = relevageSoldeEnCours == carte.souscriptionId,
+                                        message = messagesSolde[carte.souscriptionId].orEmpty(),
+                                        permissionUssd = permissionUssd,
+                                        aDemanderPermissionUssd = aDemanderPermissionUssd,
+                                    )
+                                }
+                            }
+                        }
                 }
             }
         }
@@ -539,7 +616,7 @@ private fun BlocSoldeCarte(
 
         Text(
             text = when {
-                solde?.montant != null -> listOfNotNull(solde.montant, solde.devise).joinToString(" ")
+                solde?.montant != null -> libelleSolde(solde)
                 !solde?.texte.isNullOrBlank() -> solde!!.texte!!
                 else -> "Aucun relevé pour cette carte"
             },

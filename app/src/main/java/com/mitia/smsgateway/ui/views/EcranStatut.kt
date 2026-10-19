@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mitia.smsgateway.data.sms.AnalyseurSolde
 import com.mitia.smsgateway.domain.model.CarteUssd
 import com.mitia.smsgateway.domain.model.SoldeSim
 import com.mitia.smsgateway.ui.components.BoutonNeon
@@ -290,10 +291,7 @@ fun EcranStatut(
 
                 if (carteCritique != null) {
                     Text(
-                        text = listOfNotNull(
-                            carteCritique.solde?.montant,
-                            carteCritique.solde?.devise
-                        ).joinToString(" "),
+                        text = libelleSolde(carteCritique.solde),
                         fontSize = 26.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = NeonCyan
@@ -561,3 +559,17 @@ private fun libelleCarte(carte: CarteUssd): String = buildList {
     if (carte.operateur.isNotBlank()) add(carte.operateur)
     if (isEmpty()) add("carte SIM")
 }.joinToString(" · ")
+
+/**
+ * « 88 AR » : montant et devise tels que lus.
+ *
+ * Si la devise manque au relevé, on la relit dans le texte brut : les premiers
+ * relevés, antérieurs à la reconnaissance de l'ariary, l'avaient perdue. On ne
+ * réinvente rien — on relit ce que l'opérateur avait écrit.
+ */
+internal fun libelleSolde(solde: SoldeSim?): String {
+    val montant = solde?.montant?.takeIf { it.isNotBlank() } ?: return "aucun relevé"
+    val devise = solde.devise?.takeIf { it.isNotBlank() }
+        ?: AnalyseurSolde.analyser(solde.texte.orEmpty()).second
+    return listOfNotNull(montant, devise).joinToString(" ")
+}
