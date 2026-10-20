@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Webhook, KeyRound, FlaskConical, Loader2, Zap, CheckCircle2, ArrowUpRight } from 'lucide-react'
+import { Webhook, KeyRound, FlaskConical, Loader2, Zap, CheckCircle2, ArrowUpRight, Download } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import { Toast } from '../../../composants/interface'
 
@@ -316,6 +316,11 @@ export default function PageNotificationsEspace() {
             )}
 
             <div className="flex items-center gap-3 pt-2 border-t border-[#1C1917]/10 dark:border-zinc-800">
+              <a href="/api/espace/notifications/recepteur" download
+                title="Télécharger sms-recu.php — URL et secret déjà écrits dedans"
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#1C1917] px-4 py-2 text-xs font-semibold text-white hover:bg-stone-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200">
+                <Download className="h-3.5 w-3.5" /> Télécharger le récepteur
+              </a>
               <button onClick={regenererSecret} className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 px-4 py-2 text-xs font-semibold text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:text-zinc-300">
                 <KeyRound className="h-3.5 w-3.5" /> Générer un secret
               </button>
