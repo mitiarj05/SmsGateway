@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Webhook, KeyRound, FlaskConical, Loader2, Zap, CheckCircle2, ArrowUpRight, Download } from 'lucide-react'
+import { Webhook, FlaskConical, Loader2, Zap, CheckCircle2, ArrowUpRight, Download } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import { Toast } from '../../../composants/interface'
 
@@ -22,7 +22,6 @@ export default function PageNotificationsEspace() {
   const [url, setUrl] = useState('')
   const [evenements, setEvenements] = useState<string[]>(['sms.recu'])
   const [actifs, setActifs] = useState(true)
-  const [secretVisible, setSecretVisible] = useState<string | null>(null)
   const [resultatTest, setResultatTest] = useState<string | null>(null)
   const [envois, setEnvois] = useState<Envoi[]>([])
   const [chargement, setChargement] = useState(false)
@@ -112,7 +111,6 @@ export default function PageNotificationsEspace() {
       })
       const donnees = await reponse.json().catch(() => ({}))
       if (reponse.ok && donnees.url_notification) {
-        if (donnees.secret_notification_visible) setSecretVisible(donnees.secret_notification_visible)
         setUrl(donnees.url_notification)
         setBoutiqueConnectee(true)
         afficherNotification('succes', donnees.message ?? 'Boutique connectée en 1 Clic !')
@@ -124,21 +122,6 @@ export default function PageNotificationsEspace() {
       afficherNotification('erreur', 'Erreur réseau lors de la connexion')
     } finally {
       setConnexionEnCours(false)
-    }
-  }
-
-  async function regenererSecret() {
-    if (!confirm('Régénérer le secret ? L’ancien ne fonctionnera plus.')) return
-    try {
-      const { reponse, donnees } = await appeler({ regenerer_secret: true })
-      if (reponse.ok && donnees?.secret_notification_visible) {
-        setSecretVisible(donnees.secret_notification_visible)
-        afficherNotification('succes', 'Nouveau secret généré — copiez-le maintenant')
-      } else {
-        afficherNotification('erreur', donnees?.error ?? 'Erreur')
-      }
-    } catch {
-      afficherNotification('erreur', 'Erreur réseau')
     }
   }
 
@@ -304,30 +287,35 @@ export default function PageNotificationsEspace() {
               <span>Notifications actives</span>
             </label>
 
-            {secretVisible && (
-              <div className="rounded-xl bg-amber-50 p-3 ring-1 ring-amber-600/20 dark:bg-amber-500/10">
-                <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-300">Secret — copiez-le maintenant (affiché une seule fois) :</p>
-                <code className="mt-1 block break-all font-mono text-[11px] text-amber-900 dark:text-amber-200">{secretVisible}</code>
-              </div>
-            )}
-
             {resultatTest && (
               <p className="text-xs font-semibold text-stone-600 dark:text-zinc-300">Test : {resultatTest}</p>
             )}
 
             <div className="flex items-center gap-3 pt-2 border-t border-[#1C1917]/10 dark:border-zinc-800">
               <a href="/api/espace/notifications/recepteur" download
-                title="Télécharger sms-recu.php — URL et secret déjà écrits dedans"
+                title="Télécharger sms-recu.php — l'adresse et le secret sont déjà écrits dedans"
                 className="inline-flex items-center gap-1.5 rounded-full bg-[#1C1917] px-4 py-2 text-xs font-semibold text-white hover:bg-stone-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200">
                 <Download className="h-3.5 w-3.5" /> Télécharger le récepteur
               </a>
-              <button onClick={regenererSecret} className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 px-4 py-2 text-xs font-semibold text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:text-zinc-300">
-                <KeyRound className="h-3.5 w-3.5" /> Générer un secret
-              </button>
               <button onClick={tester} className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 px-4 py-2 text-xs font-semibold text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:text-zinc-300">
                 <FlaskConical className="h-3.5 w-3.5" /> Tester le webhook
               </button>
             </div>
+            <p className="text-[11px] leading-relaxed text-stone-500 dark:text-zinc-400">
+              Déposez le fichier sur votre hébergement, puis copiez son adresse ci-dessus et testez.
+              Votre secret de signature vit dedans — vous n'avez jamais à le recopier.
+            </p>
+            <a
+              href="/api/espace/notifications/recepteur?nouveau=1"
+              onClick={(e) => {
+                if (!confirm('Fabriquer une nouvelle serrure ? L\u2019ancien fichier déjà en ligne chez vous ne sera plus accepté — re-téléversez le nouveau fichier aussitôt.')) {
+                  e.preventDefault()
+                }
+              }}
+              className="inline-block text-[11px] font-semibold text-amber-700 underline decoration-dotted underline-offset-2 hover:text-amber-800 dark:text-amber-400"
+            >
+              Fuite ? Télécharger le récepteur avec un nouveau secret
+            </a>
           </div>
 
           {/* Card 3 : Dernières livraisons webhook */}

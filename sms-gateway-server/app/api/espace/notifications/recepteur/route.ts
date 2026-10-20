@@ -10,6 +10,9 @@ import { fabriquerSecretNotification } from '@/lib/notifications'
  * il ne gère jamais son secret à la main.
  * Session espace. Le secret est créé au vol si absent (ensuite le serveur
  * signera avec celui-là) : idempotent.
+ * Variante `?nouveau=1` — « la serrure a fui » : fabrique un NOUVEAU secret
+ * (l'ancien meurt aussitôt) et livre un fichier récepteur qui l'embarque.
+ * Le client n'a qu'à re-téléverser le fichier téléchargé.
  */
 
 function fabriquerRecepteurPhp(nomApplication: string, urlConnue: string | null, secret: string): string {
@@ -91,9 +94,11 @@ export async function GET(request: NextRequest) {
     }
     const fiche = data as { nom: string; url_notification: string | null; secret_notification: string | null }
 
-    // Secret assuré : s'il n'existe pas encore, on le fabrique une fois pour
-    // toutes (le serveur signera tous les webhooks avec ce même secret).
-    let secret = fiche.secret_notification ?? null
+    // Secret assuré : s'il n'existe pas encore — ou si l'on demande une
+    // rotation (« ?nouveau=1 », le cas d'une fuite) — on le fabrique une fois
+    // pour toutes (le serveur signera tous les webhooks avec ce même secret).
+    const serrureFuiee = new URL(request.url).searchParams.get('nouveau') === '1'
+    let secret = serrureFuiee ? null : fiche.secret_notification ?? null
     if (!secret) {
       secret = fabriquerSecretNotification()
       const { error: erreurSecret } = await supabaseAdmin
