@@ -125,22 +125,9 @@ export default function PageApiEspace() {
           <div className="rounded-2xl bg-[#090d16] p-4 font-mono text-xs overflow-x-auto border border-white/10 leading-relaxed text-stone-400">
             <pre>{codeSmsCurl}</pre>
           </div>
-        </div>
-
-        {/* Bloc 3 : Paramètres de la requête */}
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
-          <h3 className="text-sm font-bold text-[#1C1917] dark:text-white">Paramètres requis (JSON)</h3>
-          <div className="space-y-2 text-xs font-mono text-stone-600 dark:text-zinc-400">
-            <div className="rounded-xl bg-stone-100 p-3 border border-[#1C1917]/10 dark:bg-zinc-800/50 dark:border-zinc-700">
-              <span className="font-bold text-[#1C1917] dark:text-white">cle_api</span> : votre clé d&apos;API — celle du bloc ci-dessus, passée dans le corps de l&apos;appel.
-            </div>
-            <div className="rounded-xl bg-stone-100 p-3 border border-[#1C1917]/10 dark:bg-zinc-800/50 dark:border-zinc-700">
-              <span className="font-bold text-[#1C1917] dark:text-white">to</span> : le destinataire au format international (ex: <code className="text-blue-600">+261340000000</code>). Une liste de numéros est acceptée pour un envoi groupé.
-            </div>
-            <div className="rounded-xl bg-stone-100 p-3 border border-[#1C1917]/10 dark:bg-zinc-800/50 dark:border-zinc-700">
-              <span className="font-bold text-[#1C1917] dark:text-white">message</span> : texte du SMS — 160 caractères par segment, plusieurs segments automatiques au-delà.
-            </div>
-          </div>
+          <p className="text-[11px] text-stone-400">
+            Trois champs, rien de plus. Envoi groupé ? Passez une liste de numéros à <code className="font-mono text-stone-300">to</code>.
+          </p>
         </div>
 
         {/* Réponse du serveur (la forme réelle : une tâche, un appareil) */}
