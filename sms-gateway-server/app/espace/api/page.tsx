@@ -125,22 +125,15 @@ export default function PageApiEspace() {
           <div className="rounded-2xl bg-[#090d16] p-4 font-mono text-xs overflow-x-auto border border-white/10 leading-relaxed text-stone-400">
             <pre>{codeSmsCurl}</pre>
           </div>
-          <p className="text-[11px] text-stone-400">
+          <p className="text-[11px] leading-relaxed text-stone-400">
             Trois champs, rien de plus. Envoi groupé ? Passez une liste de numéros à <code className="font-mono text-stone-300">to</code>.
+            <br />
+            Réponse : <span className="font-mono text-stone-300">201 Created</span> — « SMS mis en file d&apos;attente ».
+            Un téléphone le réclame, émet le SMS ; le verdict se suit dans <Link href="/espace/envois" className="font-semibold text-stone-300 underline decoration-dotted underline-offset-2">Envois</Link>.
           </p>
         </div>
 
-        {/* Réponse du serveur (la forme réelle : une tâche, un appareil) */}
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
-          <h3 className="text-sm font-bold text-[#1C1917] dark:text-white">Réponse du serveur (Succès 201 Created)</h3>
-          <p className="text-xs text-stone-600 dark:text-zinc-400">
-            La requête crée une <strong>tâche</strong> : un téléphone lui-même la réclame, émet le SMS, puis
-            rend son verdict. Ce verdict, vous le suivez dans votre espace&nbsp;→&nbsp;Envois.
-          </p>
-          <div className="rounded-xl bg-slate-900 p-3.5 font-mono text-xs text-emerald-400 overflow-x-auto">
-            {`{\n  "message": "SMS mis en file d'attente",\n  "task": { "id": "…", "statut": "EN_ATTENTE", "numero_destinataire": "+261340000000" },\n  "push_sent": true,\n  "device_selected": { "id": "…", "nom": "RJ Mitia" },\n  "client": { "id": "…", "nom": "Votre boutique" }\n}`}
-          </div>
-        </div>
+        {/* Réponse du serveur : la forme réelle gardée en une ligne ci-dessus */}
 
         {/* Bloc 4 : Recevoir — la moitié qui donne vie au site */}
         <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
