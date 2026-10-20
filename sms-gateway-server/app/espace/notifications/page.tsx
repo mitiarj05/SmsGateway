@@ -171,8 +171,8 @@ export default function PageNotificationsEspace() {
         {/* Left Column (2 cols) */}
         <div className="xl:col-span-2 space-y-4">
 
-          {/* Card 1 : Connexion Boutique en 1 clic — carte encre, accents papier/ambre */}
-          <div className="rounded-[1.5rem] bg-[#1C1917] p-6 text-white shadow-card space-y-5">
+          {/* Card 1 : Connexion Boutique en 1 clic — comme la carte « Besoin d'aide » (navy #1F1A52) */}
+          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white">
@@ -180,7 +180,7 @@ export default function PageNotificationsEspace() {
                 </div>
                 <div>
                   <h2 className="text-base font-bold">Connexion Boutique en 1 clic (Auto-Connect)</h2>
-                  <p className="text-xs text-stone-300">
+                  <p className="text-xs text-white/70">
                     Saisissez l'adresse de votre site web : SMSTSIKA s'occupe d'injecter la clé et de lier la passerelle automatiquement.
                   </p>
                 </div>
@@ -191,7 +191,7 @@ export default function PageNotificationsEspace() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-stone-300 mb-2">Sélectionnez votre plateforme :</label>
+              <label className="block text-xs font-semibold text-white/70 mb-2">Sélectionnez votre plateforme :</label>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 text-xs font-semibold">
                 {[
                   { id: 'WooCommerce', label: 'WooCommerce / WordPress' },
@@ -211,7 +211,7 @@ export default function PageNotificationsEspace() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-stone-300">Adresse de votre boutique :</label>
+              <label className="block text-xs font-semibold text-white/70">Adresse de votre boutique :</label>
               <div className="flex flex-col gap-2.5 sm:flex-row">
                 <input
                   type="url"
