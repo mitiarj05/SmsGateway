@@ -155,9 +155,9 @@ async function lier(idAppareil) {
   if (!idAppareil) throw new Error('Donnez l\'id de l\'appareil (voir : node scripts/outils.mjs appareils)')
   const { lienBase, cleService } = lireEnvServeur()
   const fiche = await trouverFiche(lienBase, cleService)
-  const reponse = await rest(lienBase, cleService, `/rest/v1/appareils?select=id,nom,id_application&id=eq.${encodeURIComponent(idAppareil)}*`)
-  const appareils = await reponse.json()
-  const appareil = Array.isArray(appareils) && appareils[0] ? appareils[0] : null
+  const reponse = await rest(lienBase, cleService, '/rest/v1/appareils?select=id,nom,id_application')
+  const tous = await reponse.json()
+  const appareil = Array.isArray(tous) ? tous.find((a) => String(a.id).startsWith(idAppareil)) : null
   if (!appareil) throw new Error('Appareil introuvable pour le préfixe ' + idAppareil)
   const ancienne = appareil.id_application || null
   writeFileSync(cheminBrouillon, JSON.stringify({ appareil: appareil.id, ancienne_application: ancienne }, null, 2), 'utf-8')
