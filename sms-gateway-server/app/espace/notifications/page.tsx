@@ -171,8 +171,8 @@ export default function PageNotificationsEspace() {
         {/* Left Column (2 cols) */}
         <div className="xl:col-span-2 space-y-4">
 
-          {/* Card 1 : Connexion Boutique en 1 clic (#4f46e5 to #4338ca gradient) */}
-          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#4f46e5] to-[#4338ca] p-6 text-white shadow-card space-y-5">
+          {/* Card 1 : Connexion Boutique en 1 clic — carte encre, accents papier/ambre */}
+          <div className="rounded-[1.5rem] bg-[#1C1917] p-6 text-white shadow-card space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white">
@@ -180,7 +180,7 @@ export default function PageNotificationsEspace() {
                 </div>
                 <div>
                   <h2 className="text-base font-bold">Connexion Boutique en 1 clic (Auto-Connect)</h2>
-                  <p className="text-xs text-blue-100">
+                  <p className="text-xs text-stone-300">
                     Saisissez l'adresse de votre site web : SMSTSIKA s'occupe d'injecter la clé et de lier la passerelle automatiquement.
                   </p>
                 </div>
@@ -191,7 +191,7 @@ export default function PageNotificationsEspace() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-blue-100 mb-2">Sélectionnez votre plateforme :</label>
+              <label className="block text-xs font-semibold text-stone-300 mb-2">Sélectionnez votre plateforme :</label>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 text-xs font-semibold">
                 {[
                   { id: 'WooCommerce', label: 'WooCommerce / WordPress' },
@@ -202,7 +202,7 @@ export default function PageNotificationsEspace() {
                   <button
                     key={p.id}
                     onClick={() => setPlateformeChoisie(p.id)}
-                    className={`rounded-xl p-3 text-left transition${plateformeChoisie === p.id ? 'bg-white text-blue-950 font-bold shadow-md' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                    className={`rounded-xl p-3 text-left transition${plateformeChoisie === p.id ? 'bg-white text-[#1C1917] font-bold shadow-md' : 'bg-white/10 text-white hover:bg-white/20'}`}
                   >
                     {p.label}
                   </button>
@@ -211,21 +211,21 @@ export default function PageNotificationsEspace() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-blue-100">Adresse de votre boutique :</label>
+              <label className="block text-xs font-semibold text-stone-300">Adresse de votre boutique :</label>
               <div className="flex flex-col gap-2.5 sm:flex-row">
                 <input
                   type="url"
                   value={urlBoutique}
                   onChange={(e) => setUrlBoutique(e.target.value)}
                   placeholder="https://mon-magasin.com"
-                  className="flex-1 rounded-2xl border border-white/20 bg-white/10 p-3 text-xs text-white placeholder-blue-200 outline-none backdrop-blur focus:bg-white focus:text-[#1C1917] font-mono"
+                  className="flex-1 rounded-2xl border border-white/15 bg-white/[0.06] p-3 text-xs text-white placeholder-stone-400 outline-none transition focus:border-white/40 focus:bg-white focus:text-[#1C1917] focus:placeholder-stone-500 font-mono"
                 />
                 <button
                   onClick={connecterBoutiqueAuto}
                   disabled={connexionEnCours}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-400 px-6 py-3 text-xs font-bold text-[#1C1917] shadow-md hover:bg-amber-300 disabled:opacity-60 transition shrink-0"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#2563EB] px-6 py-3 text-xs font-bold text-white shadow-md hover:bg-[#1D4ED8] disabled:opacity-60 transition shrink-0"
                 >
-                  {connexionEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4 fill-slate-950" />}
+                  {connexionEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4 fill-white" />}
                   Connecter en 1 clic
                 </button>
               </div>
