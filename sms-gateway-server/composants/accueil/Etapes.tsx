@@ -16,7 +16,7 @@ const ETAPES = [
     titre: 'Lier',
     texte: 'Scannez le QR code affiché dans votre espace pour lier l’appareil.',
     lien: '/comment-ca-marche',
-    libelleLien: 'Découvrir comment ça marche',
+    libelleLien: 'Lire le guide d’intégration',
     icone: null,
     ancre: false,
   },

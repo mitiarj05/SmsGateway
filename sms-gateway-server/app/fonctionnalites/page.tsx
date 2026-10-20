@@ -70,7 +70,7 @@ export default function PageFonctionnalites() {
           </Link>
           <nav className="hidden items-center gap-7 text-[13.5px] font-medium text-stone-600 lg:flex">
             <Link href="/fonctionnalites" className="font-bold text-[#1C1917]">Fonctionnalités</Link>
-            <Link href="/comment-ca-marche" className="transition hover:text-[#1C1917]">Comment ça marche</Link>
+            <Link href="/comment-ca-marche" className="transition hover:text-[#1C1917]">Brancher votre site</Link>
             <Link href="/cas-d-usage" className="transition hover:text-[#1C1917]">Cas d’usage</Link>
             <Link href="/faq" className="transition hover:text-[#1C1917]">FAQ</Link>
           </nav>
