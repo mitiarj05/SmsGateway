@@ -1,6 +1,7 @@
 import { supabaseAdmin } from './supabase-serveur'
 import { obtenirParametreEntier } from './parametres'
 import { marquerAppareilsInactifs } from './statut-appareil'
+import { appareilsBeneficiairesEnLigne } from './appareils-partages'
 import { STATUT_APPAREIL, STATUT_TACHE } from './statuts'
 
 export interface AppareilCandidat {
@@ -82,7 +83,9 @@ export async function obtenirDisponibiliteAppareil(
   // Les appareils morts ne doivent ni être sélectionnés ni recevoir de push.
   await marquerAppareilsInactifs()
 
-  // Modèle individuel : restreint au parc du client (tous si non précisé).
+  // Modèle individuel : parc du client (tous si non précisé). En plus, un
+  // appareil bénéficiaire (passerelle partagée) peut servir ce client même
+  // s'il appartient à un autre espace : les deux listes fusionnent, sans doublon.
   let requeteAppareils = supabaseAdmin
     .from('appareils')
     .select('id, nom, jeton_fcm')
@@ -93,7 +96,16 @@ export async function obtenirDisponibiliteAppareil(
   }
   const { data: appareils, error: erreurAppareils } = await requeteAppareils
 
-  if (erreurAppareils || !appareils || appareils.length === 0) {
+  let parc = appareils ?? []
+  if (idApplication) {
+    const beneficiaires = await appareilsBeneficiairesEnLigne(idApplication)
+    if (beneficiaires.length > 0) {
+      const connus = new Set(parc.map((a) => a.id))
+      parc = [...parc, ...beneficiaires.filter((a) => !connus.has(a.id))]
+    }
+  }
+
+  if (parc.length === 0) {
     return { appareil: null, sature: false, quota, delaiAttenteSecondes: 0 }
   }
 
@@ -115,7 +127,7 @@ export async function obtenirDisponibiliteAppareil(
   )
 
   const classes: { candidat: AppareilCandidat; usage: number }[] = []
-  for (const appareil of appareils) {
+  for (const appareil of parc) {
     const usage = await obtenirUsageAppareil(appareil.id)
     if (usage < quota) {
       classes.push({
@@ -131,7 +143,7 @@ export async function obtenirDisponibiliteAppareil(
   }
   classes.sort((a, b) => a.usage - b.usage)
 
-  const idsEnLigne = appareils.map((a) => a.id)
+  const idsEnLigne = parc.map((a) => a.id)
   if (classes.length === 0) {
     console.warn(`quota: tous les appareils saturés (${quota}/h)`)
     return {

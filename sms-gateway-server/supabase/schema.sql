@@ -120,6 +120,12 @@ DROP TABLE IF EXISTS codes_recharge;
 ALTER TABLE appareils ADD COLUMN IF NOT EXISTS uid_firebase TEXT UNIQUE;
 ALTER TABLE appareils ADD COLUMN IF NOT EXISTS sms_envoyes_heure INTEGER DEFAULT 0;
 ALTER TABLE appareils ADD COLUMN IF NOT EXISTS id_application uuid REFERENCES public.applications(id);
+-- Appareil partagé (optionnel) : un téléphone reste dans l'espace de son
+-- propriétaire et peut, en plus, servir des applications bénéficiaires
+-- (une passerelle qui héberge temporairement les SMS d'un autre client).
+-- NULL ou vide = ancien modèle, aucune rupture.
+ALTER TABLE appareils ADD COLUMN IF NOT EXISTS id_applications_supplementaires uuid[];
+
 ALTER TABLE taches ADD COLUMN IF NOT EXISTS programme_a TIMESTAMPTZ;
 
 -- Accusés de réception réseau (DLR) : suivi SÉPARÉ du statut d'envoi.

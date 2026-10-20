@@ -29,10 +29,24 @@ node scripts/outils.mjs webhook https://VOTRE-BOUTIQUE.vercel.app/api/boutique
 ```bash
 node scripts/outils.mjs init             # crée/complète la fiche client « Boutique Tsika » + écrit .env.local
 node scripts/outils.mjs webhook <url>    # enregistre l'URL du récepteur
-node scripts/outils.mjs appareils        # liste les appareils liés
-node scripts/outils.mjs lier <préfixe>   # le téléphone devient la passerelle de la boutique
-node scripts/outils.mjs rendre           # le téléphone regagne son ancienne application
+node scripts/outils.mjs appareils        # liste les appareils (et à qui ils servent)
+node scripts/outils.mjs lier <préfixe>   # la passerelle du téléphone sert la boutique en PLUS (bénéficiaire)
+node scripts/outils.mjs rendre           # retire le bénéfice partagé
 node scripts/tester-boucle.cjs           # la boucle complète hors ligne (signature, paiement, intrus)
+```
+
+### Passerelle partagée (l'appareil reste chez son propriétaire)
+
+`lier` n'enlève plus le téléphone à son espace : il lui ajoute la boutique comme
+**bénéficiaire** (colonne `appareils.id_applications_supplementaires`, optionnelle).
+Le téléphone s'affiche toujours dans l'espace de son propriétaire ; ses tâches
+(envoi) et son routage entrant servent les deux applications ; le quota horaire
+demeure celui de la SIM, partagé — physiquement sincère.
+
+Avant le premier `lier`, exécuter une fois dans le Supabase Dashboard :
+
+```sql
+ALTER TABLE appareils ADD COLUMN IF NOT EXISTS id_applications_supplementaires uuid[];
 ```
 
 ## Le scénario complet (le test réel)

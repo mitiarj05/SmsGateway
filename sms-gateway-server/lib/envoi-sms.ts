@@ -1,6 +1,7 @@
 import { supabaseAdmin } from './supabase-serveur'
 import { envoyerPushNouvelleTache } from './envoi-push'
 import { obtenirDisponibiliteAppareil } from './selection-appareil'
+import { compterParc } from './appareils-partages'
 import { expirerEnAttentePerimees } from './expiration-attente'
 import { promouvoirProgrammes } from './programmes'
 import { compterEnvoisMois, moisActuel } from './facturation'
@@ -58,11 +59,9 @@ export async function traiterEnvoiSms(
     return erreur('Le champ "message" est obligatoire', 400)
   }
 
-  // 2. Modèle individuel : sans téléphone lié, l'envoi est impossible.
-  const { count: nbAppareils } = await supabaseAdmin
-    .from('appareils')
-    .select('id', { count: 'exact', head: true })
-    .eq('id_application', client.id)
+  // 2. Modèle individuel : sans appareil capable de servir le client
+  // (parc propre ou bénéficiaire partagé), l'envoi est impossible.
+  const nbAppareils = await compterParc(client.id)
   if (!nbAppareils) {
     return erreur('Aucun téléphone lié à votre espace — associez-en un pour envoyer.', 400)
   }

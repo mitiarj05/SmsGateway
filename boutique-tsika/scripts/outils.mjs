@@ -11,7 +11,7 @@
  * Le fichier boutique-tsika/.env.local contient la clé de la boutique — gitignore,
  * à copier aussi dans les variables d'environnement Vercel de la boutique.
  */
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'node:fs'
 import { randomBytes } from 'node:crypto'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -141,48 +141,91 @@ async function trouverFiche(lienBase, cleService) {
   return fiche
 }
 
+const ERREUR_MIGRATION = "Colonne « id_applications_supplementaires » absente — exécutez d'abord le SQL de migration dans le Supabase Dashboard (voir README)."
+
 async function appareils() {
   const { lienBase, cleService } = lireEnvServeur()
-  const reponse = await rest(lienBase, cleService, '/rest/v1/appareils?select=id,nom,statut,id_application&order=date_creation.desc')
+  let reponse = await rest(lienBase, cleService, '/rest/v1/appareils?select=id,nom,statut,id_application,id_applications_supplementaires&order=date_creation.desc')
+  if (!reponse.ok) {
+    // Avant migration : on retombe sur les seules colonnes historiques.
+    reponse = await rest(lienBase, cleService, '/rest/v1/appareils?select=id,nom,statut,id_application&order=date_creation.desc')
+  }
   const lignes = await reponse.json()
   for (const a of lignes) {
-    console.log((a.id || '').slice(0, 8), '…', a.nom, '·', a.statut, '· app', (a.id_application || '—').slice(0, 8))
+    const serve = Array.isArray(a.id_applications_supplementaires) && a.id_applications_supplementaires.length > 0
+      ? '  · sert ' + a.id_applications_supplementaires.map((x) => String(x).slice(0, 8)).join(', ')
+      : ''
+    console.log((a.id || '').slice(0, 8), '…', a.nom, '·', a.statut, '· app', (a.id_application || '—').slice(0, 8), serve)
   }
 }
 
-/* ---------- lier / rendre (le téléphone change de main le temps du test) ---------- */
+/* ---------- lier / rendre : le téléphone reste chez son propriétaire,
+   la boutique devient simplement BÉNÉFICIAIRE de sa passerelle ---------- */
 async function lier(idAppareil) {
   if (!idAppareil) throw new Error('Donnez l\'id de l\'appareil (voir : node scripts/outils.mjs appareils)')
   const { lienBase, cleService } = lireEnvServeur()
   const fiche = await trouverFiche(lienBase, cleService)
-  const reponse = await rest(lienBase, cleService, '/rest/v1/appareils?select=id,nom,id_application')
-  const tous = await reponse.json()
-  const appareil = Array.isArray(tous) ? tous.find((a) => String(a.id).startsWith(idAppareil)) : null
+  const reponse = await rest(lienBase, cleService, '/rest/v1/appareils?select=id,nom,id_application,id_applications_supplementaires')
+  if (!reponse.ok) throw new Error(ERREUR_MIGRATION)
+  const liste = await reponse.json()
+  const appareil = Array.isArray(liste) ? liste.find((a) => String(a.id).startsWith(idAppareil)) : null
   if (!appareil) throw new Error('Appareil introuvable pour le préfixe ' + idAppareil)
-  const ancienne = appareil.id_application || null
-  writeFileSync(cheminBrouillon, JSON.stringify({ appareil: appareil.id, ancienne_application: ancienne }, null, 2), 'utf-8')
+
+  const changements = {}
+  // Réparation d'un ancien transfert complet : le téléphone regagne son espace.
+  const brouillon = existsSync(cheminBrouillon) ? JSON.parse(readFileSync(cheminBrouillon, 'utf-8')) : null
+  if (appareil.id_application === fiche.id && brouillon && brouillon.ancienne_application) {
+    changements.id_application = brouillon.ancienne_application
+  }
+  const benefices = new Set((appareil.id_applications_supplementaires ?? []).filter(Boolean))
+  benefices.add(fiche.id)
+  changements.id_applications_supplementaires = [...benefices]
+
   const maj = await rest(lienBase, cleService, `/rest/v1/appareils?id=eq.${appareil.id}`, {
     method: 'PATCH',
-    body: JSON.stringify({ id_application: fiche.id }),
+    body: JSON.stringify(changements),
   })
   if (!maj.ok) throw new Error('échec de la liaison : ' + (await maj.text()))
-  console.log(appareil.nom, '→ passerelle de « ' + NOM_APPLICATION + ' ». (node scripts/outils.mjs rendre pour revenir)')
+  const reparé = changements.id_application
+    ? ' (espace principal réparé : ' + String(changements.id_application).slice(0, 8) + '…)'
+    : ''
+  console.log(appareil.nom, '→ reste dans son espace principal' + reparé + ', et sert désormais « ' + NOM_APPLICATION + ' » comme passerelle partagée.')
 }
 
 async function rendre() {
-  if (!existsSync(cheminBrouillon)) throw new Error('Rien à rendre (aucun lier récent).')
-  const brouillon = JSON.parse(readFileSync(cheminBrouillon, 'utf-8'))
-  if (!brouillon.ancienne_application) {
-    console.log('L\'appareil n\'avait pas d\'application avant — rien à rendre.')
-    return
-  }
   const { lienBase, cleService } = lireEnvServeur()
-  const maj = await rest(lienBase, cleService, `/rest/v1/appareils?id=eq.${brouillon.appareil}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ id_application: brouillon.ancienne_application }),
-  })
-  if (!maj.ok) throw new Error('échec du rendu : ' + (await maj.text()))
-  console.log('Appareil rendu à son ancienne application', brouillon.ancienne_application.slice(0, 8), '…')
+  const fiche = await trouverFiche(lienBase, cleService)
+  const reponse = await rest(lienBase, cleService, '/rest/v1/appareils?select=id,nom,id_application,id_applications_supplementaires')
+  if (!reponse.ok) throw new Error(ERREUR_MIGRATION)
+  const liste = await reponse.json()
+  const brouillon = existsSync(cheminBrouillon) ? JSON.parse(readFileSync(cheminBrouillon, 'utf-8')) : null
+  let touche = false
+  for (const appareil of liste) {
+    const sertLaBoutique = Array.isArray(appareil.id_applications_supplementaires) && appareil.id_applications_supplementaires.includes(fiche.id)
+    const ancienTransfert = appareil.id_application === fiche.id
+    if (!sertLaBoutique && !ancienTransfert) continue
+    const changements = {}
+    if (sertLaBoutique) {
+      changements.id_applications_supplementaires = appareil.id_applications_supplementaires.filter((x) => x !== fiche.id)
+    }
+    if (ancienTransfert) {
+      if (brouillon && brouillon.ancienne_application && brouillon.appareil === appareil.id) {
+        changements.id_application = brouillon.ancienne_application
+      } else {
+        console.warn('⚠', appareil.nom, 'a « ' + NOM_APPLICATION + ' » comme espace principal mais je ne connais plus l\'ancien — rendez-le à la main (QR/espace ou SQL).')
+        continue
+      }
+    }
+    const maj = await rest(lienBase, cleService, `/rest/v1/appareils?id=eq.${appareil.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(changements),
+    })
+    if (!maj.ok) throw new Error('échec du rendu : ' + (await maj.text()))
+    console.log(appareil.nom, '→ rendu à son espace principal, plus aucun bénéfice partagé.')
+    touche = true
+  }
+  if (existsSync(cheminBrouillon)) unlinkSync(cheminBrouillon)
+  if (!touche) console.log('Rien à rendre : aucun appareil ne sert « ' + NOM_APPLICATION + ' ».')
 }
 
 /* ---------- aiguillage ---------- */
