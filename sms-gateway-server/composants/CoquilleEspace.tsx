@@ -40,6 +40,33 @@ export default function CoquilleEspace({ children }: {
   const [paletteOuverte, setPaletteOuverte] = useState(false)
   const [requete, setRequete] = useState('')
 
+  /* Lectures de la cloche, conservées comme à la console admin */
+  const [marquesLues, setMarquesLues] = useState(() => {
+    if (typeof window === 'undefined') return { attente: 0, echoues: 0 }
+    try {
+      const brut = localStorage.getItem('smsika-notif-espace-lue')
+      if (brut) {
+        const parsed = JSON.parse(brut)
+        return {
+          attente: typeof parsed.attente === 'number' ? parsed.attente : 0,
+          echoues: typeof parsed.echoues === 'number' ? parsed.echoues : 0,
+        }
+      }
+    } catch { /* défaut */ }
+    return { attente: 0, echoues: 0 }
+  })
+
+  useEffect(() => {
+    localStorage.setItem('smsika-notif-espace-lue', JSON.stringify(marquesLues))
+  }, [marquesLues])
+
+  function marquerLu(laquelle: 'attente' | 'echoues' | 'all') {
+    setMarquesLues((precedent) => ({
+      attente: laquelle === 'echoues' ? precedent.attente : enAttente,
+      echoues: laquelle === 'attente' ? precedent.echoues : echoues,
+    }))
+  }
+
   /* Sidebar repliable + largeur ajustable (préférences persistées) */
   const LARG_MIN = 200
   const LARG_MAX = 340
@@ -137,7 +164,9 @@ export default function CoquilleEspace({ children }: {
   }
 
   const resultatsRecherche = NAVIGATION.filter((n) => n.etiquette.toLowerCase().includes(requete.toLowerCase()))
-  const compteAlertes = (enAttente > 0 ? 1 : 0) + (echoues > 0 ? 1 : 0)
+  const fileNonLue = enAttente > marquesLues.attente
+  const echecsNonLus = echoues > marquesLues.echoues
+  const compteAlertes = (fileNonLue ? 1 : 0) + (echecsNonLus ? 1 : 0)
   const alerteActive = compteAlertes > 0
   const initiales = (nomClient.trim().substring(0, 1).toUpperCase() || 'C')
 
@@ -341,14 +370,20 @@ export default function CoquilleEspace({ children }: {
                   <div className="absolute right-0 mt-2 w-72 rounded-2xl border border-[#1C1917]/10 bg-white p-2 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
                     <div className="flex items-center justify-between px-2 py-1.5">
                       <p className="text-xs font-bold text-[#1C1917] dark:text-white">Mes alertes</p>
+                      {compteAlertes > 0 && (
+                        <button onClick={() => marquerLu('all')}
+                          className="text-[11px] font-medium text-blue-600 hover:underline dark:text-blue-400">
+                          Tout marquer comme lu
+                        </button>
+                      )}
                     </div>
                     {!alerteActive ? (
                       <p className="px-2 py-3 text-xs text-stone-500 dark:text-zinc-400">Aucune alerte. Tout va bien.</p>
                     ) : (
                       <>
                         {enAttente > 0 && (
-                          <Link href="/espace/envois" onClick={() => setClocheOuverte(false)}
-                            className="flex items-start gap-2.5 rounded-lg p-2 hover:bg-stone-100 dark:hover:bg-zinc-800">
+                          <Link href="/espace/envois" onClick={() => { marquerLu('attente'); setClocheOuverte(false) }}
+                            className={`flex items-start gap-2.5 rounded-lg p-2 hover:bg-stone-100 dark:hover:bg-zinc-800${fileNonLue ? '' : ' opacity-60'}`}>
                             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
                             <span className="text-xs text-stone-600 dark:text-zinc-300">
                               <b>{enAttente} SMS en attente</b> d&apos;envoi.
@@ -356,8 +391,8 @@ export default function CoquilleEspace({ children }: {
                           </Link>
                         )}
                         {echoues > 0 && (
-                          <Link href="/espace/envois" onClick={() => setClocheOuverte(false)}
-                            className="flex items-start gap-2.5 rounded-lg p-2 hover:bg-stone-100 dark:hover:bg-zinc-800">
+                          <Link href="/espace/envois" onClick={() => { marquerLu('echoues'); setClocheOuverte(false) }}
+                            className={`flex items-start gap-2.5 rounded-lg p-2 hover:bg-stone-100 dark:hover:bg-zinc-800${echecsNonLus ? '' : ' opacity-60'}`}>
                             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
                             <span className="text-xs text-stone-600 dark:text-zinc-300">
                               <b>{echoues} échec(s)</b> à vérifier dans vos envois.
