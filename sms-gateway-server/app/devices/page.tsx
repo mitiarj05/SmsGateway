@@ -251,7 +251,7 @@ export default function AppareilsPage() {
                 Vérifiez le réseau et l'application sur le téléphone pour reprendre les envois.
               </p>
             </div>
-            <a href="/espace/api" className="inline-flex items-center gap-1 text-[12.5px] font-bold text-[#2563EB] hover:underline dark:text-blue-400">
+            <a href="/comment-ca-marche" className="inline-flex items-center gap-1 text-[12.5px] font-bold text-[#2563EB] hover:underline dark:text-blue-400">
               Documentation <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
           </div>

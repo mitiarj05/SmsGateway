@@ -556,10 +556,10 @@ export default function DemoClient({ numeroPasserelle }: { numeroPasserelle: str
                 chemin que vos envois de production — sans code à écrire.
               </p>
               <Link
-                href="/espace/api"
+                href="/comment-ca-marche"
                 className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-bold text-[#1D4ED8] underline decoration-[#2563EB]/40 underline-offset-4 hover:decoration-[#2563EB]"
               >
-                Voir la documentation API
+                Voir le guide d&apos;intégration
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
             </div>

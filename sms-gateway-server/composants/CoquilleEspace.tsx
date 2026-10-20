@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef, type CSSProperties } from 'react'
 import {
-  Inbox, Webhook, Receipt, Send, BookOpen, List,
+  Inbox, Webhook, Receipt, Send, Compass, List,
   Moon, Sun, Search, Bell, AlertTriangle, LogOut, LayoutGrid, Smartphone, ArrowUpRight,
   PanelLeft, ChevronsLeft
 } from 'lucide-react'
@@ -20,7 +20,7 @@ const NAVIGATION = [
   { href: '/espace/entrees', icone: Inbox, etiquette: 'SMS reçus' },
   { href: '/espace/notifications', icone: Webhook, etiquette: 'Notifications' },
   { href: '/espace/facturation', icone: Receipt, etiquette: 'Facturation' },
-  { href: '/espace/api', icone: BookOpen, etiquette: 'Doc API' },
+  { href: '/espace/sommaire', icone: Compass, etiquette: 'Sommaire' },
 ]
 
 export default function CoquilleEspace({ children }: {
@@ -239,7 +239,7 @@ export default function CoquilleEspace({ children }: {
               Consultez la documentation ou contactez le support.
             </p>
             <Link
-              href="/espace/api"
+              href="/comment-ca-marche"
               className="mt-2.5 inline-flex items-center gap-1 text-[12px] font-semibold text-[#1D4ED8] hover:underline dark:text-[#93C5FD]"
             >
               Centre d'aide <ArrowUpRight className="h-3.5 w-3.5" />
@@ -406,7 +406,7 @@ export default function CoquilleEspace({ children }: {
         <footer className="flex items-center justify-between border-t border-[#1C1917]/10 px-8 py-4 text-[11px] text-stone-500 dark:border-zinc-800/80 dark:text-zinc-500">
           <span>© 2025 SMSTSIKA Gateway</span>
           <div className="flex items-center gap-3">
-            <Link href="/espace/api" className="hover:underline">Guide API</Link>
+            <Link href="/comment-ca-marche" className="hover:underline">Guide d&apos;intégration</Link>
             <span>·</span>
             <a href="mailto:support@smsika.app" className="hover:underline text-[#2563EB] dark:text-blue-400 font-semibold">Écrire au support ↗</a>
           </div>

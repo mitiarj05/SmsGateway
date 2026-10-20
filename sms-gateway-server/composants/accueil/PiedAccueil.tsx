@@ -24,7 +24,7 @@ export default function PiedAccueil() {
         <div className="space-y-3">
           <p className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-stone-500">Ressources</p>
           <ul className="space-y-2 font-sans text-[13.5px] font-medium text-stone-600">
-            <li><Link href="/espace/api" className="transition hover:text-[#1C1917]">Documentation API</Link></li>
+            <li><Link href="/espace" className="transition hover:text-[#1C1917]">Espace client</Link></li>
             <li><Link href="/faq" className="transition hover:text-[#1C1917]">Foire aux questions (FAQ)</Link></li>
           </ul>
         </div>

@@ -38,10 +38,10 @@ export default function PreuveCode() {
             Envoyez des SMS depuis votre application ou votre site web en une seule requête HTTP.
           </p>
           <Link
-            href="/espace/api"
+            href="/comment-ca-marche"
             className="group mt-5 inline-flex items-center gap-1.5 text-sm font-bold text-[#93C5FD] hover:underline"
           >
-            Documentation API
+            Brancher votre site
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>

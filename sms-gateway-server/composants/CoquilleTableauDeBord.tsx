@@ -302,7 +302,7 @@ export default function CoquilleTableauDeBord({ children }: {
                 Consultez la documentation ou contactez le support.
               </p>
               <a
-                href="/espace/api"
+                href="/comment-ca-marche"
                 className="mt-2.5 inline-flex items-center gap-1 text-[12px] font-semibold text-[#1D4ED8] hover:underline dark:text-[#93C5FD]"
               >
                 Centre d'aide <ArrowUpRight className="h-3.5 w-3.5" />
@@ -474,7 +474,7 @@ export default function CoquilleTableauDeBord({ children }: {
           <div className="flex items-center gap-3">
             <a href="/settings" className="hover:underline">État des services</a>
             <span>·</span>
-            <a href="/espace/api" className="hover:underline">Guide API</a>
+            <a href="/comment-ca-marche" className="hover:underline">Guide d&apos;intégration</a>
             <span>·</span>
             <a href="mailto:support@smsika.app" className="hover:underline text-[#2563EB] dark:text-blue-400 font-semibold">Écrire au support ↗</a>
           </div>
