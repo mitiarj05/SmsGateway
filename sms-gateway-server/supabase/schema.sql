@@ -54,8 +54,11 @@ CREATE TABLE IF NOT EXISTS reponses (
   statut_notification text NOT NULL DEFAULT 'EN_ATTENTE',
   tentatives_notification integer NOT NULL DEFAULT 0,
   date_creation timestamptz NOT NULL DEFAULT now(),
+  lu boolean NOT NULL DEFAULT false,
   CONSTRAINT reponses_pkey PRIMARY KEY (id)
 );
+-- Lu (lu) pour le « marquer comme lu » de la boîte de réception, côté admin et côté espace.
+ALTER TABLE public.reponses ADD COLUMN IF NOT EXISTS lu boolean NOT NULL DEFAULT false;
 CREATE INDEX IF NOT EXISTS idx_reponses_expediteur ON reponses (expediteur);
 CREATE INDEX IF NOT EXISTS idx_reponses_application ON reponses (id_application);
 
