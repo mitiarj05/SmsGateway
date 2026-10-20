@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
     const { data: app } = await supabaseAdmin
       .from('applications')
-      .select('id, nom, quota_mensuel')
+      .select('id, nom, cle_api, quota_mensuel')
       .eq('id', idApplication)
       .single()
     if (!app) {
@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       id: app.id,
       nom: app.nom,
+      cle_api: (app as { cle_api: string }).cle_api,
       mois,
       quota_mensuel: quota,
       utilise_mois: utiliseMois,
