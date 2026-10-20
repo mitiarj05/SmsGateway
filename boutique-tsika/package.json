@@ -1,0 +1,9 @@
+{
+  "name": "boutique-tsika",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Site client de démonstration : une boutique indépendante branchée au SMS par sa clé API et un récepteur webhook signé.",
+  "engines": {
+    "node": ">=18"
+  }
+}

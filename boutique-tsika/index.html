@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Boutique Tsika — artisanat malgache</title>
+<style>
+  :root {
+    --papier: #f8f3e9;
+    --carte: #fffdf7;
+    --encre: #2b241c;
+    --encre-douce: #6d6152;
+    --bord: #e4d9c3;
+    --accent: #9a4a32;
+    --vert: #2f6b45;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--papier);
+    color: var(--encre);
+    font-family: Georgia, 'Times New Roman', serif;
+    line-height: 1.55;
+  }
+  .page { max-width: 780px; margin: 0 auto; padding: 40px 22px 60px; }
+  header { text-align: center; margin-bottom: 38px; }
+  .brand { font-size: 40px; letter-spacing: 1px; margin: 0; }
+  .brand small { display: block; font-size: 14px; color: var(--encre-douce); font-style: italic; margin-top: 6px; }
+  .filet { width: 64px; border-bottom: 2px solid var(--accent); margin: 18px auto 0; }
+
+  .grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+  .article {
+    background: var(--carte);
+    border: 1px solid var(--bord);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .article h3 { margin: 0 0 4px; font-size: 19px; }
+  .prix { color: var(--accent); font-weight: bold; font-size: 18px; margin-bottom: 12px; }
+  button {
+    font-family: inherit; font-size: 15px; cursor: pointer;
+    background: var(--encre); color: var(--papier);
+    border: none; border-radius: 6px; padding: 9px 16px;
+  }
+  button.sec { background: transparent; color: var(--encre); border: 1px solid var(--bord); }
+  form.commander { margin-top: 14px; display: none; }
+  form.commander.visible { display: block; }
+  label { display: block; font-size: 13px; color: var(--encre-douce); margin: 10px 0 3px; }
+  input {
+    width: 100%; font-family: inherit; font-size: 15px;
+    padding: 8px 10px; border: 1px solid var(--bord); background: #fff;
+    border-radius: 6px; color: var(--encre);
+  }
+  .erreur { color: var(--accent); font-size: 14px; margin-top: 8px; min-height: 0; }
+
+  section.titre { margin: 46px 0 14px; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--encre-douce); }
+  .commande {
+    background: var(--carte); border: 1px solid var(--bord); border-radius: 10px;
+    padding: 18px 20px; margin-bottom: 14px;
+  }
+  .commande .haut { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; }
+  .commande .code { font-weight: bold; font-size: 18px; letter-spacing: 1px; }
+  .etiquette {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+    padding: 3px 10px; border-radius: 999px; border: 1px solid var(--bord); color: var(--encre-douce);
+  }
+  .etiquette.payee { border-color: var(--vert); color: var(--vert); }
+  .etiquette.attente { border-color: var(--accent); color: var(--accent); }
+  .steps { margin: 14px 0 0; padding-left: 20px; color: var(--encre-douce); font-size: 14px; }
+  .steps b { color: var(--encre); }
+  .sms { font-size: 13px; margin-top: 10px; color: var(--encre-douce); font-style: italic; }
+  .sms.echec { color: var(--accent); font-style: normal; }
+  .payee-block { color: var(--vert); font-size: 15px; margin-top: 10px; }
+
+  details { border: 1px dashed var(--bord); border-radius: 10px; padding: 12px 16px; margin-top: 22px; }
+  summary { cursor: pointer; font-size: 14px; color: var(--encre-douce); }
+  .journal { font-size: 13px; color: var(--encre-douce); margin-top: 10px; }
+  .journal div { padding: 3px 0; border-bottom: 1px dotted var(--bord); }
+  .journal div:last-child { border-bottom: none; }
+
+  footer { margin-top: 60px; text-align: center; color: var(--encre-douce); font-size: 13px; font-style: italic; }
+  .vide { color: var(--encre-douce); font-style: italic; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1 class="brand">Boutique Tsika<small>artisanat malgache choisi, envoyé près de vous</small></h1>
+    <div class="filet"></div>
+  </header>
+
+  <div class="grille" id="catalogue"></div>
+
+  <section class="titre">Vos commandes de la session</section>
+  <div id="commandes"><div class="vide">Aucune commande pour l'instant — choisissez un article ci-dessus.</div></div>
+
+  <details id="boite-journal" style="display:none">
+    <summary>Journal de la boutique (ce qu'elle a envoyé et reçu, dans son propre site)</summary>
+    <div class="journal" id="journal"></div>
+  </details>
+
+  <footer>Boutique Tsika — commande au texte, paiement au mobile money.</footer>
+</div>
+
+<script>
+const CATALOGUE = [
+  { id: 'raphia', nom: 'Sac raphia tissé main', prix: 35000 },
+  { id: 'vanille', nom: 'Panier de vanille (3 gousses)', prix: 28000 },
+  { id: 'soie', nom: 'Tapis de soie sauvage Ambositra', prix: 52000 },
+]
+const ARTICLE_PAR_ID = Object.fromEntries(CATALOGUE.map((a) => [a.id, a]))
+const DONNEES = {}
+let monoArticleOuvert = null
+
+function ar(n) { return n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g, ' ') + ' Ar' }
+
+/** 034 •• •• 411 : on affiche jamais un numéro au complet au visiteur. */
+function masquerNumero(brut) {
+  const propre = String(brut || '').replace(/[^\d+]/g, '')
+  const local = propre.startsWith('+261') ? '0' + propre.slice(4) : propre
+  if (local.length < 9) return brut
+  return local.slice(0, 3) + ' •• •• ' + local.slice(-3)
+}
+
+function rendreCatalogue() {
+  const boite = document.getElementById('catalogue')
+  boite.innerHTML = CATALOGUE.map(a => `
+    <div class="article">
+      <h3>${a.nom}</h3>
+      <div class="prix">${ar(a.prix)}</div>
+      <button data-article="${a.id}" class="bouton-commander">Commander</button>
+      <form class="commander" data-article="${a.id}">
+        <label for="nom-${a.id}">Votre nom</label>
+        <input id="nom-${a.id}" name="nom" placeholder="Ravelo Naivo" />
+        <label for="tel-${a.id}">Votre téléphone (celui qui paiera)</label>
+        <input id="tel-${a.id}" name="numero" placeholder="034 12 345 67" autocomplete="tel" />
+        <div class="erreur" data-erreur="${a.id}"></div>
+        <div style="margin-top:12px; display:flex; gap:8px;">
+          <button type="submit">Envoyer la commande</button>
+          <button type="button" class="sec annuler">Annuler</button>
+        </div>
+      </form>
+    </div>`).join('')
+
+  boite.querySelectorAll('.bouton-commander').forEach(b => {
+    b.addEventListener('click', () => {
+      const id = b.dataset.article
+      const form = boite.querySelector(`form[data-article="${id}"]`)
+      if (monoArticleOuvert && monoArticleOuvert !== id) {
+        boite.querySelector(`form[data-article="${monoArticleOuvert}"]`).classList.remove('visible')
+      }
+      monoArticleOuvert = monoArticleOuvert === id ? null : id
+      form.classList.toggle('visible', Boolean(monoArticleOuvert))
+      if (monoArticleOuvert) form.querySelector('input').focus()
+    })
+  })
+  boite.querySelectorAll('.annuler').forEach(b => {
+    b.addEventListener('click', e => {
+      e.preventDefault()
+      b.closest('form').classList.remove('visible')
+      monoArticleOuvert = null
+    })
+  })
+  boite.querySelectorAll('form.commander').forEach(form => {
+    form.addEventListener('submit', async e => {
+      e.preventDefault()
+      const article = form.dataset.article
+      const erreurBoite = boite.querySelector(`[data-erreur="${article}"]`)
+      erreurBoite.textContent = ''
+      const nom = form.nom.value.trim()
+      const numero = form.numero.value.trim()
+      if (!nom || !numero) { erreurBoite.textContent = 'Complétez le nom et le téléphone.'; return }
+      const res = await fetch('/api/boutique', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ article, nom, numero }),
+      })
+      const corps = await res.json()
+      if (!res.ok) { erreurBoite.textContent = corps.erreur || 'Erreur inattendue'; return }
+      DONNEES[corps.commande.code] = corps.commande
+      form.classList.remove('visible')
+      monoArticleOuvert = null
+      form.reset()
+      rendreCommandes()
+    })
+  })
+}
+
+function etapePayement(c) {
+  return `
+    <ol class="steps">
+      <li>Payez <b>${ar(c.prix)}</b> par mobile money (le numéro est dans le SMS reçu).</li>
+      <li>Répondez au même SMS avec : <b>PAYE ${c.code}</b></li>
+      <li>Cette page passe toute seule à « payée ».</li>
+    </ol>`
+}
+
+function rendreCommandes() {
+  const boite = document.getElementById('commandes')
+  const liste = Object.values(DONNEES).sort((a, b) => (a.cree_le < b.cree_le ? 1 : -1))
+  if (liste.length === 0) {
+    boite.innerHTML = '<div class="vide">Aucune commande pour l\'instant — choisissez un article ci-dessus.</div>'
+  } else {
+    boite.innerHTML = liste.map(c => {
+      const payee = c.statut === 'PAYEE'
+      let ligneSms = ''
+      if (c.sms_erreur) ligneSms = `<div class="sms echec">SMS non parti : ${c.sms_erreur} — la commande reste valable, réglez quand même par mobile money.</div>`
+      else ligneSms = `<div class="sms">SMS de confirmation ${c.sms_task ? 'sur la route' : 'en préparation'}…</div>`
+      return `
+      <div class="commande" data-code="${c.code}">
+        <div class="haut">
+          <div>
+            <div class="code">${c.code}</div>
+            <div style="color:var(--encre-douce);font-size:14px;">${c.article} — ${ar(c.prix)} — pour ${c.nom} (${masquerNumero(c.numero)})</div>
+          </div>
+          <div class="etiquette ${payee ? 'payee' : 'attente'}">${payee ? 'Payée' : 'En attente de paiement'}</div>
+        </div>
+        ${payee
+          ? `<div class="payee-block">Merci ! Votre commande est payée, elle part à l'atelier aujourd'hui.</div>`
+          : etapePayement(c) + ligneSms}
+      </div>`
+    }).join('')
+  }
+  rendreJournal(liste)
+}
+
+function rendreJournal(liste) {
+  const boite = document.getElementById('boite-journal')
+  const journal = document.getElementById('journal')
+  const lignes = []
+  for (const c of liste.slice(0, 8)) {
+    if (c.sms_erreur) lignes.push(`${c.cree_le.slice(11, 16)} — ${c.code} · confirmation SMS échouée (${c.sms_erreur})`)
+    else if (c.sms_task) lignes.push(`${c.cree_le.slice(11, 16)} — ${c.code} · confirmation SMS envoyée`)
+    if (c.paye_le) lignes.push(`${c.paye_le.slice(11, 19)} — ${c.code} · paiement confirmé par SMS (de ${masquerNumero(c.paye_par || '')})`)
+  }
+  if (lignes.length === 0) { boite.style.display = 'none'; return }
+  boite.style.display = ''
+  journal.innerHTML = lignes.map(l => `<div>${l}</div>`).join('')
+}
+
+/* --- la page écoute : elle relit ses commandes, c'est tout son secret --- */
+async function rafraichir() {
+  if (document.hidden) return
+  try {
+    const res = await fetch('/api/boutique', { cache: 'no-store' })
+    const corps = await res.json()
+    for (const c of corps.commandes || []) DONNEES[c.code] = c
+    rendreCommandes()
+  } catch { /* réseau timide : on retentera à la prochaine passe */ }
+}
+
+rendreCatalogue()
+rafraichir()
+setInterval(rafraichir, 3000)
+</script>
+</body>
+</html>

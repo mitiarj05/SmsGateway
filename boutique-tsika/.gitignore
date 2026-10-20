@@ -1,0 +1,8 @@
+# Secrets de branchement (clé API, secret webhook, numéro) — jamais commis.
+.env
+.env.local
+.env.*.local
+
+# État local des scripts (ancien téléphone à rendre, etc.)
+.brouillon/
+*.brouillon.json
