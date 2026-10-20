@@ -6,7 +6,6 @@ import MenuMobile from './MenuMobile'
 const LIENS = [
   { href: '/fonctionnalites', libelle: 'Fonctionnalités' },
   { href: '/comment-ca-marche', libelle: 'Brancher votre site' },
-  { href: '/demo', libelle: 'Démo en direct' },
   { href: '#installer', libelle: 'Installer', ancre: true },
   { href: '/faq', libelle: 'FAQ' },
 ]
