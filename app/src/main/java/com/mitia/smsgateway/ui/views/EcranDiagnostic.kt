@@ -106,6 +106,10 @@ fun EcranDiagnostic(
     // périodiques de MainActivity, sinon une saisie en cours serait effacée.
     var codesSaisis by remember { mutableStateOf(emptyMap<Int, String>()) }
 
+    // Numéro tapé par carte : si l'opérateur ne fournit pas son numéro
+    // (« numéro indisponible ») ou si l'utilisateur le corrige.
+    var numerosSaisis by remember { mutableStateOf(emptyMap<Int, String>()) }
+
     var permissionSms by remember { mutableStateOf(false) }
 
     var latence by remember { mutableStateOf<Long?>(null) }
@@ -126,6 +130,14 @@ fun EcranDiagnostic(
         cartesUssd.forEach { carte ->
             if (!codesSaisis.containsKey(carte.souscriptionId)) {
                 codesSaisis = codesSaisis + (carte.souscriptionId to carte.code)
+            }
+            // Le numéro tapé la fois précédente revient, mais ne reprend JAMAIS
+            // un brouillon en cours de frappe.
+            if (!numerosSaisis.containsKey(carte.souscriptionId)) {
+                val stocke = PreferencesAppareil.obtenirNumeroSim(context, carte.souscriptionId)
+                if (!stocke.isNullOrBlank()) {
+                    numerosSaisis = numerosSaisis + (carte.souscriptionId to stocke)
+                }
             }
         }
     }
@@ -442,11 +454,45 @@ fun EcranDiagnostic(
                                             fontWeight = FontWeight.Bold
                                         )
                                         Spacer(Modifier.height(1.dp))
-                                        Text(
-                                            text = sim.numero ?: "numéro indisponible",
-                                            color = MaterialTheme.colorScheme.secondaryContainer,
-                                            fontSize = 11.sp
-                                        )
+                                        // Le numéro affiché : celui d'Android, sinon
+                                        // celui tapé une fois par l'utilisateur.
+                                        val numeroAffiche = sim.numero
+                                            ?: numerosSaisis[sim.abonnementId]?.takeIf { it.isNotBlank() }
+                                        if (numeroAffiche != null) {
+                                            Text(
+                                                text = numeroAffiche,
+                                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                                fontSize = 11.sp
+                                            )
+                                        } else {
+                                            // Les opérateurs ne provisionnent pas toujours
+                                            // leur numéro dans la carte : on l'écrit une
+                                            // fois, il reste en mémoire et s'affiche ensuite.
+                                            OutlinedTextField(
+                                                value = numerosSaisis[sim.abonnementId].orEmpty(),
+                                                onValueChange = { presente ->
+                                                    numerosSaisis = numerosSaisis + (sim.abonnementId to presente)
+                                                    portee.launch {
+                                                        PreferencesAppareil.enregistrerNumeroSim(
+                                                            context, sim.abonnementId, presente
+                                                        )
+                                                    }
+                                                },
+                                                placeholder = {
+                                                    Text(
+                                                        text = "Saisir le numéro de la SIM…",
+                                                        fontSize = 10.sp
+                                                    )
+                                                },
+                                                singleLine = true,
+                                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                                                textStyle = androidx.compose.ui.text.TextStyle(
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.SemiBold
+                                                ),
+                                                modifier = Modifier.fillMaxWidth(0.75f)
+                                            )
+                                        }
                                     }
                                 }
 

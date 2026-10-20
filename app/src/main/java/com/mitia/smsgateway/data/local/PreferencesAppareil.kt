@@ -43,6 +43,22 @@ object PreferencesAppareil {
     private val CLE_CADENCE_ENVOI_MS = intPreferencesKey("cadence_envoi_ms")
     private val CLE_ACCUSE_LIVRAISON = booleanPreferencesKey("accuse_livraison")
 
+    /**
+     * Numéro de la carte SIM, une clé par abonnement. Les opérateurs ne
+     * provisionnent presque jamais leur MSISDN dans la carte (Android renvoie
+     * alors un numéro vide) : l'utilisateur l'écrit une fois dans Diagnostic,
+     * il reste stocké et s'affiche ensuite sur toutes les écrans.
+     */
+    suspend fun obtenirNumeroSim(context: Context, souscriptionId: Int): String? {
+        return context.magasinDonnees.data.first()[stringPreferencesKey("sim_numero_$souscriptionId")]
+    }
+
+    suspend fun enregistrerNumeroSim(context: Context, souscriptionId: Int, numero: String) {
+        context.magasinDonnees.edit { prefs ->
+            prefs[stringPreferencesKey("sim_numero_$souscriptionId")] = numero.trim()
+        }
+    }
+
     const val DEFAUT_SERVEUR_HOTE = "192.168.4.147"
     const val DEFAUT_SERVEUR_PORT = "3000"
 
