@@ -7,7 +7,7 @@ const GARANTIES = ['100 % auto-hébergé', 'Sans abonnement', 'API ouverte 24 h/
 export default function HeroAccueil() {
   return (
     <section className="relative overflow-hidden border-b border-[#1C1917]/10">
-      {/* Photo en fond, à peine visible */}
+      {/* Photo en fond, plus présente sous le voile papier */}
       <div className="absolute inset-0" aria-hidden="true">
         <Image
           src="/images/cartes-sim.jpg"
@@ -17,7 +17,7 @@ export default function HeroAccueil() {
           sizes="100vw"
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-[#F7F5F0]/80" />
+        <div className="absolute inset-0 bg-[#F7F5F0]/60" />
       </div>
 
       <div className="relative mx-auto max-w-3xl px-6 pb-20 pt-14 text-center md:pt-20 lg:px-8">
