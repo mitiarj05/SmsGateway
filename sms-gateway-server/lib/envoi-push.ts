@@ -16,8 +16,10 @@ export async function envoyerPushNouvelleTache(
         action: 'new_task',
         tacheId: idTache,
       },
-      // Optionnel : une notification visible (mais on veut un push silencieux)
-      // android: { priority: 'high' },
+      // Priorité haute : le téléphone doit se réveiller MAINTENANT, même en
+      // sommeil — sans elle, Android livre le message « quand il peut » et
+      // la tâche n'atterrit sur le téléphone que par la scrutation de 30 s.
+      android: { priority: 'high', ttl: 300000 },
     })
     return true
   } catch (erreur) {
