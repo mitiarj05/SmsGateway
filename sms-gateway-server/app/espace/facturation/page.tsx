@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Receipt, Calendar, ShieldCheck, ArrowUpRight } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
+import GraphiqueConsommationQuotidienne, { ItemConsommation } from '../../../composants/GraphiqueConsommationQuotidienne'
 
 interface ConsoMensuelle {
   mois: string
@@ -80,7 +81,8 @@ export default function PageFacturationEspace() {
   const estMoisCourant = idMois === moisCourantId()
   const maintenantJour = new Date().getDate()
   const finPeriode = new Date(anneeVue, moisVue - 1, estMoisCourant ? maintenantJour : nbJoursMois)
-  // La semaine affichée : les 7 derniers jours (lundi d'avant → aujourd'hui).
+
+  // La semaine affichée : les 7 derniers jours avec les vraies données de consommation de la BDD
   const clesVisibles = Array.from({ length: 7 }, (_, k) => {
     const d = new Date(finPeriode)
     d.setDate(finPeriode.getDate() - (6 - k))
@@ -92,14 +94,19 @@ export default function PageFacturationEspace() {
       jour: d.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', ''),
     }
   })
-  const valeurs = clesVisibles.map((j) => compteursJours[j.cle] ?? 0)
-  const maxQuotidien = Math.max(1, ...valeurs)
+
+  const donneesGraphique: ItemConsommation[] = clesVisibles.map((j) => ({
+    cle: j.cle,
+    libelle: j.libelle,
+    valeur: compteursJours[j.cle] ?? 0,
+  }))
+
   const estimation = (total * 100).toLocaleString('fr-FR')
   const projectionJour = new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit' })
 
   return (
     <CoquilleEspace>
-      {/* En-tête (Exact Screenshot) */}
+      {/* En-tête */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Facturation</h1>
@@ -120,7 +127,7 @@ export default function PageFacturationEspace() {
         </div>
       </div>
 
-      {/* 4 Stat Cards Row (Exact Screenshot) */}
+      {/* 4 Stat Cards Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">SMS ENVOYÉS</p>
@@ -141,7 +148,7 @@ export default function PageFacturationEspace() {
         </div>
       </div>
 
-      {/* Main Grid 2 Cols (Exact Screenshot) */}
+      {/* Main Grid 2 Cols */}
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
 
         {/* Left Column (2 cols) */}
@@ -167,7 +174,7 @@ export default function PageFacturationEspace() {
                 <span className="font-bold text-[#1C1917] dark:text-zinc-200">{total} / {quota ?? '∞'} SMS</span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-800">
-                <div className="h-full rounded-full" style={{ width: `${pctQuota}%` }} />
+                <div className="h-full rounded-full bg-[#2563EB]" style={{ width: `${pctQuota}%` }} />
               </div>
             </div>
 
@@ -178,42 +185,13 @@ export default function PageFacturationEspace() {
             </div>
           </div>
 
-          {/* Card 2 : Consommation ponctuelle — la semaine, en bâtonnets */}
-          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
-            <div>
-              <h2 className="text-sm font-bold text-[#1C1917] dark:text-white">Consommation de la semaine</h2>
-              <p className="mt-0.5 text-[11px] text-stone-500">
-                du {clesVisibles[0].libelle} au {clesVisibles[6].libelle} — le jour est écrit dans la barre
-              </p>
-            </div>
-
-            <div className="flex items-stretch gap-2 sm:gap-3">
-              {valeurs.map((nombre, i) => {
-                const pct = Math.min(100, Math.round((nombre / maxQuotidien) * 100))
-                return (
-                  <div key={clesVisibles[i].cle} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
-                    <span className="h-4 text-[11px] font-bold text-[#1C1917] dark:text-zinc-200">
-                      {nombre > 0 ? nombre : ''}
-                    </span>
-                    <div className="relative h-44 w-full max-w-9 overflow-hidden rounded-full bg-[#1C1917]/[0.05] dark:bg-zinc-800">
-                      <div
-                        title={`${nombre} SMS le ${clesVisibles[i].libelle}`}
-                        className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#1D4ED8] to-[#60A5FA] transition-all"
-                        style={{ height: `${pct}%` }}
-                      />
-                      <span
-                        className={`absolute bottom-2 inset-x-0 z-10 flex justify-center text-[10px] font-bold tracking-wide [writing-mode:vertical-rl] rotate-180 ${
-                          pct >= 18 ? 'text-white/90' : 'text-stone-500 dark:text-zinc-400'
-                        }`}
-                      >
-                        {clesVisibles[i].jour}
-                      </span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+          {/* Card 2 : Graphique de Consommation Quotidienne (Bâtons bleus identiques à l'image exemple) */}
+          <GraphiqueConsommationQuotidienne
+            titre="Consommation quotidienne"
+            sousTitre={`du ${clesVisibles[0].libelle} au ${clesVisibles[6].libelle}`}
+            nomVariable="SMS envoyés"
+            donnees={donneesGraphique}
+          />
 
           {/* Card 3 : Historique des relevés (mois courant réel uniquement) */}
           <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
