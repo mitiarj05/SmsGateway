@@ -35,19 +35,21 @@ node scripts/outils.mjs rendre           # retire le bénéfice partagé
 node scripts/tester-boucle.cjs           # la boucle complète hors ligne (signature, paiement, intrus)
 ```
 
-### Passerelle partagée (l'appareil reste chez son propriétaire)
+### Passerelle empruntée (zéro base, zéro compte, zéro SQL)
 
-`lier` n'enlève plus le téléphone à son espace : il lui ajoute la boutique comme
-**bénéficiaire** (colonne `appareils.id_applications_supplementaires`, optionnelle).
-Le téléphone s'affiche toujours dans l'espace de son propriétaire ; ses tâches
-(envoi) et son routage entrant servent les deux applications ; le quota horaire
-demeure celui de la SIM, partagé — physiquement sincère.
+La boutique n'a ni base, ni compte : elle envoie **avec la clé de la passerelle
+qui l'héberge**, et le webhook entrant **de cette passerelle** pousse les
+réponses vers son récepteur, signé avec le même secret qu'elle détient déjà.
+Le téléphone reste affiché dans le Parc d'envoi de son propriétaire, comme
+toujours.
 
-Avant le premier `lier`, exécuter une fois dans le Supabase Dashboard :
-
-```sql
-ALTER TABLE appareils ADD COLUMN IF NOT EXISTS id_applications_supplementaires uuid[];
+```bash
+node scripts/outils.mjs emprunt
 ```
+
+(cette commande rend le téléphone à son propriétaire si besoin, câble le
+webhook de la passerelle, et met à jour `SMSTSIKA_CLE_API` dans `.env.local` —
+la même valeur est à recoller dans les variables Vercel, puis Redeploy).
 
 ## Le scénario complet (le test réel)
 

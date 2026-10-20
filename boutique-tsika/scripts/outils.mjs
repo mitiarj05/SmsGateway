@@ -1,15 +1,18 @@
 /**
  * Outils de branchement « Boutique Tsika » côté SMSTSIKA (à exécuter ICI, pas en prod).
  *
- *   node scripts/outils.mjs init                       → crée la fiche client + écrit .env.local
- *   node scripts/outils.mjs webhook <url>              → enregistre l'URL du récepteur
- *   node scripts/outils.mjs appareils                  → liste les appareils (pour choisir)
- *   node scripts/outils.mjs lier <idAppareil>          → le téléphone devient la passerelle de la boutique
- *   node scripts/outils.mjs rendre                     → le téléphone regagne son ancienne application
+ *   node scripts/outils.mjs init            → crée la fiche client + écrit .env.local
+ *   node scripts/outils.mjs webhook <url>   → enregistre l'URL du récepteur (fiche boutique)
+ *   node scripts/outils.mjs appareils       → liste les appareils (pour choisir)
+ *   node scripts/outils.mjs lier <préfixe>  → (option) le téléphone devient passerelle de la fiche boutique
+ *   node scripts/outils.mjs rendre          → (option) le téléphone regagne son ancienne application
+ *   node scripts/outils.mjs emprunt         → MAJUSCULE du modèle zéro-SQL : le téléphone rendu chez son
+ *                                             propriétaire + le webhook entrant de SA passerelle poussé vers
+ *                                             le récepteur de la boutique (secret déjà partagé) + .env.local mis à jour
  *
  * Secrets : lus dans ../sms-gateway-server/.env.local, jamais affichés en clair.
- * Le fichier boutique-tsika/.env.local contient la clé de la boutique — gitignore,
- * à copier aussi dans les variables d'environnement Vercel de la boutique.
+ * Le fichier boutique-tsika/.env.local contient la clé et le secret — gitignored,
+ * à copier dans les variables d'environnement Vercel de la boutique.
  */
 import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'node:fs'
 import { randomBytes } from 'node:crypto'
@@ -98,7 +101,7 @@ async function init() {
     console.log('Fiche client retrouvée et complétée :', fiche.id)
   }
 
-  // 2. Écrire .env.local de la boutique (gitignore) : la clé + le secret du webhook.
+  // 2. Écrire .env.local de la boutique (gitignored) : la clé + le secret du webhook.
   const url = (process.env.SMSTSIKA_URL || 'https://smstsika.vercel.app').replace(/\/+$/, '')
   const numero = process.env.SMSTSIKA_NUMERO_PAIEMENT || fiche.numero_paiement || ''
   const contenu = [
@@ -132,7 +135,7 @@ async function webhook(url) {
   console.log('URL webhook enregistrée pour', NOM_APPLICATION, '→', url)
 }
 
-/* ---------- appareils ---------- */
+/* ---------- fiche + appareils ---------- */
 async function trouverFiche(lienBase, cleService) {
   const reponse = await rest(lienBase, cleService, `/rest/v1/applications?select=*&nom=eq.${encodeURIComponent(NOM_APPLICATION)}`)
   const lignes = await reponse.json()
@@ -141,91 +144,111 @@ async function trouverFiche(lienBase, cleService) {
   return fiche
 }
 
-const ERREUR_MIGRATION = "Colonne « id_applications_supplementaires » absente — exécutez d'abord le SQL de migration dans le Supabase Dashboard (voir README)."
-
 async function appareils() {
   const { lienBase, cleService } = lireEnvServeur()
-  let reponse = await rest(lienBase, cleService, '/rest/v1/appareils?select=id,nom,statut,id_application,id_applications_supplementaires&order=date_creation.desc')
-  if (!reponse.ok) {
-    // Avant migration : on retombe sur les seules colonnes historiques.
-    reponse = await rest(lienBase, cleService, '/rest/v1/appareils?select=id,nom,statut,id_application&order=date_creation.desc')
-  }
+  const reponse = await rest(lienBase, cleService, '/rest/v1/appareils?select=id,nom,statut,id_application&order=date_creation.desc')
   const lignes = await reponse.json()
   for (const a of lignes) {
-    const serve = Array.isArray(a.id_applications_supplementaires) && a.id_applications_supplementaires.length > 0
-      ? '  · sert ' + a.id_applications_supplementaires.map((x) => String(x).slice(0, 8)).join(', ')
-      : ''
-    console.log((a.id || '').slice(0, 8), '…', a.nom, '·', a.statut, '· app', (a.id_application || '—').slice(0, 8), serve)
+    console.log((a.id || '').slice(0, 8), '…', a.nom, '·', a.statut, '· app', (a.id_application || '—').slice(0, 8))
   }
 }
 
-/* ---------- lier / rendre : le téléphone reste chez son propriétaire,
-   la boutique devient simplement BÉNÉFICIAIRE de sa passerelle ---------- */
+/* ---------- lier / rendre (le téléphone change de main le temps du test) ---------- */
 async function lier(idAppareil) {
   if (!idAppareil) throw new Error('Donnez l\'id de l\'appareil (voir : node scripts/outils.mjs appareils)')
   const { lienBase, cleService } = lireEnvServeur()
-  const fiche = await trouverFiche(lienBase, cleService)
-  const reponse = await rest(lienBase, cleService, '/rest/v1/appareils?select=id,nom,id_application,id_applications_supplementaires')
-  if (!reponse.ok) throw new Error(ERREUR_MIGRATION)
-  const liste = await reponse.json()
-  const appareil = Array.isArray(liste) ? liste.find((a) => String(a.id).startsWith(idAppareil)) : null
+  const reponse = await rest(lienBase, cleService, '/rest/v1/appareils?select=id,nom,id_application')
+  const tous = await reponse.json()
+  const appareil = Array.isArray(tous) ? tous.find((a) => String(a.id).startsWith(idAppareil)) : null
   if (!appareil) throw new Error('Appareil introuvable pour le préfixe ' + idAppareil)
-
-  const changements = {}
-  // Réparation d'un ancien transfert complet : le téléphone regagne son espace.
-  const brouillon = existsSync(cheminBrouillon) ? JSON.parse(readFileSync(cheminBrouillon, 'utf-8')) : null
-  if (appareil.id_application === fiche.id && brouillon && brouillon.ancienne_application) {
-    changements.id_application = brouillon.ancienne_application
-  }
-  const benefices = new Set((appareil.id_applications_supplementaires ?? []).filter(Boolean))
-  benefices.add(fiche.id)
-  changements.id_applications_supplementaires = [...benefices]
-
+  writeFileSync(cheminBrouillon, JSON.stringify({ appareil: appareil.id, ancienne_application: appareil.id_application || null }, null, 2), 'utf-8')
+  const fiche = await trouverFiche(lienBase, cleService)
   const maj = await rest(lienBase, cleService, `/rest/v1/appareils?id=eq.${appareil.id}`, {
     method: 'PATCH',
-    body: JSON.stringify(changements),
+    body: JSON.stringify({ id_application: fiche.id }),
   })
   if (!maj.ok) throw new Error('échec de la liaison : ' + (await maj.text()))
-  const reparé = changements.id_application
-    ? ' (espace principal réparé : ' + String(changements.id_application).slice(0, 8) + '…)'
-    : ''
-  console.log(appareil.nom, '→ reste dans son espace principal' + reparé + ', et sert désormais « ' + NOM_APPLICATION + ' » comme passerelle partagée.')
+  console.log(appareil.nom, '→ passerelle de « ' + NOM_APPLICATION + ' ». (node scripts/outils.mjs rendre pour revenir)')
+}
+
+/** Rends l'appareil à son ancienne application (mémorisée par lier). */
+async function rendreAppareil(lienBase, cleService) {
+  if (!existsSync(cheminBrouillon)) return null
+  const brouillon = JSON.parse(readFileSync(cheminBrouillon, 'utf-8'))
+  if (!brouillon.ancienne_application) return null
+  const maj = await rest(lienBase, cleService, `/rest/v1/appareils?id=eq.${brouillon.appareil}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ id_application: brouillon.ancienne_application }),
+  })
+  if (!maj.ok) throw new Error('échec du rendu : ' + (await maj.text()))
+  return brouillon.ancienne_application
 }
 
 async function rendre() {
   const { lienBase, cleService } = lireEnvServeur()
-  const fiche = await trouverFiche(lienBase, cleService)
-  const reponse = await rest(lienBase, cleService, '/rest/v1/appareils?select=id,nom,id_application,id_applications_supplementaires')
-  if (!reponse.ok) throw new Error(ERREUR_MIGRATION)
-  const liste = await reponse.json()
-  const brouillon = existsSync(cheminBrouillon) ? JSON.parse(readFileSync(cheminBrouillon, 'utf-8')) : null
-  let touche = false
-  for (const appareil of liste) {
-    const sertLaBoutique = Array.isArray(appareil.id_applications_supplementaires) && appareil.id_applications_supplementaires.includes(fiche.id)
-    const ancienTransfert = appareil.id_application === fiche.id
-    if (!sertLaBoutique && !ancienTransfert) continue
-    const changements = {}
-    if (sertLaBoutique) {
-      changements.id_applications_supplementaires = appareil.id_applications_supplementaires.filter((x) => x !== fiche.id)
-    }
-    if (ancienTransfert) {
-      if (brouillon && brouillon.ancienne_application && brouillon.appareil === appareil.id) {
-        changements.id_application = brouillon.ancienne_application
-      } else {
-        console.warn('⚠', appareil.nom, 'a « ' + NOM_APPLICATION + ' » comme espace principal mais je ne connais plus l\'ancien — rendez-le à la main (QR/espace ou SQL).')
-        continue
-      }
-    }
-    const maj = await rest(lienBase, cleService, `/rest/v1/appareils?id=eq.${appareil.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(changements),
-    })
-    if (!maj.ok) throw new Error('échec du rendu : ' + (await maj.text()))
-    console.log(appareil.nom, '→ rendu à son espace principal, plus aucun bénéfice partagé.')
-    touche = true
-  }
+  const application = await rendreAppareil(lienBase, cleService)
+  if (!application) throw new Error('Rien à rendre : aucun ancien propriétaire connu (voir appareils).')
   if (existsSync(cheminBrouillon)) unlinkSync(cheminBrouillon)
-  if (!touche) console.log('Rien à rendre : aucun appareil ne sert « ' + NOM_APPLICATION + ' ».')
+  console.log('Appareil rendu à son ancienne application', application.slice(0, 8), '… — il réapparaît à nouveau dans son Parc d\'envoi.')
+}
+
+/* ---------- emprunt : le modèle zéro-SQL ---------- */
+/**
+ * La boutique n'a jamais de base ni de compte : elle envoie AVEC la clé de la
+ * passerelle qui l'héberge, et le webhook entrant de CETTE passerelle pousse
+ * les réponses (PAYE CMD-…) vers le récepteur de la boutique, signé avec le
+ * secret que la boutique et la passerelle partagent pendant l'emprunt.
+ */
+async function emprunt() {
+  const { lienBase, cleService } = lireEnvServeur()
+  const fiche = await trouverFiche(lienBase, cleService)
+  if (!fiche.url_notification) {
+    throw new Error("Enregistrez d'abord l'URL du récepteur : node scripts/outils.mjs webhook https://…/api/boutique")
+  }
+
+  // 1. Le téléphone regagne son propriétaire (son Parc d'envoi reste intact).
+  const applicationProprietaire = await rendreAppareil(lienBase, cleService)
+  if (!applicationProprietaire) throw new Error('Aucun ancien propriétaire connu — faites d\'abord : node scripts/outils.mjs lier <preffixe>')
+  if (existsSync(cheminBrouillon)) unlinkSync(cheminBrouillon)
+
+  // 2. Lire la fiche du propriétaire pour sa clé, et retenir son secret actuel si besoin.
+  const reponse = await rest(lienBase, cleService, `/rest/v1/applications?select=*&id=eq.${applicationProprietaire}`)
+  const proprietaires = await reponse.json()
+  const proprietaire = Array.isArray(proprietaires) && proprietaires[0] ? proprietaires[0] : null
+  if (!proprietaire) throw new Error('Application propriétaire introuvable : ' + applicationProprietaire)
+
+  // 3. Le webhook entrant de la passerelle pointe vers le récepteur de la boutique,
+  //    signé avec LE MÊME secret que la boutique a déjà dans son .env.local.
+  const maj = await rest(lienBase, cleService, `/rest/v1/applications?id=eq.${proprietaire.id}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify({
+      url_notification: fiche.url_notification,
+      secret_notification: fiche.secret_notification,
+      evenements_notification: ['sms.recu'],
+      notifications_actives: true,
+    }),
+  })
+  if (!maj.ok) throw new Error('échec du câblage webhook : ' + (await maj.text()))
+  const proprietaireApres = (await maj.json())[0]
+
+  // 4. La boutique envoie désormais avec la clé de la passerelle : mise à jour
+  //    de .env.local pour copier-coller le bon valeur dans l'environnement Vercel.
+  const contenu = readFileSync(cheminEnvBoutique, 'utf-8').split(/\r?\n/)
+  const reecrit = contenu.map((ligne) =>
+    /^SMSTSIKA_CLE_API=/.test(ligne) ? 'SMSTSIKA_CLE_API=' + (proprietaireApres.cle_api || '') : ligne
+  )
+  writeFileSync(cheminEnvBoutique, reecrit.join('\n'), 'utf-8')
+
+  console.log('')
+  console.log('Emprunt en place :')
+  console.log('  · appareil rendu à son propriétaire', applicationProprietaire.slice(0, 8), '… (Parc d\'envoi intact)')
+  console.log('  · webhook entrant de SA passerelle →', proprietaireApres.url_notification)
+  console.log('  · secret partagé :', masquer(proprietaireApres.secret_notification || ''), '(identique à celui de la boutique)')
+  console.log('  · SMSTSIKA_CLE_API mise à jour dans boutique-tsika/.env.local —', masquer(proprietaireApres.cle_api || ''))
+  console.log('')
+  console.log('→ DERNIER PAS (depuis Vercel : Settings → Environment Variables de la boutique) :')
+  console.log('   remplacer SMSTSIKA_CLE_API par la valeur de boutique-tsika/.env.local, puis Redeploy.')
 }
 
 /* ---------- aiguillage ---------- */
@@ -235,6 +258,7 @@ else if (commande === 'webhook') await webhook(arguments_2[0])
 else if (commande === 'appareils') await appareils()
 else if (commande === 'lier') await lier(arguments_2[0])
 else if (commande === 'rendre') await rendre()
+else if (commande === 'emprunt') await emprunt()
 else {
-  console.log('Usage : node scripts/outils.mjs init | webhook <url> | appareils | lier <idAppareil> | rendre')
+  console.log('Usage : node scripts/outils.mjs init | webhook <url> | appareils | lier <idAppareil> | rendre | emprunt')
 }
