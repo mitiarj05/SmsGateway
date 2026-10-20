@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-  MessageSquare, Search, Download, RefreshCw, Loader2, Clock, Check, Smartphone, MailOpen
+  MessageSquare, Search, Download, RefreshCw, Loader2, Clock, Check, Smartphone
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 
@@ -14,7 +14,6 @@ interface Entrant {
   contenu: string
   passerelle: string
   transmis: boolean
-  lu: boolean
 }
 
 const COULEURS_AVATAR = [
@@ -58,7 +57,6 @@ export default function PageBoiteReception() {
             contenu: typeof e.contenu === 'string' ? e.contenu : '',
             passerelle: e.appareils?.nom ?? '—',
             transmis: e.statut_notification === 'ENVOYE',
-            lu: e.lu === true,
           }
         })
       )
@@ -87,27 +85,6 @@ export default function PageBoiteReception() {
       setRelanceEnCours(null)
     }
   }
-
-  async function marquerLu(ids: string[]) {
-    setInfo(null)
-    // Optimiste : les pastilles passent « lu » tout de suite, la base suit.
-    setMessages((prev) => prev.map((m) => (ids.includes(m.id) ? { ...m, lu: true } : m)))
-    try {
-      const res = await fetch('/api/inbox/lu', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids }),
-      })
-      const data = await res.json().catch(() => ({}))
-      setInfo(data.error ? data.error : `${ids.length} message(s) marqué(s) comme lu(s).`)
-      await charger()
-    } catch {
-      setInfo('Marquage impossible. Réessayez.')
-      await charger()
-    }
-  }
-
-  const nonLus = messages.filter((m) => !m.lu)
 
   const visibles = messages.filter((m) => {
     const correspondOnglet =
@@ -144,22 +121,12 @@ export default function PageBoiteReception() {
             Les réponses reçues par vos passerelles, avec leur statut de transmission.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => nonLus.length > 0 && marquerLu(nonLus.map((m) => m.id))}
-            disabled={nonLus.length === 0}
-            title={nonLus.length > 0 ? `${nonLus.length} non lu(s)` : 'Rien de neuf'}
-            className="inline-flex items-center gap-2 rounded-full border border-[#1C1917]/10 bg-white px-5 py-2.5 text-[13px] font-semibold text-stone-700 shadow-sm hover:bg-stone-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 transition"
-          >
-            <MailOpen className="h-4 w-4" /> Tout marquer comme lu{nonLus.length > 0 ? ` (${nonLus.length})` : ''}
-          </button>
-          <button
-            onClick={exporter}
-            className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg hover:bg-[#1D4ED8] transition"
-          >
-            <Download className="h-4 w-4" /> Exporter
-          </button>
-        </div>
+        <button
+          onClick={exporter}
+          className="survol-brillance inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg hover:bg-[#1D4ED8] transition"
+        >
+          <Download className="h-4 w-4" /> Exporter
+        </button>
       </div>
 
       {info && (
@@ -254,16 +221,13 @@ export default function PageBoiteReception() {
                 {m.initiales}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[13.5px] text-[#1C1917] dark:text-zinc-200">
-                  {!m.lu && (
-                    <span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-blue-500 align-middle" title="Non lu" />
-                  )}
-                  <span className={m.lu ? 'font-medium' : 'font-bold'}>{m.expediteur}</span>
+                <p className="text-[13.5px] font-bold text-[#1C1917] dark:text-zinc-200">
+                  {m.expediteur}
                   <span className="ml-2 text-[11px] font-medium text-stone-500">
                     {m.heure}
                   </span>
                 </p>
-                <p className={`mt-0.5 text-[12.5px] leading-relaxed text-stone-600 dark:text-zinc-300 ${m.lu ? 'font-normal' : 'font-semibold'}`}>
+                <p className="mt-0.5 text-[12.5px] leading-relaxed text-stone-600 dark:text-zinc-300">
                   {m.contenu}
                 </p>
                 <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-stone-500">
@@ -281,15 +245,6 @@ export default function PageBoiteReception() {
                     À vérifier
                   </span>
                 )}
-                {!m.lu ? (
-                  <button
-                    onClick={() => marquerLu([m.id])}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white px-3.5 py-1.5 text-[11px] font-semibold text-stone-600 shadow-2xs hover:border-slate-300 hover:text-[#1C1917] dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                  >
-                    <MailOpen className="h-3 w-3" />
-                    Marquer comme lu
-                  </button>
-                ) : null}
                 {!m.transmis && (
                   <button
                     onClick={() => relancer(m.id)}

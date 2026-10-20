@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Inbox, RefreshCw, Loader2, Search, MessageSquare, Send, Settings, ArrowUpRight, Check, MailOpen } from 'lucide-react'
+import { Inbox, RefreshCw, Loader2, Search, MessageSquare, Send, Settings, ArrowUpRight, Check } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 
 interface Entrant {
@@ -12,7 +12,6 @@ interface Entrant {
   contenu: string
   passerelle: string
   statut: 'transmis' | 'verifier'
-  lu: boolean
 }
 
 export default function PageEntreesEspace() {
@@ -22,7 +21,6 @@ export default function PageEntreesEspace() {
   const [recherche, setRecherche] = useState('')
   const [onglet, setOnglet] = useState<'tous' | 'transmis' | 'verifier'>('tous')
   const [retenteId, setRetenteId] = useState<string | null>(null)
-  const [marquageLu, setMarquageLu] = useState(false)
   const [urlWebhook, setUrlWebhook] = useState<string | null>(null)
 
   const visibles = entrants
@@ -44,7 +42,6 @@ export default function PageEntreesEspace() {
         contenu?: string | null
         date_reception?: string | null
         statut_notification?: string | null
-        lu?: boolean | null
         appareils?: { nom?: string | null } | null
       }) => {
         const expediteur = e.expediteur || '—'
@@ -58,7 +55,6 @@ export default function PageEntreesEspace() {
           contenu: e.contenu || '',
           passerelle: e.appareils?.nom || '—',
           statut: e.statut_notification === 'ENVOYE' ? 'transmis' : 'verifier',
-          lu: e.lu === true,
         }
       })
       setEntrants(mapped)
@@ -87,28 +83,6 @@ export default function PageEntreesEspace() {
     }
   }
 
-  async function marquerLu(ids?: string[]) {
-    const corps = ids ? { ids } : { tout: true }
-    const aMarquer = !ids
-      ? entrants.filter((e) => !e.lu).map((e) => e.id)
-      : entrants.filter((e) => !e.lu && ids.includes(e.id)).map((e) => e.id)
-    if (!ids && aMarquer.length === 0) return
-    // Optimiste : les étiquettes passent « lu » tout de suite, la base suit.
-    setMarquageLu(true)
-    setEntrants((prev) => prev.map((e) => (ids ? ids.includes(e.id) : aMarquer.includes(e.id)) ? { ...e, lu: true } : e))
-    try {
-      await fetch('/api/espace/entrees', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(corps),
-      })
-    } catch {
-      await charger(true)
-    } finally {
-      setMarquageLu(false)
-    }
-  }
-
   if (chargement) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#1C1917]/[0.04] dark:bg-zinc-950">
@@ -118,7 +92,6 @@ export default function PageEntreesEspace() {
   }
 
   const totalEntrants = entrants.length
-  const nonLus = entrants.filter((e) => !e.lu)
   const transmisCount = entrants.filter(e => e.statut === 'transmis').length
   const verifierCount = entrants.filter(e => e.statut === 'verifier').length
   const ceJourCount = entrants.filter(e => {
@@ -183,15 +156,6 @@ export default function PageEntreesEspace() {
                 />
               </div>
               <button
-                onClick={() => marquerLu()}
-                disabled={marquageLu || nonLus.length === 0}
-                title={nonLus.length > 0 ? `${nonLus.length} non lu(s)` : 'Rien de neuf'}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white px-4 py-2 text-[12.5px] font-semibold text-stone-600 shadow-2xs hover:bg-stone-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-              >
-                {marquageLu ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MailOpen className="h-3.5 w-3.5" />}
-                Tout marquer comme lu{nonLus.length > 0 ? ` (${nonLus.length})` : ''}
-              </button>
-              <button
                 onClick={() => charger(false)}
                 disabled={actualisationEnCours}
                 className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white px-4 py-2 text-[12.5px] font-semibold text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
@@ -238,13 +202,10 @@ export default function PageEntreesEspace() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        {!m.lu && (
-                          <span className="h-2 w-2 shrink-0 rounded-full bg-blue-500" title="Non lu" />
-                        )}
-                        <p className={`text-[13px] text-[#1C1917] dark:text-white ${m.lu ? 'font-medium' : 'font-bold'}`}>{m.expediteur}</p>
+                        <p className="text-[13px] font-bold text-[#1C1917] dark:text-white">{m.expediteur}</p>
                         <span className="text-[10px] text-stone-500">{m.heure}</span>
                       </div>
-                      <p className={`mt-0.5 text-[12.5px] text-stone-700 dark:text-zinc-300 max-w-md ${m.lu ? 'font-normal' : 'font-semibold'}`}>{m.contenu || '—'}</p>
+                      <p className="mt-0.5 text-[12.5px] font-medium text-stone-700 dark:text-zinc-300 max-w-md">{m.contenu || '—'}</p>
                       <p className="mt-1 text-[11px] text-stone-500">Reçu sur {m.passerelle}</p>
                     </div>
                   </div>
@@ -258,16 +219,6 @@ export default function PageEntreesEspace() {
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
                         <span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> À vérifier
                       </span>
-                    )}
-                    {!m.lu && (
-                      <button
-                        onClick={() => marquerLu([m.id])}
-                        disabled={marquageLu}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white px-3.5 py-1 text-[11px] font-semibold text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 disabled:opacity-50"
-                      >
-                        <MailOpen className="h-3 w-3" />
-                        Marquer comme lu
-                      </button>
                     )}
                     <button
                       onClick={() => retenter(m.id)}
