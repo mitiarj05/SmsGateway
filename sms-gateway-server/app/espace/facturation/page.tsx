@@ -28,15 +28,11 @@ function libelleMois(id: string): string {
 export default function PageFacturationEspace() {
   const [conso, setConso] = useState<ConsoMensuelle | null>(null)
   const [compteursJours, setCompteursJours] = useState<Record<string, number>>({})
-  const [plage, setPlage] = useState<'7j' | 'mois'>('7j')
   const [mois, setMois] = useState(moisCourantId())
   const [detailOuvert, setDetailOuvert] = useState(false)
 
   const idMois = mois
   const nomMois = libelleMois(idMois)
-  const nomMoisCourt = new Date(
-    Number(idMois.split('-')[0]), Number(idMois.split('-')[1]) - 1, 1
-  ).toLocaleString('fr-FR', { month: 'long' })
 
   useEffect(() => {
     fetch(`/api/espace/facturation?mois=${idMois}`)
@@ -84,44 +80,22 @@ export default function PageFacturationEspace() {
   const estMoisCourant = idMois === moisCourantId()
   const maintenantJour = new Date().getDate()
   const finPeriode = new Date(anneeVue, moisVue - 1, estMoisCourant ? maintenantJour : nbJoursMois)
-  const clesVisibles = plage === 'mois'
-    ? Array.from({ length: nbJoursMois }, (_, k) => {
-        const d = new Date(anneeVue, moisVue - 1, k + 1)
-        return {
-          cle: `${anneeVue}-${String(moisVue).padStart(2, '0')}-${String(k + 1).padStart(2, '0')}`,
-          numero: k + 1,
-          libelle: d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
-        }
-      })
-    : Array.from({ length: 7 }, (_, k) => {
-        const d = new Date(finPeriode)
-        d.setDate(finPeriode.getDate() - (6 - k))
-        const cle = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-        return {
-          cle,
-          numero: d.getDate(),
-          libelle: d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
-        }
-      })
+  // La semaine affichée : les 7 derniers jours (lundi d'avant → aujourd'hui).
+  const clesVisibles = Array.from({ length: 7 }, (_, k) => {
+    const d = new Date(finPeriode)
+    d.setDate(finPeriode.getDate() - (6 - k))
+    const cle = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    return {
+      cle,
+      numero: d.getDate(),
+      libelle: d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
+      jour: d.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', ''),
+    }
+  })
   const valeurs = clesVisibles.map((j) => compteursJours[j.cle] ?? 0)
   const maxQuotidien = Math.max(1, ...valeurs)
-  const moyenne = valeurs.reduce((s, v) => s + v, 0) / valeurs.length
-  const moyenneFr = moyenne.toFixed(1).replace('.', ',')
   const estimation = (total * 100).toLocaleString('fr-FR')
   const projectionJour = new Date().toLocaleString('fr-FR', { day: '2-digit', month: '2-digit' })
-  // La jauge : le jour courant de la période face à la moyenne de cette même période.
-  const cleJourCourant = (() => {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  })()
-  const jourGauge = clesVisibles.find((j) => j.cle === cleJourCourant) ?? clesVisibles[clesVisibles.length - 1]
-  const valeurJour = compteursJours[jourGauge.cle] ?? 0
-  const libJour = jourGauge.libelle
-  const maxJauge = Math.max(4, valeurJour, Math.ceil(moyenne * 1.5))
-  const pctJour = Math.min(100, Math.round((valeurJour / maxJauge) * 100))
-  const pctMoyenne = Math.min(100, Math.round((moyenne / maxJauge) * 100))
-  const totalPeriode = valeurs.reduce((s, v) => s + v, 0)
-  const libelleMeilleurJour = clesVisibles[valeurs.indexOf(Math.max(...valeurs))]?.libelle ?? ''
 
   return (
     <CoquilleEspace>
@@ -204,67 +178,40 @@ export default function PageFacturationEspace() {
             </div>
           </div>
 
-          {/* Card 2 : Consommation quotidienne — mois courant réel */}
+          {/* Card 2 : Consommation ponctuelle — la semaine, en bâtonnets */}
           <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-sm font-bold text-[#1C1917] dark:text-white">Consommation quotidienne — {nomMoisCourt}</h2>
-              </div>
-              <div className="flex items-center gap-1 rounded-full border border-[#1C1917]/10 bg-[#F7F5F0] p-1 dark:border-zinc-800 dark:bg-zinc-800">
-                {(['7j', 'mois'] as const).map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPlage(p)}
-                    className={`rounded-full px-3 py-1 text-[11px] font-bold transition ${plage === p ? 'bg-white text-[#1C1917] shadow-sm dark:bg-zinc-950 dark:text-white' : 'text-stone-500 hover:text-[#1C1917] dark:text-zinc-400 dark:hover:text-white'}`}
-                  >
-                    {p === '7j' ? '7 derniers jours' : 'Mois complet'}
-                  </button>
-                ))}
-              </div>
+            <div>
+              <h2 className="text-sm font-bold text-[#1C1917] dark:text-white">Consommation de la semaine</h2>
+              <p className="mt-0.5 text-[11px] text-stone-500">
+                du {clesVisibles[0].libelle} au {clesVisibles[6].libelle} — le jour est écrit dans la barre
+              </p>
             </div>
 
-            <div className="relative flex items-stretch gap-6 sm:gap-8">
-              {/* La jauge verticale — le jour face à la moyenne */}
-              <div className="flex w-28 shrink-0 flex-col items-center">
-                <p className="text-[32px] font-extrabold leading-none text-[#1C1917] dark:text-white">{valeurJour}</p>
-                <p className="mt-1 text-[10.5px] font-semibold uppercase tracking-wide text-stone-500">SMS le {libJour}</p>
-                <div className="relative mt-3 h-56 w-9 overflow-visible rounded-full bg-[#1C1917]/[0.06] dark:bg-zinc-800">
-                  <div
-                    className="absolute bottom-0 w-full overflow-hidden rounded-full bg-gradient-to-t from-[#1D4ED8] to-[#60A5FA] transition-all"
-                    style={{ height: `${pctJour}%` }}
-                  />
-                  {moyenne > 0 && (
-                    <div className="pointer-events-none absolute inset-x-[-8px]" style={{ bottom: `${pctMoyenne}%` }}>
-                      <div className="border-t-2 border-dashed border-stone-400 dark:border-zinc-500" />
-                      <span className="absolute -top-4 right-[-14px] whitespace-nowrap font-mono text-[10px] font-bold text-stone-500 dark:text-zinc-400">
-                        moy. {moyenneFr}/j
+            <div className="flex items-stretch gap-2 sm:gap-3">
+              {valeurs.map((nombre, i) => {
+                const pct = Math.min(100, Math.round((nombre / maxQuotidien) * 100))
+                return (
+                  <div key={clesVisibles[i].cle} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
+                    <span className="h-4 text-[11px] font-bold text-[#1C1917] dark:text-zinc-200">
+                      {nombre > 0 ? nombre : ''}
+                    </span>
+                    <div className="relative h-44 w-full max-w-9 overflow-hidden rounded-full bg-[#1C1917]/[0.05] dark:bg-zinc-800">
+                      <div
+                        title={`${nombre} SMS le ${clesVisibles[i].libelle}`}
+                        className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#1D4ED8] to-[#60A5FA] transition-all"
+                        style={{ height: `${pct}%` }}
+                      />
+                      <span
+                        className={`absolute bottom-2 inset-x-0 z-10 flex justify-center text-[10px] font-bold tracking-wide [writing-mode:vertical-rl] rotate-180 ${
+                          pct >= 18 ? 'text-white/90' : 'text-stone-500 dark:text-zinc-400'
+                        }`}
+                      >
+                        {clesVisibles[i].jour}
                       </span>
                     </div>
-                  )}
-                </div>
-                <p className="mt-2 text-[10px] text-stone-400">Aujourd&apos;hui vs moyenne</p>
-              </div>
-
-              {/* Le résumé de la période choisie */}
-              <div className="flex min-w-0 flex-1 flex-col justify-center gap-3 border-l border-[#1C1917]/10 pl-6 sm:pl-8 dark:border-zinc-800">
-                <div>
-                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-stone-500">Sur la période</p>
-                  <p className="text-[22px] font-extrabold leading-tight text-[#1C1917] dark:text-white">{totalPeriode} SMS</p>
-                </div>
-                <div>
-                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-stone-500">Meilleur jour</p>
-                  <p className="text-[16px] font-extrabold leading-tight text-[#1C1917] dark:text-white">
-                    {Math.max(...valeurs)} <span className="text-[11px] font-semibold text-stone-500">le {libelleMeilleurJour}</span>
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-stone-500">Moyenne</p>
-                  <p className="text-[16px] font-extrabold leading-tight text-[#1C1917] dark:text-white">
-                    {moyenneFr} <span className="text-[11px] font-semibold text-stone-500">/ jour</span>
-                  </p>
-                </div>
-              </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
 
