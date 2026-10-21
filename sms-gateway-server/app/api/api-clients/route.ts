@@ -7,7 +7,7 @@ const versContrat = (c: {
   id: string; nom: string; cle_api: string; date_creation: string
   url_notification?: string | null; secret_notification?: string | null
   evenements_notification?: string[] | null; notifications_actives?: boolean | null
-  quota_mensuel?: number | null; suspendu?: boolean | null
+  suspendu?: boolean | null
 }) => ({
   id: c.id,
   nom: c.nom,
@@ -17,7 +17,6 @@ const versContrat = (c: {
   evenements_notification: c.evenements_notification ?? [],
   notifications_actives: c.notifications_actives ?? true,
   secret_defini: !!c.secret_notification,
-  quota_mensuel: c.quota_mensuel ?? null,
   suspendu: c.suspendu === true,
 })
 
@@ -27,14 +26,14 @@ export async function GET() {
     let lignes: any[] | null = null
     const { data, error } = await supabaseAdmin
       .from('client')
-      .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives, quota_mensuel, suspendu')
+      .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives, suspendu')
       .order('date_creation', { ascending: false })
     if (error) {
       // Pré-migration (colonne suspendu absente) : repli sans la colonne.
       if (/suspendu/i.test(error.message)) {
         const repli = await supabaseAdmin
           .from('client')
-          .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives, quota_mensuel')
+          .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives')
           .order('date_creation', { ascending: false })
         if (repli.error) {
           return NextResponse.json({ error: repli.error.message }, { status: 500 })
@@ -79,8 +78,8 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabaseAdmin
       .from('client')
-      .insert({ nom: nom.trim(), cle_api, quota_mensuel: null, ...(emailBrut ? { email: emailBrut } : {}) })
-      .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives, quota_mensuel')
+      .insert({ nom: nom.trim(), cle_api, ...(emailBrut ? { email: emailBrut } : {}) })
+      .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives')
       .single()
 
     if (error) {

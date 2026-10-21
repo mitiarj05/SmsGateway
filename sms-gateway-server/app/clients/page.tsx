@@ -11,9 +11,7 @@ interface ClientB2B {
   initiales: string
   nom: string
   creeLe: string
-  quota_mensuel: number | null
   utilise_mois: number
-  depassement: boolean
   suspendu: boolean
 }
 
@@ -76,9 +74,7 @@ export default function PageClientsAdmin() {
             initiales: (c.nom || '?').substring(0, 2).toUpperCase(),
             nom: c.nom,
             creeLe: c.created_at,
-            quota_mensuel: c.quota_mensuel ?? null,
             utilise_mois: ligne?.sms_envoyes ?? 0,
-            depassement: ligne?.depassement ?? false,
             suspendu: c.suspendu === true,
           }
         })
@@ -158,9 +154,7 @@ export default function PageClientsAdmin() {
     c.nom.toLowerCase().includes(recherche.toLowerCase())
   )
   const totalSmsMois = clients.reduce((s, c) => s + c.utilise_mois, 0)
-  const quotasDefinies = clients.filter((c) => c.quota_mensuel !== null) as (ClientB2B & { quota_mensuel: number })[]
-  const totalQuota = quotasDefinies.reduce((s, c) => s + c.quota_mensuel, 0)
-  const pctGlobal = totalQuota > 0 ? Math.round((totalSmsMois / totalQuota) * 100) : null
+  const nbSuspendus = clients.filter((c) => c.suspendu).length
   const joursRestants = joursAvantPremierDuMois()
 
   if (chargement) {
@@ -213,11 +207,9 @@ export default function PageClientsAdmin() {
         </div>
         <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
-            Du quota global
+            Accès suspendus
           </p>
-          <p className="mt-1.5 text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">
-            {pctGlobal === null ? '—' : `${pctGlobal} %`}
-          </p>
+          <p className="mt-1.5 text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{nbSuspendus}</p>
         </div>
       </div>
 
@@ -254,9 +246,6 @@ export default function PageClientsAdmin() {
               </p>
             )}
             {clientsFiltres.map((c) => {
-              const pct = c.quota_mensuel && c.quota_mensuel > 0
-                ? Math.min(100, Math.round((c.utilise_mois / c.quota_mensuel) * 100))
-                : 0
               return (
               <div key={c.id} className="border-t border-[#1C1917]/10 pt-5 first:border-0 first:pt-0 dark:border-zinc-800">
                 <div className="flex items-center gap-3.5">
@@ -274,9 +263,9 @@ export default function PageClientsAdmin() {
                     </p>
                   </div>
                   <span
-                    className={`rounded-full px-3 py-1 text-[10.5px] font-bold${c.suspendu ? 'bg-[#1C1917]/10 text-stone-600 dark:bg-zinc-700 dark:text-zinc-300' : c.depassement ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-300' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'}`}
+                    className={`rounded-full px-3 py-1 text-[10.5px] font-bold${c.suspendu ? 'bg-[#1C1917]/10 text-stone-600 dark:bg-zinc-700 dark:text-zinc-300' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300'}`}
                   >
-                    {c.suspendu ? 'Suspendu' : c.depassement ? 'Quota dépassé' : 'Actif'}
+                    {c.suspendu ? 'Suspendu' : 'Actif'}
                   </span>
                   <button onClick={() => basculerSuspension(c)} title={c.suspendu ? "Réactiver l'accès" : "Suspendre l'accès"}
                     className="rounded-lg px-2 py-1 text-[11px] font-semibold text-stone-500 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-500/10">
@@ -292,14 +281,8 @@ export default function PageClientsAdmin() {
                   <div className="flex items-center justify-between text-[11.5px]">
                     <span className="text-stone-500">SMS ce mois-ci</span>
                     <span className="font-bold text-[#1C1917] dark:text-zinc-200">
-                      {c.utilise_mois.toLocaleString('fr-FR')} / {c.quota_mensuel === null ? '∞' : c.quota_mensuel.toLocaleString('fr-FR')}
+                      {c.utilise_mois.toLocaleString('fr-FR')}
                     </span>
-                  </div>
-                  <div className="mt-1.5 h-1.5 w-full rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-800">
-                    <div
-                      className="h-1.5 rounded-full"
-                      style={{ width: `${pct}%` }}
-                    ></div>
                   </div>
                 </div>
               </div>
@@ -321,7 +304,7 @@ export default function PageClientsAdmin() {
               {joursRestants} <span className="text-[16px] font-bold text-white/60">jours</span>
             </p>
             <p className="text-[11.5px] leading-relaxed text-white/55">
-              Les quotas mensuels sont remis à zéro le 1er du mois.
+              Les compteurs de consommation repartent de zéro le 1er du mois.
             </p>
           </div>
 
@@ -333,7 +316,7 @@ export default function PageClientsAdmin() {
               Invitez vos clients et gardez leurs accès et leur consommation à portée de main.
             </p>
             <a
-              href="/espace/api"
+              href="/espace/sommaire"
               className="inline-flex items-center gap-1 text-[12px] font-bold text-[#2563EB] hover:underline dark:text-blue-400 pt-1"
             >
               Consulter le guide API <ArrowUpRight className="h-3.5 w-3.5" />

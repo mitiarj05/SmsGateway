@@ -11,7 +11,6 @@ interface ConsoMensuelle {
   sms_envoyes: number
   sms_recus: number
   echecs: number
-  quota_mensuel: number | null
 }
 
 function moisCourantId(): string {
@@ -46,7 +45,6 @@ export default function PageFacturationEspace() {
             sms_envoyes: d.sms_envoyes ?? 0,
             sms_recus: d.sms_recus ?? 0,
             echecs: d.echecs ?? 0,
-            quota_mensuel: typeof d.quota_mensuel === 'number' ? d.quota_mensuel : null,
           })
         } else {
           setConso(null)
@@ -74,8 +72,6 @@ export default function PageFacturationEspace() {
   const envoyes = conso?.sms_envoyes ?? 0
   const recus = conso?.sms_recus ?? 0
   const echecs = conso?.echecs ?? 0
-  const quota = conso?.quota_mensuel ?? null
-  const pctQuota = quota && quota > 0 ? Math.min(100, Math.round((total / quota) * 100)) : 0
   const [anneeVue, moisVue] = idMois.split('-').map(Number)
   const nbJoursMois = new Date(anneeVue, moisVue, 0).getDate()
   const estMoisCourant = idMois === moisCourantId()
@@ -168,19 +164,10 @@ export default function PageFacturationEspace() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-[#1C1917] dark:text-zinc-200">Quota de votre compte</span>
-                <span className="font-bold text-[#1C1917] dark:text-zinc-200">{total} / {quota ?? '∞'} SMS</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-800">
-                <div className="h-full rounded-full bg-[#2563EB]" style={{ width: `${pctQuota}%` }} />
-              </div>
-            </div>
-
             <div className="pt-2 border-t border-[#1C1917]/10 dark:border-zinc-800">
               <p className="text-[11.5px] text-stone-500">
-                1 unité correspond à 1 SMS créé dans le mois. Votre crédit : la carte SIM de vos téléphones.
+                Forfait illimité : 1 unité correspond à 1 SMS créé dans le mois.
+                Votre seul crédit est la carte SIM de vos téléphones.
               </p>
             </div>
           </div>
@@ -262,11 +249,7 @@ export default function PageFacturationEspace() {
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-900 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300 flex items-start gap-3">
             <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
             <p className="leading-relaxed">
-              {quota && quota > 0 ? (
-                <><b>Quota sous contrôle.</b> Vous avez consommé {pctQuota} % de votre forfait mensuel.</>
-              ) : (
-                <><b>Consommation du mois.</b> Votre consommation du mois en un coup d'œil.</>
-              )}
+              <b>Consommation du mois.</b> Votre forfait est illimité — le relevé suit vos SIM en revenus et en envois.
             </p>
           </div>
 

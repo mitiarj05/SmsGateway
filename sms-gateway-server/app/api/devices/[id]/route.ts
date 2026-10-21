@@ -14,7 +14,7 @@ export async function GET(
     const { id } = await params
     const { data, error } = await supabaseAdmin
       .from('appareil')
-      .select('id, nom, statut, jeton_fcm, sms_envoyes_heure, derniere_activite, date_creation, id_application')
+      .select('id, nom, statut, jeton_fcm, derniere_activite, date_creation, id_application')
       .eq('id', id)
       .single()
 

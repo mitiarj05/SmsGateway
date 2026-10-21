@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import {
-  Download, Send, Inbox, ChevronDown, SlidersHorizontal, ArrowUpRight
+  Download, Send, Inbox, ArrowUpRight
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 
@@ -12,9 +12,7 @@ interface LigneQuota {
   id: string
   nom: string
   utilises: number
-  quota: number | null
   recus: number
-  pct: number
 }
 
 function moisCourant(): string {
@@ -32,12 +30,17 @@ function premierJourMoisSuivant(): string {
   return suivant.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })
 }
 
+/** Part du mois écoulée (0 à 1) : l'anneau du héros suit le calendrier. */
+function progressionDuMois(): number {
+  const d = new Date()
+  const debut = new Date(d.getFullYear(), d.getMonth(), 1).getTime()
+  const fin = new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime()
+  return Math.min(1, Math.max(0, (d.getTime() - debut) / (fin - debut)))
+}
+
 export default function PageFacturation() {
   const [lignes, setLignes] = useState<LigneQuota[]>([])
   const [chargement, setChargement] = useState(true)
-  const [editionQuotas, setEditionQuotas] = useState(false)
-  const [quotasEdit, setQuotasEdit] = useState<Record<string, string>>({})
-  const [sauvegardeQuota, setSauvegardeQuota] = useState(false)
 
   async function charger() {
     try {
@@ -48,9 +51,7 @@ export default function PageFacturation() {
           id: l.id_application,
           nom: l.nom,
           utilises: l.sms_envoyes ?? 0,
-          quota: l.quota_mensuel ?? null,
           recus: l.sms_recus ?? 0,
-          pct: l.quota_mensuel ? Math.min(100, Math.round(((l.sms_envoyes ?? 0) / l.quota_mensuel) * 100)) : 0,
         })))
       }
     } finally {
@@ -64,41 +65,18 @@ export default function PageFacturation() {
 
   const totalConsomme = lignes.reduce((acc, l) => acc + l.utilises, 0)
   const totalRecus = lignes.reduce((acc, l) => acc + l.recus, 0)
-  const lignesAvecQuota = lignes.filter((l) => l.quota !== null) as (LigneQuota & { quota: number })[]
-  const capaciteTotale = lignesAvecQuota.reduce((acc, l) => acc + l.quota, 0)
-  const capaciteConnue = lignesAvecQuota.length > 0
-  const resteSMS = capaciteConnue ? Math.max(0, capaciteTotale - totalConsomme) : null
   const estimationCout = totalConsomme * TARIF_SMS_AR
   const C = 2 * Math.PI * 52
-
-  async function enregistrerQuotas() {
-    setSauvegardeQuota(true)
-    try {
-      for (const [id, brut] of Object.entries(quotasEdit)) {
-        const quota = Number(brut)
-        if (!Number.isInteger(quota) || quota < 1) continue
-        await fetch(`/api/api-clients/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ quota_mensuel: quota }),
-        })
-      }
-      setQuotasEdit({})
-      setEditionQuotas(false)
-      await charger()
-    } finally {
-      setSauvegardeQuota(false)
-    }
-  }
+  const progressionMois = progressionDuMois()
 
   function exporterCsv() {
-    const entete = 'client;sms_utilises;quota_mensuel;sms_recus'
-    const corps = lignes.map((l) => [l.nom, l.utilises, l.quota, l.recus].join(';'))
+    const entete = 'client;sms_utilises;sms_recus'
+    const corps = lignes.map((l) => [l.nom, l.utilises, l.recus].join(';'))
     const blob = new Blob([[entete, ...corps].join('\n'), '\n'], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'facturation-et-quotas.csv'
+    a.download = 'facturation.csv'
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -109,7 +87,7 @@ export default function PageFacturation() {
       <div className="mb-6 flex items-end justify-between">
         <div>
           <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">
-            Facturation et quotas
+            Facturation
           </h1>
           <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             La consommation du mois, répartie entre vos clients.
@@ -132,35 +110,25 @@ export default function PageFacturation() {
           </p>
 
           <div className="flex items-center gap-10">
-            {/* Donut */}
+            {/* Anneau du mois : proportion d'avancement vers la fin du mois */}
             <div className="relative h-32 w-32 shrink-0">
               <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
                 <circle
-                  cx="60"
-                  cy="60"
-                  r="52"
-                  fill="none"
-                  stroke="#eef0f8"
-                  strokeWidth="10"
+                  cx="60" cy="60" r="52"
+                  fill="none" stroke="#eef0f8" strokeWidth="10"
                 />
                 <circle
-                  cx="60"
-                  cy="60"
-                  r="52"
-                  fill="none"
-                  stroke="#2563EB"
-                  strokeWidth="10"
+                  cx="60" cy="60" r="52"
+                  fill="none" stroke="#2563EB" strokeWidth="10"
                   strokeLinecap="round"
-                  strokeDasharray={`${capaciteConnue && capaciteTotale > 0 ? (C * Math.min(totalConsomme, capaciteTotale)) / capaciteTotale : 0} ${C}`}
+                  strokeDasharray={`${C * progressionMois} ${C}`}
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-[30px] font-extrabold text-[#1C1917] dark:text-white">
-                  {chargement ? '…' : totalConsomme}
+                  {chargement ? '…' : `${Math.round(progressionMois * 100)} %`}
                 </span>
-                <span className="text-[10px] text-stone-500">
-                  {capaciteConnue ? `sur ${capaciteTotale} SMS` : 'consommés'}
-                </span>
+                <span className="text-[10px] text-stone-500">du mois écoulé</span>
               </div>
             </div>
 
@@ -169,21 +137,13 @@ export default function PageFacturation() {
                 {chargement ? '…' : `${totalConsomme} SMS consommés`}
               </h2>
               <p className="mt-1 text-[12px] text-stone-500">
-                {capaciteConnue
-                  ? `Sur une capacité mensuelle de ${capaciteTotale} messages.`
-                  : 'Aucun quota mensuel défini.'}
+                Du total de vos clients, tous appareils confondus.
               </p>
-              <div className="mt-3 h-1.5 w-full rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-800">
-                <div
-                  className="h-1.5 rounded-full bg-[#2563EB]"
-                  style={{ width: `${capaciteConnue && capaciteTotale > 0 ? Math.min(100, (totalConsomme / capaciteTotale) * 100) : 0}%` }}
-                ></div>
-              </div>
               <p className="mt-2.5 text-[12.5px] font-semibold text-stone-700 dark:text-zinc-200">
-                {resteSMS === null ? 'Capacité illimitée' : `Il reste ${resteSMS} SMS`}
+                Forfait illimité — le seul vrai crédit est la SIM du téléphone.
               </p>
               <p className="mt-0.5 text-[11.5px] text-stone-500">
-                Renouvellement le {premierJourMoisSuivant()}
+                Compteurs remis à zéro le {premierJourMoisSuivant()}
               </p>
             </div>
           </div>
@@ -222,31 +182,17 @@ export default function PageFacturation() {
         </div>
       </div>
 
-      {/* Main Répartition des Quotas Card (Exact Screenshot) */}
+      {/* Répartition par client */}
       <div className="mt-4 rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">
-              Répartition des quotas
+              Par client
             </h2>
             <p className="mt-0.5 text-[12px] text-stone-500">
-              Ajustez les limites sans interrompre les envois
+              La consommation du mois, client par client
             </p>
           </div>
-          <button
-            onClick={() => {
-              if (editionQuotas) {
-                enregistrerQuotas()
-              } else {
-                setQuotasEdit(Object.fromEntries(lignes.filter((l) => l.quota !== null).map((l) => [l.id, String(l.quota)])))
-                setEditionQuotas(true)
-              }
-            }}
-            disabled={sauvegardeQuota}
-            className="inline-flex items-center gap-1.5 text-[12.5px] font-bold text-[#2563EB] hover:underline disabled:opacity-50 dark:text-blue-400"
-          >
-            <SlidersHorizontal size={14} /> {editionQuotas ? (sauvegardeQuota ? 'Enregistrement…' : 'Enregistrer les quotas') : 'Modifier les quotas'}
-          </button>
         </div>
 
         <div className="mt-5 overflow-x-auto">
@@ -254,8 +200,7 @@ export default function PageFacturation() {
             <thead>
               <tr className="border-b border-[#1C1917]/10 text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:border-zinc-800">
                 <th className="pb-2.5 pr-4">Client</th>
-                <th className="w-1/3 pb-2.5 pr-4">Consommation</th>
-                <th className="pb-2.5 pr-4">Quota</th>
+                <th className="w-1/3 pb-2.5 pr-4">SMS ce mois</th>
                 <th className="pb-2.5 text-right">Réception</th>
               </tr>
             </thead>
@@ -266,33 +211,9 @@ export default function PageFacturation() {
                     <p className="text-[13.5px] font-bold text-[#1C1917] dark:text-zinc-200">
                       {l.nom}
                     </p>
-                    <p className="text-[11px] text-stone-500">Quota mensuel</p>
-                  </td>
-                  <td className="py-4 pr-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-1.5 flex-1 rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-800">
-                        <div
-                          className="h-1.5 rounded-full bg-[#2563EB]"
-                          style={{ width: `${l.pct}%` }}
-                        ></div>
-                      </div>
-                      <span className="w-16 text-right text-[11.5px] text-stone-500">
-                        {l.utilises} utilisé
-                      </span>
-                    </div>
                   </td>
                   <td className="py-4 pr-4 text-[13px] font-bold text-[#1C1917] dark:text-zinc-200">
-                    {editionQuotas ? (
-                      <input
-                        type="number" min={1}
-                        value={quotasEdit[l.id] ?? ''}
-                        placeholder="Illimité"
-                        onChange={(e) => setQuotasEdit((p) => ({ ...p, [l.id]: e.target.value }))}
-                        className="w-24 rounded-lg border border-[#1C1917]/10 px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-                      />
-                    ) : (
-                      <>{l.quota === null ? 'Illimité' : `${l.quota} SMS`}</>
-                    )}
+                    {l.utilises.toLocaleString('fr-FR')} SMS
                   </td>
                   <td className="py-4 text-right text-[12px] text-stone-600 dark:text-zinc-400">
                     {l.recus} reçu

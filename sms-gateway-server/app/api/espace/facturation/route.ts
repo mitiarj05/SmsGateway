@@ -33,10 +33,9 @@ export async function GET(request: NextRequest) {
       supabaseAdmin.from('reponse').select('id', { count: 'exact', head: true })
         .eq('id_application', idApplication).gte('date_reception', debut)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('client').select('nom, quota_mensuel')
+      supabaseAdmin.from('client').select('nom')
         .eq('id', idApplication).single(),
     ])
-    const quota = (app as unknown as { quota_mensuel: number | null } | null)?.quota_mensuel ?? null
     return NextResponse.json({
       mois: brut,
       nom: (app as unknown as { nom: string } | null)?.nom ?? '',
@@ -44,8 +43,6 @@ export async function GET(request: NextRequest) {
       sms_envoyes: envoyes,
       sms_recus: recus,
       echecs,
-      quota_mensuel: quota,
-      depassement: quota !== null && total >= quota,
     })
   } catch {
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })

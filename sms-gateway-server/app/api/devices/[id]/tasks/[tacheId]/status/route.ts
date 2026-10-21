@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
 import { authentifierAppareil } from '@/lib/authentification'
-import { obtenirUsageAppareil } from '@/lib/selection-appareil'
 import { STATUT_APPAREIL, STATUT_TACHE } from '@/lib/statuts'
 
 export async function POST(
@@ -134,16 +133,8 @@ export async function POST(
       )
     }
 
-    // Compteurs horaires de l'appareil : recalculés sur la dernière heure glissante
-    // (pas d'incrément simple, sinon ils ne redescendraient jamais).
-    // Seul un passage en ENVOYE les fait bouger ; les lectures les calculent en live.
-    if (statut === STATUT_TACHE.ENVOYE) {
-      const usage = await obtenirUsageAppareil(idAppareil)
-      await supabaseAdmin
-        .from('appareil')
-        .update({ sms_envoyes_heure: usage })
-        .eq('id', idAppareil)
-    }
+    // Forfait illimité : le compteur apparent est calculé en live depuis les
+    // tâches (sur la dernière heure glissante) — rien à stocker dans l'appareil.
 
     // Ne jamais réactiver un appareil DESACTIVE via la scrutation/confirmations.
     // Toute confirmation prouve l'activité : l'appareil reste EN_LIGNE

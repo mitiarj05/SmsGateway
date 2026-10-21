@@ -5,7 +5,6 @@ import { obtenirDisponibiliteAppareil } from '@/lib/selection-appareil'
 import { envoyerPushNouvelleTache } from '@/lib/envoi-push'
 import { expirerEnAttentePerimees } from '@/lib/expiration-attente'
 import { promouvoirProgrammes } from '@/lib/programmes'
-import { compterEnvoisMois, moisActuel } from '@/lib/facturation'
 import { STATUT_TACHE } from '@/lib/statuts'
 
 /**
@@ -63,25 +62,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { data: fiche } = await supabaseAdmin
-      .from('client')
-      .select('quota_mensuel')
-      .eq('id', idApplication)
-      .single()
-    const quotaMensuel = (fiche as { quota_mensuel: number | null } | null)?.quota_mensuel ?? null
-    if (quotaMensuel !== null) {
-      const utiliseMois = await compterEnvoisMois(idApplication, moisActuel())
-      if (utiliseMois >= quotaMensuel) {
-        return NextResponse.json(
-          {
-            error: `Quota mensuel atteint (${utiliseMois}/${quotaMensuel} SMS). Contactez votre administrateur.`,
-            quota_mensuel: quotaMensuel,
-            utilise_mois: utiliseMois,
-          },
-          { status: 429 }
-        )
-      }
-    }
+    // Forfait illimité : aucun quota mensuel — le seul vrai crédit est la SIM.
 
     await expirerEnAttentePerimees()
     await promouvoirProgrammes()

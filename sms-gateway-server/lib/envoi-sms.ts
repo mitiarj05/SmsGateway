@@ -3,7 +3,6 @@ import { envoyerPushNouvelleTache } from './envoi-push'
 import { obtenirDisponibiliteAppareil } from './selection-appareil'
 import { expirerEnAttentePerimees } from './expiration-attente'
 import { promouvoirProgrammes } from './programmes'
-import { compterEnvoisMois, moisActuel } from './facturation'
 import { STATUT_TACHE } from './statuts'
 
 export interface ResultatEnvoi {
@@ -67,23 +66,8 @@ export async function traiterEnvoiSms(
     return erreur('Aucun téléphone lié à votre espace — associez-en un pour envoyer.', 400)
   }
 
-  // 3. Quota mensuel du client (facturation) : refusé AVANT toute création.
-  const { data: ficheClient } = await supabaseAdmin
-    .from('client')
-    .select('quota_mensuel')
-    .eq('id', client.id)
-    .single()
-  const quotaMensuel = (ficheClient as { quota_mensuel: number | null } | null)?.quota_mensuel ?? null
-  if (quotaMensuel !== null) {
-    const utiliseMois = await compterEnvoisMois(client.id, moisActuel())
-    if (utiliseMois >= quotaMensuel) {
-      return erreur(
-        `Quota mensuel atteint (${utiliseMois}/${quotaMensuel} SMS). Contactez l'administrateur.`,
-        429,
-        { quota_mensuel: quotaMensuel, utilise_mois: utiliseMois }
-      )
-    }
-  }
+  // 3. Forfait illimité : aucun quota mensuel imposé — le seul vrai
+  // crédit est la SIM du téléphone.
 
   // Expiration des EN_ATTENTE trop anciens + promotion des PROGRAMME
   // (ne bloquent jamais l'envoi)

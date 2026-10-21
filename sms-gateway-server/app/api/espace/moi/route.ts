@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
     const { data: app } = await supabaseAdmin
       .from('client')
-      .select('id, nom, cle_api, quota_mensuel')
+      .select('id, nom, cle_api')
       .eq('id', idApplication)
       .single()
     if (!app) {
@@ -38,15 +38,12 @@ export async function GET(request: NextRequest) {
         .eq('id_application', idApplication)
         .then((r) => r.count ?? 0),
     ])
-    const quota = (app as { quota_mensuel: number | null }).quota_mensuel ?? null
     return NextResponse.json({
       id: app.id,
       nom: app.nom,
       cle_api: (app as { cle_api: string }).cle_api,
       mois,
-      quota_mensuel: quota,
       utilise_mois: utiliseMois,
-      depassement: quota !== null && utiliseMois >= quota,
       stats: { envoyes, attente, echoue, recus },
     })
   } catch {

@@ -3,7 +3,7 @@ import { STATUT_TACHE } from './statuts'
 
 /**
  * Facturation par client : 1 SMS facturé = 1 tâche créée dans le mois
- * (quel que soit son statut final), + recus + clics comptés à part.
+ * (quel que soit son statut final), + recus compté à part.
  * Table `facturation` recalculée paresseusement à chaque lecture dashboard.
  */
 
@@ -37,8 +37,6 @@ export interface LigneFacturation {
   sms_envoyes: number
   sms_recus: number
   echecs: number
-  quota_mensuel: number | null
-  depassement: boolean
 }
 
 /** Recalcule la facturation du mois (tous clients) puis la retourne. */
@@ -46,7 +44,7 @@ export async function lireFacturation(mois: string): Promise<LigneFacturation[]>
   const debut = debutMoisIso(mois)
   const { data: applications } = await supabaseAdmin
     .from('client')
-    .select('id, nom, quota_mensuel')
+    .select('id, nom')
     .order('nom', { ascending: true })
 
   const lignes: LigneFacturation[] = []
@@ -66,17 +64,14 @@ export async function lireFacturation(mois: string): Promise<LigneFacturation[]>
     await supabaseAdmin.from('facturation').upsert(
       {
         id_application: app.id, mois, sms_envoyes: envoyes,
-        sms_recus: recus, clics: 0, echecs, date_maj: new Date().toISOString(),
+        sms_recus: recus, echecs, date_maj: new Date().toISOString(),
       },
       { onConflict: 'id_application,mois' }
     )
-    const quota = app.quota_mensuel as number | null
     lignes.push({
       id_application: app.id, nom: app.nom, mois,
       total_facture: total,
       sms_envoyes: envoyes, sms_recus: recus, echecs,
-      quota_mensuel: quota,
-      depassement: quota !== null && total >= quota,
     })
   }
   return lignes

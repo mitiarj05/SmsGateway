@@ -29,8 +29,8 @@ export async function POST(
     const cle_api = `cle_${randomBytes(16).toString('hex')}`
     const { data: client, error } = await supabaseAdmin
       .from('client')
-      // Quota illimité : le seul vrai crédit est la SIM du client.
-      .insert({ nom: demande.nom, cle_api, quota_mensuel: null })
+      // Forfait illimité : le seul vrai crédit est la SIM du client.
+      .insert({ nom: demande.nom, cle_api })
       .select('id, nom, cle_api, date_creation')
       .single()
     if (error || !client) {

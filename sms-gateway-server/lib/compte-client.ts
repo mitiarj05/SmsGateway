@@ -86,7 +86,7 @@ export async function obtenirOuCreerApplication(
     const cleAttente = `cle_${randomBytes(16).toString('hex')}`
     const { data: provisionnee } = await supabaseAdmin
       .from('client')
-      .insert({ nom: demande.nom, cle_api: cleAttente, quota_mensuel: null, user_id: userId, email: courriel })
+      .insert({ nom: demande.nom, cle_api: cleAttente, user_id: userId, email: courriel })
       .select('id')
       .single()
     if (provisionnee) {
@@ -101,7 +101,7 @@ export async function obtenirOuCreerApplication(
   const cle = `cle_${randomBytes(16).toString('hex')}`
   const { data: nouvelle, error } = await supabaseAdmin
     .from('client')
-    .insert({ nom: nomPropre, cle_api: cle, quota_mensuel: null, user_id: userId, email: courriel })
+    .insert({ nom: nomPropre, cle_api: cle, user_id: userId, email: courriel })
     .select('id')
     .single()
   if (error || !nouvelle) throw new Error('Création de l\u2019espace impossible')
@@ -183,7 +183,6 @@ export async function obtenirOuCreerParFirebase(
     .insert({
       nom: nomPropre,
       cle_api: cle,
-      quota_mensuel: null,
       firebase_uid: firebaseUid,
       email: courriel || null,
     })

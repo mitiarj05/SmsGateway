@@ -220,10 +220,16 @@ ALTER TABLE client ADD COLUMN IF NOT EXISTS url_notification text;
 ALTER TABLE client ADD COLUMN IF NOT EXISTS secret_notification text;
 ALTER TABLE client ADD COLUMN IF NOT EXISTS evenements_notification text[] NOT NULL DEFAULT '{sms.recu}';
 ALTER TABLE client ADD COLUMN IF NOT EXISTS notifications_actives boolean NOT NULL DEFAULT true;
-ALTER TABLE client ADD COLUMN IF NOT EXISTS quota_mensuel integer;
 
--- Forfait illimité : le seul vrai crédit est la SIM du client.
-UPDATE client SET quota_mensuel = NULL WHERE quota_mensuel IS NOT NULL;
+-- ---------- Colonnes retirées définitivement (forfait illimité) ----------
+-- quota_mensuel : jamais défini (toujours NULL) — ses UI admin/espaces sont
+--   retirées du code. Le seul crédit est la SIM du téléphone.
+-- appareil.sms_envoyes_heure : miroir mort — le compteur horaire est calculé
+--   en live depuis la tache (dernière heure glissante).
+-- facturation.clics : écrit à 0 depuis la suppression des liens intelligents.
+ALTER TABLE client DROP COLUMN IF EXISTS quota_mensuel;
+ALTER TABLE appareil DROP COLUMN IF EXISTS sms_envoyes_heure;
+ALTER TABLE facturation DROP COLUMN IF EXISTS clics;
 
 -- ---------- 1. Comptes standard : clients liés aux utilisateurs ----------
 alter table client
@@ -323,7 +329,6 @@ create unique index uq_appareil_android_espace
 
 -- ---------- 6. Forfait illimité pour tous ----------
 -- Le seul vrai crédit est la SIM du client : aucun quota imposé.
-UPDATE client SET quota_mensuel = NULL WHERE quota_mensuel IS NOT NULL;
 
 -- Recharge le cache PostgREST (sinon l'API peut voir l'ancien schéma).
 NOTIFY pgrst, 'reload schema';

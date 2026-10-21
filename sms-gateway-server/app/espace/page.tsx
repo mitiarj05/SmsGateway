@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
-  Send, Inbox, AlertTriangle, CheckCircle2, ArrowRight, XCircle,
+  Send, Inbox, AlertTriangle, CheckCircle2, ArrowRight,
   Sparkles, Smartphone, Plus, Zap, ArrowUpRight, Clock,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -14,9 +14,7 @@ import CompteurValeur from '../../composants/CompteurValeur'
 interface Moi {
   nom: string
   mois: string
-  quota_mensuel: number | null
   utilise_mois: number
-  depassement: boolean
   stats: { envoyes: number; attente: number; echoue: number; recus: number }
 }
 
@@ -156,9 +154,6 @@ export default function PageTableauDeBordClient() {
   ].slice(0, 4)
 
   const premierAppareil = appareils[0] ?? null
-  const pctQuota = moi?.quota_mensuel
-    ? Math.min(100, Math.round((moi.utilise_mois / moi.quota_mensuel) * 100))
-    : 0
 
   return (
     <CoquilleEspace>
@@ -187,12 +182,7 @@ export default function PageTableauDeBordClient() {
       </div>
 
       {/* Banner de statut */}
-      {moi?.depassement ? (
-        <div className="mb-6 flex items-center gap-3 rounded-2xl border border-red-200/80 bg-red-50/70 p-4 text-xs font-semibold text-red-900 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-300">
-          <XCircle className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0" />
-          <span>Quota mensuel atteint — vos envois sont refusés jusqu'au mois prochain.</span>
-        </div>
-      ) : (moi?.stats.attente ?? 0) > 0 ? (
+      {(moi?.stats.attente ?? 0) > 0 ? (
         <div className="mb-6 flex items-center gap-3 rounded-2xl border border-amber-200/80 bg-amber-50/70 p-4 text-xs font-semibold text-amber-900 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-300">
           <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
           <span>{moi?.stats.attente} message{(moi?.stats.attente ?? 0) > 1 ? 's' : ''} en file d'attente.</span>
@@ -354,18 +344,15 @@ export default function PageTableauDeBordClient() {
         </div>
 
         <div className="space-y-4">
-          {/* Card Quota mensuel */}
+          {/* Card SMS ce mois */}
           <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-[#1C1917] dark:text-white">Quota mensuel</span>
+              <span className="font-bold text-[#1C1917] dark:text-white">SMS ce mois</span>
               <span className="font-bold text-[#1C1917] dark:text-zinc-200">
-                {moi ? `${moi.utilise_mois} / ${moi.quota_mensuel ?? '∞'} SMS` : '…'}
+                {moi ? `${moi.utilise_mois} SMS` : '…'}
               </span>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-800">
-              <div className="h-full rounded-full bg-cyan-400" style={{ width: `${pctQuota}%` }} />
-            </div>
-            <p className="text-[11px] text-stone-500">Consommation et limite de votre compte client</p>
+            <p className="text-[11px] text-stone-500">Votre consommation du mois en cours — SMS envoyés, peu importe le résultat.</p>
           </div>
 
           {/* Card Actions rapides */}
