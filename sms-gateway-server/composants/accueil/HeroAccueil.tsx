@@ -7,7 +7,7 @@ const GARANTIES = ['100 % auto-hébergé', 'Sans abonnement', 'API ouverte 24 h/
 export default function HeroAccueil() {
   return (
     <section className="relative overflow-hidden border-b border-[#1C1917]/10">
-      {/* Photo « arrièreplan accueil » en fond, voilée de papier */}
+      {/* Photo « arrièreplan accueil » en fond, quasiment nue (90 %) */}
       <div className="absolute inset-0" aria-hidden="true">
         <Image
           src="/images/arriereplan-accueil.jpg"
@@ -15,9 +15,10 @@ export default function HeroAccueil() {
           fill
           priority
           sizes="100vw"
+          quality={100}
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-[#F7F5F0]/60" />
+        <div className="absolute inset-0 bg-[#F7F5F0]/10" />
       </div>
 
       <div className="relative mx-auto max-w-3xl px-6 pb-20 pt-14 text-center md:pt-20 lg:px-8">
