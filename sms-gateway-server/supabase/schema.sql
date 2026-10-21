@@ -316,6 +316,7 @@ alter table appareil
 create index if not exists idx_appareil_android_id on appareil (android_id);
 
 drop index if exists uq_appareils_android_espace;
+drop index if exists uq_appareil_android_espace;
 create unique index uq_appareil_android_espace
   on appareil (android_id, id_application)
   where android_id is not null and id_application is not null;
