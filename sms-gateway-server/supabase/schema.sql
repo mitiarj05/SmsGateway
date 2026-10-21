@@ -279,18 +279,21 @@ create policy "client_insert_own" on client
   with check (user_id = auth.uid());
 
 drop policy if exists "taches_all_own" on tache;
+drop policy if exists "tache_all_own" on tache;
 create policy "tache_all_own" on tache
   for all to authenticated
   using (id_application in (select id from client where user_id = auth.uid()))
   with check (id_application in (select id from client where user_id = auth.uid()));
 
 drop policy if exists "reponses_all_own" on reponse;
+drop policy if exists "reponse_all_own" on reponse;
 create policy "reponse_all_own" on reponse
   for all to authenticated
   using (id_application in (select id from client where user_id = auth.uid()))
   with check (id_application in (select id from client where user_id = auth.uid()));
 
 drop policy if exists "notifications_all_own" on notification;
+drop policy if exists "notification_all_own" on notification;
 create policy "notification_all_own" on notification
   for all to authenticated
   using (id_application in (select id from client where user_id = auth.uid()))
@@ -300,6 +303,7 @@ create policy "notification_all_own" on notification
 -- (l'association se fait côté serveur via QR, sans lecture directe)
 drop policy if exists "appareils_select_pool" on appareil;
 drop policy if exists "appareils_select_own" on appareil;
+drop policy if exists "appareil_select_own" on appareil;
 create policy "appareil_select_own" on appareil
   for select to authenticated
   using (id_application in (select id from client where user_id = auth.uid()));
