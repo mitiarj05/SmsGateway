@@ -179,7 +179,6 @@ CREATE TABLE IF NOT EXISTS facturation (
   mois text NOT NULL,
   sms_envoyes integer NOT NULL DEFAULT 0,
   sms_recus integer NOT NULL DEFAULT 0,
-  clics integer NOT NULL DEFAULT 0,
   echecs integer NOT NULL DEFAULT 0,
   date_maj timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT facturation_pkey PRIMARY KEY (id),
@@ -196,7 +195,6 @@ DROP TABLE IF EXISTS codes_recharge;
 
 -- Colonnes applicatives historiques.
 ALTER TABLE appareil ADD COLUMN IF NOT EXISTS uid_firebase TEXT UNIQUE;
-ALTER TABLE appareil ADD COLUMN IF NOT EXISTS sms_envoyes_heure INTEGER DEFAULT 0;
 ALTER TABLE appareil ADD COLUMN IF NOT EXISTS id_application uuid REFERENCES public.client(id);
 ALTER TABLE tache ADD COLUMN IF NOT EXISTS programme_a TIMESTAMPTZ;
 
