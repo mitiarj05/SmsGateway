@@ -16,7 +16,7 @@ export async function expirerEnAttentePerimees(): Promise<number> {
   const limite = new Date(Date.now() - heuresMax * 3600_000).toISOString()
 
   const { data, error } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
     .update({
       statut: STATUT_TACHE.ECHOUE,
       message_erreur: `Aucun appareil disponible sous ${heuresMax}h`,

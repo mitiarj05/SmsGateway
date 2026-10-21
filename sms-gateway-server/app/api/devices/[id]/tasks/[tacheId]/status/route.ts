@@ -50,7 +50,7 @@ export async function POST(
 
     // Vérifier que la tâche n'appartient pas déjà à un autre appareil
     const { data: existant, error: erreurRecup } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .select('id, id_appareil, statut')
       .eq('id', tacheId)
       .single()
@@ -120,7 +120,7 @@ export async function POST(
     }
 
     const { data, error } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .update(donneesMaj)
       .eq('id', tacheId)
       .select('id, numero_destinataire, contenu, statut, id_appareil, reclame_a, date_modification')
@@ -140,7 +140,7 @@ export async function POST(
     if (statut === STATUT_TACHE.ENVOYE) {
       const usage = await obtenirUsageAppareil(idAppareil)
       await supabaseAdmin
-        .from('appareils')
+        .from('appareil')
         .update({ sms_envoyes_heure: usage })
         .eq('id', idAppareil)
     }
@@ -150,7 +150,7 @@ export async function POST(
     // (pas de statut "occupé" dans l'enum réel).
     if (appareil.statut !== STATUT_APPAREIL.DESACTIVE) {
       await supabaseAdmin
-        .from('appareils')
+        .from('appareil')
         .update({
           statut: STATUT_APPAREIL.EN_LIGNE,
           derniere_activite: new Date().toISOString(),
@@ -158,7 +158,7 @@ export async function POST(
         .eq('id', idAppareil)
     } else {
       await supabaseAdmin
-        .from('appareils')
+        .from('appareil')
         .update({
           derniere_activite: new Date().toISOString(),
         })

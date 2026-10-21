@@ -19,7 +19,7 @@ export function seuilInactiviteIso(): string {
  */
 export async function marquerAppareilsInactifs(): Promise<number> {
   const { data, error } = await supabaseAdmin
-    .from('appareils')
+    .from('appareil')
     .update({ statut: STATUT_APPAREIL.HORS_LIGNE })
     .eq('statut', STATUT_APPAREIL.EN_LIGNE)
     .lt('derniere_activite', seuilInactiviteIso())

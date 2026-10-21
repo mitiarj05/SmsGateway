@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const debut = new Date(maintenant - config.ms).toISOString()
 
     const { data, error } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .select('date_creation')
       .eq('statut', STATUT_TACHE.ENVOYE)
       .gte('date_creation', debut)

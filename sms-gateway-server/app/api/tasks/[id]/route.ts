@@ -10,7 +10,7 @@ export async function DELETE(
   try {
     const { id } = await params
     const { data: existant } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .select('id, statut')
       .eq('id', id)
       .single()
@@ -26,7 +26,7 @@ export async function DELETE(
     }
 
     const { error } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .delete()
       .eq('id', id)
 
@@ -57,7 +57,7 @@ export async function PATCH(
     if (device_id) {
       // Vérifier que l'appareil existe
       const { data: appareil } = await supabaseAdmin
-        .from('appareils')
+        .from('appareil')
         .select('id')
         .eq('id', device_id)
         .single()
@@ -74,7 +74,7 @@ export async function PATCH(
     }
 
     const { data, error } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .update(donneesMaj)
       .eq('id', id)
       .select('id, numero_destinataire, contenu, statut, id_appareil')
@@ -98,7 +98,7 @@ export async function POST(
   try {
     const { id } = await params
     const { data: existant, error: erreurRecup } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .select('id, numero_destinataire, contenu, statut, id_application')
       .eq('id', id)
       .single()
@@ -114,7 +114,7 @@ export async function POST(
     }
 
     const { data: cree, error } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .insert({
         numero_destinataire: existant.numero_destinataire,
         contenu: existant.contenu,

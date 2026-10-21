@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
     const { data, error } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('url_notification, evenements_notification, notifications_actives, secret_notification')
       .eq('id', idApplication)
       .single()
@@ -73,7 +73,7 @@ export async function PATCH(request: NextRequest) {
     }
     if (Object.keys(maj).length > 0) {
       const { error } = await supabaseAdmin
-        .from('applications')
+        .from('client')
         .update(maj)
         .eq('id', idApplication)
       if (error) {

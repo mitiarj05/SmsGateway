@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: app } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('id, nom, suspendu')
       .eq('id', idApplication)
       .single()

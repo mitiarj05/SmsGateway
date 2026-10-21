@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const statut = request.nextUrl.searchParams.get('statut')
     let requete = supabaseAdmin
-      .from('demandes')
+      .from('demande')
       .select('id, nom, contact, usage_prevu, statut, date_creation, date_traitement')
       .order('date_creation', { ascending: false })
       .limit(100)
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: captcha.raison ?? 'Vérification anti-robot requise' }, { status: 403 })
     }
     const { data, error } = await supabaseAdmin
-      .from('demandes')
+      .from('demande')
       .insert({ nom, contact, usage_prevu: usagePrevu })
       .select('id')
       .single()

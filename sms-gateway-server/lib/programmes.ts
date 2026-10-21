@@ -10,7 +10,7 @@ import { STATUT_TACHE } from './statuts'
 export async function promouvoirProgrammes(): Promise<number> {
   try {
     const { data, error } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .update({ statut: STATUT_TACHE.EN_ATTENTE, date_modification: new Date().toISOString() })
       .eq('statut', STATUT_TACHE.PROGRAMME)
       .lte('programme_a', new Date().toISOString())

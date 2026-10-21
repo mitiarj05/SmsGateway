@@ -12,7 +12,7 @@ export async function authentifierAppareil(appareilId: string, jeton: string) {
 
   const supabaseAdmin = obtenirSupabaseAdmin()
   const { data, error } = await supabaseAdmin
-    .from('appareils')
+    .from('appareil')
     .select('id, nom, jeton, statut')
     .eq('id', appareilId)
     .eq('jeton', jeton)
@@ -113,7 +113,7 @@ export async function authentifierClientApi(cleApi: string) {
 
   const supabaseAdmin = obtenirSupabaseAdmin()
   const { data, error } = await supabaseAdmin
-    .from('applications')
+    .from('client')
     .select('id, nom, cle_api')
     .eq('cle_api', cle)
     .single()

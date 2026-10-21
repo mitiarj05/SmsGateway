@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
     const { data, error } = await supabaseAdmin
-      .from('notifications')
+      .from('notification')
       .select('id, type_evenement, statut, tentatives, dernier_code_http, date_creation')
       .eq('id_application', idApplication)
       .order('date_creation', { ascending: false })

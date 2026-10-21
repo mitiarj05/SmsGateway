@@ -21,19 +21,19 @@ export async function GET(request: NextRequest) {
     }
     const debut = debutMoisIso(brut)
     const [total, envoyes, echecs, recus, app] = await Promise.all([
-      supabaseAdmin.from('taches').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
         .eq('id_application', idApplication).gte('date_creation', debut)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('taches').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
         .eq('id_application', idApplication).eq('statut', 'ENVOYE').gte('date_creation', debut)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('taches').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
         .eq('id_application', idApplication).eq('statut', 'ECHOUE').gte('date_creation', debut)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('reponses').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('reponse').select('id', { count: 'exact', head: true })
         .eq('id_application', idApplication).gte('date_reception', debut)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('applications').select('nom, quota_mensuel')
+      supabaseAdmin.from('client').select('nom, quota_mensuel')
         .eq('id', idApplication).single(),
     ])
     const quota = (app as unknown as { quota_mensuel: number | null } | null)?.quota_mensuel ?? null

@@ -39,7 +39,7 @@ export async function obtenirParametreEntier(cle: CleParametre): Promise<number>
     // .limit(1) + première ligne : tolère les doublons (table sans PK
     // si la migration add-settings.sql n'a pas été jouée proprement).
     const { data: donnees, error } = await supabaseAdmin
-      .from('parametres')
+      .from('parametre')
       .select('valeur')
       .eq('cle', cle)
       .limit(1)

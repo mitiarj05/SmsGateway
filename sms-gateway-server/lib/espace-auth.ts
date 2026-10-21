@@ -23,7 +23,7 @@ export async function resoudreApplicationEspace(request: NextRequest): Promise<s
     } = await supabase.auth.getUser()
     if (user) {
       const { data: app } = await supabaseAdmin
-        .from('applications')
+        .from('client')
         .select('id')
         .eq('user_id', user.id)
         .order('date_creation', { ascending: false })
@@ -49,7 +49,7 @@ export async function resoudreApplicationEspace(request: NextRequest): Promise<s
 async function estSuspendu(idApplication: string): Promise<boolean> {
   try {
     const { data, error } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('suspendu')
       .eq('id', idApplication)
       .single()

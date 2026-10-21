@@ -51,7 +51,7 @@ export async function POST(
     }
 
     const { data: entrant, error } = await supabaseAdmin
-      .from('reponses')
+      .from('reponse')
       .insert({
         id_appareil: idAppareil,
         expediteur,
@@ -69,7 +69,7 @@ export async function POST(
     const resolution = await resoudreClientEntrant(expediteur, idAppareil)
     if (resolution.idApplication) {
       await supabaseAdmin
-        .from('reponses')
+        .from('reponse')
         .update({ id_application: resolution.idApplication })
         .eq('id', entrant.id)
     }

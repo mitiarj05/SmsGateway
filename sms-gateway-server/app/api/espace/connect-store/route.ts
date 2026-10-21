@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: client, error } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('id, secret_notification')
       .eq('id', idApplication)
       .single()
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     if (!client.secret_notification) {
       secretVisible = fabriquerSecretNotification()
       const { error: erreurSecret } = await supabaseAdmin
-        .from('applications')
+        .from('client')
         .update({ secret_notification: secretVisible })
         .eq('id', idApplication)
       if (erreurSecret) {
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     // Rattache le webhook SMSTSIKA à la boutique (événements supportés uniquement).
     const urlNotification = `${urlNettoyee.replace(/\/+$/, '')}/wp-json/smsika/v1/webhook`
     const { error: erreurWebhook } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .update({
         url_notification: urlNotification,
         notifications_actives: true,

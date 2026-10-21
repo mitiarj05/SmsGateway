@@ -13,7 +13,7 @@ export async function GET(
     await marquerAppareilsInactifs()
     const { id } = await params
     const { data, error } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .select('id, nom, statut, jeton_fcm, sms_envoyes_heure, derniere_activite, date_creation, id_application')
       .eq('id', id)
       .single()
@@ -74,7 +74,7 @@ export async function PATCH(
       if (id_application !== null) {
         // Vérifier que le client existe (SIM dédiée).
         const { data: application } = await supabaseAdmin
-          .from('applications')
+          .from('client')
           .select('id')
           .eq('id', id_application)
           .single()
@@ -84,14 +84,14 @@ export async function PATCH(
         // Anti-doublon : même téléphone déjà lié à cet espace ?
         try {
           const { data: appareil } = await supabaseAdmin
-            .from('appareils')
+            .from('appareil')
             .select('android_id')
             .eq('id', id)
             .single()
           const androidId = (appareil as { android_id?: string | null } | null)?.android_id
           if (androidId) {
             const { data: doublons } = await supabaseAdmin
-              .from('appareils')
+              .from('appareil')
               .select('id, nom')
               .eq('android_id', androidId)
               .eq('id_application', id_application)
@@ -117,7 +117,7 @@ export async function PATCH(
     }
 
     const { data, error } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .update(donneesMaj)
       .eq('id', id)
       .select('id, nom, statut, id_application')
@@ -146,7 +146,7 @@ export async function DELETE(
     const { id } = await params
 
     const { data: existant, error: erreurRecup } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .select('id, nom')
       .eq('id', id)
       .single()
@@ -157,7 +157,7 @@ export async function DELETE(
 
     // Détacher les tâches liées (clé étrangère) en gardant l'historique.
     const { error: erreurDetachement } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .update({ id_appareil: null })
       .eq('id_appareil', id)
 
@@ -167,13 +167,13 @@ export async function DELETE(
 
     // Détacher aussi les SMS reçus via cet appareil (historique conservé).
     try {
-      await supabaseAdmin.from('reponses').update({ id_appareil: null }).eq('id_appareil', id)
+      await supabaseAdmin.from('reponse').update({ id_appareil: null }).eq('id_appareil', id)
     } catch {
       /* colonne absente — on continue */
     }
 
     const { error } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .delete()
       .eq('id', id)
 

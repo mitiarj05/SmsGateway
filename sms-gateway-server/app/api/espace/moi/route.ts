@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
     const { data: app } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('id, nom, cle_api, quota_mensuel')
       .eq('id', idApplication)
       .single()
@@ -25,16 +25,16 @@ export async function GET(request: NextRequest) {
     const mois = moisActuel()
     const [utiliseMois, envoyes, attente, echoue, recus] = await Promise.all([
       compterEnvoisMois(idApplication, mois),
-      supabaseAdmin.from('taches').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
         .eq('id_application', idApplication).eq('statut', STATUT_TACHE.ENVOYE)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('taches').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
         .eq('id_application', idApplication).eq('statut', STATUT_TACHE.EN_ATTENTE)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('taches').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
         .eq('id_application', idApplication).eq('statut', STATUT_TACHE.ECHOUE)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('reponses').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('reponse').select('id', { count: 'exact', head: true })
         .eq('id_application', idApplication)
         .then((r) => r.count ?? 0),
     ])

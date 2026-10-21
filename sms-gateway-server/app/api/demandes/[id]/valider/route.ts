@@ -15,7 +15,7 @@ export async function POST(
   try {
     const { id } = await params
     const { data: demande } = await supabaseAdmin
-      .from('demandes')
+      .from('demande')
       .select('id, nom, contact, statut')
       .eq('id', id)
       .single()
@@ -28,7 +28,7 @@ export async function POST(
 
     const cle_api = `cle_${randomBytes(16).toString('hex')}`
     const { data: client, error } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       // Quota illimité : le seul vrai crédit est la SIM du client.
       .insert({ nom: demande.nom, cle_api, quota_mensuel: null })
       .select('id, nom, cle_api, date_creation')
@@ -37,7 +37,7 @@ export async function POST(
       return NextResponse.json({ error: error?.message ?? 'Erreur création' }, { status: 500 })
     }
     await supabaseAdmin
-      .from('demandes')
+      .from('demande')
       .update({ statut: 'VALIDEE', date_traitement: new Date().toISOString() })
       .eq('id', id)
 

@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     // (réinstallation, nouveau compte Firebase) au lieu de dupliquer.
     if (androidId) {
       const { data: memeTelephone } = await clientSupabase
-        .from('appareils')
+        .from('appareil')
         .select('id, nom, jeton, statut, date_creation')
         .eq('android_id', androidId)
         .order('date_creation', { ascending: false })
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       if (memeTelephone?.[0]) {
         const existant = memeTelephone[0]
         await clientSupabase
-          .from('appareils')
+          .from('appareil')
           .update({ android_id: androidId })
           .eq('id', existant.id)
         return NextResponse.json(
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
     // 2b. Appareil déjà lié à ce compte Firebase ? On rend ses identifiants
     // (réinstallation de l'app : même compte anonyme = même appareil).
     const { data: existant } = await clientSupabase
-      .from('appareils')
+      .from('appareil')
       .select('id, nom, jeton, statut, date_creation')
       .eq('uid_firebase', uidFirebase)
       .single()
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
     let data: any = null
     let error: any = null
     ;({ data, error } = await clientSupabase
-      .from('appareils')
+      .from('appareil')
       .insert({
         nom: nom.trim(),
         jeton: jeton,
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
     if (error && androidId && /android_id/i.test(error.message ?? '')) {
       // Pré-migration (colonne absente) : crée sans l'identifiant matériel.
       ;({ data, error } = await clientSupabase
-        .from('appareils')
+        .from('appareil')
         .insert({
           nom: nom.trim(),
           jeton: jeton,

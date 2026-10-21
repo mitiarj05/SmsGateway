@@ -27,21 +27,21 @@ export async function obtenirOuCreerApplication(
   const nomPropre = (nom.trim() || courriel.split('@')[0]).slice(0, 80)
 
   const { data: liee } = await supabaseAdmin
-    .from('applications')
+    .from('client')
     .select('id')
     .eq('user_id', userId)
     .order('date_creation', { ascending: false })
     .limit(1)
   if (liee?.[0]) {
     const id = (liee[0] as { id: string }).id
-    await supabaseAdmin.from('applications').update({ email: courriel }).eq('id', id)
+    await supabaseAdmin.from('client').update({ email: courriel }).eq('id', id)
     await refuserSiSuspendu(id)
     return { applicationId: id, cree: false }
   }
 
   // Espace pré-créé par l'admin pour cet e-mail (invitation) → on le rattache.
   const { data: precree } = await supabaseAdmin
-    .from('applications')
+    .from('client')
     .select('id')
     .ilike('email', courriel)
     .is('user_id', null)
@@ -49,13 +49,13 @@ export async function obtenirOuCreerApplication(
     .limit(1)
   if (precree?.[0]) {
     const id = (precree[0] as { id: string }).id
-    await supabaseAdmin.from('applications').update({ user_id: userId }).eq('id', id)
+    await supabaseAdmin.from('client').update({ user_id: userId }).eq('id', id)
     await refuserSiSuspendu(id)
     return { applicationId: id, cree: false }
   }
 
   const { data: demandes } = await supabaseAdmin
-    .from('demandes')
+    .from('demande')
     .select('id, nom, statut')
     .ilike('contact', courriel)
     .order('date_creation', { ascending: false })
@@ -64,19 +64,19 @@ export async function obtenirOuCreerApplication(
 
   if (demande && (demande.statut === 'VALIDEE' || demande.statut === 'EN_ATTENTE')) {
     const { data: apps } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('id')
       .eq('nom', demande.nom)
       .order('date_creation', { ascending: false })
       .limit(1)
     if (apps?.[0]) {
       await supabaseAdmin
-        .from('applications')
+        .from('client')
         .update({ user_id: userId, email: courriel })
         .eq('id', apps[0].id)
       if (demande.statut !== 'VALIDEE') {
         await supabaseAdmin
-          .from('demandes')
+          .from('demande')
           .update({ statut: 'VALIDEE', date_traitement: new Date().toISOString() })
           .eq('id', demande.id)
       }
@@ -85,13 +85,13 @@ export async function obtenirOuCreerApplication(
     }
     const cleAttente = `cle_${randomBytes(16).toString('hex')}`
     const { data: provisionnee } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .insert({ nom: demande.nom, cle_api: cleAttente, quota_mensuel: null, user_id: userId, email: courriel })
       .select('id')
       .single()
     if (provisionnee) {
       await supabaseAdmin
-        .from('demandes')
+        .from('demande')
         .update({ statut: 'VALIDEE', date_traitement: new Date().toISOString() })
         .eq('id', demande.id)
       return { applicationId: provisionnee.id as string, cree: true }
@@ -100,7 +100,7 @@ export async function obtenirOuCreerApplication(
 
   const cle = `cle_${randomBytes(16).toString('hex')}`
   const { data: nouvelle, error } = await supabaseAdmin
-    .from('applications')
+    .from('client')
     .insert({ nom: nomPropre, cle_api: cle, quota_mensuel: null, user_id: userId, email: courriel })
     .select('id')
     .single()
@@ -121,7 +121,7 @@ export async function obtenirOuCreerParFirebase(
   const courriel = (email ?? '').trim().toLowerCase()
 
   const { data: liee } = await supabaseAdmin
-    .from('applications')
+    .from('client')
     .select('id')
     .eq('firebase_uid', firebaseUid)
     .order('date_creation', { ascending: false })
@@ -129,7 +129,7 @@ export async function obtenirOuCreerParFirebase(
   if (liee?.[0]) {
     const id = (liee[0] as { id: string }).id
     if (courriel) {
-      await supabaseAdmin.from('applications').update({ email: courriel }).eq('id', id)
+      await supabaseAdmin.from('client').update({ email: courriel }).eq('id', id)
     }
     await refuserSiSuspendu(id)
     return { applicationId: id, cree: false }
@@ -138,19 +138,19 @@ export async function obtenirOuCreerParFirebase(
   if (courriel) {
     // Rattachement direct : une application existe déjà pour cet e-mail.
     const { data: parEmail } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('id')
       .ilike('email', courriel)
       .order('date_creation', { ascending: false })
       .limit(1)
     if (parEmail?.[0]) {
       const id = (parEmail[0] as { id: string }).id
-      await supabaseAdmin.from('applications').update({ firebase_uid: firebaseUid }).eq('id', id)
+      await supabaseAdmin.from('client').update({ firebase_uid: firebaseUid }).eq('id', id)
       await refuserSiSuspendu(id)
       return { applicationId: id, cree: false }
     }
     const { data: demandes } = await supabaseAdmin
-      .from('demandes')
+      .from('demande')
       .select('id, nom, statut')
       .ilike('contact', courriel)
       .eq('statut', 'VALIDEE')
@@ -159,7 +159,7 @@ export async function obtenirOuCreerParFirebase(
     const demande = demandes?.[0] as { id: string; nom: string; statut: string } | undefined
     if (demande) {
       const { data: apps } = await supabaseAdmin
-        .from('applications')
+        .from('client')
         .select('id')
         .eq('nom', demande.nom)
         .order('date_creation', { ascending: false })
@@ -167,7 +167,7 @@ export async function obtenirOuCreerParFirebase(
       if (apps?.[0]) {
         const id = (apps[0] as { id: string }).id
         await supabaseAdmin
-          .from('applications')
+          .from('client')
           .update({ firebase_uid: firebaseUid, email: courriel })
           .eq('id', id)
         await refuserSiSuspendu(id)
@@ -179,7 +179,7 @@ export async function obtenirOuCreerParFirebase(
   const nomPropre = (nom.trim() || courriel.split('@')[0] || 'Client Android').slice(0, 80)
   const cle = `cle_${randomBytes(16).toString('hex')}`
   const { data: nouvelle, error } = await supabaseAdmin
-    .from('applications')
+    .from('client')
     .insert({
       nom: nomPropre,
       cle_api: cle,
@@ -200,7 +200,7 @@ export async function obtenirOuCreerParFirebase(
 async function refuserSiSuspendu(idApplication: string): Promise<void> {
   try {
     const { data, error } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('suspendu')
       .eq('id', idApplication)
       .single()

@@ -39,7 +39,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const { error } = await supabaseAdmin
-      .from('parametres')
+      .from('parametre')
       .upsert({ cle, valeur: String(valeur), date_modification: new Date().toISOString() }, { onConflict: 'cle' })
 
     if (error) {

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     // select('*') : tolère l'absence des colonnes de solde SIM (migration non
     // exécutée). Le mapping renvoyé reste explicite.
     const { data, error } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .select('*')
       .eq('id_application', idApplication)
       .order('statut', { ascending: false })

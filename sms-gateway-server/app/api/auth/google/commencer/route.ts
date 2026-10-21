@@ -17,14 +17,14 @@ export async function POST(request: NextRequest) {
   try {
     // Compte standard : e-mail déjà rattaché à une application.
     const { data: apps } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('id')
       .ilike('email', email)
       .limit(1)
     if ((apps?.length ?? 0) > 0) return NextResponse.json({ google: true })
     // Héritage : ancienne demande validée sans compte lié.
     const { data } = await supabaseAdmin
-      .from('demandes')
+      .from('demande')
       .select('id')
       .ilike('contact', email)
       .eq('statut', 'VALIDEE')

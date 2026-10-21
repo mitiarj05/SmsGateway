@@ -22,7 +22,7 @@ export function debutMoisIso(mois: string): string {
 /** Unités facturables du mois pour un client (tâches créées). */
 export async function compterEnvoisMois(idApplication: string, mois: string): Promise<number> {
   const { count } = await supabaseAdmin
-    .from('taches')
+    .from('tache')
     .select('id', { count: 'exact', head: true })
     .eq('id_application', idApplication)
     .gte('date_creation', debutMoisIso(mois))
@@ -45,7 +45,7 @@ export interface LigneFacturation {
 export async function lireFacturation(mois: string): Promise<LigneFacturation[]> {
   const debut = debutMoisIso(mois)
   const { data: applications } = await supabaseAdmin
-    .from('applications')
+    .from('client')
     .select('id, nom, quota_mensuel')
     .order('nom', { ascending: true })
 
@@ -53,13 +53,13 @@ export async function lireFacturation(mois: string): Promise<LigneFacturation[]>
   for (const app of applications ?? []) {
     const [total, envoyes, echecs, recus] = await Promise.all([
       compterEnvoisMois(app.id, mois),
-      supabaseAdmin.from('taches').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
         .eq('id_application', app.id).eq('statut', STATUT_TACHE.ENVOYE).gte('date_creation', debut)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('taches').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
         .eq('id_application', app.id).eq('statut', STATUT_TACHE.ECHOUE).gte('date_creation', debut)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('reponses').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('reponse').select('id', { count: 'exact', head: true })
         .eq('id_application', app.id).gte('date_reception', debut)
         .then((r) => r.count ?? 0),
     ])

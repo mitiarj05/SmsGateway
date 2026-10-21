@@ -35,7 +35,7 @@ export async function GET() {
     // exister encore (migration non exécutée). Les nommer explicitement ferait
     // échouer toute la page ; ici on mappe avec des replis null.
     const { data, error } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .select('*')
       .order('date_creation', { ascending: false })
       .limit(50)

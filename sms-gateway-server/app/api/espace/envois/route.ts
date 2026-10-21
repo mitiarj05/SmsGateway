@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const statut = parametres.get('statut')
     const limite = Math.min(200, Math.max(1, Number(parametres.get('limit')) || 50))
     let requete = supabaseAdmin
-      .from('taches')
+      .from('tache')
       // select('*') : tolère l'absence de la colonne `livraison` (migration non
       // encore exécutée) au lieu de casser tout l'historique du client.
       .select('*')

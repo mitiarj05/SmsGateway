@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     const since = params.get('since')
 
     let requete = supabaseAdmin
-      .from('taches')
+      .from('tache')
       // select('*') : la colonne `livraison` peut être absente si la migration
       // n'a pas encore été exécutée — la nommer ferait échouer toute la réponse.
       .select('*')

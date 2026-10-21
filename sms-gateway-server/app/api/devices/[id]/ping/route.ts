@@ -10,7 +10,7 @@ export async function POST(
   try {
     const { id } = await params
     const { data: appareil, error } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .select('id, nom, jeton_fcm')
       .eq('id', id)
       .single()

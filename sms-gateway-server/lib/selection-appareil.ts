@@ -31,7 +31,7 @@ function ilYaUneHeureIso(): string {
  */
 export async function obtenirUsageAppareil(idAppareil: string): Promise<number> {
   const { count } = await supabaseAdmin
-    .from('taches')
+    .from('tache')
     .select('id', { count: 'exact', head: true })
     .eq('id_appareil', idAppareil)
     .in('statut', [STATUT_TACHE.ENVOYE, STATUT_TACHE.RECLAME])
@@ -43,7 +43,7 @@ export async function obtenirUsageAppareil(idAppareil: string): Promise<number> 
 /** Délai avant libération d'une place pour UN appareil (0 si sous le quota). */
 export async function obtenirDelaiAttenteSecondes(idAppareil: string): Promise<number> {
   const { data } = await supabaseAdmin
-    .from('taches')
+    .from('tache')
     .select('date_modification')
     .eq('id_appareil', idAppareil)
     .in('statut', [STATUT_TACHE.ENVOYE, STATUT_TACHE.RECLAME])
@@ -60,7 +60,7 @@ async function calculerDelaiAttente(idsAppareils: string[], extraIso: string | n
   let plusAncien: string | null = extraIso
   if (idsAppareils.length > 0) {
     const { data } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .select('date_modification')
       .in('id_appareil', idsAppareils)
       .in('statut', [STATUT_TACHE.ENVOYE, STATUT_TACHE.RECLAME])
@@ -84,7 +84,7 @@ export async function obtenirDisponibiliteAppareil(
 
   // Modèle individuel : restreint au parc du client (tous si non précisé).
   let requeteAppareils = supabaseAdmin
-    .from('appareils')
+    .from('appareil')
     .select('id, nom, jeton_fcm')
     .eq('statut', STATUT_APPAREIL.EN_LIGNE)
     .not('jeton_fcm', 'is', null)
@@ -100,7 +100,7 @@ export async function obtenirDisponibiliteAppareil(
   // Pression : les EN_ATTENTE non assignés consommeront du quota sous peu.
   // Restreinte à l'espace concerné en modèle individuel.
   let requeteAttente = supabaseAdmin
-    .from('taches')
+    .from('tache')
     .select('date_creation')
     .eq('statut', STATUT_TACHE.EN_ATTENTE)
     .is('id_appareil', null)

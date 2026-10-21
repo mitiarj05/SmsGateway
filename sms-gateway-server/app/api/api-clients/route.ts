@@ -26,14 +26,14 @@ export async function GET() {
   try {
     let lignes: any[] | null = null
     const { data, error } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives, quota_mensuel, suspendu')
       .order('date_creation', { ascending: false })
     if (error) {
       // Pré-migration (colonne suspendu absente) : repli sans la colonne.
       if (/suspendu/i.test(error.message)) {
         const repli = await supabaseAdmin
-          .from('applications')
+          .from('client')
           .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives, quota_mensuel')
           .order('date_creation', { ascending: false })
         if (repli.error) {
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     const cle_api = `cle_${randomBytes(16).toString('hex')}`
 
     const { data, error } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .insert({ nom: nom.trim(), cle_api, quota_mensuel: null, ...(emailBrut ? { email: emailBrut } : {}) })
       .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives, quota_mensuel')
       .single()

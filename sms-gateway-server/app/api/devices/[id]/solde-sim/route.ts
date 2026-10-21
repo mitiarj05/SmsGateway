@@ -76,7 +76,7 @@ export async function POST(
         : new Date().toISOString()
 
     const { data, error } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .update({
         solde_sim: montant,
         solde_devise: devise,

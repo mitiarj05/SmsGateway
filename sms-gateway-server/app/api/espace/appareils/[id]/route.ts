@@ -23,7 +23,7 @@ export async function DELETE(
     const { id } = await params
 
     const { data: existant } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .select('id, nom, id_application')
       .eq('id', id)
       .single()
@@ -33,7 +33,7 @@ export async function DELETE(
 
     // Détacher les tâches de MON espace (historique conservé).
     const { error: erreurDetachement } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .update({ id_appareil: null })
       .eq('id_appareil', id)
       .eq('id_application', idApplication)
@@ -45,7 +45,7 @@ export async function DELETE(
     // Tolérant : certaines bases n'ont pas cette colonne.
     try {
       await supabaseAdmin
-        .from('reponses')
+        .from('reponse')
         .update({ id_appareil: null })
         .eq('id_appareil', id)
         .eq('id_application', idApplication)
@@ -53,7 +53,7 @@ export async function DELETE(
       /* colonne absente — on continue */
     }
 
-    const { error } = await supabaseAdmin.from('appareils').delete().eq('id', id)
+    const { error } = await supabaseAdmin.from('appareil').delete().eq('id', id)
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }

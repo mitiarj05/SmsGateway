@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       // L'application se déduit : e-mail vérifié, sinon UID Firebase.
       if (compte.email) {
         const { data: parEmail } = await supabaseAdmin
-          .from('applications')
+          .from('client')
           .select('id')
           .ilike('email', compte.email)
           .order('date_creation', { ascending: false })
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       }
       if (!applicationId) {
         const { data: parUidApp } = await supabaseAdmin
-          .from('applications')
+          .from('client')
           .select('id')
           .eq('uid_firebase', compte.uid)
           .order('date_creation', { ascending: false })
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Identifiants incorrects' }, { status: 401 })
       }
       const { data: parUser } = await supabaseAdmin
-        .from('applications')
+        .from('client')
         .select('id')
         .eq('user_id', data.user.id)
         .order('date_creation', { ascending: false })
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       )
     }
     const { data: app } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('id, suspendu')
       .eq('id', applicationId)
       .single()
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: existants } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .select('id, jeton')
       .eq('android_id', androidId)
       .order('date_creation', { ascending: false })
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
     if (existants?.[0]) {
       const existant = existants[0] as { id: string; jeton: string }
       await supabaseAdmin
-        .from('appareils')
+        .from('appareil')
         .update({
           id_application: applicationId,
           nom,
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
 
     const jeton = randomBytes(32).toString('hex')
     const { data: cree, error: erreurInsert } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .insert({
         nom,
         jeton,

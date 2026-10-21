@@ -11,7 +11,7 @@ export async function GET() {
     // des appareils ; le mapping ci-dessous reste explicite, donc rien de
     // sensible (jeton) ne sort de ce route handler.
     const { data, error } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .select('*')
       .order('statut', { ascending: false })
       .order('derniere_activite', { ascending: false })

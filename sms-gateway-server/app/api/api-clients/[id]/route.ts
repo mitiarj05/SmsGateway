@@ -15,7 +15,7 @@ export async function GET(
     const { id } = await params
     if (request.nextUrl.searchParams.get('reveler') !== '1') {
       const { data, error } = await supabaseAdmin
-        .from('applications')
+        .from('client')
         .select('id, nom, date_creation')
         .eq('id', id)
         .single()
@@ -25,7 +25,7 @@ export async function GET(
       return NextResponse.json({ client: data })
     }
     const { data, error } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('id, cle_api')
       .eq('id', id)
       .single()
@@ -46,7 +46,7 @@ export async function GET(
     const { id } = await params
 
     const { data: existant, error: erreurRecup } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('id')
       .eq('id', id)
       .single()
@@ -57,7 +57,7 @@ export async function GET(
 
     // Détacher les tâches liées (clé étrangère) en gardant l'historique.
     const { error: erreurDetachement } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .update({ id_application: null })
       .eq('id_application', id)
 
@@ -66,7 +66,7 @@ export async function GET(
     }
 
     const { error } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .delete()
       .eq('id', id)
 
@@ -99,7 +99,7 @@ export async function PATCH(
     }
 
     const { data: existant } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('id, secret_notification')
       .eq('id', id)
       .single()
@@ -156,7 +156,7 @@ export async function PATCH(
 
     if (Object.keys(maj).length > 0) {
       const { error } = await supabaseAdmin
-        .from('applications')
+        .from('client')
         .update(maj)
         .eq('id', id)
       if (error) {
@@ -165,7 +165,7 @@ export async function PATCH(
     }
 
     const { data: client } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('id, nom, url_notification, evenements_notification, notifications_actives')
       .eq('id', id)
       .single()

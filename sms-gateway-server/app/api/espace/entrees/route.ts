@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
     const limite = Math.min(200, Math.max(1, Number(request.nextUrl.searchParams.get('limit')) || 100))
     const { data, error } = await supabaseAdmin
-      .from('reponses')
+      .from('reponse')
       .select('id, expediteur, contenu, date_reception, statut_notification, date_creation, appareils(nom)')
       .eq('id_application', idApplication)
       .order('date_reception', { ascending: false })

@@ -37,7 +37,7 @@ export async function POST(
     }
 
     const { error } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .update({
         statut: STATUT_APPAREIL.HORS_LIGNE,
         derniere_activite: new Date().toISOString(),

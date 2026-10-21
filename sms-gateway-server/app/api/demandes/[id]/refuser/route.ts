@@ -9,7 +9,7 @@ export async function POST(
   try {
     const { id } = await params
     const { data } = await supabaseAdmin
-      .from('demandes')
+      .from('demande')
       .update({ statut: 'REFUSEE', date_traitement: new Date().toISOString() })
       .eq('id', id)
       .eq('statut', 'EN_ATTENTE')

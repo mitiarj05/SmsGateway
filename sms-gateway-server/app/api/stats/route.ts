@@ -9,13 +9,13 @@ export async function GET() {
     await expirerEnAttentePerimees()
     await promouvoirProgrammes()
     const { count: appareilsEnLigne } = await supabaseAdmin
-      .from('appareils').select('*', { count: 'exact', head: true }).eq('statut', STATUT_APPAREIL.EN_LIGNE)
+      .from('appareil').select('*', { count: 'exact', head: true }).eq('statut', STATUT_APPAREIL.EN_LIGNE)
     const { count: tachesEnvoyees } = await supabaseAdmin
-      .from('taches').select('*', { count: 'exact', head: true }).eq('statut', STATUT_TACHE.ENVOYE)
+      .from('tache').select('*', { count: 'exact', head: true }).eq('statut', STATUT_TACHE.ENVOYE)
     const { count: tachesEnAttente } = await supabaseAdmin
-      .from('taches').select('*', { count: 'exact', head: true }).eq('statut', STATUT_TACHE.EN_ATTENTE)
+      .from('tache').select('*', { count: 'exact', head: true }).eq('statut', STATUT_TACHE.EN_ATTENTE)
     const { count: tachesEchouees } = await supabaseAdmin
-      .from('taches').select('*', { count: 'exact', head: true }).eq('statut', STATUT_TACHE.ECHOUE)
+      .from('tache').select('*', { count: 'exact', head: true }).eq('statut', STATUT_TACHE.ECHOUE)
 
     return NextResponse.json({
       stats: {

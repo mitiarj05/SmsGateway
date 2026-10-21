@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       .filter((s) => (CONNUS as readonly string[]).includes(s))
 
     let requete = supabaseAdmin
-      .from('taches')
+      .from('tache')
       // select('*') : tolère l'absence des colonnes d'accusé de livraison
       // (migration non exécutée) au lieu de casser tout l'export CSV.
       .select('*')

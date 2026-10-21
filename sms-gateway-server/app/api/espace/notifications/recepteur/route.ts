@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
     const { data, error } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('nom, url_notification, secret_notification')
       .eq('id', idApplication)
       .single()
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
     if (!secret) {
       secret = fabriquerSecretNotification()
       const { error: erreurSecret } = await supabaseAdmin
-        .from('applications')
+        .from('client')
         .update({ secret_notification: secret })
         .eq('id', idApplication)
       if (erreurSecret) {

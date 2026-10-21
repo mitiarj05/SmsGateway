@@ -22,13 +22,13 @@ export async function obtenirStatsPubliques(): Promise<StatsPubliques> {
   const donnees: StatsPubliques = { smsEnvoyes: 0, appareilsEnLigne: 0, clients: 0 }
   try {
     const [envoyes, enLigne, clients] = await Promise.all([
-      supabaseAdmin.from('taches').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
         .eq('statut', STATUT_TACHE.ENVOYE)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('appareils').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('appareil').select('id', { count: 'exact', head: true })
         .eq('statut', STATUT_APPAREIL.EN_LIGNE)
         .then((r) => r.count ?? 0),
-      supabaseAdmin.from('applications').select('id', { count: 'exact', head: true })
+      supabaseAdmin.from('client').select('id', { count: 'exact', head: true })
         .then((r) => r.count ?? 0),
     ])
     donnees.smsEnvoyes = envoyes

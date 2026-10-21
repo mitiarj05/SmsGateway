@@ -19,7 +19,7 @@ export async function GET() {
   try {
     const debutRequete = Date.now()
     const { error } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .select('id', { count: 'exact', head: true })
     supabase = error
       ? { ok: false, latency_ms: Date.now() - debutRequete, error: error.message }
@@ -31,7 +31,7 @@ export async function GET() {
   let tableParametres = false
   try {
     const { error } = await supabaseAdmin
-      .from('parametres')
+      .from('parametre')
       .select('cle', { count: 'exact', head: true })
     tableParametres = !error
   } catch {

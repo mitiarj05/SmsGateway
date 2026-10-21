@@ -60,7 +60,7 @@ export async function traiterEnvoiSms(
 
   // 2. Modèle individuel : sans téléphone lié, l'envoi est impossible.
   const { count: nbAppareils } = await supabaseAdmin
-    .from('appareils')
+    .from('appareil')
     .select('id', { count: 'exact', head: true })
     .eq('id_application', client.id)
   if (!nbAppareils) {
@@ -69,7 +69,7 @@ export async function traiterEnvoiSms(
 
   // 3. Quota mensuel du client (facturation) : refusé AVANT toute création.
   const { data: ficheClient } = await supabaseAdmin
-    .from('applications')
+    .from('client')
     .select('quota_mensuel')
     .eq('id', client.id)
     .single()
@@ -114,7 +114,7 @@ export async function traiterEnvoiSms(
 
   // 5. Créer une tâche par destinataire (envoi groupé).
   const { data, error } = await supabaseAdmin
-    .from('taches')
+    .from('tache')
     .insert(
       numeros.map((numero) => ({
         numero_destinataire: numero,

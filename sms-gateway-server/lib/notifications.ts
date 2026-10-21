@@ -47,7 +47,7 @@ export async function enfilerNotification(
 ): Promise<string | null> {
   if (!idApplication) return null
   const { data: app } = await supabaseAdmin
-    .from('applications')
+    .from('client')
     .select('id, url_notification, secret_notification, evenements_notification, notifications_actives')
     .eq('id', idApplication)
     .single()
@@ -68,7 +68,7 @@ export async function enfilerNotification(
     donnees,
   }
   const { data, error } = await supabaseAdmin
-    .from('notifications')
+    .from('notification')
     .insert({
       id_application: idApplication,
       type_evenement: type,
@@ -91,7 +91,7 @@ async function miroirStatutNotification(charge: Record<string, unknown>, statut:
     : null
   if (typeof idEntrant !== 'string' || !idEntrant) return
   await supabaseAdmin
-      .from('reponses')
+      .from('reponse')
     .update({ statut_notification: statut, tentatives_notification: tentatives })
     .eq('id', idEntrant)
 }
@@ -105,7 +105,7 @@ export async function traiterNotificationsEnAttente(): Promise<{ envoyes: number
   let envoyes = 0
   let echecs = 0
   const { data: dues } = await supabaseAdmin
-    .from('notifications')
+    .from('notification')
     .select('id, id_application, type_evenement, charge, tentatives')
     .eq('statut', 'EN_ATTENTE')
     .lte('prochaine_tentative', new Date().toISOString())
@@ -113,7 +113,7 @@ export async function traiterNotificationsEnAttente(): Promise<{ envoyes: number
     .limit(LOT_TRAITEMENT)
   for (const livraison of dues ?? []) {
     const { data: app } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('url_notification, secret_notification, notifications_actives')
       .eq('id', livraison.id_application)
       .single()
@@ -123,7 +123,7 @@ export async function traiterNotificationsEnAttente(): Promise<{ envoyes: number
     const tentatives = (livraison.tentatives ?? 0) + 1
     if (!url || !secret || !actifs) {
       await supabaseAdmin
-        .from('notifications')
+        .from('notification')
         .update({ statut: 'ECHOUE', tentatives, date_maj: new Date().toISOString() })
         .eq('id', livraison.id)
       await miroirStatutNotification(livraison.charge, 'ECHOUE', tentatives)
@@ -151,7 +151,7 @@ export async function traiterNotificationsEnAttente(): Promise<{ envoyes: number
       }
       if (reponse.ok) {
         await supabaseAdmin
-          .from('notifications')
+          .from('notification')
           .update({
             statut: 'ENVOYE',
             tentatives,
@@ -168,7 +168,7 @@ export async function traiterNotificationsEnAttente(): Promise<{ envoyes: number
       const definitive = tentatives >= TENTATIVES_MAX
       const delai = DELAIS_REJEU_MINUTES[Math.min(tentatives - 1, DELAIS_REJEU_MINUTES.length - 1)]
       await supabaseAdmin
-        .from('notifications')
+        .from('notification')
         .update({
           statut: definitive ? 'ECHOUE' : 'EN_ATTENTE',
           tentatives,
@@ -191,14 +191,14 @@ export async function traiterNotificationsEnAttente(): Promise<{ envoyes: number
 async function couperNotificationsSiEnPanne(idApplication: string) {
   const depuis = new Date(Date.now() - 24 * 3600_000).toISOString()
   const { count } = await supabaseAdmin
-    .from('notifications')
+    .from('notification')
     .select('id', { count: 'exact', head: true })
     .eq('id_application', idApplication)
     .eq('statut', 'ECHOUE')
     .gte('date_maj', depuis)
   if ((count ?? 0) >= 20) {
     await supabaseAdmin
-      .from('applications')
+      .from('client')
       .update({ notifications_actives: false })
       .eq('id', idApplication)
     console.warn(`notifications coupées pour ${idApplication} (URL durablement en panne)`)

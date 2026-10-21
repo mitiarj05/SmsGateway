@@ -39,7 +39,7 @@ export async function POST(
 
     // Mettre à jour le token FCM de l'appareil
     const { error } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .update({ jeton_fcm: fcm_token })
       .eq('id', idAppareil)
 

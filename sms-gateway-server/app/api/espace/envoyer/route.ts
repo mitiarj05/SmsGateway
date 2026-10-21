@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
     // Modèle individuel : sans téléphone lié, l'envoi est impossible.
     const { count: nbAppareils } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .select('id', { count: 'exact', head: true })
       .eq('id_application', idApplication)
     if (!nbAppareils) {
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: fiche } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('quota_mensuel')
       .eq('id', idApplication)
       .single()
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
       statut: string; programme_a: string | null; date_creation: string
     }
     const { data, error } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .insert(
         numeros.map((numero) => ({
           numero_destinataire: numero,

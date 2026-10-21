@@ -62,7 +62,7 @@ export async function POST(
     }
 
     const { data: existant, error: erreurRecup } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .select('id, id_appareil, statut, livraison')
       .eq('id', tacheId)
       .single()
@@ -105,7 +105,7 @@ export async function POST(
     }
 
     const { data, error } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .update(donneesMaj)
       .eq('id', tacheId)
       .select('id, statut, livraison, livre_le')
@@ -135,7 +135,7 @@ export async function POST(
     // Toute remontée prouve que l'appareil est vivant (même règle que /status).
     if (appareil.statut !== STATUT_APPAREIL.DESACTIVE) {
       await supabaseAdmin
-        .from('appareils')
+        .from('appareil')
         .update({
           statut: STATUT_APPAREIL.EN_LIGNE,
           derniere_activite: new Date().toISOString(),
@@ -143,7 +143,7 @@ export async function POST(
         .eq('id', idAppareil)
     } else {
       await supabaseAdmin
-        .from('appareils')
+        .from('appareil')
         .update({ derniere_activite: new Date().toISOString() })
         .eq('id', idAppareil)
     }

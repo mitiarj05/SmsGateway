@@ -46,7 +46,7 @@ export async function GET(
     // Modèle individuel : un téléphone ne réclame que les tâches de SON espace.
     // Non lié → rien à servir (l'association se fait depuis l'espace client).
     const { data: ficheAppareil } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .select('id_application')
       .eq('id', idAppareil)
       .single()
@@ -69,7 +69,7 @@ export async function GET(
 
     // 1. Récupérer les tâches EN_ATTENTE de SON espace (jamais assignées)
     const { data: tachesEnAttente, error: erreur1 } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .select('id, numero_destinataire, contenu, statut, date_creation')
       .eq('statut', STATUT_TACHE.EN_ATTENTE)
       .is('id_appareil', null)
@@ -93,7 +93,7 @@ export async function GET(
     // On inclut aussi reclame_a NULL (anciennes tâches sans lease).
     const seuilDelai = new Date(Date.now() - DELAI_RECLAMATION_MS).toISOString()
     const { data: tachesExpirees, error: erreur2 } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
       .select('id, numero_destinataire, contenu, statut, date_creation, id_appareil')
       .eq('statut', STATUT_TACHE.RECLAME)
       .eq('id_application', idApplicationAppareil)
@@ -113,7 +113,7 @@ export async function GET(
     const idsExpirees = (tachesExpirees || []).map(t => t.id)
     if (idsExpirees.length > 0) {
       await supabaseAdmin
-        .from('taches')
+        .from('tache')
         .update({
           statut: STATUT_TACHE.EN_ATTENTE,
           id_appareil: null,
@@ -149,7 +149,7 @@ export async function GET(
     // (sinon la scrutation réactiverait un appareil DESACTIVE quelques secondes après)
     if (appareil.statut !== STATUT_APPAREIL.DESACTIVE) {
       await supabaseAdmin
-        .from('appareils')
+        .from('appareil')
         .update({
           statut: STATUT_APPAREIL.EN_LIGNE,
           derniere_activite: new Date().toISOString(),
@@ -158,7 +158,7 @@ export async function GET(
     } else {
       // On met juste à jour l'activité, sans toucher au statut
       await supabaseAdmin
-        .from('appareils')
+        .from('appareil')
         .update({
           derniere_activite: new Date().toISOString(),
         })

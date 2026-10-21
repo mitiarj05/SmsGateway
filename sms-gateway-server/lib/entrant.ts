@@ -25,7 +25,7 @@ export async function resoudreClientEntrant(
   //    Une réponse appartient au client qui avait initié la conversation.
   const depuis = new Date(Date.now() - 30 * 86400_000).toISOString()
   const { data: sortants } = await supabaseAdmin
-      .from('taches')
+      .from('tache')
     .select('id_application')
     .eq('numero_destinataire', expediteur)
     .not('id_application', 'is', null)
@@ -37,7 +37,7 @@ export async function resoudreClientEntrant(
 
   // 2. SIM dédiée : appareil affecté à un client (numéro SAV/support).
   const { data: appareil } = await supabaseAdmin
-    .from('appareils')
+    .from('appareil')
     .select('id_application')
     .eq('id', idAppareil)
     .single()

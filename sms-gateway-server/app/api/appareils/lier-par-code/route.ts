@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Code invalide ou expiré — régénérez le QR.' }, { status: 410 })
     }
     const { data: app } = await supabaseAdmin
-      .from('applications')
+      .from('client')
       .select('id, suspendu')
       .eq('id', idApplication)
       .single()
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: existants } = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .select('id, jeton')
       .eq('android_id', androidId)
       .order('date_creation', { ascending: false })
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     if (existants?.[0]) {
       const existant = existants[0] as { id: string; jeton: string }
       await supabaseAdmin
-        .from('appareils')
+        .from('appareil')
         .update({ id_application: idApplication, nom, uid_firebase: uidFirebase })
         .eq('id', existant.id)
       return NextResponse.json({
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     let cree: { id: string } | null = null
     let erreurInsert: { message?: string } | null = null
     const tentative = await supabaseAdmin
-      .from('appareils')
+      .from('appareil')
       .insert({
         nom,
         jeton,
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     if (erreurInsert && /android_id/i.test(erreurInsert.message ?? '')) {
       // Pré-migration (colonne absente) : crée sans l'identifiant matériel.
       const repli = await supabaseAdmin
-        .from('appareils')
+        .from('appareil')
         .insert({
           nom,
           jeton,
