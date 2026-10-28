@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, useRef, type CSSProperties } from 're
 import {
   Inbox, Webhook, Receipt, Send, Compass, List,
   Moon, Sun, Search, Bell, AlertTriangle, LogOut, LayoutGrid, Smartphone, ArrowUpRight,
-  PanelLeft, ChevronsLeft
+  PanelLeft, ChevronsLeft, Settings
 } from 'lucide-react'
 import { Modale } from './interface'
 import { useTheme } from '../lib/use-theme'
@@ -20,6 +20,7 @@ const NAVIGATION = [
   { href: '/espace/entrees', icone: Inbox, etiquette: 'SMS reçus' },
   { href: '/espace/notifications', icone: Webhook, etiquette: 'Intégrations' },
   { href: '/espace/facturation', icone: Receipt, etiquette: 'Facturation' },
+  { href: '/espace/parametres', icone: Settings, etiquette: 'Paramètres' },
   { href: '/espace/sommaire', icone: Compass, etiquette: 'Sommaire' },
 ]
 

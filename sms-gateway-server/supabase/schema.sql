@@ -141,7 +141,7 @@ CREATE INDEX IF NOT EXISTS idx_reponse_application ON reponse (id_application);
 -- suppression définitive de la table (données de suivi périmées).
 DROP TABLE IF EXISTS liens;
 
--- File des notifications sortantes.
+-- File des notifications sortantes (Webhooks).
 CREATE TABLE IF NOT EXISTS notification (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   id_application uuid REFERENCES public.client(id),
@@ -150,11 +150,11 @@ CREATE TABLE IF NOT EXISTS notification (
   statut text NOT NULL DEFAULT 'EN_ATTENTE',
   tentatives integer NOT NULL DEFAULT 0,
   prochaine_tentative timestamptz NOT NULL DEFAULT now(),
-  dernier_code_http integer,
   date_creation timestamptz NOT NULL DEFAULT now(),
   date_maj timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT notification_pkey PRIMARY KEY (id)
 );
+ALTER TABLE public.notification DROP COLUMN IF EXISTS dernier_code_http;
 CREATE INDEX IF NOT EXISTS idx_notification_due
   ON notification (prochaine_tentative)
   WHERE statut = 'EN_ATTENTE';

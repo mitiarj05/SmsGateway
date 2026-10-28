@@ -5,8 +5,7 @@ import { compterEnvoisMois, moisActuel } from '@/lib/facturation'
 import { STATUT_TACHE } from '@/lib/statuts'
 
 /**
- * GET /api/espace/moi — profil + quota + mini-stats du client connecté.
- * Tout est filtré par id_application issu de la session (401 sinon).
+ * GET /api/espace/moi — profil (nom, email) + quota + mini-stats du client connecté.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -16,7 +15,7 @@ export async function GET(request: NextRequest) {
     }
     const { data: app } = await supabaseAdmin
       .from('client')
-      .select('id, nom, cle_api')
+      .select('id, nom, email, cle_api')
       .eq('id', idApplication)
       .single()
     if (!app) {
@@ -41,11 +40,45 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       id: app.id,
       nom: app.nom,
+      email: (app as { email?: string | null }).email ?? '',
       cle_api: (app as { cle_api: string }).cle_api,
       mois,
       utilise_mois: utiliseMois,
       stats: { envoyes, attente, echoue, recus },
     })
+  } catch {
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
+  }
+}
+
+/**
+ * PATCH /api/espace/moi — mise à jour du profil (nom, email).
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const idApplication = await resoudreApplicationEspace(request)
+    if (!idApplication) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
+    const corps = await request.json().catch(() => ({}))
+    const maj: Record<string, unknown> = {}
+    if (typeof corps.nom === 'string') maj.nom = corps.nom.trim()
+    if (typeof corps.email === 'string') maj.email = corps.email.trim()
+
+    if (Object.keys(maj).length === 0) {
+      return NextResponse.json({ error: 'Aucune donnée à mettre à jour' }, { status: 400 })
+    }
+
+    const { error } = await supabaseAdmin
+      .from('client')
+      .update(maj)
+      .eq('id', idApplication)
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ message: 'Profil mis à jour avec succès' })
   } catch {
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
   }
