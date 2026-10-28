@@ -10,7 +10,6 @@ interface Envoi {
   type_evenement: string
   statut: string
   tentatives: number
-  dernier_code_http: number | null
   date_creation: string
 }
 
@@ -359,7 +358,7 @@ export default function PageNotificationsEspace() {
                   <tr className="border-b border-[#1C1917]/10 text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:border-zinc-800">
                     <th className="pb-2.5 pr-4">ÉVÉNEMENT</th>
                     <th className="pb-2.5 pr-4">HEURE</th>
-                    <th className="pb-2.5 pr-4">CODE</th>
+                    <th className="pb-2.5 pr-4">STATUT</th>
                     <th className="pb-2.5 text-right">TENTATIVES</th>
                   </tr>
                 </thead>
@@ -380,7 +379,7 @@ export default function PageNotificationsEspace() {
                       <td className="py-3 pr-4">
                         {l.statut === 'ENVOYE' ? (
                           <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                            {l.dernier_code_http ?? 200}
+                            LIVRÉ
                           </span>
                         ) : (
                           <span className="rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">

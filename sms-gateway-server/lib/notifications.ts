@@ -155,7 +155,6 @@ export async function traiterNotificationsEnAttente(): Promise<{ envoyes: number
           .update({
             statut: 'ENVOYE',
             tentatives,
-            dernier_code_http: reponse.status,
             date_maj: new Date().toISOString(),
           })
           .eq('id', livraison.id)

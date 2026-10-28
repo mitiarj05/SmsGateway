@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
     const { data, error } = await supabaseAdmin
       .from('notification')
-      .select('id, type_evenement, statut, tentatives, dernier_code_http, date_creation')
+      .select('id, type_evenement, statut, tentatives, date_creation')
       .eq('id_application', idApplication)
       .order('date_creation', { ascending: false })
       .limit(20)

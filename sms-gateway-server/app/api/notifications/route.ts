@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       .from('notification')
       .select(
         'id, id_application, type_evenement, statut, tentatives, ' +
-        'dernier_code_http, prochaine_tentative, date_creation, applications(nom)'
+        'prochaine_tentative, date_creation, applications(nom)'
       )
       .order('date_creation', { ascending: false })
       .limit(limite)

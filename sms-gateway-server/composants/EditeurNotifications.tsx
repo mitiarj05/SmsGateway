@@ -17,7 +17,6 @@ interface Envoi {
   type_evenement: string
   statut: string
   tentatives: number
-  dernier_code_http: number | null
   date_creation: string
 }
 
@@ -175,7 +174,7 @@ export default function EditeurNotifications({ client, notifier, rafraichir }: {
               <RotateCcw className="h-3 w-3 shrink-0" />
               <span className="font-mono">{l.type_evenement}</span>
               <span className={l.statut === 'ENVOYE' ? 'text-emerald-600 dark:text-emerald-400' : l.statut === 'ECHOUE' ? 'text-red-500' : 'text-amber-600 dark:text-amber-400'}>
-                {l.statut}{l.dernier_code_http ? ` · ${l.dernier_code_http}` : ''} · essai {l.tentatives}
+                {l.statut} · essai {l.tentatives}
               </span>
               <span className="ml-auto">{new Date(l.date_creation).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
             </li>
