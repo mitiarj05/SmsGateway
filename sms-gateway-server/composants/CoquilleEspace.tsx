@@ -20,8 +20,8 @@ const NAVIGATION = [
   { href: '/espace/entrees', icone: Inbox, etiquette: 'SMS reçus' },
   { href: '/espace/notifications', icone: Webhook, etiquette: 'Intégrations' },
   { href: '/espace/facturation', icone: Receipt, etiquette: 'Facturation' },
-  { href: '/espace/parametres', icone: Settings, etiquette: 'Paramètres' },
   { href: '/espace/sommaire', icone: Compass, etiquette: 'Sommaire' },
+  { href: '/espace/parametres', icone: Settings, etiquette: 'Paramètres' },
 ]
 
 export default function CoquilleEspace({ children }: {
