@@ -18,7 +18,7 @@ const NAVIGATION = [
   { href: '/espace/envoyer', icone: Send, etiquette: 'Envoyer un SMS' },
   { href: '/espace/envois', icone: List, etiquette: 'Mes envois' },
   { href: '/espace/entrees', icone: Inbox, etiquette: 'SMS reçus' },
-  { href: '/espace/notifications', icone: Webhook, etiquette: 'Notifications' },
+  { href: '/espace/notifications', icone: Webhook, etiquette: 'Intégrations' },
   { href: '/espace/facturation', icone: Receipt, etiquette: 'Facturation' },
   { href: '/espace/sommaire', icone: Compass, etiquette: 'Sommaire' },
 ]

@@ -12,15 +12,15 @@ const ETAPES = [
     icone: KeyRound,
     titre: 'Créez votre espace',
     texte:
-      "Demandez l'accès, nous validons, vous vous connectez. Votre espace contient déjà votre clé API — c'est elle que votre site présentera pour envoyer des SMS — et votre section Notifications.",
-    puces: ['Clé API personnelle, déjà générée', 'Section Notifications avec bouton Tester'],
+      "Demandez l'accès, nous validons, vous vous connectez. Votre espace contient déjà votre clé API — c'est elle que votre site présentera pour envoyer des SMS — et votre section Intégrations.",
+    puces: ['Clé API personnelle, déjà générée', 'Section Intégrations avec bouton Tester'],
   },
   {
     numero: '02',
     icone: Download,
     titre: 'Téléchargez le récepteur',
     texte:
-      "Dans votre espace → Notifications → « Télécharger le récepteur ». Vous obtenez sms-recu.php, qui arrive déjà rempli : votre secret de signature est écrit dedans, vous n'avez jamais à le recopier ni même à le lire.",
+      "Dans votre espace → Intégrations → « Télécharger le récepteur ». Vous obtenez sms-recu.php, qui arrive déjà rempli : votre secret de signature est écrit dedans, vous n'avez jamais à le recopier ni même à le lire.",
     puces: ['Fichier PHP prêt pour n\u2019importe quel hébergement', 'Secret et réglages déjà inscrits dedans'],
   },
   {
@@ -28,7 +28,7 @@ const ETAPES = [
     icone: FileUp,
     titre: 'Déposez le fichier, copiez son adresse',
     texte:
-      'Téléversez le fichier sur votre hébergement, comme une image. Puis copiez son adresse complète — ex. https://votre-site.com/sms-recu.php — dans votre espace → Notifications → URL, et enregistrez.',
+      'Téléversez le fichier sur votre hébergement, comme une image. Puis copiez son adresse complète — ex. https://votre-site.com/sms-recu.php — dans votre espace → Intégrations → URL, et enregistrez.',
     puces: ['Votre seule copie : l\u2019adresse du fichier', 'Enregistrer, et c\u2019est branché'],
   },
   {
@@ -36,7 +36,7 @@ const ETAPES = [
     icone: FlaskConical,
     titre: 'Testez',
     texte:
-      'Cliquez « Tester le webhook » : le journal affiche « Livré » — la sonnette est branchée. Chaque SMS reçu par la passerelle arrive ensuite à votre fichier, dans la section « VOTRE ACTION », prête à remplir avec votre code (ex. marquer une commande payée).',
+      'Cliquez « Tester le lien » : le journal affiche « Livré » — la sonnette est branchée. Chaque SMS reçu par la passerelle arrive ensuite à votre fichier, dans la section « VOTRE ACTION », prête à remplir avec votre code (ex. marquer une commande payée).',
     puces: ['Test en un clic, journal des livraisons', 'Si le fichier fuit : re-téléchargez avec un nouveau secret'],
   },
 ]
@@ -158,7 +158,7 @@ if ($type === "sms.recu" && preg_match('/PAYE\\s*CMD[- ]?(\\d{3,6})/i', $contenu
             Le fichier est peut-être déjà à un clic ?
           </h2>
           <p className="mx-auto mt-3 max-w-md font-sans text-[13.5px] leading-relaxed text-stone-400">
-            Il vous attend dans votre espace, notifications déjà réglées.
+            Il vous attend dans votre espace, événements déjà réglés.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-4">
             <Link

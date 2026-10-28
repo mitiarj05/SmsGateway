@@ -214,10 +214,51 @@ ALTER TABLE appareil ADD COLUMN IF NOT EXISTS solde_sim TEXT;        -- montant 
 ALTER TABLE appareil ADD COLUMN IF NOT EXISTS solde_devise TEXT;     -- FCFA, €, DH…
 ALTER TABLE appareil ADD COLUMN IF NOT EXISTS solde_texte TEXT;      -- réponse brute de l'opérateur
 ALTER TABLE appareil ADD COLUMN IF NOT EXISTS solde_maj_le TIMESTAMPTZ;
-ALTER TABLE client ADD COLUMN IF NOT EXISTS url_notification text;
-ALTER TABLE client ADD COLUMN IF NOT EXISTS secret_notification text;
-ALTER TABLE client ADD COLUMN IF NOT EXISTS evenements_notification text[] NOT NULL DEFAULT '{sms.recu}';
-ALTER TABLE client ADD COLUMN IF NOT EXISTS notifications_actives boolean NOT NULL DEFAULT true;
+-- Colonnes d'intégration : ancien vocabulaire (…_notification) basculé vers le
+-- nouveau si la base vient d'une exécution antérieure. Données conservées.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'client' AND column_name = 'url_notification'
+  ) AND NOT EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'client' AND column_name = 'url_application'
+  ) THEN
+    ALTER TABLE client RENAME COLUMN url_notification TO url_application;
+  END IF;
+  IF EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'client' AND column_name = 'secret_notification'
+  ) AND NOT EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'client' AND column_name = 'secret_signature'
+  ) THEN
+    ALTER TABLE client RENAME COLUMN secret_notification TO secret_signature;
+  END IF;
+  IF EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'client' AND column_name = 'evenements_notification'
+  ) AND NOT EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'client' AND column_name = 'evenements_souscrits'
+  ) THEN
+    ALTER TABLE client RENAME COLUMN evenements_notification TO evenements_souscrits;
+  END IF;
+  IF EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'client' AND column_name = 'notifications_actives'
+  ) AND NOT EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'client' AND column_name = 'evenements_actifs'
+  ) THEN
+    ALTER TABLE client RENAME COLUMN notifications_actives TO evenements_actifs;
+  END IF;
+END $$;
+ALTER TABLE client ADD COLUMN IF NOT EXISTS url_application text;
+ALTER TABLE client ADD COLUMN IF NOT EXISTS secret_signature text;
+ALTER TABLE client ADD COLUMN IF NOT EXISTS evenements_souscrits text[] NOT NULL DEFAULT '{sms.recu}';
+ALTER TABLE client ADD COLUMN IF NOT EXISTS evenements_actifs boolean NOT NULL DEFAULT true;
 
 -- ---------- Colonnes retirées définitivement (forfait illimité) ----------
 -- quota_mensuel : jamais défini (toujours NULL) — ses UI admin/espaces sont

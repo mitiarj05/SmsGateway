@@ -5,7 +5,7 @@ import { EVENEMENTS_NOTIFICATION, fabriquerSecretNotification, enfilerNotificati
 
 /**
  * GET /api/espace/notifications — config webhooks du client (secret jamais exposé).
- * PATCH — { url_notification?, evenements_notification?, notifications_actives?,
+ * PATCH — { url_application?, evenements_souscrits?, evenements_actifs?,
  *   regenerer_secret?, tester? } (secret renvoyé une seule fois si régénéré).
  */
 export async function GET(request: NextRequest) {
@@ -16,13 +16,13 @@ export async function GET(request: NextRequest) {
     }
     const { data, error } = await supabaseAdmin
       .from('client')
-      .select('url_notification, evenements_notification, notifications_actives, secret_notification')
+      .select('url_application, evenements_souscrits, evenements_actifs, secret_signature')
       .eq('id', idApplication)
       .single()
     if (error || !data) {
       return NextResponse.json({ error: 'Client introuvable' }, { status: 404 })
     }
-    const { secret_notification: _masque, ...config } = data
+    const { secret_signature: _masque, ...config } = data
     return NextResponse.json({ ...config, secret_defini: !!_masque })
   } catch {
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
@@ -40,36 +40,36 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Corps JSON invalide' }, { status: 400 })
     }
     const maj: Record<string, unknown> = {}
-    if ('url_notification' in corps) {
-      const url = corps.url_notification
+    if ('url_application' in corps) {
+      const url = corps.url_application
       if (url !== null && (typeof url !== 'string' || !/^https:\/\/.+/.test(url.trim()))) {
         return NextResponse.json(
-          { error: 'Le champ "url_notification" doit être une URL HTTPS valide ou null' },
+          { error: 'Le champ "url_application" doit être une URL HTTPS valide ou null' },
           { status: 400 }
         )
       }
-      maj.url_notification = url === null ? null : (url as string).trim()
+      maj.url_application = url === null ? null : (url as string).trim()
     }
-    if ('evenements_notification' in corps) {
-      const liste = corps.evenements_notification
+    if ('evenements_souscrits' in corps) {
+      const liste = corps.evenements_souscrits
       if (!Array.isArray(liste) || !liste.every((e) => (EVENEMENTS_NOTIFICATION as readonly string[]).includes(e))) {
         return NextResponse.json(
           { error: `Événements acceptés : ${EVENEMENTS_NOTIFICATION.join(', ')}` },
           { status: 400 }
         )
       }
-      maj.evenements_notification = liste
+      maj.evenements_souscrits = liste
     }
-    if ('notifications_actives' in corps) {
-      if (typeof corps.notifications_actives !== 'boolean') {
-        return NextResponse.json({ error: 'Le champ "notifications_actives" doit être un booléen' }, { status: 400 })
+    if ('evenements_actifs' in corps) {
+      if (typeof corps.evenements_actifs !== 'boolean') {
+        return NextResponse.json({ error: 'Le champ "evenements_actifs" doit être un booléen' }, { status: 400 })
       }
-      maj.notifications_actives = corps.notifications_actives
+      maj.evenements_actifs = corps.evenements_actifs
     }
     let secretVisible: string | null = null
     if (corps.regenerer_secret === true) {
       secretVisible = fabriquerSecretNotification()
-      maj.secret_notification = secretVisible
+      maj.secret_signature = secretVisible
     }
     if (Object.keys(maj).length > 0) {
       const { error } = await supabaseAdmin
@@ -91,7 +91,7 @@ export async function PATCH(request: NextRequest) {
     }
     return NextResponse.json({
       message: 'Configuration enregistrée',
-      ...(secretVisible ? { secret_notification_visible: secretVisible } : {}),
+      ...(secretVisible ? { secret_signature_visible: secretVisible } : {}),
       ...(test ? { test } : {}),
     })
   } catch {

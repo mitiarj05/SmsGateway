@@ -6,9 +6,9 @@ import { Webhook, KeyRound, FlaskConical, RotateCcw } from 'lucide-react'
 export interface ClientNotification {
   id: string
   nom: string
-  url_notification: string | null
-  evenements_notification: string[]
-  notifications_actives: boolean
+  url_application: string | null
+  evenements_souscrits: string[]
+  evenements_actifs: boolean
   secret_defini: boolean
 }
 
@@ -31,9 +31,9 @@ export default function EditeurNotifications({ client, notifier, rafraichir }: {
   notifier: (type: 'succes' | 'erreur', texte: string) => void
   rafraichir: () => void
 }) {
-  const [url, setUrl] = useState(client.url_notification ?? '')
-  const [evenements, setEvenements] = useState<string[]>(client.evenements_notification ?? [])
-  const [actifs, setActifs] = useState(client.notifications_actives ?? true)
+  const [url, setUrl] = useState(client.url_application ?? '')
+  const [evenements, setEvenements] = useState<string[]>(client.evenements_souscrits ?? [])
+  const [actifs, setActifs] = useState(client.evenements_actifs ?? true)
   const [secretVisible, setSecretVisible] = useState<string | null>(null)
   const [resultatTest, setResultatTest] = useState<string | null>(null)
   const [envois, setEnvois] = useState<Envoi[]>([])
@@ -67,12 +67,12 @@ export default function EditeurNotifications({ client, notifier, rafraichir }: {
     setEnregistrement(true)
     try {
       const { reponse, donnees } = await appeler({
-        url_notification: url.trim() === '' ? null : url.trim(),
-        evenements_notification: evenements,
-        notifications_actives: actifs,
+        url_application: url.trim() === '' ? null : url.trim(),
+        evenements_souscrits: evenements,
+        evenements_actifs: actifs,
       })
       if (reponse.ok) {
-        if (donnees?.secret_notification_visible) setSecretVisible(donnees.secret_notification_visible)
+        if (donnees?.secret_signature_visible) setSecretVisible(donnees.secret_signature_visible)
         notifier('succes', 'Notifications enregistrées')
         rafraichir()
       } else {
@@ -89,8 +89,8 @@ export default function EditeurNotifications({ client, notifier, rafraichir }: {
     if (!confirm('Régénérer le secret ? L’ancien ne fonctionnera plus.')) return
     try {
       const { reponse, donnees } = await appeler({ regenerer_secret: true })
-      if (reponse.ok && donnees?.secret_notification_visible) {
-        setSecretVisible(donnees.secret_notification_visible)
+      if (reponse.ok && donnees?.secret_signature_visible) {
+        setSecretVisible(donnees.secret_signature_visible)
         notifier('succes', 'Nouveau secret généré — copiez-le maintenant')
       } else {
         notifier('erreur', donnees?.error ?? 'Erreur')
@@ -124,7 +124,7 @@ export default function EditeurNotifications({ client, notifier, rafraichir }: {
     <div className="mt-2 rounded-lg bg-zinc-50 p-3 dark:bg-zinc-800/60">
       <div className="mb-2 flex items-center gap-1.5">
         <Webhook className="h-3.5 w-3.5 text-zinc-400" />
-        <p className="text-xs font-bold text-zinc-700 dark:text-zinc-200">Notifications</p>
+        <p className="text-xs font-bold text-zinc-700 dark:text-zinc-200">Événements</p>
         {!actifs && url.trim() !== '' && (
           <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600 dark:bg-red-500/15 dark:text-red-400">COUPÉS</span>
         )}

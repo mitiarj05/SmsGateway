@@ -70,7 +70,7 @@ export default function PageEntreesEspace() {
     charger(true)
     fetch('/api/espace/notifications')
       .then((r) => r.json())
-      .then((d) => setUrlWebhook(typeof d.url_notification === 'string' && d.url_notification ? d.url_notification : null))
+      .then((d) => setUrlWebhook(typeof d.url_application === 'string' && d.url_application ? d.url_application : null))
       .catch(() => setUrlWebhook(null))
   }, [charger])
 
@@ -129,7 +129,7 @@ export default function PageEntreesEspace() {
           onClick={() => {}}
           className="inline-flex items-center gap-2 rounded-full border border-[#1C1917]/10 bg-white px-5 py-2.5 text-[13px] font-semibold text-stone-700 shadow-sm hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 transition"
         >
-          <Settings className="h-4 w-4" /> Configurer le webhook
+          <Settings className="h-4 w-4" /> Configurer dans Intégrations
         </button>
       </div>
 
@@ -213,7 +213,7 @@ export default function PageEntreesEspace() {
                   <div className="flex flex-col items-end gap-2 shrink-0">
                     {estTransmis ? (
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Transmis au webhook
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Transmis au site
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
@@ -243,7 +243,7 @@ export default function PageEntreesEspace() {
             <h3 className="text-sm font-bold text-[#1C1917] dark:text-white">Répartition</h3>
             <div className="space-y-2 text-xs divide-y divide-[#1C1917]/10 dark:divide-zinc-800">
               <div className="flex items-center justify-between pt-1">
-                <span className="text-stone-600">Transmis au webhook</span>
+                <span className="text-stone-600">Transmis au site</span>
                 <span className="font-bold text-[#1C1917] dark:text-zinc-200">{transmisCount}</span>
               </div>
               <div className="flex items-center justify-between pt-2">
@@ -257,11 +257,11 @@ export default function PageEntreesEspace() {
             </div>
           </div>
 
-          {/* Card 2 : Webhook actif (#EEF2F6 background) */}
+          {/* Card 2 : Liaison active (#EEF2F6 background) */}
           <div className="rounded-[1.5rem] border border-blue-100 bg-[#f6f5ff] p-6 shadow-sm dark:bg-blue-500/10 dark:border-blue-500/20 space-y-3">
             <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold text-xs">
               <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-500/20 text-xs">⚡</span>
-              Webhook actif
+              Liaison active
             </div>
             <p className="text-xs text-stone-600 dark:text-zinc-300 leading-relaxed">
               Vos réponses sont transmises en POST à <code className="font-mono font-semibold text-[#1C1917] dark:text-zinc-100 text-[11px]">{urlWebhook ?? '—'}</code>

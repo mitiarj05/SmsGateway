@@ -45,13 +45,13 @@ export default function PageNotificationsEspace() {
         fetch('/api/espace/journal'),
       ])
       const config = await reponseConfig.json()
-      if (config.url_notification !== undefined) {
-        if (config.url_notification) {
-          setUrl(config.url_notification)
-          setBoutiqueConnectee(config.url_notification.includes('/wp-json/smsika/v1/webhook'))
+      if (config.url_application !== undefined) {
+        if (config.url_application) {
+          setUrl(config.url_application)
+          setBoutiqueConnectee(config.url_application.includes('/wp-json/smsika/v1/webhook'))
         }
-        if (Array.isArray(config.evenements_notification)) setEvenements(config.evenements_notification)
-        if (typeof config.notifications_actives === 'boolean') setActifs(config.notifications_actives)
+        if (Array.isArray(config.evenements_souscrits)) setEvenements(config.evenements_souscrits)
+        if (typeof config.evenements_actifs === 'boolean') setActifs(config.evenements_actifs)
       }
       const journal = await reponseJournal.json().catch(() => ({}))
       if (Array.isArray(journal.envois)) setEnvois(journal.envois)
@@ -69,9 +69,9 @@ export default function PageNotificationsEspace() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          url_notification: url.trim() === '' ? null : url.trim(),
-          evenements_notification: evenements,
-          notifications_actives: actifs,
+          url_application: url.trim() === '' ? null : url.trim(),
+          evenements_souscrits: evenements,
+          evenements_actifs: actifs,
         }),
       })
       if (reponse.ok) {
@@ -110,8 +110,8 @@ export default function PageNotificationsEspace() {
         body: JSON.stringify({ storeUrl: urlBoutique.trim(), platform: plateformeChoisie }),
       })
       const donnees = await reponse.json().catch(() => ({}))
-      if (reponse.ok && donnees.url_notification) {
-        setUrl(donnees.url_notification)
+      if (reponse.ok && donnees.url_application) {
+        setUrl(donnees.url_application)
         setBoutiqueConnectee(true)
         afficherNotification('succes', donnees.message ?? 'Boutique connectée en 1 Clic !')
         chargerDonnees()
@@ -158,9 +158,9 @@ export default function PageNotificationsEspace() {
       {/* En-tête (Exact Screenshot) */}
       <div className="mb-6 flex items-end justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Connexion Boutique & Webhooks</h1>
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Connexion de votre boutique</h1>
           <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
-            Reliez votre site marchand en 1 clic ou configurez votre URL de Webhook personnalisée.
+            Reliez votre site marchand en 1 clic ou configurez le lien de votre application.
           </p>
         </div>
       </div>
@@ -232,17 +232,17 @@ export default function PageNotificationsEspace() {
             </div>
           </div>
 
-          {/* Card 2 : Configuration Manuelle Webhook HTTP POST */}
+          {/* Card 2 : Configuration manuelle du lien */}
           <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-5">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
                 <Webhook className="h-4 w-4" />
               </div>
-              <h2 className="text-sm font-bold text-[#1C1917] dark:text-white">Configuration Manuelle Webhook HTTP POST</h2>
+              <h2 className="text-sm font-bold text-[#1C1917] dark:text-white">Configuration manuelle du lien</h2>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-stone-700 dark:text-zinc-300">URL de Webhook personnalisée</label>
+              <label className="block text-xs font-semibold text-stone-700 dark:text-zinc-300">Lien de votre application</label>
               <div className="flex gap-2">
                 <input
                   type="url"
@@ -284,7 +284,7 @@ export default function PageNotificationsEspace() {
                 onChange={(e) => setActifs(e.target.checked)}
                 className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
               />
-              <span>Notifications actives</span>
+              <span>Événements actifs</span>
             </label>
 
             {resultatTest && (
@@ -298,7 +298,7 @@ export default function PageNotificationsEspace() {
                 <Download className="h-3.5 w-3.5" /> Télécharger le récepteur
               </a>
               <button onClick={tester} className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 px-4 py-2 text-xs font-semibold text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:text-zinc-300">
-                <FlaskConical className="h-3.5 w-3.5" /> Tester le webhook
+                <FlaskConical className="h-3.5 w-3.5" /> Tester le lien
               </button>
             </div>
             <p className="text-[11px] leading-relaxed text-stone-500 dark:text-zinc-400">
@@ -318,10 +318,10 @@ export default function PageNotificationsEspace() {
             </a>
           </div>
 
-          {/* Card 3 : Dernières livraisons webhook */}
+          {/* Card 3 : Dernières livraisons d'événements */}
           <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
             <div className="flex items-center justify-between border-b border-[#1C1917]/10 pb-3 dark:border-zinc-800">
-              <h2 className="text-sm font-bold text-[#1C1917] dark:text-white">Dernières livraisons webhook</h2>
+              <h2 className="text-sm font-bold text-[#1C1917] dark:text-white">Dernières livraisons d'événements</h2>
               {envois.length > 0 && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -386,8 +386,8 @@ export default function PageNotificationsEspace() {
             </div>
             <p className="leading-relaxed text-stone-600 dark:text-zinc-400">
               {boutiqueConnectee
-                ? `Votre boutique est reliée : les notifications partent vers ${url || 'votre webhook'}.`
-                : 'Aucune boutique reliée pour le moment. Connectez WooCommerce, Shopify ou PrestaShop pour recevoir vos notifications.'}
+                ? `Votre boutique est reliée : les événements sont envoyés vers ${url || 'votre lien'}.`
+                : 'Aucune boutique reliée pour le moment. Connectez WooCommerce, Shopify ou PrestaShop pour recevoir vos événements.'}
             </p>
           </div>
 

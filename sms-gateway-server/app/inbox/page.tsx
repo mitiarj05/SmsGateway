@@ -148,7 +148,7 @@ export default function PageBoiteReception() {
         </div>
         <div className="px-6">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
-            Transmis au webhook
+            Transmis au site
           </p>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{chargement ? '…' : nbTransmis}</span>
@@ -238,7 +238,7 @@ export default function PageBoiteReception() {
               <div className="flex shrink-0 flex-col items-end gap-2">
                 {m.transmis ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10.5px] font-bold text-emerald-600 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300">
-                    <Check className="h-3 w-3 stroke-[3]" /> Webhook transmis
+                    <Check className="h-3 w-3 stroke-[3]" /> Transmis au site
                   </span>
                 ) : (
                   <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10.5px] font-bold text-amber-600 border border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-300">
@@ -263,7 +263,7 @@ export default function PageBoiteReception() {
         </div>
         <div className="flex items-center justify-between border-t border-[#1C1917]/10 bg-stone-100 px-6 py-3 text-[11px] text-stone-500 dark:border-zinc-800 dark:bg-zinc-800/40">
           <span>{visibles.length} message{visibles.length > 1 ? 's' : ''} · Tous les résultats sont affichés</span>
-          <span>Transmission au webhook : {nbTransmis}/{messages.length}</span>
+          <span>Transmission au site : {nbTransmis}/{messages.length}</span>
         </div>
       </div>
     </CoquilleTableauDeBord>

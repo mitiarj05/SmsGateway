@@ -134,7 +134,7 @@ export default function PageFacturationEspace() {
         <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">SMS REÇUS</p>
           <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{recus}</p>
-          <p className="text-[11.5px] text-stone-500">Transmis au webhook</p>
+          <p className="text-[11.5px] text-stone-500">Transmis au site</p>
         </div>
 
         <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">

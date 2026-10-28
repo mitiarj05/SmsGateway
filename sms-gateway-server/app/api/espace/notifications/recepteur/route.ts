@@ -29,8 +29,8 @@ function fabriquerRecepteurPhp(nomApplication: string, urlConnue: string | null,
  * Les trois gestes :
  *   1. Déposez ce fichier sur votre hébergement (ex. racine du site).
  *   2. Copiez l'adresse complète du fichier, ex. https://votre-site.com/sms-recu.php,
- *      dans votre espace SMSTSIKA → Notifications → URL.
- *   3. Cliquez « Tester le webhook ». Si la livraison affiche « ENVOYE », la sonnette est branchée.
+ *      dans votre espace SMSTSIKA → Intégrations → URL.
+ *   3. Cliquez « Tester le lien ». Si la livraison affiche « ENVOYE », la sonnette est branchée.
  *
  * ${conseilUrl}
  *   (si vous déposez le fichier ailleurs, changez simplement l'adresse déclarée.)
@@ -86,31 +86,31 @@ export async function GET(request: NextRequest) {
     }
     const { data, error } = await supabaseAdmin
       .from('client')
-      .select('nom, url_notification, secret_notification')
+      .select('nom, url_application, secret_signature')
       .eq('id', idApplication)
       .single()
     if (error || !data) {
       return NextResponse.json({ error: 'Client introuvable' }, { status: 404 })
     }
-    const fiche = data as { nom: string; url_notification: string | null; secret_notification: string | null }
+    const fiche = data as { nom: string; url_application: string | null; secret_signature: string | null }
 
     // Secret assuré : s'il n'existe pas encore — ou si l'on demande une
     // rotation (« ?nouveau=1 », le cas d'une fuite) — on le fabrique une fois
     // pour toutes (le serveur signera tous les webhooks avec ce même secret).
     const serrureFuiee = new URL(request.url).searchParams.get('nouveau') === '1'
-    let secret = serrureFuiee ? null : fiche.secret_notification ?? null
+    let secret = serrureFuiee ? null : fiche.secret_signature ?? null
     if (!secret) {
       secret = fabriquerSecretNotification()
       const { error: erreurSecret } = await supabaseAdmin
         .from('client')
-        .update({ secret_notification: secret })
+        .update({ secret_signature: secret })
         .eq('id', idApplication)
       if (erreurSecret) {
         return NextResponse.json({ error: erreurSecret.message }, { status: 500 })
       }
     }
 
-    const fichier = fabriquerRecepteurPhp(fiche.nom, fiche.url_notification, secret)
+    const fichier = fabriquerRecepteurPhp(fiche.nom, fiche.url_application, secret)
     return new NextResponse(fichier, {
       status: 200,
       headers: {

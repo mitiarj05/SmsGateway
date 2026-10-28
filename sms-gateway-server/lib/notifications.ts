@@ -29,10 +29,10 @@ export function signerNotification(secret: string, corpsBrut: string): string {
 
 interface ApplicationNotification {
   id: string
-  url_notification: string | null
-  secret_notification: string | null
-  evenements_notification: string[] | null
-  notifications_actives: boolean | null
+  url_application: string | null
+  secret_signature: string | null
+  evenements_souscrits: string[] | null
+  evenements_actifs: boolean | null
 }
 
 /**
@@ -48,16 +48,16 @@ export async function enfilerNotification(
   if (!idApplication) return null
   const { data: app } = await supabaseAdmin
     .from('client')
-    .select('id, url_notification, secret_notification, evenements_notification, notifications_actives')
+    .select('id, url_application, secret_signature, evenements_souscrits, evenements_actifs')
     .eq('id', idApplication)
     .single()
   const application = app as ApplicationNotification | null
   if (
     !application ||
-    application.notifications_actives === false ||
-    !application.url_notification ||
-    !application.secret_notification ||
-    !(application.evenements_notification ?? []).includes(type)
+    application.evenements_actifs === false ||
+    !application.url_application ||
+    !application.secret_signature ||
+    !(application.evenements_souscrits ?? []).includes(type)
   ) {
     return null
   }
@@ -114,12 +114,12 @@ export async function traiterNotificationsEnAttente(): Promise<{ envoyes: number
   for (const livraison of dues ?? []) {
     const { data: app } = await supabaseAdmin
       .from('client')
-      .select('url_notification, secret_notification, notifications_actives')
+      .select('url_application, secret_signature, evenements_actifs')
       .eq('id', livraison.id_application)
       .single()
-    const url = (app as { url_notification: string | null } | null)?.url_notification
-    const secret = (app as { secret_notification: string | null } | null)?.secret_notification
-    const actifs = (app as { notifications_actives: boolean | null } | null)?.notifications_actives !== false
+    const url = (app as { url_application: string | null } | null)?.url_application
+    const secret = (app as { secret_signature: string | null } | null)?.secret_signature
+    const actifs = (app as { evenements_actifs: boolean | null } | null)?.evenements_actifs !== false
     const tentatives = (livraison.tentatives ?? 0) + 1
     if (!url || !secret || !actifs) {
       await supabaseAdmin
@@ -199,7 +199,7 @@ async function couperNotificationsSiEnPanne(idApplication: string) {
   if ((count ?? 0) >= 20) {
     await supabaseAdmin
       .from('client')
-      .update({ notifications_actives: false })
+      .update({ evenements_actifs: false })
       .eq('id', idApplication)
     console.warn(`notifications coupées pour ${idApplication} (URL durablement en panne)`)
   }

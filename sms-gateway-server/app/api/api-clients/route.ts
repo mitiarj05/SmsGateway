@@ -5,18 +5,18 @@ import { supabaseAdmin } from '@/lib/supabase-serveur'
 /** Contrat JSON inchangé : created_at mappé depuis date_creation. */
 const versContrat = (c: {
   id: string; nom: string; cle_api: string; date_creation: string
-  url_notification?: string | null; secret_notification?: string | null
-  evenements_notification?: string[] | null; notifications_actives?: boolean | null
+  url_application?: string | null; secret_signature?: string | null
+  evenements_souscrits?: string[] | null; evenements_actifs?: boolean | null
   suspendu?: boolean | null
 }) => ({
   id: c.id,
   nom: c.nom,
   cle_api: c.cle_api,
   created_at: c.date_creation,
-  url_notification: c.url_notification ?? null,
-  evenements_notification: c.evenements_notification ?? [],
-  notifications_actives: c.notifications_actives ?? true,
-  secret_defini: !!c.secret_notification,
+  url_application: c.url_application ?? null,
+  evenements_souscrits: c.evenements_souscrits ?? [],
+  evenements_actifs: c.evenements_actifs ?? true,
+  secret_defini: !!c.secret_signature,
   suspendu: c.suspendu === true,
 })
 
@@ -26,14 +26,14 @@ export async function GET() {
     let lignes: any[] | null = null
     const { data, error } = await supabaseAdmin
       .from('client')
-      .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives, suspendu')
+      .select('id, nom, cle_api, date_creation, url_application, secret_signature, evenements_souscrits, evenements_actifs, suspendu')
       .order('date_creation', { ascending: false })
     if (error) {
       // Pré-migration (colonne suspendu absente) : repli sans la colonne.
       if (/suspendu/i.test(error.message)) {
         const repli = await supabaseAdmin
           .from('client')
-          .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives')
+          .select('id, nom, cle_api, date_creation, url_application, secret_signature, evenements_souscrits, evenements_actifs')
           .order('date_creation', { ascending: false })
         if (repli.error) {
           return NextResponse.json({ error: repli.error.message }, { status: 500 })
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabaseAdmin
       .from('client')
       .insert({ nom: nom.trim(), cle_api, ...(emailBrut ? { email: emailBrut } : {}) })
-      .select('id, nom, cle_api, date_creation, url_notification, secret_notification, evenements_notification, notifications_actives')
+      .select('id, nom, cle_api, date_creation, url_application, secret_signature, evenements_souscrits, evenements_actifs')
       .single()
 
     if (error) {

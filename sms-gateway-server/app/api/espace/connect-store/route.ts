@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     const { data: client, error } = await supabaseAdmin
       .from('client')
-      .select('id, secret_notification')
+      .select('id, secret_signature')
       .eq('id', idApplication)
       .single()
     if (error || !client) {
@@ -40,11 +40,11 @@ export async function POST(request: NextRequest) {
 
     // Garantit un secret de signature (renvoyé une seule fois si créé ici).
     let secretVisible: string | null = null
-    if (!client.secret_notification) {
+    if (!client.secret_signature) {
       secretVisible = fabriquerSecretNotification()
       const { error: erreurSecret } = await supabaseAdmin
         .from('client')
-        .update({ secret_notification: secretVisible })
+        .update({ secret_signature: secretVisible })
         .eq('id', idApplication)
       if (erreurSecret) {
         return NextResponse.json({ error: erreurSecret.message }, { status: 500 })
@@ -68,9 +68,9 @@ export async function POST(request: NextRequest) {
     const { error: erreurWebhook } = await supabaseAdmin
       .from('client')
       .update({
-        url_notification: urlNotification,
-        notifications_actives: true,
-        evenements_notification: [...EVENEMENTS_NOTIFICATION],
+        url_application: urlNotification,
+        evenements_actifs: true,
+        evenements_souscrits: [...EVENEMENTS_NOTIFICATION],
       })
       .eq('id', idApplication)
     if (erreurWebhook) {
@@ -82,8 +82,8 @@ export async function POST(request: NextRequest) {
       url_boutique: urlNettoyee,
       plateforme,
       connectivite_ok: connectiviteOk,
-      url_notification: urlNotification,
-      ...(secretVisible ? { secret_notification_visible: secretVisible } : {}),
+      url_application: urlNotification,
+      ...(secretVisible ? { secret_signature_visible: secretVisible } : {}),
     })
   } catch {
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
