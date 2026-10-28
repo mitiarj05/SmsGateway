@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Webhook, FlaskConical, Loader2, Zap, CheckCircle2, ArrowUpRight, Download } from 'lucide-react'
+import { Webhook, FlaskConical, Loader2, Zap, CheckCircle2, ArrowUpRight, Download, SlidersHorizontal } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import { Toast } from '../../../composants/interface'
 
@@ -31,6 +31,7 @@ export default function PageNotificationsEspace() {
   const [urlBoutique, setUrlBoutique] = useState('')
   const [plateformeChoisie, setPlateformeChoisie] = useState('WooCommerce')
   const [connexionEnCours, setConnexionEnCours] = useState(false)
+  const [onglet, setOnglet] = useState<'boutique' | 'avancee'>('boutique')
   const [boutiqueConnectee, setBoutiqueConnectee] = useState(false)
 
   function afficherNotification(type: 'succes' | 'erreur', texte: string) {
@@ -48,7 +49,7 @@ export default function PageNotificationsEspace() {
       if (config.url_application !== undefined) {
         if (config.url_application) {
           setUrl(config.url_application)
-          setBoutiqueConnectee(config.url_application.includes('/wp-json/smsika/v1/webhook'))
+          setBoutiqueConnectee(true)
         }
         if (Array.isArray(config.evenements_souscrits)) setEvenements(config.evenements_souscrits)
         if (typeof config.evenements_actifs === 'boolean') setActifs(config.evenements_actifs)
@@ -171,7 +172,26 @@ export default function PageNotificationsEspace() {
         {/* Left Column (2 cols) */}
         <div className="xl:col-span-2 space-y-4">
 
+          {/* Sous-menu : Boutique | Configuration avancée */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setOnglet('boutique')}
+              aria-pressed={onglet === 'boutique'}
+              className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition ${onglet === 'boutique' ? 'bg-[#1C1917] text-white shadow-md dark:bg-white dark:text-zinc-900' : 'border border-[#1C1917]/10 bg-white text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300'}`}
+            >
+              <Zap className="h-3.5 w-3.5" /> Boutique
+            </button>
+            <button
+              onClick={() => setOnglet('avancee')}
+              aria-pressed={onglet === 'avancee'}
+              className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition ${onglet === 'avancee' ? 'bg-[#1C1917] text-white shadow-md dark:bg-white dark:text-zinc-900' : 'border border-[#1C1917]/10 bg-white text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300'}`}
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" /> Configuration avancée
+            </button>
+          </div>
+
           {/* Card 1 : Connexion Boutique en 1 clic — comme la carte « Besoin d'aide » (navy #1F1A52) */}
+          {onglet === 'boutique' && (
           <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -231,8 +251,10 @@ export default function PageNotificationsEspace() {
               </div>
             </div>
           </div>
+          )}
 
-          {/* Card 2 : Configuration manuelle du lien */}
+          {/* Card 2 : Configuration manuelle du lien — sous-menu Configuration avancée */}
+          {onglet === 'avancee' && (
           <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-5">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
@@ -317,6 +339,7 @@ export default function PageNotificationsEspace() {
               Fuite ? Télécharger le récepteur avec un nouveau secret
             </a>
           </div>
+          )}
 
           {/* Card 3 : Dernières livraisons d'événements */}
           <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
