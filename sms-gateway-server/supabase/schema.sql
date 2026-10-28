@@ -198,6 +198,11 @@ ALTER TABLE appareil ADD COLUMN IF NOT EXISTS uid_firebase TEXT UNIQUE;
 ALTER TABLE appareil ADD COLUMN IF NOT EXISTS id_application uuid REFERENCES public.client(id);
 ALTER TABLE tache ADD COLUMN IF NOT EXISTS programme_a TIMESTAMPTZ;
 
+-- Miroir du statut de livraison webhook sur la reponse (les bases réelles
+-- qui précèdent le schéma consolidé n'ont pas encore ces colonnes).
+ALTER TABLE reponse ADD COLUMN IF NOT EXISTS statut_notification text NOT NULL DEFAULT 'EN_ATTENTE';
+ALTER TABLE reponse ADD COLUMN IF NOT EXISTS tentatives_notification integer NOT NULL DEFAULT 0;
+
 -- Accusés de réception réseau (DLR) : suivi SÉPARÉ du statut d'envoi.
 -- statut_message reste la vérité de l'envoi (ENVOYE / ECHOUE) : facturation,
 -- quotas et statistiques s'appuient dessus. Ces colonnes disent seulement ce
