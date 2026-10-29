@@ -17,7 +17,11 @@ export async function GET(request: NextRequest) {
   const base = `${urlRequete.protocol}//${urlRequete.host}`
   const finalite = urlRequete.searchParams.get('finalite')
   const versEchec =
-    finalite === 'connexion' ? `${base}/login?google=erreur` : `${base}/demande-acces?google=erreur`
+    finalite === 'connexion'
+      ? `${base}/login?google=erreur`
+      : finalite === 'inscription'
+        ? `${base}/inscription?google=erreur`
+        : `${base}/demande-acces?google=erreur`
 
   const code = urlRequete.searchParams.get('code')
   if (!code) return NextResponse.redirect(versEchec)

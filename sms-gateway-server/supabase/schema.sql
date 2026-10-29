@@ -170,6 +170,20 @@ CREATE TABLE IF NOT EXISTS facturation (
   CONSTRAINT facturation_unique_mois UNIQUE (id_application, mois)
 );
 
+-- Codes de vérification d'inscription (e-mail à 6 chiffres, 15 min de validité).
+CREATE TABLE IF NOT EXISTS codes_verification (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  email text NOT NULL,
+  code text NOT NULL,
+  user_id uuid NOT NULL,
+  nom text NOT NULL DEFAULT '',
+  expire_le timestamptz NOT NULL,
+  tentatives integer NOT NULL DEFAULT 0,
+  date_creation timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT codes_verification_pkey PRIMARY KEY (id)
+);
+CREATE INDEX IF NOT EXISTS idx_codes_verification_email ON codes_verification (email);
+
 -- Fonctionnalité Automatismes supprimée du code : nettoyage définitif.
 DROP TABLE IF EXISTS blocages;
 DROP TABLE IF EXISTS automatismes;
@@ -280,7 +294,7 @@ DO $$
 DECLARE
   t text;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['client', 'appareil', 'tache', 'reponse', 'evenement']
+  FOREACH t IN ARRAY ARRAY['client', 'appareil', 'tache', 'reponse', 'evenement', 'codes_verification']
   LOOP
     IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = t) THEN
       EXECUTE format('alter table %I enable row level security', t);
