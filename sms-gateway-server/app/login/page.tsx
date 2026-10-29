@@ -360,7 +360,7 @@ export default function PageConnexion() {
 
             <div className="text-center text-xs text-stone-500">
               Pas encore de compte ?{' '}
-              <Link href="/demande-acces" className="font-bold text-[#1D4ED8] hover:underline">
+              <Link href="/inscription" className="font-bold text-[#1D4ED8] hover:underline">
                 S'inscrire
               </Link>
             </div>
