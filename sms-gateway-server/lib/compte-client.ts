@@ -54,50 +54,6 @@ export async function obtenirOuCreerApplication(
     return { applicationId: id, cree: false }
   }
 
-  const { data: demandes } = await supabaseAdmin
-    .from('demande')
-    .select('id, nom, statut')
-    .ilike('contact', courriel)
-    .order('date_creation', { ascending: false })
-    .limit(1)
-  const demande = demandes?.[0] as { id: string; nom: string; statut: string } | undefined
-
-  if (demande && (demande.statut === 'VALIDEE' || demande.statut === 'EN_ATTENTE')) {
-    const { data: apps } = await supabaseAdmin
-      .from('client')
-      .select('id')
-      .eq('nom', demande.nom)
-      .order('date_creation', { ascending: false })
-      .limit(1)
-    if (apps?.[0]) {
-      await supabaseAdmin
-        .from('client')
-        .update({ user_id: userId, email: courriel })
-        .eq('id', apps[0].id)
-      if (demande.statut !== 'VALIDEE') {
-        await supabaseAdmin
-          .from('demande')
-          .update({ statut: 'VALIDEE', date_traitement: new Date().toISOString() })
-          .eq('id', demande.id)
-      }
-      await refuserSiSuspendu(apps[0].id as string)
-      return { applicationId: apps[0].id as string, cree: false }
-    }
-    const cleAttente = `cle_${randomBytes(16).toString('hex')}`
-    const { data: provisionnee } = await supabaseAdmin
-      .from('client')
-      .insert({ nom: demande.nom, cle_api: cleAttente, user_id: userId, email: courriel })
-      .select('id')
-      .single()
-    if (provisionnee) {
-      await supabaseAdmin
-        .from('demande')
-        .update({ statut: 'VALIDEE', date_traitement: new Date().toISOString() })
-        .eq('id', demande.id)
-      return { applicationId: provisionnee.id as string, cree: true }
-    }
-  }
-
   const cle = `cle_${randomBytes(16).toString('hex')}`
   const { data: nouvelle, error } = await supabaseAdmin
     .from('client')
@@ -148,31 +104,6 @@ export async function obtenirOuCreerParFirebase(
       await supabaseAdmin.from('client').update({ firebase_uid: firebaseUid }).eq('id', id)
       await refuserSiSuspendu(id)
       return { applicationId: id, cree: false }
-    }
-    const { data: demandes } = await supabaseAdmin
-      .from('demande')
-      .select('id, nom, statut')
-      .ilike('contact', courriel)
-      .eq('statut', 'VALIDEE')
-      .order('date_creation', { ascending: false })
-      .limit(1)
-    const demande = demandes?.[0] as { id: string; nom: string; statut: string } | undefined
-    if (demande) {
-      const { data: apps } = await supabaseAdmin
-        .from('client')
-        .select('id')
-        .eq('nom', demande.nom)
-        .order('date_creation', { ascending: false })
-        .limit(1)
-      if (apps?.[0]) {
-        const id = (apps[0] as { id: string }).id
-        await supabaseAdmin
-          .from('client')
-          .update({ firebase_uid: firebaseUid, email: courriel })
-          .eq('id', id)
-        await refuserSiSuspendu(id)
-        return { applicationId: id, cree: false }
-      }
     }
   }
 

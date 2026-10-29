@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import {
-  ChevronDown, Trash2, Check, Copy, Loader2, Eye, EyeOff, ShieldCheck, CheckCircle2, UserPlus, Lock, Plus
+  ChevronDown, Trash2, Check, Copy, Loader2, Eye, EyeOff, ShieldCheck, CheckCircle2, Lock, Plus
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 import { Toast } from '../../composants/interface'
@@ -53,7 +53,6 @@ export default function PageParametres() {
   const [revelationEnCours, setRevelationEnCours] = useState<string | null>(null)
   const [emailTest, setEmailTest] = useState('')
   const [envoiEmailEnCours, setEnvoiEmailEnCours] = useState(false)
-  const [demandes, setDemandes] = useState<{ id: string; nom: string; contact: string; usage_prevu: string }[]>([])
 
   function afficherNotification(type: 'succes' | 'erreur', texte: string) {
     setNotification({ type, texte })
@@ -62,11 +61,10 @@ export default function PageParametres() {
 
   async function charger() {
     try {
-      const [resParams, resClients, resSante, resDemandes] = await Promise.all([
+      const [resParams, resClients, resSante] = await Promise.all([
         fetch('/api/settings'),
         fetch('/api/api-clients'),
         fetch('/api/health'),
-        fetch('/api/demandes?statut=EN_ATTENTE'),
       ])
       if (resParams.ok) {
         const d = await resParams.json().catch(() => ({}))
@@ -78,8 +76,6 @@ export default function PageParametres() {
       if (Array.isArray(dCli.clients)) setClients(dCli.clients)
       const dSante = await resSante.json().catch(() => ({}))
       if (dSante?.status) setSante(dSante)
-      const dDem = await resDemandes.json().catch(() => ({}))
-      if (Array.isArray(dDem.demandes)) setDemandes(dDem.demandes)
     } catch { /* silencieux */ }
   }
 
@@ -198,21 +194,6 @@ export default function PageParametres() {
       afficherNotification('erreur', 'Erreur réseau')
     } finally {
       setEnvoiEmailEnCours(false)
-    }
-  }
-
-  async function traiterDemande(id: string, action: 'valider' | 'refuser') {    try {
-      const res = await fetch(`/api/demandes/${id}/${action}`, { method: 'POST' })
-      const data = await res.json().catch(() => ({}))
-      if (res.ok) {
-        if (action === 'valider' && data.client?.cle_api) setCleCreee(data.client.cle_api)
-        afficherNotification('succes', data.message ?? 'Demande traitée')
-        await charger()
-      } else {
-        afficherNotification('erreur', data.error ?? 'Traitement impossible')
-      }
-    } catch {
-      afficherNotification('erreur', 'Erreur réseau')
     }
   }
 
@@ -457,44 +438,6 @@ export default function PageParametres() {
                 <span className="text-[11px] text-white/55">{sante ? `v${sante.version}` : '…'}</span>
               </div>
             </div>
-          </div>
-
-          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800">
-            <p className="text-[13.5px] font-bold text-[#1C1917] dark:text-white">
-              Demandes d'accès
-            </p>
-            <p className="mt-0.5 text-[11px] text-stone-500">
-              Validation des nouveaux accès clients
-            </p>
-            {demandes.length === 0 ? (
-              <div className="flex flex-col items-center py-8 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1C1917]/[0.04] text-stone-500 dark:bg-zinc-800">
-                  <UserPlus className="h-5 w-5" />
-                </div>
-                <p className="mt-3 text-[12px] text-stone-600 dark:text-zinc-400">
-                  Aucune demande en attente
-                </p>
-              </div>
-            ) : (
-              <div className="mt-4 space-y-3">
-                {demandes.map((d) => (
-                  <div key={d.id} className="rounded-xl border border-[#1C1917]/10 bg-stone-100 p-3 dark:border-zinc-700 dark:bg-zinc-800/60">
-                    <p className="text-xs font-bold text-[#1C1917] dark:text-zinc-100">{d.nom}</p>
-                    <p className="mt-0.5 truncate text-[11px] text-stone-500">{d.contact} · {d.usage_prevu}</p>
-                    <div className="mt-2 flex gap-2">
-                      <button onClick={() => traiterDemande(d.id, 'valider')}
-                        className="survol-brillance rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-emerald-700">
-                        Valider
-                      </button>
-                      <button onClick={() => traiterDemande(d.id, 'refuser')}
-                        className="rounded-lg border border-[#1C1917]/10 px-2.5 py-1 text-[11px] font-semibold text-stone-600 hover:bg-[#1C1917]/[0.04] dark:border-zinc-700 dark:text-zinc-300">
-                        Refuser
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800">

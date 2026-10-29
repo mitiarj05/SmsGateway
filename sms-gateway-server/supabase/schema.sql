@@ -2,7 +2,7 @@
 -- SMSTSIKA — Schéma complet (consolidé, idempotent : réexécutable sans risque).
 -- Supabase Dashboard → SQL Editor → Run (en une fois, sur base neuve ou existante).
 -- Noms des tables au SINGULIER : client, appareil, tache, parametre,
--- reponse, notification, facturation, demande (+ liens, retirée du produit).
+-- reponse, notification, facturation (+ liens, retirée du produit).
 -- Le bloc 0-renommages migre automatiquement une base encore en pluriel.
 -- =====================================================================
 
@@ -71,13 +71,6 @@ BEGIN
      AND NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'notification') THEN
     ALTER TABLE public.notifications RENAME TO notification;
     ALTER INDEX IF EXISTS idx_notifications_due RENAME TO idx_notification_due;
-  END IF;
-
-  -- demandes → demande
-  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'demandes')
-     AND NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'demande') THEN
-    ALTER TABLE public.demandes RENAME TO demande;
-    ALTER INDEX IF EXISTS idx_demandes_statut RENAME TO idx_demande_statut;
   END IF;
 END $$;
 
@@ -158,19 +151,6 @@ ALTER TABLE public.notification DROP COLUMN IF EXISTS dernier_code_http;
 CREATE INDEX IF NOT EXISTS idx_notification_due
   ON notification (prochaine_tentative)
   WHERE statut = 'EN_ATTENTE';
-
--- Demandes d'accès clients.
-CREATE TABLE IF NOT EXISTS demande (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  nom text NOT NULL,
-  contact text NOT NULL,
-  usage_prevu text NOT NULL,
-  statut text NOT NULL DEFAULT 'EN_ATTENTE',
-  date_creation timestamptz NOT NULL DEFAULT now(),
-  date_traitement timestamptz,
-  CONSTRAINT demande_pkey PRIMARY KEY (id)
-);
-CREATE INDEX IF NOT EXISTS idx_demande_statut ON demande (statut);
 
 -- Facturation mensuelle (1 ligne / client / mois).
 CREATE TABLE IF NOT EXISTS facturation (
@@ -295,7 +275,7 @@ DO $$
 DECLARE
   t text;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['client', 'appareil', 'tache', 'reponse', 'notification', 'demande']
+  FOREACH t IN ARRAY ARRAY['client', 'appareil', 'tache', 'reponse', 'notification']
   LOOP
     IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = t) THEN
       EXECUTE format('alter table %I enable row level security', t);
