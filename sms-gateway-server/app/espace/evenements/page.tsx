@@ -30,7 +30,7 @@ export default function PageNotificationsEspace() {
   const [urlBoutique, setUrlBoutique] = useState('')
   const [plateformeChoisie, setPlateformeChoisie] = useState('WooCommerce')
   const [connexionEnCours, setConnexionEnCours] = useState(false)
-  const [onglet, setOnglet] = useState<'boutique' | 'avancee'>('boutique')
+  const [onglet, setOnglet] = useState<'boutique' | 'avancee'>('avancee')
   const [boutiqueConnectee, setBoutiqueConnectee] = useState(false)
 
   function afficherNotification(type: 'succes' | 'erreur', texte: string) {
