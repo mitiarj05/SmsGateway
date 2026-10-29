@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
 import { authentifierAppareil } from '@/lib/authentification'
 import { normaliserNumero, resoudreClientEntrant } from '@/lib/entrant'
-import { enfilerNotification, traiterNotificationsEnAttente } from '@/lib/notifications'
+import { enfilerNotification, traiterNotificationsEnAttente } from '@/lib/evenements'
 
 /**
  * POST /api/devices/[id]/inbox — le téléphone transfère un SMS reçu.

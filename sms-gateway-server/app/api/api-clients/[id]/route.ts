@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
-import { EVENEMENTS_NOTIFICATION, fabriquerSecretNotification, enfilerNotification, traiterNotificationsEnAttente } from '@/lib/notifications'
+import { EVENEMENTS_NOTIFICATION, fabriquerSecretNotification, enfilerNotification, traiterNotificationsEnAttente } from '@/lib/evenements'
 
 /**
  * GET /api/api-clients/[id]?reveler=1 — renvoie la clé API complète (admin).

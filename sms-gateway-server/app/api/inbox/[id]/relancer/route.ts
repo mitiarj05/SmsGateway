@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
-import { enfilerNotification, traiterNotificationsEnAttente } from '@/lib/notifications'
+import { enfilerNotification, traiterNotificationsEnAttente } from '@/lib/evenements'
 
 /**
  * POST /api/inbox/[id]/relancer — rejoue la notification sms.recu

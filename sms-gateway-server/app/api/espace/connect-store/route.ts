@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
 import { resoudreApplicationEspace } from '@/lib/espace-auth'
-import { EVENEMENTS_NOTIFICATION, fabriquerSecretNotification } from '@/lib/notifications'
+import { EVENEMENTS_NOTIFICATION, fabriquerSecretNotification } from '@/lib/evenements'
 
 /**
  * POST /api/espace/connect-store — connexion boutique en 1 clic (client).

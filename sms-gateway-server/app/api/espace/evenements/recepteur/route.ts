@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
 import { resoudreApplicationEspace } from '@/lib/espace-auth'
-import { fabriquerSecretNotification } from '@/lib/notifications'
+import { fabriquerSecretNotification } from '@/lib/evenements'
 
 /**
- * GET /api/espace/notifications/recepteur — télécharge, prêt à brancher, le
+ * GET /api/espace/evenements/recepteur — télécharge, prêt à brancher, le
  * fichier récepteur du client : la signature (URL + secret) est déjà écrite
  * dedans. Le client ne copie que l'adresse du fichier dans Notification —
  * il ne gère jamais son secret à la main.

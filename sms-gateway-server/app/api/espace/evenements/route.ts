@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
 import { resoudreApplicationEspace } from '@/lib/espace-auth'
-import { EVENEMENTS_NOTIFICATION, fabriquerSecretNotification, enfilerNotification, traiterNotificationsEnAttente } from '@/lib/notifications'
+import { EVENEMENTS_NOTIFICATION, fabriquerSecretNotification, enfilerNotification, traiterNotificationsEnAttente } from '@/lib/evenements'
 
 /**
- * GET /api/espace/notifications — config webhooks du client (secret jamais exposé).
+ * GET /api/espace/evenements — config webhooks du client (secret jamais exposé).
  * PATCH — { url_application?, evenements_souscrits?, evenements_actifs?,
  *   regenerer_secret?, tester? } (secret renvoyé une seule fois si régénéré).
  */

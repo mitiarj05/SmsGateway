@@ -68,7 +68,7 @@ export default function PageEntreesEspace() {
 
   useEffect(() => {
     charger(true)
-    fetch('/api/espace/notifications')
+    fetch('/api/espace/evenements')
       .then((r) => r.json())
       .then((d) => setUrlWebhook(typeof d.url_application === 'string' && d.url_application ? d.url_application : null))
       .catch(() => setUrlWebhook(null))
@@ -266,7 +266,7 @@ export default function PageEntreesEspace() {
             <p className="text-xs text-stone-600 dark:text-zinc-300 leading-relaxed">
               Vos réponses sont transmises en POST à <code className="font-mono font-semibold text-[#1C1917] dark:text-zinc-100 text-[11px]">{urlWebhook ?? '—'}</code>
             </p>
-            <a href="/espace/notifications" className="inline-flex items-center gap-1 text-xs font-bold text-[#2563EB] hover:underline dark:text-blue-400 pt-1">
+            <a href="/espace/evenements" className="inline-flex items-center gap-1 text-xs font-bold text-[#2563EB] hover:underline dark:text-blue-400 pt-1">
               Modifier <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
           </div>

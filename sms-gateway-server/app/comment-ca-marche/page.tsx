@@ -162,7 +162,7 @@ if ($type === "sms.recu" && preg_match('/PAYE\\s*CMD[- ]?(\\d{3,6})/i', $contenu
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-4">
             <Link
-              href="/espace/notifications"
+              href="/espace/evenements"
               className="inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#1D4ED8]"
             >
               Télécharger le récepteur dans mon espace ↗

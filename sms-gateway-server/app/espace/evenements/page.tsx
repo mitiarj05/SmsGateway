@@ -41,7 +41,7 @@ export default function PageNotificationsEspace() {
   const chargerDonnees = useCallback(async () => {
     try {
       const [reponseConfig, reponseJournal] = await Promise.all([
-        fetch('/api/espace/notifications'),
+        fetch('/api/espace/evenements'),
         fetch('/api/espace/journal'),
       ])
       const config = await reponseConfig.json()
@@ -65,7 +65,7 @@ export default function PageNotificationsEspace() {
   async function enregistrer() {
     setEnregistrement(true)
     try {
-      const reponse = await fetch('/api/espace/notifications', {
+      const reponse = await fetch('/api/espace/evenements', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -87,7 +87,7 @@ export default function PageNotificationsEspace() {
   }
 
   async function appeler(corp: Record<string, unknown>) {
-    const reponse = await fetch('/api/espace/notifications', {
+    const reponse = await fetch('/api/espace/evenements', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(corp),
@@ -313,7 +313,7 @@ export default function PageNotificationsEspace() {
             )}
 
             <div className="flex items-center gap-3 pt-2 border-t border-[#1C1917]/10 dark:border-zinc-800">
-              <a href="/api/espace/notifications/recepteur" download
+              <a href="/api/espace/evenements/recepteur" download
                 title="Télécharger sms-recu.php — l'adresse et le secret sont déjà écrits dedans"
                 className="inline-flex items-center gap-1.5 rounded-full bg-[#1C1917] px-4 py-2 text-xs font-semibold text-white hover:bg-stone-700 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200">
                 <Download className="h-3.5 w-3.5" /> Télécharger le récepteur
@@ -327,7 +327,7 @@ export default function PageNotificationsEspace() {
               Votre secret de signature vit dedans — vous n'avez jamais à le recopier.
             </p>
             <a
-              href="/api/espace/notifications/recepteur?nouveau=1"
+              href="/api/espace/evenements/recepteur?nouveau=1"
               onClick={(e) => {
                 if (!confirm('Fabriquer une nouvelle serrure ? L\u2019ancien fichier déjà en ligne chez vous ne sera plus accepté — re-téléversez le nouveau fichier aussitôt.')) {
                   e.preventDefault()
