@@ -2,7 +2,7 @@
 -- SMSTSIKA — Schéma complet (consolidé, idempotent : réexécutable sans risque).
 -- Supabase Dashboard → SQL Editor → Run (en une fois, sur base neuve ou existante).
 -- Noms des tables au SINGULIER : client, appareil, tache, parametre,
--- reponse, notification, facturation (+ liens, retirée du produit).
+-- reponse, evenement, facturation (+ liens, retirée du produit).
 -- Le bloc 0-renommages migre automatiquement une base encore en pluriel.
 -- =====================================================================
 
@@ -62,15 +62,20 @@ BEGIN
     ALTER INDEX IF EXISTS idx_reponses_application RENAME TO idx_reponse_application;
   END IF;
 
-  -- notifications (ou livraisons_webhook, très ancien nom) → notification
+  -- événements (ou livraisons_webhook, très ancien nom) → evenement
   IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'livraisons_webhook')
-     AND NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'notification') THEN
-    ALTER TABLE public.livraisons_webhook RENAME TO notification;
+     AND NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'evenement') THEN
+    ALTER TABLE public.livraisons_webhook RENAME TO evenement;
   END IF;
   IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'notifications')
-     AND NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'notification') THEN
-    ALTER TABLE public.notifications RENAME TO notification;
-    ALTER INDEX IF EXISTS idx_notifications_due RENAME TO idx_notification_due;
+     AND NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'evenement') THEN
+    ALTER TABLE public.notifications RENAME TO evenement;
+    ALTER INDEX IF EXISTS idx_notifications_due RENAME TO idx_evenement_due;
+  END IF;
+  IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'notification')
+     AND NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'evenement') THEN
+    ALTER TABLE public.notification RENAME TO evenement;
+    ALTER INDEX IF EXISTS idx_notification_due RENAME TO idx_evenement_due;
   END IF;
 END $$;
 
@@ -134,8 +139,8 @@ CREATE INDEX IF NOT EXISTS idx_reponse_application ON reponse (id_application);
 -- suppression définitive de la table (données de suivi périmées).
 DROP TABLE IF EXISTS liens;
 
--- File des notifications sortantes (Webhooks).
-CREATE TABLE IF NOT EXISTS notification (
+-- File des événements sortants (Webhooks).
+CREATE TABLE IF NOT EXISTS evenement (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   id_application uuid REFERENCES public.client(id),
   type_evenement text NOT NULL,
@@ -145,11 +150,11 @@ CREATE TABLE IF NOT EXISTS notification (
   prochaine_tentative timestamptz NOT NULL DEFAULT now(),
   date_creation timestamptz NOT NULL DEFAULT now(),
   date_maj timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT notification_pkey PRIMARY KEY (id)
+  CONSTRAINT evenement_pkey PRIMARY KEY (id)
 );
-ALTER TABLE public.notification DROP COLUMN IF EXISTS dernier_code_http;
-CREATE INDEX IF NOT EXISTS idx_notification_due
-  ON notification (prochaine_tentative)
+ALTER TABLE public.evenement DROP COLUMN IF EXISTS dernier_code_http;
+CREATE INDEX IF NOT EXISTS idx_evenement_due
+  ON evenement (prochaine_tentative)
   WHERE statut = 'EN_ATTENTE';
 
 -- Facturation mensuelle (1 ligne / client / mois).
@@ -275,7 +280,7 @@ DO $$
 DECLARE
   t text;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['client', 'appareil', 'tache', 'reponse', 'notification']
+  FOREACH t IN ARRAY ARRAY['client', 'appareil', 'tache', 'reponse', 'evenement']
   LOOP
     IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = t) THEN
       EXECUTE format('alter table %I enable row level security', t);
@@ -318,9 +323,9 @@ create policy "reponse_all_own" on reponse
   using (id_application in (select id from client where user_id = auth.uid()))
   with check (id_application in (select id from client where user_id = auth.uid()));
 
-drop policy if exists "notifications_all_own" on notification;
-drop policy if exists "notification_all_own" on notification;
-create policy "notification_all_own" on notification
+drop policy if exists "evenements_all_own" on evenement;
+drop policy if exists "evenement_all_own" on evenement;
+create policy "evenement_all_own" on evenement
   for all to authenticated
   using (id_application in (select id from client where user_id = auth.uid()))
   with check (id_application in (select id from client where user_id = auth.uid()));
