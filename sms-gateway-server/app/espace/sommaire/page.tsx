@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   LayoutGrid, Smartphone, Send, List, Inbox, Webhook, Receipt,
-  Copy, Check, ArrowUpRight, Key, Loader2, User,
+  Copy, Check, ArrowUpRight, Key, Loader2,
 } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 
@@ -20,7 +20,6 @@ const SECTIONS = [
   { href: '/espace/entrees', icone: Inbox, nom: 'SMS reçus', texte: 'Les réponses arrivées sur vos téléphones : les « PAYE CMD-… », les « OUI », les questions.' },
   { href: '/espace/evenements', icone: Webhook, nom: 'Intégrations', texte: 'La sonnette de votre site : le récepteur déjà rempli, le test, le journal des livraisons.' },
   { href: '/espace/facturation', icone: Receipt, nom: 'Facturation', texte: 'Le décompte honnête du mois, segment par segment.' },
-  { href: '/espace/moi', icone: User, nom: 'Mon compte', texte: 'Votre profil, votre clé d’API et vos statistiques.' },
 ]
 
 export default function PageSommaireEspace() {
