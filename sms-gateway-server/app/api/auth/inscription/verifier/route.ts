@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   try {
     // 1. Retrouver le code non expiré pour cet e-mail.
     const { data: codes } = await supabaseAdmin
-      .from('codes_verification')
+      .from('validation')
       .select('id, code, expire_le, user_id, nom, tentatives')
       .eq('email', email)
       .order('date_creation', { ascending: false })
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     // 3. Vérifier le code.
     if (codeEnregistrement.code !== code) {
       await supabaseAdmin
-        .from('codes_verification')
+        .from('validation')
         .update({ tentatives: (codeEnregistrement.tentatives ?? 0) + 1 })
         .eq('id', codeEnregistrement.id)
       return NextResponse.json({ error: 'Code invalide — réessayez.' }, { status: 400 })
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     // 6. Pose la session client et supprime le code utilisé.
     const reponse = NextResponse.json({ ok: true })
     poserCookieSessionClient(reponse, compte.applicationId)
-    await supabaseAdmin.from('codes_verification').delete().eq('email', email)
+    await supabaseAdmin.from('validation').delete().eq('email', email)
 
     return reponse
   } catch (e) {

@@ -82,8 +82,8 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Stocker le code (remplace tout code précédent pour cet email).
-    await supabaseAdmin.from('codes_verification').delete().eq('email', email)
-    await supabaseAdmin.from('codes_verification').insert({
+    await supabaseAdmin.from('validation').delete().eq('email', email)
+    await supabaseAdmin.from('validation').insert({
       email,
       code,
       user_id: utilisateurId,

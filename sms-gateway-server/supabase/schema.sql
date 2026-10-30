@@ -171,7 +171,7 @@ CREATE TABLE IF NOT EXISTS facturation (
 );
 
 -- Codes de vérification d'inscription (e-mail à 6 chiffres, 15 min de validité).
-CREATE TABLE IF NOT EXISTS codes_verification (
+CREATE TABLE IF NOT EXISTS validation (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   email text NOT NULL,
   code text NOT NULL,
@@ -180,9 +180,9 @@ CREATE TABLE IF NOT EXISTS codes_verification (
   expire_le timestamptz NOT NULL,
   tentatives integer NOT NULL DEFAULT 0,
   date_creation timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT codes_verification_pkey PRIMARY KEY (id)
+  CONSTRAINT validation_pkey PRIMARY KEY (id)
 );
-CREATE INDEX IF NOT EXISTS idx_codes_verification_email ON codes_verification (email);
+CREATE INDEX IF NOT EXISTS idx_validation_email ON validation (email);
 
 -- Fonctionnalité Automatismes supprimée du code : nettoyage définitif.
 DROP TABLE IF EXISTS blocages;
@@ -294,7 +294,7 @@ DO $$
 DECLARE
   t text;
 BEGIN
-  FOREACH t IN ARRAY ARRAY['client', 'appareil', 'tache', 'reponse', 'evenement', 'codes_verification']
+  FOREACH t IN ARRAY ARRAY['client', 'appareil', 'tache', 'reponse', 'evenement', 'validation']
   LOOP
     IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = t) THEN
       EXECUTE format('alter table %I enable row level security', t);
