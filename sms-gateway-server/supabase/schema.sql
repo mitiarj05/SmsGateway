@@ -95,10 +95,12 @@ CREATE TABLE IF NOT EXISTS appareil (
   jeton text NOT NULL UNIQUE,
   statut statut_appareil NOT NULL DEFAULT 'HORS_LIGNE',
   jeton_fcm text,
+  derniere_activite timestamptz,
   id_application uuid REFERENCES public.client(id),
   date_creation timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT appareil_pkey PRIMARY KEY (id)
 );
+ALTER TABLE appareil ADD COLUMN IF NOT EXISTS derniere_activite TIMESTAMPTZ;
 
 -- Tache : un SMS à envoyer.
 CREATE TABLE IF NOT EXISTS tache (
@@ -108,17 +110,23 @@ CREATE TABLE IF NOT EXISTS tache (
   statut statut_message NOT NULL DEFAULT 'EN_ATTENTE',
   id_appareil uuid REFERENCES public.appareil(id),
   id_application uuid REFERENCES public.client(id),
+  message_erreur text,
+  reclame_a timestamptz,
   date_creation timestamptz NOT NULL DEFAULT now(),
   date_modification timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT tache_pkey PRIMARY KEY (id)
 );
+ALTER TABLE tache ADD COLUMN IF NOT EXISTS message_erreur text;
+ALTER TABLE tache ADD COLUMN IF NOT EXISTS reclame_a TIMESTAMPTZ;
 
 -- Parametre : réglages globaux de la passerelle (clé → valeur).
 CREATE TABLE IF NOT EXISTS parametre (
   cle text NOT NULL,
   valeur text NOT NULL,
+  date_modification timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT parametre_pkey PRIMARY KEY (cle)
 );
+ALTER TABLE parametre ADD COLUMN IF NOT EXISTS date_modification TIMESTAMPTZ NOT NULL DEFAULT now();
 
 INSERT INTO parametre (cle, valeur) VALUES
   ('sms_quota_per_hour', '20'),
@@ -141,6 +149,12 @@ CREATE TABLE IF NOT EXISTS reponse (
 );
 CREATE INDEX IF NOT EXISTS idx_reponse_expediteur ON reponse (expediteur);
 CREATE INDEX IF NOT EXISTS idx_reponse_application ON reponse (id_application);
+
+-- Jeu de miroirs doublon (statut_evenement / tentatives_evenement) : retiré.
+-- Le code n'utilise que statut_notification / tentatives_notification
+-- (miroir du statut de livraison au site du client, ci-dessous).
+ALTER TABLE reponse DROP COLUMN IF EXISTS statut_evenement;
+ALTER TABLE reponse DROP COLUMN IF EXISTS tentatives_evenement;
 
 -- Fonctionnalité Liens intelligents supprimée du produit :
 -- suppression définitive de la table (données de suivi périmées).
@@ -278,6 +292,12 @@ ALTER TABLE client ADD COLUMN IF NOT EXISTS url_application text;
 ALTER TABLE client ADD COLUMN IF NOT EXISTS secret_signature text;
 ALTER TABLE client ADD COLUMN IF NOT EXISTS evenements_souscrits text[] NOT NULL DEFAULT '{sms.recu}';
 ALTER TABLE client ADD COLUMN IF NOT EXISTS evenements_actifs boolean NOT NULL DEFAULT true;
+
+-- Défaut et valeur alignés sur le code : le seul type d'événement produit est
+-- sms.recu ('lien.clique' date d'une itération passée, jamais envoyé).
+ALTER TABLE client ALTER COLUMN evenements_souscrits SET DEFAULT '{sms.recu}';
+UPDATE client SET evenements_souscrits = array_remove(evenements_souscrits, 'lien.clique')
+WHERE 'lien.clique' = ANY(evenements_souscrits);
 
 -- ---------- Colonnes retirées définitivement (forfait illimité) ----------
 -- quota_mensuel : jamais défini (toujours NULL) — ses UI admin/espaces sont
