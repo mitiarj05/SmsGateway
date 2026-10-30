@@ -41,7 +41,7 @@ export default function PageEntreesEspace() {
         expediteur?: string | null
         contenu?: string | null
         date_reception?: string | null
-        statut_notification?: string | null
+        statut_evenement?: string | null
         appareils?: { nom?: string | null } | null
       }) => {
         const expediteur = e.expediteur || '—'
@@ -54,7 +54,7 @@ export default function PageEntreesEspace() {
             : '—',
           contenu: e.contenu || '',
           passerelle: e.appareils?.nom || '—',
-          statut: e.statut_notification === 'ENVOYE' ? 'transmis' : 'verifier',
+          statut: e.statut_evenement === 'ENVOYE' ? 'transmis' : 'verifier',
         }
       })
       setEntrants(mapped)

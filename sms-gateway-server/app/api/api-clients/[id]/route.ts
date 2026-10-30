@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
-import { EVENEMENTS_NOTIFICATION, fabriquerSecretNotification, enfilerNotification, traiterNotificationsEnAttente } from '@/lib/evenements'
+import { EVENEMENTS_DISPONIBLES, fabriquerSecretSignature, enfilerEvenement, traiterEvenementsEnAttente } from '@/lib/evenements'
 
 /**
  * GET /api/api-clients/[id]?reveler=1 — renvoie la clé API complète (admin).
@@ -119,9 +119,9 @@ export async function PATCH(
     }
     if ('evenements_souscrits' in corps) {
       const liste = corps.evenements_souscrits
-      if (!Array.isArray(liste) || !liste.every((e) => (EVENEMENTS_NOTIFICATION as readonly string[]).includes(e))) {
+      if (!Array.isArray(liste) || !liste.every((e) => (EVENEMENTS_DISPONIBLES as readonly string[]).includes(e))) {
         return NextResponse.json(
-          { error: `Événements acceptés : ${EVENEMENTS_NOTIFICATION.join(', ')}` },
+          { error: `Événements acceptés : ${EVENEMENTS_DISPONIBLES.join(', ')}` },
           { status: 400 }
         )
       }
@@ -142,7 +142,7 @@ export async function PATCH(
 
     let secretVisible: string | null = null
     if (corps.regenerer_secret === true || ('url_application' in corps && maj.url_application && !existant.secret_signature)) {
-      secretVisible = fabriquerSecretNotification()
+      secretVisible = fabriquerSecretSignature()
       maj.secret_signature = secretVisible
     }
 
@@ -163,11 +163,11 @@ export async function PATCH(
       .single()
     let test: Record<string, unknown> | null = null
     if (corps.tester === true) {
-      const idCharge = await enfilerNotification(id, 'sms.recu', {
+      const idCharge = await enfilerEvenement(id, 'sms.recu', {
         test: true,
         message_test: 'Ping de test depuis le dashboard SMSTSIKA',
       })
-      const resultat = await traiterNotificationsEnAttente()
+      const resultat = await traiterEvenementsEnAttente()
       test = { en_file: !!idCharge, ...resultat }
     }
 

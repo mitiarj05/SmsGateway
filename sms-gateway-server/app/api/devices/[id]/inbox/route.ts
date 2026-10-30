@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
 import { authentifierAppareil } from '@/lib/authentification'
 import { normaliserNumero, resoudreClientEntrant } from '@/lib/entrant'
-import { enfilerNotification, traiterNotificationsEnAttente } from '@/lib/evenements'
+import { enfilerEvenement, traiterEvenementsEnAttente } from '@/lib/evenements'
 
 /**
  * POST /api/devices/[id]/inbox — le téléphone transfère un SMS reçu.
@@ -75,7 +75,7 @@ export async function POST(
     }
 
     // Notification (mise en file seulement si le client est éligible).
-    const idCharge = await enfilerNotification(resolution.idApplication, 'sms.recu', {
+    const idCharge = await enfilerEvenement(resolution.idApplication, 'sms.recu', {
       id_reponse: entrant.id,
       expediteur,
       contenu,
@@ -84,7 +84,7 @@ export async function POST(
       id_application: resolution.idApplication,
       source_routage: resolution.source,
     })
-    await traiterNotificationsEnAttente()
+    await traiterEvenementsEnAttente()
 
     return NextResponse.json(
       {

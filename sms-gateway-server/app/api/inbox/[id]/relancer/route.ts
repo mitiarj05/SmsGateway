@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
-import { enfilerNotification, traiterNotificationsEnAttente } from '@/lib/evenements'
+import { enfilerEvenement, traiterEvenementsEnAttente } from '@/lib/evenements'
 
 /**
  * POST /api/inbox/[id]/relancer — rejoue la notification sms.recu
@@ -26,7 +26,7 @@ export async function POST(
         { status: 400 }
       )
     }
-    const idCharge = await enfilerNotification(entrant.id_application, 'sms.recu', {
+    const idCharge = await enfilerEvenement(entrant.id_application, 'sms.recu', {
       id_reponse: entrant.id,
       expediteur: entrant.expediteur,
       contenu: entrant.contenu,
@@ -35,7 +35,7 @@ export async function POST(
       id_application: entrant.id_application,
       relance_manuelle: true,
     })
-    const resultat = await traiterNotificationsEnAttente()
+    const resultat = await traiterEvenementsEnAttente()
     return NextResponse.json({
       message: idCharge ? 'Notification remise en file' : 'Client non éligible (URL/secret/abonnement)',
       notification: idCharge ? 'en_file' : 'non_configuré',

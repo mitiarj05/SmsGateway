@@ -142,19 +142,13 @@ CREATE TABLE IF NOT EXISTS reponse (
   expediteur text NOT NULL,
   contenu text NOT NULL,
   date_reception timestamptz NOT NULL DEFAULT now(),
-  statut_notification text NOT NULL DEFAULT 'EN_ATTENTE',
-  tentatives_notification integer NOT NULL DEFAULT 0,
+  statut_evenement text NOT NULL DEFAULT 'EN_ATTENTE',
+  tentatives_evenement integer NOT NULL DEFAULT 0,
   date_creation timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT reponse_pkey PRIMARY KEY (id)
 );
 CREATE INDEX IF NOT EXISTS idx_reponse_expediteur ON reponse (expediteur);
 CREATE INDEX IF NOT EXISTS idx_reponse_application ON reponse (id_application);
-
--- Jeu de miroirs doublon (statut_evenement / tentatives_evenement) : retiré.
--- Le code n'utilise que statut_notification / tentatives_notification
--- (miroir du statut de livraison au site du client, ci-dessous).
-ALTER TABLE reponse DROP COLUMN IF EXISTS statut_evenement;
-ALTER TABLE reponse DROP COLUMN IF EXISTS tentatives_evenement;
 
 -- Fonctionnalité Liens intelligents supprimée du produit :
 -- suppression définitive de la table (données de suivi périmées).
@@ -226,10 +220,31 @@ ALTER TABLE appareil ADD COLUMN IF NOT EXISTS uid_firebase TEXT UNIQUE;
 ALTER TABLE appareil ADD COLUMN IF NOT EXISTS id_application uuid REFERENCES public.client(id);
 ALTER TABLE tache ADD COLUMN IF NOT EXISTS programme_a TIMESTAMPTZ;
 
--- Miroir du statut de livraison au site du client, porté par la reponse (les
--- bases réelles qui précèdent le schéma consolidé n'ont pas encore ces colonnes).
-ALTER TABLE reponse ADD COLUMN IF NOT EXISTS statut_notification text NOT NULL DEFAULT 'EN_ATTENTE';
-ALTER TABLE reponse ADD COLUMN IF NOT EXISTS tentatives_notification integer NOT NULL DEFAULT 0;
+-- Miroir du statut de livraison au site du client, porté par la reponse.
+-- Ancien vocabulaire (…_notification) renommé vers …_evenement — données gardées.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'reponse' AND column_name = 'statut_notification'
+  ) AND NOT EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'reponse' AND column_name = 'statut_evenement'
+  ) THEN
+    ALTER TABLE reponse RENAME COLUMN statut_notification TO statut_evenement;
+  END IF;
+  IF EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'reponse' AND column_name = 'tentatives_notification'
+  ) AND NOT EXISTS (
+    SELECT FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'reponse' AND column_name = 'tentatives_evenement'
+  ) THEN
+    ALTER TABLE reponse RENAME COLUMN tentatives_notification TO tentatives_evenement;
+  END IF;
+END $$;
+ALTER TABLE reponse ADD COLUMN IF NOT EXISTS statut_evenement text NOT NULL DEFAULT 'EN_ATTENTE';
+ALTER TABLE reponse ADD COLUMN IF NOT EXISTS tentatives_evenement integer NOT NULL DEFAULT 0;
 
 -- Accusés de réception réseau (DLR) : suivi SÉPARÉ du statut d'envoi.
 -- statut_message reste la vérité de l'envoi (ENVOYE / ECHOUE) : facturation,

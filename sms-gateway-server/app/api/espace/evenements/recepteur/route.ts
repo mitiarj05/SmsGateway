@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
 import { resoudreApplicationEspace } from '@/lib/espace-auth'
-import { fabriquerSecretNotification } from '@/lib/evenements'
+import { fabriquerSecretSignature } from '@/lib/evenements'
 
 /**
  * GET /api/espace/evenements/recepteur — télécharge, prêt à brancher, le
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
     const serrureFuiee = new URL(request.url).searchParams.get('nouveau') === '1'
     let secret = serrureFuiee ? null : fiche.secret_signature ?? null
     if (!secret) {
-      secret = fabriquerSecretNotification()
+      secret = fabriquerSecretSignature()
       const { error: erreurSecret } = await supabaseAdmin
         .from('client')
         .update({ secret_signature: secret })

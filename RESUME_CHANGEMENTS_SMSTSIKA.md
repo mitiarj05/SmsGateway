@@ -196,7 +196,7 @@ L'API `/api/espace/moi` (GET et PATCH) reste active et alimente les données aff
 | Lien sommaire Intégrations pointait vers l'API | Corrigé vers `/espace/evenements` |
 | Carte "Boutique connectée" ne s'affichait que si l'URL contenait `/wp-json/` | Affichée dès qu'un lien est configuré (quel qu'il soit) |
 | Onglet "Configuration avancée" pas sélectionné par défaut | Devient l'onglet par défaut sur la page Intégrations |
-| Colonnes miroir `reponse.statut_notification` / `tentatives_notification` manquantes | Ajoutées dans `schema.sql` (`ALTER TABLE reponse ADD COLUMN IF NOT EXISTS ...`) |
+| Colonnes miroir `reponse.statut_evenement` / `tentatives_evenement` manquantes | Ajoutées dans `schema.sql` (`ALTER TABLE reponse ADD COLUMN IF NOT EXISTS ...`) ; l'ancien vocabulaire `…_notification` est renommé automatiquement |
 
 ---
 

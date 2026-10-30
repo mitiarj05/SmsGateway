@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-serveur'
 import { resoudreApplicationEspace } from '@/lib/espace-auth'
-import { EVENEMENTS_NOTIFICATION, fabriquerSecretNotification } from '@/lib/evenements'
+import { EVENEMENTS_DISPONIBLES, fabriquerSecretSignature } from '@/lib/evenements'
 
 /**
  * POST /api/espace/connect-store — connexion boutique en 1 clic (client).
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     // Garantit un secret de signature (renvoyé une seule fois si créé ici).
     let secretVisible: string | null = null
     if (!client.secret_signature) {
-      secretVisible = fabriquerSecretNotification()
+      secretVisible = fabriquerSecretSignature()
       const { error: erreurSecret } = await supabaseAdmin
         .from('client')
         .update({ secret_signature: secretVisible })
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       .update({
         url_application: urlNotification,
         evenements_actifs: true,
-        evenements_souscrits: [...EVENEMENTS_NOTIFICATION],
+        evenements_souscrits: [...EVENEMENTS_DISPONIBLES],
       })
       .eq('id', idApplication)
     if (erreurWebhook) {
