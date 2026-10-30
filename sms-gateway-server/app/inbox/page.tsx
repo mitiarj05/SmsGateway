@@ -56,7 +56,7 @@ export default function PageBoiteReception() {
               : '—',
             contenu: typeof e.contenu === 'string' ? e.contenu : '',
             passerelle: e.appareils?.nom ?? '—',
-            transmis: e.statut_evenement === 'ENVOYE',
+            transmis: e.statut_notification === 'ENVOYE',
           }
         })
       )

@@ -142,8 +142,8 @@ CREATE TABLE IF NOT EXISTS reponse (
   expediteur text NOT NULL,
   contenu text NOT NULL,
   date_reception timestamptz NOT NULL DEFAULT now(),
-  statut_evenement text NOT NULL DEFAULT 'EN_ATTENTE',
-  tentatives_evenement integer NOT NULL DEFAULT 0,
+  statut_notification text NOT NULL DEFAULT 'EN_ATTENTE',
+  tentatives_notification integer NOT NULL DEFAULT 0,
   date_creation timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT reponse_pkey PRIMARY KEY (id)
 );
@@ -221,30 +221,31 @@ ALTER TABLE appareil ADD COLUMN IF NOT EXISTS id_application uuid REFERENCES pub
 ALTER TABLE tache ADD COLUMN IF NOT EXISTS programme_a TIMESTAMPTZ;
 
 -- Miroir du statut de livraison au site du client, porté par la reponse.
--- Ancien vocabulaire (…_notification) renommé vers …_evenement — données gardées.
+-- Vocabulaire choisi : …_notification (arbitrage utilisateur). La variante
+-- …_evenement, si elle existe (exécution intermédiaire), est renommée en retour.
 DO $$
 BEGIN
   IF EXISTS (
     SELECT FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'reponse' AND column_name = 'statut_notification'
+    WHERE table_schema = 'public' AND table_name = 'reponse' AND column_name = 'statut_evenement'
   ) AND NOT EXISTS (
     SELECT FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'reponse' AND column_name = 'statut_evenement'
+    WHERE table_schema = 'public' AND table_name = 'reponse' AND column_name = 'statut_notification'
   ) THEN
-    ALTER TABLE reponse RENAME COLUMN statut_notification TO statut_evenement;
+    ALTER TABLE reponse RENAME COLUMN statut_evenement TO statut_notification;
   END IF;
   IF EXISTS (
     SELECT FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'reponse' AND column_name = 'tentatives_notification'
+    WHERE table_schema = 'public' AND table_name = 'reponse' AND column_name = 'tentatives_evenement'
   ) AND NOT EXISTS (
     SELECT FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'reponse' AND column_name = 'tentatives_evenement'
+    WHERE table_schema = 'public' AND table_name = 'reponse' AND column_name = 'tentatives_notification'
   ) THEN
-    ALTER TABLE reponse RENAME COLUMN tentatives_notification TO tentatives_evenement;
+    ALTER TABLE reponse RENAME COLUMN tentatives_evenement TO tentatives_notification;
   END IF;
 END $$;
-ALTER TABLE reponse ADD COLUMN IF NOT EXISTS statut_evenement text NOT NULL DEFAULT 'EN_ATTENTE';
-ALTER TABLE reponse ADD COLUMN IF NOT EXISTS tentatives_evenement integer NOT NULL DEFAULT 0;
+ALTER TABLE reponse ADD COLUMN IF NOT EXISTS statut_notification text NOT NULL DEFAULT 'EN_ATTENTE';
+ALTER TABLE reponse ADD COLUMN IF NOT EXISTS tentatives_notification integer NOT NULL DEFAULT 0;
 
 -- Accusés de réception réseau (DLR) : suivi SÉPARÉ du statut d'envoi.
 -- statut_message reste la vérité de l'envoi (ENVOYE / ECHOUE) : facturation,

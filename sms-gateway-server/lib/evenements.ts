@@ -92,7 +92,7 @@ async function miroirStatutEvenement(charge: Record<string, unknown>, statut: st
   if (typeof idEntrant !== 'string' || !idEntrant) return
   await supabaseAdmin
       .from('reponse')
-    .update({ statut_evenement: statut, tentatives_evenement: tentatives })
+    .update({ statut_notification: statut, tentatives_notification: tentatives })
     .eq('id', idEntrant)
 }
 

@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
     let requete = supabaseAdmin
       .from('reponse')
       .select(
-        'id, expediteur, contenu, date_reception, statut_evenement, ' +
-        'tentatives_evenement, date_creation, id_application, id_appareil, ' +
+        'id, expediteur, contenu, date_reception, statut_notification, ' +
+        'tentatives_notification, date_creation, id_application, id_appareil, ' +
         'applications(nom), appareils(nom)'
       )
       .order('date_reception', { ascending: false })
