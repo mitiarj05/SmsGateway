@@ -2,7 +2,7 @@
 -- SMSTSIKA — Schéma complet (consolidé, idempotent : réexécutable sans risque).
 -- Supabase Dashboard → SQL Editor → Run (en une fois, sur base neuve ou existante).
 -- Noms des tables au SINGULIER : client, appareil, tache, parametre,
--- reponse, evenement, facturation (+ liens, retirée du produit).
+-- reponse, evenement, facturation, validation (codes d'inscription).
 -- Le bloc 0-renommages migre automatiquement une base encore en pluriel.
 -- =====================================================================
 
@@ -113,6 +113,13 @@ CREATE TABLE IF NOT EXISTS tache (
   CONSTRAINT tache_pkey PRIMARY KEY (id)
 );
 
+-- Parametre : réglages globaux de la passerelle (clé → valeur).
+CREATE TABLE IF NOT EXISTS parametre (
+  cle text NOT NULL,
+  valeur text NOT NULL,
+  CONSTRAINT parametre_pkey PRIMARY KEY (cle)
+);
+
 INSERT INTO parametre (cle, valeur) VALUES
   ('sms_quota_per_hour', '20'),
   ('queue_alert_threshold', '10'),
@@ -139,7 +146,7 @@ CREATE INDEX IF NOT EXISTS idx_reponse_application ON reponse (id_application);
 -- suppression définitive de la table (données de suivi périmées).
 DROP TABLE IF EXISTS liens;
 
--- File des événements sortants (Webhooks).
+-- File des événements sortants (livraison vers le site du client).
 CREATE TABLE IF NOT EXISTS evenement (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   id_application uuid REFERENCES public.client(id),
@@ -192,13 +199,21 @@ DROP TABLE IF EXISTS automatismes;
 -- (forfait illimité : le seul vrai crédit est la SIM du client)
 DROP TABLE IF EXISTS codes_recharge;
 
+-- ---------- Résidus d'anciennes itérations, retirés du produit ----------
+-- demande : les demandes d'accès (inscription directe désormais).
+-- notification / notifications : ex-table d'événements, renommée plus haut
+--   quand evenement n'existait pas — ici on efface toute copie restante.
+DROP TABLE IF EXISTS demande;
+DROP TABLE IF EXISTS notification;
+DROP TABLE IF EXISTS notifications;
+
 -- Colonnes applicatives historiques.
 ALTER TABLE appareil ADD COLUMN IF NOT EXISTS uid_firebase TEXT UNIQUE;
 ALTER TABLE appareil ADD COLUMN IF NOT EXISTS id_application uuid REFERENCES public.client(id);
 ALTER TABLE tache ADD COLUMN IF NOT EXISTS programme_a TIMESTAMPTZ;
 
--- Miroir du statut de livraison webhook sur la reponse (les bases réelles
--- qui précèdent le schéma consolidé n'ont pas encore ces colonnes).
+-- Miroir du statut de livraison au site du client, porté par la reponse (les
+-- bases réelles qui précèdent le schéma consolidé n'ont pas encore ces colonnes).
 ALTER TABLE reponse ADD COLUMN IF NOT EXISTS statut_notification text NOT NULL DEFAULT 'EN_ATTENTE';
 ALTER TABLE reponse ADD COLUMN IF NOT EXISTS tentatives_notification integer NOT NULL DEFAULT 0;
 
@@ -353,8 +368,9 @@ create policy "appareil_select_own" on appareil
   for select to authenticated
   using (id_application in (select id from client where user_id = auth.uid()));
 
--- Demande : aucune politique = accès direct refusé (service_role uniquement).
--- (aucune policy créée volontairement)
+-- Validation (codes d'inscription à 6 chiffres) : aucune politique, donc
+-- accès direct refusé aux connexions authentifiées — le serveur écrit via
+-- service_role uniquement (aucune policy créée volontairement).
 
 -- ---------- 4. Comptes Firebase (application Android native) ----------
 alter table client
