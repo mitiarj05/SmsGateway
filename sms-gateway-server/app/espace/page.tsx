@@ -362,7 +362,7 @@ export default function PageTableauDeBordClient() {
               <Link href="/espace/envoyer" className="flex items-center gap-2 text-blue-600 hover:underline dark:text-blue-400">
                 <Send className="h-3.5 w-3.5" /> Envoyer un SMS
               </Link>
-              <Link href="/espace/evenements" className="flex items-center gap-2 text-blue-600 hover:underline dark:text-blue-400">
+              <Link href="/espace/parametres?onglet=avancee" className="flex items-center gap-2 text-blue-600 hover:underline dark:text-blue-400">
                 <Zap className="h-3.5 w-3.5" /> Connecter ma boutique
               </Link>
             </div>

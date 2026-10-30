@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
-  LayoutGrid, Smartphone, Send, List, Inbox, Webhook, Receipt,
+  LayoutGrid, Smartphone, Send, List, Inbox, Receipt,
   Copy, Check, ArrowUpRight, Key, Loader2,
 } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
@@ -18,7 +18,6 @@ const SECTIONS = [
   { href: '/espace/envoyer', icone: Send, nom: 'Envoyer un SMS', texte: 'Un message depuis la console, sans écrire une ligne — pratique pour essayer votre clé.' },
   { href: '/espace/envois', icone: List, nom: 'Mes envois', texte: 'Chaque message et son verdict : mis en file, parti, échoué — et pourquoi.' },
   { href: '/espace/entrees', icone: Inbox, nom: 'SMS reçus', texte: 'Les réponses arrivées sur vos téléphones : les « PAYE CMD-… », les « OUI », les questions.' },
-  { href: '/espace/evenements', icone: Webhook, nom: 'Intégrations', texte: 'La sonnette de votre site : le récepteur déjà rempli, le test, le journal des livraisons.' },
   { href: '/espace/facturation', icone: Receipt, nom: 'Facturation', texte: 'Le décompte honnête du mois, segment par segment.' },
 ]
 
