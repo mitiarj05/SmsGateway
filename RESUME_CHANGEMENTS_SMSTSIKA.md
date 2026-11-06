@@ -259,6 +259,7 @@ L'API `/api/espace/moi` (GET et PATCH) reste active et alimente les données aff
 - **« Mon compte », « Intégrations » et « Sommaire » n'existent plus** en pages séparées — le menu ne garde que « Tableau de bord / Parc d'envoi / Envoyer un SMS / Mes envois / SMS reçus / Facturation / Paramètres ». La carte « Statistiques du mois » a été retirée de Paramètres (doublon de Facturation) ; `/api/espace/moi` garde ses stats pour le tableau de bord et le badge du menu.
 - L'API `/api/espace/evenements`, `/api/espace/journal`, le récepteur PHP et `connect-store` sont inchangés.
 - **Nettoyage par interface (nov. 2026)** : suppression de `EcranIntegration.kt` (380 lignes, écran Android jamais routé — réellement mort) et libellé menu admin « Facturation et quotas » → « Facturation » (`ee0428c`). Candidats restants constatés mais non retenus : `/espace/sommaire` (doublon menu, demande utilisateur), carte « Statistiques du mois » de Paramètres (doublon Facturation), chaîne quota horaire (feature vivante : garde anti-saturation SIM, serveur + Android `/api/devices/[id]/quota`).
+- **Page admin `/devices` clarifiée (`aaaa8db`)** : la page montre la flotte GLOBALE (tous clients confondus) — désormais assumé. Embed `client(nom)` dans `GET /api/devices`, mention « Client : … » sur chaque carte d'appareil, recherche par nom de client possible, textes réécrits honnêtes (« Flotte globale de la passerelle »).
 
 ### 13.3 Diagrammes UML (nouveau)
 
