@@ -20,7 +20,7 @@ const NAVIGATION_ADMIN = [
   { href: '/inbox', icone: Inbox, etiquette: 'SMS reçus' },
   { href: '/history', icone: History, etiquette: 'Historique' },
   { href: '/clients', icone: Users, etiquette: 'Clients' },
-  { href: '/facturation', icone: Receipt, etiquette: 'Facturation et quotas' },
+  { href: '/facturation', icone: Receipt, etiquette: 'Facturation' },
 ]
 
 const NAVIGATION_CONFIG = [
