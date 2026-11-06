@@ -92,7 +92,10 @@ export default function AppareilsPage() {
 
   const appareilsVisibles = appareils.filter((a) => {
     const correspondStatut = filtreStatut === 'ALL' || a.statut === filtreStatut
-    const correspondRecherche = a.nom.toLowerCase().includes(recherche.toLowerCase())
+    const retour = recherche.toLowerCase()
+    const correspondRecherche =
+      a.nom.toLowerCase().includes(retour) ||
+      (a.client_nom ?? '').toLowerCase().includes(retour)
     return correspondStatut && correspondRecherche
   })
 
@@ -105,7 +108,7 @@ export default function AppareilsPage() {
             Appareils
           </h1>
           <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
-            Gérez vos téléphones passerelles et surveillez leur état.
+            Flotte globale de la passerelle — tous les téléphones de tous les clients.
           </p>
         </div>
         <button
@@ -123,14 +126,16 @@ export default function AppareilsPage() {
             <div className="flex flex-col gap-3 border-b border-[#1C1917]/10 pb-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-[17px] font-bold text-[#1C1917] dark:text-white">Flotte de téléphones</h2>
-                <p className="text-[12px] text-stone-500 dark:text-zinc-500">{totalAppareils} appareil connecté à votre espace</p>
+                <p className="text-[12px] text-stone-500 dark:text-zinc-500">
+                  {totalAppareils} appareil{totalAppareils > 1 ? 's' : ''} au service de la passerelle
+                </p>
               </div>
               <div className="flex items-center gap-2.5">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-500" />
                   <input
                     type="text"
-                    placeholder="Rechercher un appareil"
+                    placeholder="Rechercher par appareil ou client"
                     value={recherche}
                     onChange={(e) => setRecherche(e.target.value)}
                     className="w-52 rounded-full border border-[#1C1917]/10 bg-white py-2 pl-8 pr-3 text-[12.5px] shadow-2xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
@@ -155,7 +160,7 @@ export default function AppareilsPage() {
             <div className="space-y-4">
               {appareilsVisibles.length === 0 && (
                 <p className="py-10 text-center text-xs text-stone-500 dark:text-zinc-500">
-                  Aucun appareil enregistré — ajoutez votre premier téléphone.
+                  Aucun appareil enregistré sur la passerelle pour le moment.
                 </p>
               )}
               {appareilsVisibles.map((a) => {
@@ -190,6 +195,12 @@ export default function AppareilsPage() {
                       <div>
                         <h3 className="text-[20px] font-extrabold text-[#1C1917] dark:text-white">{a.nom}</h3>
                         <p className="font-mono text-[12px] text-stone-500">{a.id}</p>
+                        <p className="mt-0.5 text-[11.5px] font-semibold text-stone-500 dark:text-zinc-400">
+                          Client :{' '}
+                          <span className={a.client_nom ? 'text-[#1C1917] dark:text-zinc-200' : ''}>
+                            {a.client_nom ?? '— non lié à un client —'}
+                          </span>
+                        </p>
                       </div>
 
                       <div>
@@ -268,7 +279,7 @@ export default function AppareilsPage() {
               {totalAppareils * quota} <span className="text-[16px] font-bold text-white/60">SMS/h</span>
             </p>
             <p className="text-[11.5px] leading-relaxed text-white/55">
-              Capacité totale de votre flotte, selon les quotas par appareil.
+              Capacité totale de la flotte globale, selon les quotas par appareil.
             </p>
             <p className="flex items-center gap-2 text-[11.5px] text-white/60 pt-2 border-t border-white/10">
               <span className={`h-1.5 w-1.5 rounded-full${enLigneCount > 0 ? 'bg-emerald-400' : 'bg-rose-400'}`}></span>

@@ -9,10 +9,11 @@ export async function GET() {
     // select('*') volontaire : les colonnes de solde SIM peuvent ne pas exister
     // encore (migration non exécutée). Les nommer ferait échouer toute la page
     // des appareils ; le mapping ci-dessous reste explicite, donc rien de
-    // sensible (jeton) ne sort de ce route handler.
+    // sensible (jeton) ne sort de ce route handler. client(nom) : le
+    // propriétaire de chaque appareil, pour la vue admin de la flotte.
     const { data, error } = await supabaseAdmin
       .from('appareil')
-      .select('*')
+      .select('*, client(nom)')
       .order('statut', { ascending: false })
       .order('derniere_activite', { ascending: false })
 
@@ -22,7 +23,8 @@ export async function GET() {
 
     // Compteur live : la colonne est persistée à chaque ENVOYE mais peut dater
     // de plus d'1 h — on recalcule sur la fenêtre glissante pour l'affichage.
-    // Contrat UI (devices, devices/add) : fcm_token masqué + created_at mappée.
+    // Contrat UI (devices, devices/add) : fcm_token masqué + created_at mappée
+    // + client(nom) pour l'admin : le propriétaire de chaque appareil est visible.
     const appareils = await Promise.all(
       (data ?? []).map(async (d) => ({
         id: d.id,
@@ -38,6 +40,8 @@ export async function GET() {
         solde_devise: d.solde_devise ?? null,
         solde_texte: d.solde_texte ?? null,
         solde_maj_le: d.solde_maj_le ?? null,
+        // Propriétaire (client lié) — null tant qu'aucun client n'est rattaché.
+        client_nom: d.client?.nom ?? null,
       }))
     )
 

@@ -19,6 +19,8 @@ export interface Appareil {
   /** Réponse brute de l'opérateur (servie en infobulle : jamais de chiffre inventé). */
   solde_texte?: string | null
   solde_maj_le?: string | null
+  /** Nom du client propriétaire (vue admin) — null tant qu'aucun client n'est rattaché. */
+  client_nom?: string | null
 }
 
 export interface Tache {
