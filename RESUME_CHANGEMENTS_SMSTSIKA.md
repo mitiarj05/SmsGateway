@@ -256,7 +256,7 @@ L'API `/api/espace/moi` (GET et PATCH) reste active et alimente les données aff
 ### 13.2 Interfaces de l'espace client (état actuel)
 
 - **Paramètres** (`/espace/parametres`) = 2 onglets internes : « Profil & sécurité » (profil, clé API, statistiques, mot de passe) et « **Paramètres avancés** » (toute l'ancienne Intégrations : Auto-Connect, lien manuel, événements souscrits, test, récepteur, journal des livraisons). Accès direct via `/espace/parametres?onglet=avancee`.
-- **« Mon compte » et « Intégrations » n'existent plus** en pages séparées — le menu ne garde qu'un seul « Paramètres ».
+- **« Mon compte », « Intégrations » et « Sommaire » n'existent plus** en pages séparées — le menu ne garde que « Tableau de bord / Parc d'envoi / Envoyer un SMS / Mes envois / SMS reçus / Facturation / Paramètres ». La carte « Statistiques du mois » a été retirée de Paramètres (doublon de Facturation) ; `/api/espace/moi` garde ses stats pour le tableau de bord et le badge du menu.
 - L'API `/api/espace/evenements`, `/api/espace/journal`, le récepteur PHP et `connect-store` sont inchangés.
 - **Nettoyage par interface (nov. 2026)** : suppression de `EcranIntegration.kt` (380 lignes, écran Android jamais routé — réellement mort) et libellé menu admin « Facturation et quotas » → « Facturation » (`ee0428c`). Candidats restants constatés mais non retenus : `/espace/sommaire` (doublon menu, demande utilisateur), carte « Statistiques du mois » de Paramètres (doublon Facturation), chaîne quota horaire (feature vivante : garde anti-saturation SIM, serveur + Android `/api/devices/[id]/quota`).
 
