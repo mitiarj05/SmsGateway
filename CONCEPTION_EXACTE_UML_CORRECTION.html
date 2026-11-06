@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Conception Technique Exacte UML — SMSTSIKA v3.0</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 15mm 15mm 15mm 15mm;
+      @bottom-right {
+        content: counter(page);
+      }
+    }
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+      color: #1e293b;
+      line-height: 1.45;
+      font-size: 9.5pt;
+      background: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+    .header-banner {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #2563eb 100%);
+      color: #ffffff;
+      padding: 20px 22px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .header-banner h1 {
+      margin: 0 0 4px 0;
+      font-size: 19pt;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .header-banner p {
+      margin: 0;
+      font-size: 10pt;
+      color: #e0e7ff;
+      font-weight: 500;
+    }
+    h2 {
+      color: #1e1b4b;
+      font-size: 12.5pt;
+      font-weight: 700;
+      border-bottom: 2px solid #cbd5e1;
+      padding-bottom: 4px;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      page-break-after: avoid;
+    }
+    h3 {
+      color: #2563eb;
+      font-size: 10.5pt;
+      font-weight: 700;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      page-break-after: avoid;
+    }
+    h4 {
+      color: #0f172a;
+      font-size: 9.5pt;
+      font-weight: 700;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      page-break-after: avoid;
+    }
+    p, li {
+      color: #334155;
+      font-size: 9pt;
+    }
+    ul, ol {
+      margin-top: 4px;
+      margin-bottom: 8px;
+      padding-left: 18px;
+    }
+    li {
+      margin-bottom: 3px;
+    }
+    code {
+      font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+      background: #f1f5f9;
+      color: #0f172a;
+      padding: 1.5px 4px;
+      border-radius: 3px;
+      font-size: 8.5pt;
+      border: 1px solid #e2e8f0;
+    }
+    pre {
+      font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 8pt;
+      line-height: 1.3;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      page-break-inside: avoid;
+      margin: 8px 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0 14px 0;
+      font-size: 8.5pt;
+      page-break-inside: avoid;
+    }
+    th {
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      text-align: left;
+      padding: 6px 8px;
+      border: 1px solid #cbd5e1;
+    }
+    td {
+      padding: 6px 8px;
+      border: 1px solid #e2e8f0;
+      color: #334155;
+    }
+    tr:nth-child(even) {
+      background: #f8fafc;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-banner">
+    <h1>Conception Technique Exacte UML — SMSTSIKA v3.0</h1>
+    <p>Guide de Référence du Code Source Réel (DSS, DSD avec Vraies Classes Kotlin &amp; Modèle BDD Supabase)</p>
+  </div>
+
+  <h2>📌 1. DIAGRAMMES DE SÉQUENCE SYSTÈME (DSS - Vue Boîte Noire)</h2>
+  <p>En DSS, le système est une <b>boîte noire unique (<code>:Système SMSTSIKA</code>)</b>. Seules les interactions externes entre les acteurs et le système sont représentées.</p>
+
+  <h3>DSS 1 : Émission d'un SMS OTP / Transactionnel (Cas Sortant)</h3>
+  <ul>
+    <li><b>Acteur</b> : <code>Application Client (API)</code></li>
+    <li><b>Système</b> : <code>:Système SMSTSIKA</code></li>
+  </ul>
+  <ol>
+    <li><code>Client</code> ──► <code>demanderEnvoiSms(cle_api, destinataire, message)</code> ──► <code>:Système SMSTSIKA</code></li>
+    <li><code>:Système SMSTSIKA</code> ──► <code>SmsMisEnFile(tache_id, statut: "EN_ATTENTE")</code> ──► <code>Client</code></li>
+    <li><code>:Système SMSTSIKA</code> ──► <code>ÉmettreSMS(destinataire, message)</code> ──► <code>Mobile Destinataire</code></li>
+    <li><code>:Système SMSTSIKA</code> ──► <code>NotifierLivraison(tache_id, statut: "LIVRE")</code> ──► <code>Client</code></li>
+  </ol>
+
+  <h3>DSS 2 : Réception d'un SMS &amp; Notification Webhook (Cas Entrant)</h3>
+  <ul>
+    <li><b>Acteurs</b> : <code>Abonné Mobile GSM</code> (Payeur), <code>Système Client</code></li>
+  </ul>
+  <ol>
+    <li><code>Abonné Mobile GSM</code> ──► <code>EnvoyerSMS("PAYER CMD-1042")</code> ──► <code>:Système SMSTSIKA</code></li>
+    <li><code>:Système SMSTSIKA</code> ──► <code>NotificationWebhookHTTP(X-Smsika-Signature, payload)</code> ──► <code>Système Client</code></li>
+    <li><code>Système Client</code> ──► <code>Reponse200OK()</code> ──► <code>:Système SMSTSIKA</code></li>
+  </ol>
+
+  <h2>📌 2. DIAGRAMMES DE SÉQUENCE DE CONCEPTION (DSD - Vue Boîte Blanche Technique)</h2>
+  <p>Chaque ligne de vie correspond à une <b>vraie classe Kotlin/Next.js</b> et chaque flèche à une <b>vraie méthode du code</b>.</p>
+
+  <h3>DSD 1 : Appairage &amp; Liaison du Téléphone par QR Code</h3>
+  <ul>
+    <li><b>Lignes de vie (Classes Kotlin Android)</b> :
+      <code>v: EcranScanQr</code> | <code>c: ControleurAppareils</code> | <code>r: DepotAppareilsImpl</code> | <code>api: ClientApi</code> | <code>srv: ServeurNextJs</code>
+    </li>
+  </ul>
+  <pre>[ v: EcranScanQr ] ─── (1) lierParCode("QR_123456") ───► [ c: ControleurAppareils ]
+                                                                 │
+                                    (2) lierParCode(code)        │
+                                                                 ▼
+                                                  [ r: DepotAppareilsImpl ]
+                                                                 │
+                                    (3) lierParCode(code, nom)   │
+                                                                 ▼
+                                                  [ api: ClientApi ]
+                                                                 │
+                                    (4) POST /api/appareils/lier-par-code ───► [ srv: ServeurNextJs ]
+                                                                                     │
+                                    (5) ResultatEnregistrement.Succes ◄──────────────┘
+                                                                 │
+                                    (6) enregistrerIdentifiants(id, token) ───► [ PreferencesAppareil ]</pre>
+
+  <h3>DSD 2 : Traitement et Émission d'un SMS (Cas Sortant / Outbound)</h3>
+  <ul>
+    <li><b>Lignes de vie (Classes Kotlin Android)</b> :
+      <code>fcm: ServiceFcm</code> | <code>c: ControleurTaches</code> | <code>r: DepotTachesImpl</code> | <code>sim: GestionnaireSim</code> | <code>sms: ExpediteurSms</code> | <code>api: ClientApi</code>
+    </li>
+  </ul>
+  <pre>[ fcm: ServiceFcm ] ─── (1) onMessageReceived("new_task") ───► [ c: ControleurTaches ]
+                                                                     │
+                                  (2) recupererTaches(id, token)     │
+                                                                     ▼
+                                                      [ r: DepotTachesImpl ] ───► POST /tasks ───► [ Server ]
+                                                                     │
+                                  (3) traiterTaches(listeTaches) ◄───┘
+                                                                     │
+                                  (4) mettreAJourStatut(RECLAME) ────┼───► POST /status/RECLAME ─► [ Server ]
+                                                                     │
+                                  (5) resoudreAbonnementId() ────────┼───► [ sim: GestionnaireSim ]
+                                                                     │
+                                  (6) envoyerSms(num, msg, simId) ───┼───► [ sms: ExpediteurSms ]
+                                                                     │             │
+                                                                     │      (7) sendTextMessage() GSM
+                                                                     │             │
+                                  (8) marquerStatut(ENVOYE) ─────────┴─────────────┘
+                                                                     │
+                                  (9) confirmerAvecReessai(ENVOYE) ──┼───► POST /status/ENVOYE ──► [ Server ]</pre>
+
+  <h3>DSD 3 : Réception d'un SMS &amp; Transfert Inbound (Cas Entrant)</h3>
+  <ul>
+    <li><b>Lignes de vie (Classes Kotlin Android)</b> :
+      <code>rec: RecepteurSms</code> | <code>journal: JournalEvenements</code> | <code>api: ClientApi</code> | <code>srv: ServeurNextJs</code>
+    </li>
+  </ul>
+  <pre>[ Antenne GSM ] ─── (1) Intent SMS_RECEIVED ───► [ rec: RecepteurSms ]
+                                                         │
+                                    (2) extrairePdu()    │
+                                                         ▼
+                                    (3) envoyerEntrant(exp, contenu, date)
+                                                         │
+                                                         ▼
+                                                [ api: ClientApi ]
+                                                         │
+                                    (4) POST /api/devices/[id]/inbox ───► [ srv: ServeurNextJs ]
+                                                                                   │
+                                    (5) INSERT INTO reponse ───────────────────────┤
+                                                                                   │
+                                    (6) enfilerNotification('sms.recu') ───────────┤
+                                                                                   │
+                                    (7) POST Webhook (Signature HMAC-SHA256) ──────┼───► [ Client Web ]</pre>
+
+  <h3>DSD 4 : Relevé de Solde SIM par Code USSD</h3>
+  <ul>
+    <li><b>Lignes de vie (Classes Kotlin Android)</b> :
+      <code>c: ControleurSoldeSim</code> | <code>tel: TelephonyManager</code> | <code>api: ClientApi</code>
+    </li>
+  </ul>
+  <pre>[ ServicePasserelleSms ] ─── (1) executerVerificationSolde() ───► [ c: ControleurSoldeSim ]
+                                                                          │
+                                     (2) sendUssdRequest("*111#")         │
+                                                                          ▼
+                                                         [ tel: TelephonyManager ]
+                                                                          │
+                                     (3) onReceiveUssdResponse(texte) ───►│
+                                                                          │
+                                     (4) parserSolde(texte)               │
+                                                                          │
+                                     (5) POST /api/devices/[id]/solde-sim ┼───► [ Server ]</pre>
+
+  <h2>📌 3. DIAGRAMME DE CLASSES DE CONCEPTION (Class Diagram)</h2>
+
+  <h3>A. Vraies Classes Kotlin Android (<code>com.mitia.smsgateway.*</code>)</h3>
+
+  <h4>1. Les 5 Contrôleurs (<code>controller/</code>)</h4>
+  <ul>
+    <li><b><code>ControleurAppareils</code></b> :
+      <code>+ assurerEnregistrement(): Pair&lt;String, String&gt;?</code> | <code>+ connecterAnonymement(): String?</code> | <code>+ actualiserJetonFcm(id, token)</code>
+    </li>
+    <li><b><code>ControleurTaches</code></b> :
+      <code>+ traiterTaches(context, id, token, liste, notify)</code>
+    </li>
+    <li><b><code>ControleurLivraisons</code></b> :
+      <code>+ traiterLivraison(context, tacheId, codeRetour)</code>
+    </li>
+    <li><b><code>ControleurConfirmationsEnAttente</code></b> :
+      <code>+ rejouerConfirmationsEnAttente(id, token)</code>
+    </li>
+    <li><b><code>ControleurSoldeSim</code></b> :
+      <code>+ executerVerificationSolde(context)</code> | <code>+ parserReponseSolde(texte)</code>
+    </li>
+  </ul>
+
+  <h4>2. Moteur SMS &amp; Téléphonie (<code>data/sms/</code>)</h4>
+  <ul>
+    <li><b><code>ExpediteurSms</code></b> : <code>+ envoyerSms(context, numero, message, abonnementId): Boolean</code></li>
+    <li><b><code>GestionnaireSim</code></b> : <code>+ listerSims(context)</code> | <code>+ resoudreAbonnementId(context)</code> | <code>+ noterEnvoi(context)</code></li>
+  </ul>
+
+  <h4>3. Repositories &amp; API (<code>data/repository/</code> &amp; <code>data/remote/</code>)</h4>
+  <ul>
+    <li><b><code>DepotAppareilsImpl</code></b> : <code>+ obtenirIdentifiants()</code> | <code>+ enregistrer(nom, jetonId)</code> | <code>+ lierParCode(code)</code></li>
+    <li><b><code>DepotTachesImpl</code></b> : <code>+ recupererTaches(id, token)</code> | <code>+ mettreAJourStatutDetaille()</code> | <code>+ confirmerAvecReessai()</code></li>
+    <li><b><code>ClientApi</code></b> : <code>+ enregistrerAppareil()</code> | <code>+ lierParCode()</code> | <code>+ obtenirTachesDetaillees()</code> | <code>+ mettreAJourStatutTacheDetaille()</code> | <code>+ envoyerEntrant()</code></li>
+  </ul>
+
+  <h3>B. Modèle de Données PostgreSQL Supabase (Tables BDD)</h3>
+  <pre>┌────────────────────────────────────────────────────────┐
+│                        client                          │
+├────────────────────────────────────────────────────────┤
+│ id : uuid [PK]                                         │
+│ nom : text                                             │
+│ email : text                                           │
+│ cle_api : text [Unique]                                │
+│ url_application : text [Nullable]                      │
+│ secret_signature : text [Nullable]                     │
+│ evenements_souscrits : text[]                          │
+│ evenements_actifs : boolean                            │
+│ quota_mensuel : integer [Nullable]                     │
+│ user_id : uuid [FK -&gt; auth.users.id]                   │
+│ firebase_uid : text [FK]                               │
+└────────────────────────────────────────────────────────┘
+                           │ 1
+                           │
+                           │ 0..*
+┌────────────────────────────────────────────────────────┐
+│                        appareil                        │
+├────────────────────────────────────────────────────────┤
+│ id : uuid [PK]                                         │
+│ nom : text                                             │
+│ jeton : text [Unique]                                  │
+│ statut : text (EN_LIGNE / HORS_LIGNE / DESACTIVE)      │
+│ jeton_fcm : text [Nullable]                            │
+│ android_id : text                                      │
+│ derniere_synchro : timestamptz                         │
+│ sms_envoyes_heure : integer                            │
+│ solde_sim : text [Nullable]                            │
+│ id_application : uuid [FK -&gt; client.id]                │
+└────────────────────────────────────────────────────────┘
+                           │ 1
+                           │
+                           │ 0..*
+┌────────────────────────────────────────────────────────┐
+│                         tache                          │
+├────────────────────────────────────────────────────────┤
+│ id : uuid [PK]                                         │
+│ numero_destinataire : text                             │
+│ contenu : text                                         │
+│ statut : text (EN_ATTENTE/RECLAME/ENVOYE/ECHOUE)       │
+│ livraison : text [Nullable] (LIVRE/ECHEC_LIVRAISON)    │
+│ livre_le : timestamptz [Nullable]                      │
+│ date_creation : timestamptz                            │
+│ id_application : uuid [FK -&gt; client.id]                │
+│ id_appareil : uuid [FK -&gt; appareil.id]                 │
+└────────────────────────────────────────────────────────┘</pre>
+
+</body>
+</html>
