@@ -5,7 +5,7 @@ import { traiterEnvoiSms } from '@/lib/envoi-sms'
 
 /**
  * POST /api/sms/envoyer-admin — envoi depuis la console (session admin).
- * Corps: { to, message, scheduled_at?, id_application }.
+ * Corps: { to, message, scheduled_at?, id_client }.
  * PAS de clé API : l'admin choisit l'espace d'envoi dans la modale.
  * Non listée au proxy → session admin (ou Basic) exigée, 401 sinon.
  */
@@ -19,9 +19,9 @@ export async function POST(request: NextRequest) {
     }
 
     const corps = await request.json().catch(() => null)
-    const idApplication = typeof corps?.id_application === 'string' ? corps.id_application : ''
+    const idApplication = typeof corps?.id_client === 'string' ? corps.id_client : ''
     if (!idApplication) {
-      return NextResponse.json({ error: 'Le champ "id_application" est obligatoire' }, { status: 400 })
+      return NextResponse.json({ error: 'Le champ "id_client" est obligatoire' }, { status: 400 })
     }
 
     const { data: app } = await supabaseAdmin

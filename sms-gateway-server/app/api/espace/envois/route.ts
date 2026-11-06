@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       // select('*') : tolère l'absence de la colonne `livraison` (migration non
       // encore exécutée) au lieu de casser tout l'historique du client.
       .select('*')
-      .eq('id_application', idApplication)
+      .eq('id_client', idApplication)
       .order('date_creation', { ascending: false })
       .limit(limite)
     if (statut) {

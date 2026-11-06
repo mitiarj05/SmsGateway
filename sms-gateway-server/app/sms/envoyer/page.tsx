@@ -56,7 +56,7 @@ export default function PageEnvoyerSmsAdmin() {
         body: JSON.stringify({
           to: nombreDestinataires > 1 ? destinatairesListe : destinatairesListe[0] ?? '',
           message,
-          id_application: espaceId,
+          id_client: espaceId,
           ...(programmeA ? { scheduled_at: programmeA } : {}),
         }),
       })

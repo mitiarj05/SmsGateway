@@ -58,8 +58,8 @@ export async function GET(
     // Détacher les tâches liées (clé étrangère) en gardant l'historique.
     const { error: erreurDetachement } = await supabaseAdmin
       .from('tache')
-      .update({ id_application: null })
-      .eq('id_application', id)
+      .update({ id_client: null })
+      .eq('id_client', id)
 
     if (erreurDetachement) {
       return NextResponse.json({ error: erreurDetachement.message }, { status: 500 })
@@ -82,8 +82,8 @@ export async function GET(
 
 /**
  * PATCH /api/api-clients/[id] — configuration webhooks.
- * Corps: { url_application?: string | null, evenements_souscrits?: string[],
- *   evenements_actifs?: boolean, regenerer_secret?: boolean, tester?: boolean }
+ * Corps: { url_application?: string | null, evenement_souscrit?: string[],
+ *   evenement_actif?: boolean, regenerer_secret?: boolean, tester?: boolean }
  * Le secret n'est renvoyé en clair QU'À sa (re)génération.
  */
 export async function PATCH(
@@ -117,21 +117,21 @@ export async function PATCH(
       }
       maj.url_application = url === null ? null : (url as string).trim()
     }
-    if ('evenements_souscrits' in corps) {
-      const liste = corps.evenements_souscrits
+    if ('evenement_souscrit' in corps) {
+      const liste = corps.evenement_souscrit
       if (!Array.isArray(liste) || !liste.every((e) => (EVENEMENTS_DISPONIBLES as readonly string[]).includes(e))) {
         return NextResponse.json(
           { error: `Événements acceptés : ${EVENEMENTS_DISPONIBLES.join(', ')}` },
           { status: 400 }
         )
       }
-      maj.evenements_souscrits = liste
+      maj.evenement_souscrit = liste
     }
-    if ('evenements_actifs' in corps) {
-      if (typeof corps.evenements_actifs !== 'boolean') {
-        return NextResponse.json({ error: 'Le champ "evenements_actifs" doit être un booléen' }, { status: 400 })
+    if ('evenement_actif' in corps) {
+      if (typeof corps.evenement_actif !== 'boolean') {
+        return NextResponse.json({ error: 'Le champ "evenement_actif" doit être un booléen' }, { status: 400 })
       }
-      maj.evenements_actifs = corps.evenements_actifs
+      maj.evenement_actif = corps.evenement_actif
     }
     if ('suspendu' in corps) {
       if (typeof corps.suspendu !== 'boolean') {
@@ -158,7 +158,7 @@ export async function PATCH(
 
     const { data: client } = await supabaseAdmin
       .from('client')
-      .select('id, nom, url_application, evenements_souscrits, evenements_actifs')
+      .select('id, nom, url_application, evenement_souscrit, evenement_actif')
       .eq('id', id)
       .single()
     let test: Record<string, unknown> | null = null

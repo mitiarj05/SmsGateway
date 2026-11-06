@@ -6,7 +6,7 @@ import { supabaseAdmin } from '@/lib/supabase-serveur'
 const versContrat = (c: {
   id: string; nom: string; cle_api: string; date_creation: string
   url_application?: string | null; secret_signature?: string | null
-  evenements_souscrits?: string[] | null; evenements_actifs?: boolean | null
+  evenement_souscrit?: string[] | null; evenement_actif?: boolean | null
   suspendu?: boolean | null
 }) => ({
   id: c.id,
@@ -14,8 +14,8 @@ const versContrat = (c: {
   cle_api: c.cle_api,
   created_at: c.date_creation,
   url_application: c.url_application ?? null,
-  evenements_souscrits: c.evenements_souscrits ?? [],
-  evenements_actifs: c.evenements_actifs ?? true,
+  evenement_souscrit: c.evenement_souscrit ?? [],
+  evenement_actif: c.evenement_actif ?? true,
   secret_defini: !!c.secret_signature,
   suspendu: c.suspendu === true,
 })
@@ -26,14 +26,14 @@ export async function GET() {
     let lignes: any[] | null = null
     const { data, error } = await supabaseAdmin
       .from('client')
-      .select('id, nom, cle_api, date_creation, url_application, secret_signature, evenements_souscrits, evenements_actifs, suspendu')
+      .select('id, nom, cle_api, date_creation, url_application, secret_signature, evenement_souscrit, evenement_actif, suspendu')
       .order('date_creation', { ascending: false })
     if (error) {
       // Pré-migration (colonne suspendu absente) : repli sans la colonne.
       if (/suspendu/i.test(error.message)) {
         const repli = await supabaseAdmin
           .from('client')
-          .select('id, nom, cle_api, date_creation, url_application, secret_signature, evenements_souscrits, evenements_actifs')
+          .select('id, nom, cle_api, date_creation, url_application, secret_signature, evenement_souscrit, evenement_actif')
           .order('date_creation', { ascending: false })
         if (repli.error) {
           return NextResponse.json({ error: repli.error.message }, { status: 500 })
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabaseAdmin
       .from('client')
       .insert({ nom: nom.trim(), cle_api, ...(emailBrut ? { email: emailBrut } : {}) })
-      .select('id, nom, cle_api, date_creation, url_application, secret_signature, evenements_souscrits, evenements_actifs')
+      .select('id, nom, cle_api, date_creation, url_application, secret_signature, evenement_souscrit, evenement_actif')
       .single()
 
     if (error) {

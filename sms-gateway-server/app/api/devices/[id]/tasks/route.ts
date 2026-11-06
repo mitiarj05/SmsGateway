@@ -47,10 +47,10 @@ export async function GET(
     // Non lié → rien à servir (l'association se fait depuis l'espace client).
     const { data: ficheAppareil } = await supabaseAdmin
       .from('appareil')
-      .select('id_application')
+      .select('id_client')
       .eq('id', idAppareil)
       .single()
-    const idApplicationAppareil = (ficheAppareil as { id_application: string | null } | null)?.id_application ?? null
+    const idApplicationAppareil = (ficheAppareil as { id_client: string | null } | null)?.id_client ?? null
     if (!idApplicationAppareil) {
       return NextResponse.json(
         {
@@ -73,7 +73,7 @@ export async function GET(
       .select('id, numero_destinataire, contenu, statut, date_creation')
       .eq('statut', STATUT_TACHE.EN_ATTENTE)
       .is('id_appareil', null)
-      .eq('id_application', idApplicationAppareil)
+      .eq('id_client', idApplicationAppareil)
       .order('date_creation', { ascending: true })
       .limit(5)
 
@@ -96,7 +96,7 @@ export async function GET(
       .from('tache')
       .select('id, numero_destinataire, contenu, statut, date_creation, id_appareil')
       .eq('statut', STATUT_TACHE.RECLAME)
-      .eq('id_application', idApplicationAppareil)
+      .eq('id_client', idApplicationAppareil)
       .or(`reclame_a.is.null,reclame_a.lt.${seuilDelai}`)
       .order('date_creation', { ascending: true })
       .limit(5)

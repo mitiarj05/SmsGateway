@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       const existant = existants[0] as { id: string; jeton: string }
       await supabaseAdmin
         .from('appareil')
-        .update({ id_application: idApplication, nom, uid_firebase: uidFirebase })
+        .update({ id_client: idApplication, nom, firebase_uid: uidFirebase })
         .eq('id', existant.id)
       return NextResponse.json({
         ok: true,
@@ -95,9 +95,9 @@ export async function POST(request: NextRequest) {
         nom,
         jeton,
         statut: STATUT_APPAREIL.HORS_LIGNE,
-        id_application: idApplication,
+        id_client: idApplication,
         android_id: androidId,
-        uid_firebase: uidFirebase,
+        firebase_uid: uidFirebase,
       })
       .select('id')
       .single()
@@ -111,8 +111,8 @@ export async function POST(request: NextRequest) {
           nom,
           jeton,
           statut: STATUT_APPAREIL.HORS_LIGNE,
-          id_application: idApplication,
-          uid_firebase: uidFirebase,
+          id_client: idApplication,
+          firebase_uid: uidFirebase,
         })
         .select('id')
         .single()

@@ -7,8 +7,8 @@ export interface ClientNotification {
   id: string
   nom: string
   url_application: string | null
-  evenements_souscrits: string[]
-  evenements_actifs: boolean
+  evenement_souscrit: string[]
+  evenement_actif: boolean
   secret_defini: boolean
 }
 
@@ -16,7 +16,7 @@ interface Envoi {
   id: string
   type_evenement: string
   statut: string
-  tentatives: number
+  tentative: number
   date_creation: string
 }
 
@@ -31,8 +31,8 @@ export default function EditeurNotifications({ client, notifier, rafraichir }: {
   rafraichir: () => void
 }) {
   const [url, setUrl] = useState(client.url_application ?? '')
-  const [evenements, setEvenements] = useState<string[]>(client.evenements_souscrits ?? [])
-  const [actifs, setActifs] = useState(client.evenements_actifs ?? true)
+  const [evenements, setEvenements] = useState<string[]>(client.evenement_souscrit ?? [])
+  const [actifs, setActifs] = useState(client.evenement_actif ?? true)
   const [secretVisible, setSecretVisible] = useState<string | null>(null)
   const [resultatTest, setResultatTest] = useState<string | null>(null)
   const [envois, setEnvois] = useState<Envoi[]>([])
@@ -67,8 +67,8 @@ export default function EditeurNotifications({ client, notifier, rafraichir }: {
     try {
       const { reponse, donnees } = await appeler({
         url_application: url.trim() === '' ? null : url.trim(),
-        evenements_souscrits: evenements,
-        evenements_actifs: actifs,
+        evenement_souscrit: evenements,
+        evenement_actif: actifs,
       })
       if (reponse.ok) {
         if (donnees?.secret_signature_visible) setSecretVisible(donnees.secret_signature_visible)
@@ -174,7 +174,7 @@ export default function EditeurNotifications({ client, notifier, rafraichir }: {
               <RotateCcw className="h-3 w-3 shrink-0" />
               <span className="font-mono">{l.type_evenement}</span>
               <span className={l.statut === 'ENVOYE' ? 'text-emerald-600 dark:text-emerald-400' : l.statut === 'ECHOUE' ? 'text-red-500' : 'text-amber-600 dark:text-amber-400'}>
-                {l.statut} · essai {l.tentatives}
+                {l.statut} · essai {l.tentative}
               </span>
               <span className="ml-auto">{new Date(l.date_creation).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
             </li>

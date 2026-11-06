@@ -23,7 +23,7 @@ export function creerCodeLiaison(idApplication: string): { code: string; expireA
   return { code: `${corps}.${signature}`, expireA: expiration * 1000 }
 }
 
-/** Vérifie un code, retourne l'id_application ou null. */
+/** Vérifie un code, retourne l'id_client ou null. */
 export function verifierCodeLiaison(code: unknown): string | null {
   try {
     if (typeof code !== 'string') return null

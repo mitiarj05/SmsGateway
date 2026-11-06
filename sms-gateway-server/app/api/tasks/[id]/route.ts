@@ -99,7 +99,7 @@ export async function POST(
     const { id } = await params
     const { data: existant, error: erreurRecup } = await supabaseAdmin
       .from('tache')
-      .select('id, numero_destinataire, contenu, statut, id_application')
+      .select('id, numero_destinataire, contenu, statut, id_client')
       .eq('id', id)
       .single()
 
@@ -119,7 +119,7 @@ export async function POST(
         numero_destinataire: existant.numero_destinataire,
         contenu: existant.contenu,
         statut: STATUT_TACHE.EN_ATTENTE,
-        id_application: existant.id_application,
+        id_client: existant.id_client,
       })
       .select('id, numero_destinataire, contenu, statut, date_creation')
       .single()

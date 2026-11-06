@@ -89,7 +89,7 @@ export async function obtenirDisponibiliteAppareil(
     .eq('statut', STATUT_APPAREIL.EN_LIGNE)
     .not('jeton_fcm', 'is', null)
   if (idApplication) {
-    requeteAppareils = requeteAppareils.eq('id_application', idApplication)
+    requeteAppareils = requeteAppareils.eq('id_client', idApplication)
   }
   const { data: appareils, error: erreurAppareils } = await requeteAppareils
 
@@ -105,7 +105,7 @@ export async function obtenirDisponibiliteAppareil(
     .eq('statut', STATUT_TACHE.EN_ATTENTE)
     .is('id_appareil', null)
   if (idApplication) {
-    requeteAttente = requeteAttente.eq('id_application', idApplication)
+    requeteAttente = requeteAttente.eq('id_client', idApplication)
   }
   const { data: enAttente } = await requeteAttente
   const compteEnAttente = enAttente?.length ?? 0

@@ -12,7 +12,7 @@ import { STATUT_APPAREIL } from '@/lib/statuts'
  * Corps: { nom, android_id, id_token? } (Google natif) ou
  *        { nom, android_id, email, mot_de_passe } (compte standard).
  *
- * 1. Résout l'application : Firebase (uid → e-mail) ou Supabase (user_id).
+ * 1. Résout l'application : Firebase (uid → e-mail) ou Supabase (id_utilisateur).
  *    Sans espace : 404 (créer un compte d'abord). Suspendu : 403.
  * 2. Retrouve l'appareil par android_id (pas de doublon), sinon le crée,
  *    puis le lie à l'espace. Renvoie { device: { id, token } } — même
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
         const { data: parUidApp } = await supabaseAdmin
           .from('client')
           .select('id')
-          .eq('uid_firebase', compte.uid)
+          .eq('firebase_uid', compte.uid)
           .order('date_creation', { ascending: false })
           .limit(1)
         applicationId = (parUidApp?.[0] as { id: string } | undefined)?.id ?? null
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       const { data: parUser } = await supabaseAdmin
         .from('client')
         .select('id')
-        .eq('user_id', data.user.id)
+        .eq('id_utilisateur', data.user.id)
         .order('date_creation', { ascending: false })
         .limit(1)
       applicationId = (parUser?.[0] as { id: string } | undefined)?.id ?? null
@@ -120,9 +120,9 @@ export async function POST(request: NextRequest) {
       await supabaseAdmin
         .from('appareil')
         .update({
-          id_application: applicationId,
+          id_client: applicationId,
           nom,
-          ...(uidFirebase ? { uid_firebase: uidFirebase } : {}),
+          ...(uidFirebase ? { firebase_uid: uidFirebase } : {}),
         })
         .eq('id', existant.id)
       return NextResponse.json({
@@ -138,9 +138,9 @@ export async function POST(request: NextRequest) {
         nom,
         jeton,
         statut: STATUT_APPAREIL.HORS_LIGNE,
-        id_application: applicationId,
+        id_client: applicationId,
         android_id: androidId,
-        ...(uidFirebase ? { uid_firebase: uidFirebase } : {}),
+        ...(uidFirebase ? { firebase_uid: uidFirebase } : {}),
       })
       .select('id')
       .single()

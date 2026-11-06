@@ -24,19 +24,19 @@ export async function compterEnvoisMois(idApplication: string, mois: string): Pr
   const { count } = await supabaseAdmin
     .from('tache')
     .select('id', { count: 'exact', head: true })
-    .eq('id_application', idApplication)
+    .eq('id_client', idApplication)
     .gte('date_creation', debutMoisIso(mois))
   return count ?? 0
 }
 
 export interface LigneFacturation {
-  id_application: string
+  id_client: string
   nom: string
   mois: string
   total_facture: number
-  sms_envoyes: number
-  sms_recus: number
-  echecs: number
+  sms_envoye: number
+  sms_recu: number
+  echec: number
 }
 
 /** Recalcule la facturation du mois (tous clients) puis la retourne. */
@@ -52,26 +52,26 @@ export async function lireFacturation(mois: string): Promise<LigneFacturation[]>
     const [total, envoyes, echecs, recus] = await Promise.all([
       compterEnvoisMois(app.id, mois),
       supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
-        .eq('id_application', app.id).eq('statut', STATUT_TACHE.ENVOYE).gte('date_creation', debut)
+        .eq('id_client', app.id).eq('statut', STATUT_TACHE.ENVOYE).gte('date_creation', debut)
         .then((r) => r.count ?? 0),
       supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
-        .eq('id_application', app.id).eq('statut', STATUT_TACHE.ECHOUE).gte('date_creation', debut)
+        .eq('id_client', app.id).eq('statut', STATUT_TACHE.ECHOUE).gte('date_creation', debut)
         .then((r) => r.count ?? 0),
       supabaseAdmin.from('reponse').select('id', { count: 'exact', head: true })
-        .eq('id_application', app.id).gte('date_reception', debut)
+        .eq('id_client', app.id).gte('date_reception', debut)
         .then((r) => r.count ?? 0),
     ])
     await supabaseAdmin.from('facturation').upsert(
       {
-        id_application: app.id, mois, sms_envoyes: envoyes,
-        sms_recus: recus, echecs, date_maj: new Date().toISOString(),
+        id_client: app.id, mois, sms_envoye: envoyes,
+        sms_recu: recus, echec: echecs, date_modification: new Date().toISOString(),
       },
-      { onConflict: 'id_application,mois' }
+      { onConflict: 'id_client,mois' }
     )
     lignes.push({
-      id_application: app.id, nom: app.nom, mois,
+      id_client: app.id, nom: app.nom, mois,
       total_facture: total,
-      sms_envoyes: envoyes, sms_recus: recus, echecs,
+      sms_envoye: envoyes, sms_recu: recus, echec: echecs,
     })
   }
   return lignes

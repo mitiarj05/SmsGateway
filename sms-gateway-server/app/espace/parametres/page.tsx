@@ -13,7 +13,7 @@ interface Envoi {
   id: string
   type_evenement: string
   statut: string
-  tentatives: number
+  tentative: number
   date_creation: string
 }
 
@@ -104,8 +104,8 @@ export default function PageParametresEspace() {
           setUrl(config.url_application)
           setBoutiqueConnectee(true)
         }
-        if (Array.isArray(config.evenements_souscrits)) setEvenements(config.evenements_souscrits)
-        if (typeof config.evenements_actifs === 'boolean') setActifs(config.evenements_actifs)
+        if (Array.isArray(config.evenement_souscrit)) setEvenements(config.evenement_souscrit)
+        if (typeof config.evenement_actif === 'boolean') setActifs(config.evenement_actif)
       }
       const journal = await reponseJournal.json().catch(() => ({}))
       if (Array.isArray(journal.envois)) setEnvois(journal.envois)
@@ -178,8 +178,8 @@ export default function PageParametresEspace() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           url_application: url.trim() === '' ? null : url.trim(),
-          evenements_souscrits: evenements,
-          evenements_actifs: actifs,
+          evenement_souscrit: evenements,
+          evenement_actif: actifs,
         }),
       })
       if (reponse.ok) {
@@ -716,7 +716,7 @@ export default function PageParametresEspace() {
                           </span>
                         )}
                       </td>
-                      <td className="py-3 text-right font-mono text-stone-600">{l.tentatives}</td>
+                      <td className="py-3 text-right font-mono text-stone-600">{l.tentative}</td>
                     </tr>
                   ))}
                 </tbody>

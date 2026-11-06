@@ -8,9 +8,9 @@ import GraphiqueConsommationQuotidienne, { ItemConsommation } from '../../../com
 interface ConsoMensuelle {
   mois: string
   total_facture: number
-  sms_envoyes: number
-  sms_recus: number
-  echecs: number
+  sms_envoye: number
+  sms_recu: number
+  echec: number
 }
 
 function moisCourantId(): string {
@@ -42,9 +42,9 @@ export default function PageFacturationEspace() {
           setConso({
             mois: typeof d.mois === 'string' ? d.mois : idMois,
             total_facture: d.total_facture ?? 0,
-            sms_envoyes: d.sms_envoyes ?? 0,
-            sms_recus: d.sms_recus ?? 0,
-            echecs: d.echecs ?? 0,
+            sms_envoye: d.sms_envoye ?? 0,
+            sms_recu: d.sms_recu ?? 0,
+            echec: d.echec ?? 0,
           })
         } else {
           setConso(null)
@@ -69,9 +69,9 @@ export default function PageFacturationEspace() {
   }, [idMois])
 
   const total = conso?.total_facture ?? 0
-  const envoyes = conso?.sms_envoyes ?? 0
-  const recus = conso?.sms_recus ?? 0
-  const echecs = conso?.echecs ?? 0
+  const envoyes = conso?.sms_envoye ?? 0
+  const recus = conso?.sms_recu ?? 0
+  const echecs = conso?.echec ?? 0
   const [anneeVue, moisVue] = idMois.split('-').map(Number)
   const nbJoursMois = new Date(anneeVue, moisVue, 0).getDate()
   const estMoisCourant = idMois === moisCourantId()
@@ -217,7 +217,7 @@ export default function PageFacturationEspace() {
                   {detailOuvert && (
                     <tr className="bg-stone-100 dark:bg-zinc-800/40">
                       <td colSpan={6} className="px-4 py-3 text-[11px] text-stone-600 dark:text-zinc-400">
-                        Échecs : <b>{conso?.echecs ?? 0}</b> ·
+                        Échecs : <b>{conso?.echec ?? 0}</b> ·
                         Unités facturées : <b>{conso?.total_facture ?? 0}</b>
                       </td>
                     </tr>

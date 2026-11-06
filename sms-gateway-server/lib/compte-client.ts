@@ -12,7 +12,7 @@ export interface ResultatCompte {
  * d'un utilisateur Supabase Auth, sans doublon.
  *
  * Ordre :
- * 1. application déjà liée (user_id) ;
+ * 1. application déjà liée (id_utilisateur) ;
  * 2. demande existante pour cet e-mail → on lie l'application du même nom
  *    (la plus récente) et on solde la demande ; sans application, on la
  *    provisionne (fin de l'attente manuelle) ;
@@ -29,7 +29,7 @@ export async function obtenirOuCreerApplication(
   const { data: liee } = await supabaseAdmin
     .from('client')
     .select('id')
-    .eq('user_id', userId)
+    .eq('id_utilisateur', userId)
     .order('date_creation', { ascending: false })
     .limit(1)
   if (liee?.[0]) {
@@ -44,12 +44,12 @@ export async function obtenirOuCreerApplication(
     .from('client')
     .select('id')
     .ilike('email', courriel)
-    .is('user_id', null)
+    .is('id_utilisateur', null)
     .order('date_creation', { ascending: false })
     .limit(1)
   if (precree?.[0]) {
     const id = (precree[0] as { id: string }).id
-    await supabaseAdmin.from('client').update({ user_id: userId }).eq('id', id)
+    await supabaseAdmin.from('client').update({ id_utilisateur: userId }).eq('id', id)
     await refuserSiSuspendu(id)
     return { applicationId: id, cree: false }
   }
@@ -57,7 +57,7 @@ export async function obtenirOuCreerApplication(
   const cle = `cle_${randomBytes(16).toString('hex')}`
   const { data: nouvelle, error } = await supabaseAdmin
     .from('client')
-    .insert({ nom: nomPropre, cle_api: cle, user_id: userId, email: courriel })
+    .insert({ nom: nomPropre, cle_api: cle, id_utilisateur: userId, email: courriel })
     .select('id')
     .single()
   if (error || !nouvelle) throw new Error('Création de l\u2019espace impossible')

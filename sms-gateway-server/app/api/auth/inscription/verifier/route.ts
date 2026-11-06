@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     // 1. Retrouver le code non expiré pour cet e-mail.
     const { data: codes } = await supabaseAdmin
       .from('validation')
-      .select('id, code, expire_le, user_id, nom, tentatives')
+      .select('id, code, expire_le, id_utilisateur, nom, tentative')
       .eq('email', email)
       .order('date_creation', { ascending: false })
       .limit(1)
@@ -43,12 +43,12 @@ export async function POST(request: NextRequest) {
     if (codeEnregistrement.code !== code) {
       await supabaseAdmin
         .from('validation')
-        .update({ tentatives: (codeEnregistrement.tentatives ?? 0) + 1 })
+        .update({ tentative: (codeEnregistrement.tentative ?? 0) + 1 })
         .eq('id', codeEnregistrement.id)
       return NextResponse.json({ error: 'Code invalide — réessayez.' }, { status: 400 })
     }
 
-    const utilisateurId = codeEnregistrement.user_id as string
+    const utilisateurId = codeEnregistrement.id_utilisateur as string
     const nom = (codeEnregistrement as { nom?: string }).nom ?? ''
 
     // 4. Confirmer l'e-mail dans Supabase Auth.

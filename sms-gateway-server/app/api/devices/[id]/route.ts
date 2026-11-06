@@ -14,7 +14,7 @@ export async function GET(
     const { id } = await params
     const { data, error } = await supabaseAdmin
       .from('appareil')
-      .select('id, nom, statut, jeton_fcm, derniere_activite, date_creation, id_application')
+      .select('id, nom, statut, jeton_fcm, derniere_activite, date_creation, id_client')
       .eq('id', id)
       .single()
 
@@ -45,7 +45,7 @@ export async function GET(
       fcm_present: !!data.jeton_fcm,
       derniere_activite: data.derniere_activite,
       created_at: data.date_creation,
-      id_application: data.id_application,
+      id_client: data.id_client,
     } })
   } catch {
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })
@@ -53,7 +53,7 @@ export async function GET(
 }
 
 /** PATCH /api/devices/[id] — activer/désactiver + SIM dédiée.
- *  Corps: { statut?: "DESACTIVE" | "HORS_LIGNE", id_application?: string | null } */
+ *  Corps: { statut?: "DESACTIVE" | "HORS_LIGNE", id_client?: string | null } */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -61,7 +61,7 @@ export async function PATCH(
   try {
     const { id } = await params
     const corps = await request.json()
-    const { statut, id_application } = corps
+    const { statut, id_client } = corps
 
     const donneesMaj: Record<string, unknown> = {}
     if (statut !== undefined) {
@@ -70,13 +70,13 @@ export async function PATCH(
       }
       donneesMaj.statut = statut
     }
-    if (id_application !== undefined) {
-      if (id_application !== null) {
+    if (id_client !== undefined) {
+      if (id_client !== null) {
         // Vérifier que le client existe (SIM dédiée).
         const { data: application } = await supabaseAdmin
           .from('client')
           .select('id')
-          .eq('id', id_application)
+          .eq('id', id_client)
           .single()
         if (!application) {
           return NextResponse.json({ error: 'Client introuvable' }, { status: 404 })
@@ -94,7 +94,7 @@ export async function PATCH(
               .from('appareil')
               .select('id, nom')
               .eq('android_id', androidId)
-              .eq('id_application', id_application)
+              .eq('id_client', id_client)
               .neq('id', id)
               .limit(1)
             if (doublons?.[0]) {
@@ -110,7 +110,7 @@ export async function PATCH(
           // Pré-migration (colonne absente) : on lie sans contrôle.
         }
       }
-      donneesMaj.id_application = id_application
+      donneesMaj.id_client = id_client
     }
     if (Object.keys(donneesMaj).length === 0) {
       return NextResponse.json({ error: 'Rien à mettre à jour' }, { status: 400 })
@@ -120,7 +120,7 @@ export async function PATCH(
       .from('appareil')
       .update(donneesMaj)
       .eq('id', id)
-      .select('id, nom, statut, id_application')
+      .select('id, nom, statut, id_client')
       .single()
 
     if (error) {

@@ -14,13 +14,13 @@ export async function GET(request: NextRequest) {
     let requete = supabaseAdmin
       .from('evenement')
       .select(
-        'id, id_application, type_evenement, statut, tentatives, ' +
-        'prochaine_tentative, date_creation, applications(nom)'
+        'id, id_client, type_evenement, statut, tentative, ' +
+        'prochaine_tentative, date_creation, client(nom)'
       )
       .order('date_creation', { ascending: false })
       .limit(limite)
     if (application) {
-      requete = requete.eq('id_application', application)
+      requete = requete.eq('id_client', application)
     }
 
     const { data, error } = await requete

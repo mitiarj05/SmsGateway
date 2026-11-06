@@ -18,11 +18,11 @@ export async function GET(request: NextRequest) {
     const totaux = lignes.reduce(
       (acc, l) => ({
         total_facture: acc.total_facture + l.total_facture,
-        sms_envoyes: acc.sms_envoyes + l.sms_envoyes,
-        sms_recus: acc.sms_recus + l.sms_recus,
-        echecs: acc.echecs + l.echecs,
+        sms_envoye: acc.sms_envoye + l.sms_envoye,
+        sms_recu: acc.sms_recu + l.sms_recu,
+        echec: acc.echec + l.echec,
       }),
-      { total_facture: 0, sms_envoyes: 0, sms_recus: 0, echecs: 0 }
+      { total_facture: 0, sms_envoye: 0, sms_recu: 0, echec: 0 }
     )
     return NextResponse.json({ mois: brut, lignes, totaux })
   } catch {

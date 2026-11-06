@@ -3,7 +3,7 @@ import type { NextRequest, NextResponse } from 'next/server'
 
 /**
  * Session client (espace /espace) : cookie HttpOnly signé en HMAC-SHA256.
- * Contient l'id_application — TOUTES les routes /api/espace/* filtrent
+ * Contient l'id_client — TOUTES les routes /api/espace/* filtrent
  * par cet id : un client ne voit jamais les données d'un autre.
  * Secret = ADMIN_PASSWORD. Réservé au runtime Node (routes API).
  */
@@ -24,7 +24,7 @@ export function creerValeurSessionClient(idApplication: string): string {
   return `${corps}.${signer(secret, corps)}`
 }
 
-/** Vérifie le cookie et retourne l'id_application, ou null. */
+/** Vérifie le cookie et retourne l'id_client, ou null. */
 export function lireSessionClient(request: NextRequest): string | null {
   try {
     const secret = process.env.ADMIN_PASSWORD

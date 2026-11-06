@@ -6,13 +6,13 @@ import { lireSessionClient } from './session-client'
 /**
  * Phase 2 — Résout l'application cliente d'une requête /api/espace/*.
  *
- * 1. Session Supabase (comptes standard) → application liée par `user_id` ;
+ * 1. Session Supabase (comptes standard) → application liée par `id_utilisateur` ;
  * 2. repli : cookie HMAC `sms_client` historique (transition).
  *
  * Un compte suspendu est refusé (retour null) dans les deux cas.
  * Les routes gardent leur test `if (!idApplication) → 401` inchangé.
  *
- * Tolérant pré-migration : si les colonnes `user_id`/`suspendu` n'existent
+ * Tolérant pré-migration : si les colonnes `id_utilisateur`/`suspendu` n'existent
  * pas encore, on retombe sur le cookie sans bloquer.
  */
 export async function resoudreApplicationEspace(request: NextRequest): Promise<string | null> {
@@ -25,7 +25,7 @@ export async function resoudreApplicationEspace(request: NextRequest): Promise<s
       const { data: app } = await supabaseAdmin
         .from('client')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('id_utilisateur', user.id)
         .order('date_creation', { ascending: false })
         .limit(1)
       const id = (app?.[0] as { id: string } | undefined)?.id

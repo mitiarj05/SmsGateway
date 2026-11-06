@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     await supabaseAdmin.from('validation').insert({
       email,
       code,
-      user_id: utilisateurId,
+      id_utilisateur: utilisateurId,
       nom: compteExistant ? '' : nom,
       expire_le: expireLe,
     })

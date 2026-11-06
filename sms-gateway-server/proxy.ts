@@ -118,7 +118,7 @@ async function sessionSupabaseValide(
 /**
  * Session client (cookie sms_client, format v1.<idApplication>.<exp>.<sig>).
  * Dupliquée ici en Web Crypto car le proxy tourne hors runtime Node
- * (même raison que sessionValide). Retourne l'id_application ou null.
+ * (même raison que sessionValide). Retourne l'id_client ou null.
  */
 async function sessionClientValide(request: NextRequest, secret: string): Promise<string | null> {
   const valeur = request.cookies.get('sms_client')?.value

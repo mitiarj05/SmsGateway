@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       // select('*') : la colonne `livraison` peut être absente si la migration
       // n'a pas encore été exécutée — la nommer ferait échouer toute la réponse.
       .select('*')
-      .eq('id_application', client.id)
+      .eq('id_client', client.id)
       .order('date_creation', { ascending: false })
       .limit(limit)
 

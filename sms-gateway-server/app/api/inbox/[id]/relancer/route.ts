@@ -14,25 +14,25 @@ export async function POST(
     const { id } = await params
     const { data: entrant } = await supabaseAdmin
       .from('reponse')
-      .select('id, id_application, id_appareil, expediteur, contenu, date_reception')
+      .select('id, id_client, id_appareil, expediteur, contenu, date_reception')
       .eq('id', id)
       .single()
     if (!entrant) {
       return NextResponse.json({ error: 'Entrant introuvable' }, { status: 404 })
     }
-    if (!entrant.id_application) {
+    if (!entrant.id_client) {
       return NextResponse.json(
         { error: 'Aucun client résolu pour cet entrant (visible dashboard uniquement)' },
         { status: 400 }
       )
     }
-    const idCharge = await enfilerEvenement(entrant.id_application, 'sms.recu', {
+    const idCharge = await enfilerEvenement(entrant.id_client, 'sms.recu', {
       id_reponse: entrant.id,
       expediteur: entrant.expediteur,
       contenu: entrant.contenu,
       date_reception: entrant.date_reception,
       id_appareil: entrant.id_appareil,
-      id_application: entrant.id_application,
+      id_client: entrant.id_client,
       relance_manuelle: true,
     })
     const resultat = await traiterEvenementsEnAttente()

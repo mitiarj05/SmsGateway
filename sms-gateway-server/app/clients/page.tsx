@@ -64,7 +64,7 @@ export default function PageClientsAdmin() {
       ])
       const liste: any[] = Array.isArray(dClients.clients) ? dClients.clients : []
       const conso = new Map<string, any>(
-        (Array.isArray(dFact.lignes) ? dFact.lignes : []).map((l: any) => [l.id_application, l])
+        (Array.isArray(dFact.lignes) ? dFact.lignes : []).map((l: any) => [l.id_client, l])
       )
       setClients(
         liste.map((c: any) => {
@@ -74,7 +74,7 @@ export default function PageClientsAdmin() {
             initiales: (c.nom || '?').substring(0, 2).toUpperCase(),
             nom: c.nom,
             creeLe: c.created_at,
-            utilise_mois: ligne?.sms_envoyes ?? 0,
+            utilise_mois: ligne?.sms_envoye ?? 0,
             suspendu: c.suspendu === true,
           }
         })

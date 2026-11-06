@@ -235,4 +235,37 @@ L'API `/api/espace/moi` (GET et PATCH) reste active et alimente les données aff
 
 ---
 
-*Généré automatiquement lors de la session de refactorisation SMSTSIKA.*
+## 13. Point au 6 novembre 2026 — écrans consolidés, vocabulary figé, UML
+
+### 13.1 État du vocabulaire (définitif)
+
+| Notion | Nom retenu | Où |
+|--------|------------|----|
+| File des livraisons vers le site client | `evenement` (table + API + dossier) | DB, code |
+| Miroir du statut de livraison sur `reponse` | **`statut_notification` / `tentatives_notification`** (arbitrage utilisateur après aller-retour) | DB, code |
+| Codes d'inscription à 6 chiffres | `validation` | DB, code |
+| Symboles `lib/evenements.ts` | `enfilerEvenement`, `signerEvenement`, `traiterEvenementsEnAttente`, `miroirStatutEvenement`, `EVENEMENTS_DISPONIBLES`, `fabriquerSecretSignature` | code |
+
+### 13.2 Interfaces de l'espace client (état actuel)
+
+- **Paramètres** (`/espace/parametres`) = 2 onglets internes : « Profil & sécurité » (profil, clé API, statistiques, mot de passe) et « **Paramètres avancés** » (toute l'ancienne Intégrations : Auto-Connect, lien manuel, événements souscrits, test, récepteur, journal des livraisons). Accès direct via `/espace/parametres?onglet=avancee`.
+- **« Mon compte » et « Intégrations » n'existent plus** en pages séparées — le menu ne garde qu'un seul « Paramètres ».
+- L'API `/api/espace/evenements`, `/api/espace/journal`, le récepteur PHP et `connect-store` sont inchangés.
+
+### 13.3 Diagrammes UML (nouveau)
+
+- Les ~130 fichiers `.vpp` / `.bak` de la racine ont été supprimés (non commités à ce jour — `git status` satellites).
+- Les diagrammes sont consolidés dans **`Diagramme/SMSTSIKA.vpp`** (5,3 Mo, avec sauvegardes `.bak_*` locales non suivies).
+- Nouveau guide de correction rédigé par l'utilisateur : **`CONCEPTION_EXACTE_UML_CORRECTION.md`** (+ `.html`) — 3 familles de diagrammes (DSS boîte noire, DSD boîte blanche avec vraies classes Kotlin/Next.js, diagramme de classes).
+- ⚠️ Points du guide à corriger pour coller au code réel :
+  1. Table `client` : `quota_mensuel` **n'existe plus** (forfait illimité).
+  2. Table `appareil` : `sms_envoyes_heure` supprimé ; le vrai nom est **`derniere_activite`** (pas `derniere_synchro`) ; il manque `uid_firebase`, `solde_devise`, `solde_texte`, `solde_maj_le`.
+  3. Table `tache` : il manque `message_erreur`, `reclame_a`, `programme_a`, `livraison_code`.
+  4. Le modèle ne couvre que 3 tables : il manque **`reponse`** (avec le miroir `statut_notification`/`tentatives_notification`), **`evenement`** (la file), **`facturation`**, **`parametre`**, **`validation`** (codes d'inscription).
+  5. DSD 3 : `enfilerNotification('sms.recu')` → le code dit maintenant **`enfilerEvenement(...)`**.
+  6. DSS 2 : « NotificationWebhookHTTP » peut rester en boîte noire, mais si renommage souhaité : `LivrerEvenement(X-Smsika-Signature, payload)`.
+  7. Les classes Kotlin listées (5 contrôleurs, `ExpediteurSms`, `GestionnaireSim`, `DepotAppareilsImpl`, `DepotTachesImpl`, `ClientApi`) et la route `POST /api/appareils/lier-par-code` sont **exactes** — vérifiées dans le code.
+
+---
+
+*Généré automatiquement lors de la session de refactorisation SMSTSIKA — dernière mise à jour : 6 novembre 2026.*

@@ -24,10 +24,10 @@ export async function DELETE(
 
     const { data: existant } = await supabaseAdmin
       .from('appareil')
-      .select('id, nom, id_application')
+      .select('id, nom, id_client')
       .eq('id', id)
       .single()
-    if (!existant || (existant as { id_application: string | null }).id_application !== idApplication) {
+    if (!existant || (existant as { id_client: string | null }).id_client !== idApplication) {
       return NextResponse.json({ error: 'Appareil introuvable' }, { status: 404 })
     }
 
@@ -36,7 +36,7 @@ export async function DELETE(
       .from('tache')
       .update({ id_appareil: null })
       .eq('id_appareil', id)
-      .eq('id_application', idApplication)
+      .eq('id_client', idApplication)
     if (erreurDetachement) {
       return NextResponse.json({ error: erreurDetachement.message }, { status: 500 })
     }
@@ -48,7 +48,7 @@ export async function DELETE(
         .from('reponse')
         .update({ id_appareil: null })
         .eq('id_appareil', id)
-        .eq('id_application', idApplication)
+        .eq('id_client', idApplication)
     } catch {
       /* colonne absente — on continue */
     }

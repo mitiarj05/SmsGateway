@@ -48,10 +48,10 @@ export default function PageFacturation() {
       const data = await r.json().catch(() => ({}))
       if (Array.isArray(data.lignes)) {
         setLignes(data.lignes.map((l: any) => ({
-          id: l.id_application,
+          id: l.id_client,
           nom: l.nom,
-          utilises: l.sms_envoyes ?? 0,
-          recus: l.sms_recus ?? 0,
+          utilises: l.sms_envoye ?? 0,
+          recus: l.sms_recu ?? 0,
         })))
       }
     } finally {
@@ -70,7 +70,7 @@ export default function PageFacturation() {
   const progressionMois = progressionDuMois()
 
   function exporterCsv() {
-    const entete = 'client;sms_utilises;sms_recus'
+    const entete = 'client;sms_utilises;sms_recu'
     const corps = lignes.map((l) => [l.nom, l.utilises, l.recus].join(';'))
     const blob = new Blob([[entete, ...corps].join('\n'), '\n'], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)

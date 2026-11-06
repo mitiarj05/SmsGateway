@@ -31,8 +31,8 @@ interface LigneClient {
   id: string
   url_application: string | null
   secret_signature: string | null
-  evenements_souscrits: string[] | null
-  evenements_actifs: boolean | null
+  evenement_souscrit: string[] | null
+  evenement_actif: boolean | null
 }
 
 /**
@@ -48,16 +48,16 @@ export async function enfilerEvenement(
   if (!idApplication) return null
   const { data: app } = await supabaseAdmin
     .from('client')
-    .select('id, url_application, secret_signature, evenements_souscrits, evenements_actifs')
+    .select('id, url_application, secret_signature, evenement_souscrit, evenement_actif')
     .eq('id', idApplication)
     .single()
   const application = app as LigneClient | null
   if (
     !application ||
-    application.evenements_actifs === false ||
+    application.evenement_actif === false ||
     !application.url_application ||
     !application.secret_signature ||
-    !(application.evenements_souscrits ?? []).includes(type)
+    !(application.evenement_souscrit ?? []).includes(type)
   ) {
     return null
   }
@@ -70,7 +70,7 @@ export async function enfilerEvenement(
   const { data, error } = await supabaseAdmin
     .from('evenement')
     .insert({
-      id_application: idApplication,
+      id_client: idApplication,
       type_evenement: type,
       charge,
       statut: 'EN_ATTENTE',
@@ -92,7 +92,7 @@ async function miroirStatutEvenement(charge: Record<string, unknown>, statut: st
   if (typeof idEntrant !== 'string' || !idEntrant) return
   await supabaseAdmin
       .from('reponse')
-    .update({ statut_notification: statut, tentatives_notification: tentatives })
+    .update({ statut_notification: statut, tentative_notification: tentatives })
     .eq('id', idEntrant)
 }
 
@@ -106,7 +106,7 @@ export async function traiterEvenementsEnAttente(): Promise<{ envoyes: number; e
   let echecs = 0
   const { data: dues } = await supabaseAdmin
     .from('evenement')
-    .select('id, id_application, type_evenement, charge, tentatives')
+    .select('id, id_client, type_evenement, charge, tentative')
     .eq('statut', 'EN_ATTENTE')
     .lte('prochaine_tentative', new Date().toISOString())
     .order('prochaine_tentative', { ascending: true })
@@ -114,19 +114,19 @@ export async function traiterEvenementsEnAttente(): Promise<{ envoyes: number; e
   for (const livraison of dues ?? []) {
     const { data: app } = await supabaseAdmin
       .from('client')
-      .select('url_application, secret_signature, evenements_actifs')
-      .eq('id', livraison.id_application)
+      .select('url_application, secret_signature, evenement_actif')
+      .eq('id', livraison.id_client)
       .single()
     const url = (app as { url_application: string | null } | null)?.url_application
     const secret = (app as { secret_signature: string | null } | null)?.secret_signature
-    const actifs = (app as { evenements_actifs: boolean | null } | null)?.evenements_actifs !== false
-    const tentatives = (livraison.tentatives ?? 0) + 1
+    const actifs = (app as { evenement_actif: boolean | null } | null)?.evenement_actif !== false
+    const tentative = (livraison.tentative ?? 0) + 1
     if (!url || !secret || !actifs) {
       await supabaseAdmin
         .from('evenement')
-        .update({ statut: 'ECHOUE', tentatives, date_maj: new Date().toISOString() })
+        .update({ statut: 'ECHOUE', tentative, date_modification: new Date().toISOString() })
         .eq('id', livraison.id)
-      await miroirStatutEvenement(livraison.charge, 'ECHOUE', tentatives)
+      await miroirStatutEvenement(livraison.charge, 'ECHOUE', tentative)
       echecs++
       continue
     }
@@ -154,32 +154,32 @@ export async function traiterEvenementsEnAttente(): Promise<{ envoyes: number; e
           .from('evenement')
           .update({
             statut: 'ENVOYE',
-            tentatives,
-            date_maj: new Date().toISOString(),
+            tentative,
+            date_modification: new Date().toISOString(),
           })
           .eq('id', livraison.id)
-        await miroirStatutEvenement(livraison.charge, 'ENVOYE', tentatives)
+        await miroirStatutEvenement(livraison.charge, 'ENVOYE', tentative)
         envoyes++
       } else {
         throw new Error(`HTTP ${reponse.status}`)
       }
     } catch (erreur) {
-      const definitive = tentatives >= TENTATIVES_MAX
-      const delai = DELAIS_REJEU_MINUTES[Math.min(tentatives - 1, DELAIS_REJEU_MINUTES.length - 1)]
+      const definitive = tentative >= TENTATIVES_MAX
+      const delai = DELAIS_REJEU_MINUTES[Math.min(tentative - 1, DELAIS_REJEU_MINUTES.length - 1)]
       await supabaseAdmin
         .from('evenement')
         .update({
           statut: definitive ? 'ECHOUE' : 'EN_ATTENTE',
-          tentatives,
+          tentative,
           prochaine_tentative: new Date(Date.now() + delai * 60_000).toISOString(),
-          date_maj: new Date().toISOString(),
+          date_modification: new Date().toISOString(),
         })
         .eq('id', livraison.id)
-      await miroirStatutEvenement(livraison.charge, definitive ? 'ECHOUE' : 'EN_ATTENTE', tentatives)
-      console.warn(`evenement ${livraison.id} (${livraison.type_evenement}) échec tentative ${tentatives}:`, (erreur as Error).message)
+      await miroirStatutEvenement(livraison.charge, definitive ? 'ECHOUE' : 'EN_ATTENTE', tentative)
+      console.warn(`evenement ${livraison.id} (${livraison.type_evenement}) échec tentative ${tentative}:`, (erreur as Error).message)
       echecs++
       if (definitive) {
-        await couperEvenementsSiEnPanne(livraison.id_application)
+        await couperEvenementsSiEnPanne(livraison.id_client)
       }
     }
   }
@@ -192,13 +192,13 @@ async function couperEvenementsSiEnPanne(idApplication: string) {
   const { count } = await supabaseAdmin
     .from('evenement')
     .select('id', { count: 'exact', head: true })
-    .eq('id_application', idApplication)
+    .eq('id_client', idApplication)
     .eq('statut', 'ECHOUE')
-    .gte('date_maj', depuis)
+    .gte('date_modification', depuis)
   if ((count ?? 0) >= 20) {
     await supabaseAdmin
       .from('client')
-      .update({ evenements_actifs: false })
+      .update({ evenement_actif: false })
       .eq('id', idApplication)
     console.warn(`événements coupés pour ${idApplication} (URL durablement en panne)`)
   }

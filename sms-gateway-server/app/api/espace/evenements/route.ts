@@ -5,7 +5,7 @@ import { EVENEMENTS_DISPONIBLES, fabriquerSecretSignature, enfilerEvenement, tra
 
 /**
  * GET /api/espace/evenements — config webhooks du client (secret jamais exposé).
- * PATCH — { url_application?, evenements_souscrits?, evenements_actifs?,
+ * PATCH — { url_application?, evenement_souscrit?, evenement_actif?,
  *   regenerer_secret?, tester? } (secret renvoyé une seule fois si régénéré).
  */
 export async function GET(request: NextRequest) {
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
     const { data, error } = await supabaseAdmin
       .from('client')
-      .select('url_application, evenements_souscrits, evenements_actifs, secret_signature')
+      .select('url_application, evenement_souscrit, evenement_actif, secret_signature')
       .eq('id', idApplication)
       .single()
     if (error || !data) {
@@ -50,21 +50,21 @@ export async function PATCH(request: NextRequest) {
       }
       maj.url_application = url === null ? null : (url as string).trim()
     }
-    if ('evenements_souscrits' in corps) {
-      const liste = corps.evenements_souscrits
+    if ('evenement_souscrit' in corps) {
+      const liste = corps.evenement_souscrit
       if (!Array.isArray(liste) || !liste.every((e) => (EVENEMENTS_DISPONIBLES as readonly string[]).includes(e))) {
         return NextResponse.json(
           { error: `Événements acceptés : ${EVENEMENTS_DISPONIBLES.join(', ')}` },
           { status: 400 }
         )
       }
-      maj.evenements_souscrits = liste
+      maj.evenement_souscrit = liste
     }
-    if ('evenements_actifs' in corps) {
-      if (typeof corps.evenements_actifs !== 'boolean') {
-        return NextResponse.json({ error: 'Le champ "evenements_actifs" doit être un booléen' }, { status: 400 })
+    if ('evenement_actif' in corps) {
+      if (typeof corps.evenement_actif !== 'boolean') {
+        return NextResponse.json({ error: 'Le champ "evenement_actif" doit être un booléen' }, { status: 400 })
       }
-      maj.evenements_actifs = corps.evenements_actifs
+      maj.evenement_actif = corps.evenement_actif
     }
     let secretVisible: string | null = null
     if (corps.regenerer_secret === true) {

@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     const { data: existant } = await clientSupabase
       .from('appareil')
       .select('id, nom, jeton, statut, date_creation')
-      .eq('uid_firebase', uidFirebase)
+      .eq('firebase_uid', uidFirebase)
       .single()
 
     if (existant) {
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
         nom: nom.trim(),
         jeton: jeton,
         statut: STATUT_APPAREIL.HORS_LIGNE,
-        uid_firebase: uidFirebase,
+        firebase_uid: uidFirebase,
         ...(androidId ? { android_id: androidId } : {}),
       })
       .select('id, nom, jeton, statut, date_creation')
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
           nom: nom.trim(),
           jeton: jeton,
           statut: STATUT_APPAREIL.HORS_LIGNE,
-          uid_firebase: uidFirebase,
+          firebase_uid: uidFirebase,
         })
         .select('id, nom, jeton, statut, date_creation')
         .single())

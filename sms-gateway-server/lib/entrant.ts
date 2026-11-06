@@ -26,22 +26,22 @@ export async function resoudreClientEntrant(
   const depuis = new Date(Date.now() - 30 * 86400_000).toISOString()
   const { data: sortants } = await supabaseAdmin
       .from('tache')
-    .select('id_application')
+    .select('id_client')
     .eq('numero_destinataire', expediteur)
-    .not('id_application', 'is', null)
+    .not('id_client', 'is', null)
     .gte('date_creation', depuis)
     .order('date_creation', { ascending: false })
     .limit(1)
-  const candidat = (sortants?.[0]?.id_application as string | null) ?? null
+  const candidat = (sortants?.[0]?.id_client as string | null) ?? null
   if (candidat) return { idApplication: candidat, source: 'correlation' }
 
   // 2. SIM dédiée : appareil affecté à un client (numéro SAV/support).
   const { data: appareil } = await supabaseAdmin
     .from('appareil')
-    .select('id_application')
+    .select('id_client')
     .eq('id', idAppareil)
     .single()
-  const affecte = (appareil as { id_application: string | null } | null)?.id_application ?? null
+  const affecte = (appareil as { id_client: string | null } | null)?.id_client ?? null
   if (affecte) return { idApplication: affecte, source: 'sim_dediee' }
 
   // 3. Sinon : dashboard uniquement (aucune notification).

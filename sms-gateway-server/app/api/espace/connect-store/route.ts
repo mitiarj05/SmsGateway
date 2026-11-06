@@ -69,8 +69,8 @@ export async function POST(request: NextRequest) {
       .from('client')
       .update({
         url_application: urlNotification,
-        evenements_actifs: true,
-        evenements_souscrits: [...EVENEMENTS_DISPONIBLES],
+        evenement_actif: true,
+        evenement_souscrit: [...EVENEMENTS_DISPONIBLES],
       })
       .eq('id', idApplication)
     if (erreurWebhook) {

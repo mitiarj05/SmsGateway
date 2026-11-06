@@ -25,16 +25,16 @@ export async function GET(request: NextRequest) {
     const [utiliseMois, envoyes, attente, echoue, recus] = await Promise.all([
       compterEnvoisMois(idApplication, mois),
       supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
-        .eq('id_application', idApplication).eq('statut', STATUT_TACHE.ENVOYE)
+        .eq('id_client', idApplication).eq('statut', STATUT_TACHE.ENVOYE)
         .then((r) => r.count ?? 0),
       supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
-        .eq('id_application', idApplication).eq('statut', STATUT_TACHE.EN_ATTENTE)
+        .eq('id_client', idApplication).eq('statut', STATUT_TACHE.EN_ATTENTE)
         .then((r) => r.count ?? 0),
       supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
-        .eq('id_application', idApplication).eq('statut', STATUT_TACHE.ECHOUE)
+        .eq('id_client', idApplication).eq('statut', STATUT_TACHE.ECHOUE)
         .then((r) => r.count ?? 0),
       supabaseAdmin.from('reponse').select('id', { count: 'exact', head: true })
-        .eq('id_application', idApplication)
+        .eq('id_client', idApplication)
         .then((r) => r.count ?? 0),
     ])
     return NextResponse.json({

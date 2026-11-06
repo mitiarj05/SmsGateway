@@ -70,7 +70,7 @@ export async function POST(
     if (resolution.idApplication) {
       await supabaseAdmin
         .from('reponse')
-        .update({ id_application: resolution.idApplication })
+        .update({ id_client: resolution.idApplication })
         .eq('id', entrant.id)
     }
 
@@ -81,7 +81,7 @@ export async function POST(
       contenu,
       date_reception: dateReception,
       id_appareil: idAppareil,
-      id_application: resolution.idApplication,
+      id_client: resolution.idApplication,
       source_routage: resolution.source,
     })
     await traiterEvenementsEnAttente()
@@ -89,7 +89,7 @@ export async function POST(
     return NextResponse.json(
       {
         message: 'SMS entrant enregistré',
-        entrant: { id: entrant.id, id_application: resolution.idApplication },
+        entrant: { id: entrant.id, id_client: resolution.idApplication },
         notification: idCharge ? 'en_file' : 'non_configuré',
       },
       { status: 201 }

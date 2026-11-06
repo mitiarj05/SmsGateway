@@ -61,7 +61,7 @@ export async function traiterEnvoiSms(
   const { count: nbAppareils } = await supabaseAdmin
     .from('appareil')
     .select('id', { count: 'exact', head: true })
-    .eq('id_application', client.id)
+    .eq('id_client', client.id)
   if (!nbAppareils) {
     return erreur('Aucun téléphone lié à votre espace — associez-en un pour envoyer.', 400)
   }
@@ -105,7 +105,7 @@ export async function traiterEnvoiSms(
         contenu: message.trim(),
         statut: programmePour ? STATUT_TACHE.PROGRAMME : STATUT_TACHE.EN_ATTENTE,
         programme_a: programmePour ? programmePour.toISOString() : null,
-        id_application: client.id,
+        id_client: client.id,
       }))
     )
     .select('id, numero_destinataire, contenu, statut, programme_a, date_creation')

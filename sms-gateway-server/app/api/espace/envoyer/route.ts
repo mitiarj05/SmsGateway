@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const { count: nbAppareils } = await supabaseAdmin
       .from('appareil')
       .select('id', { count: 'exact', head: true })
-      .eq('id_application', idApplication)
+      .eq('id_client', idApplication)
     if (!nbAppareils) {
       return NextResponse.json(
         { error: 'Aucun téléphone lié à votre espace — associez-en un pour envoyer.' },
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
           contenu: message.trim(),
           statut: programmePour ? STATUT_TACHE.PROGRAMME : STATUT_TACHE.EN_ATTENTE,
           programme_a: programmePour ? programmePour.toISOString() : null,
-          id_application: idApplication,
+          id_client: idApplication,
         }))
       )
       .select('id, numero_destinataire, contenu, statut, programme_a, date_creation')

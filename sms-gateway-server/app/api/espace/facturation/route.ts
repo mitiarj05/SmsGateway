@@ -22,16 +22,16 @@ export async function GET(request: NextRequest) {
     const debut = debutMoisIso(brut)
     const [total, envoyes, echecs, recus, app] = await Promise.all([
       supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
-        .eq('id_application', idApplication).gte('date_creation', debut)
+        .eq('id_client', idApplication).gte('date_creation', debut)
         .then((r) => r.count ?? 0),
       supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
-        .eq('id_application', idApplication).eq('statut', 'ENVOYE').gte('date_creation', debut)
+        .eq('id_client', idApplication).eq('statut', 'ENVOYE').gte('date_creation', debut)
         .then((r) => r.count ?? 0),
       supabaseAdmin.from('tache').select('id', { count: 'exact', head: true })
-        .eq('id_application', idApplication).eq('statut', 'ECHOUE').gte('date_creation', debut)
+        .eq('id_client', idApplication).eq('statut', 'ECHOUE').gte('date_creation', debut)
         .then((r) => r.count ?? 0),
       supabaseAdmin.from('reponse').select('id', { count: 'exact', head: true })
-        .eq('id_application', idApplication).gte('date_reception', debut)
+        .eq('id_client', idApplication).gte('date_reception', debut)
         .then((r) => r.count ?? 0),
       supabaseAdmin.from('client').select('nom')
         .eq('id', idApplication).single(),
@@ -40,9 +40,9 @@ export async function GET(request: NextRequest) {
       mois: brut,
       nom: (app as unknown as { nom: string } | null)?.nom ?? '',
       total_facture: total,
-      sms_envoyes: envoyes,
-      sms_recus: recus,
-      echecs,
+      sms_envoye: envoyes,
+      sms_recu: recus,
+      echec: echecs,
     })
   } catch {
     return NextResponse.json({ error: 'Erreur interne' }, { status: 500 })

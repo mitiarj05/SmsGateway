@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabaseAdmin
       .from('appareil')
       .select('*')
-      .eq('id_application', idApplication)
+      .eq('id_client', idApplication)
       .order('statut', { ascending: false })
       .order('derniere_activite', { ascending: false })
     if (error) {
