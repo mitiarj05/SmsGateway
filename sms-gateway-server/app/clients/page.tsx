@@ -316,7 +316,7 @@ export default function PageClientsAdmin() {
               Invitez vos clients et gardez leurs accès et leur consommation à portée de main.
             </p>
             <a
-              href="/espace/sommaire"
+              href="/comment-ca-marche"
               className="inline-flex items-center gap-1 text-[12px] font-bold text-[#2563EB] hover:underline dark:text-blue-400 pt-1"
             >
               Consulter le guide API <ArrowUpRight className="h-3.5 w-3.5" />

@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect, useCallback, useRef, type CSSProperties } from 'react'
 import {
-  Inbox, Receipt, Send, Compass, List,
+  Inbox, Receipt, Send, List,
   Moon, Sun, Search, Bell, AlertTriangle, LogOut, LayoutGrid, Smartphone, ArrowUpRight,
   PanelLeft, ChevronsLeft, Settings
 } from 'lucide-react'
@@ -19,7 +19,6 @@ const NAVIGATION = [
   { href: '/espace/envois', icone: List, etiquette: 'Mes envois' },
   { href: '/espace/entrees', icone: Inbox, etiquette: 'SMS reçus' },
   { href: '/espace/facturation', icone: Receipt, etiquette: 'Facturation' },
-  { href: '/espace/sommaire', icone: Compass, etiquette: 'Sommaire' },
   { href: '/espace/parametres', icone: Settings, etiquette: 'Paramètres' },
 ]
 

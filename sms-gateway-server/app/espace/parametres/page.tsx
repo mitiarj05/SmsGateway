@@ -39,10 +39,6 @@ export default function PageParametresEspace() {
   const [cleChargee, setCleChargee] = useState(false)
   const [copiee, setCopiee] = useState(false)
 
-  /* Statistiques */
-  const [stats, setStats] = useState<{ envoyes: number; attente: number; echoue: number; recus: number }>({ envoyes: 0, attente: 0, echoue: 0, recus: 0 })
-  const [utiliseMois, setUtiliseMois] = useState(0)
-
   /* ---- Paramètres avancés (intégration) ---- */
   const [url, setUrl] = useState('')
   const [evenements, setEvenements] = useState<string[]>(['sms.recu'])
@@ -77,8 +73,6 @@ export default function PageParametresEspace() {
       if (d.email) setEmail(d.email)
       if (d.cle_api) setCleApi(d.cle_api)
       setCleChargee(true)
-      if (d.stats) setStats(d.stats)
-      if (typeof d.utilise_mois === 'number') setUtiliseMois(d.utilise_mois)
     } finally {
       setChargement(false)
     }
@@ -395,53 +389,6 @@ export default function PageParametresEspace() {
             {cleApi && copiee && (
               <p className="mt-1 text-[11px] text-[#15803B]">Copiée dans le presse-papiers.</p>
             )}
-          </div>
-
-          {/* Card : Statistiques du mois */}
-          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white p-6 shadow-card space-y-5 dark:border-zinc-800 dark:bg-zinc-900">
-            <div className="flex items-center justify-between border-b border-[#1C1917]/10 pb-3 dark:border-zinc-800">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                  <CheckCircle2 className="h-4.5 w-4.5" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-[#1C1917] dark:text-white">Statistiques du mois</h2>
-                  <p className="text-xs text-stone-500 dark:text-zinc-400">
-                    Volume et état de vos envois SMS ce mois-ci.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between py-2 border-b border-[#1C1917]/5 dark:border-zinc-800/5">
-                <span className="text-[12px] text-stone-600 dark:text-zinc-400">SMS envoyés</span>
-                <span className="text-[16px] font-bold text-[#1C1917] dark:text-white">{stats.envoyes}</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-[#1C1917]/5 dark:border-zinc-800/5">
-                <span className="text-[12px] text-stone-600 dark:text-zinc-400">En attente</span>
-                <span className="text-[16px] font-bold text-[#1C1917] dark:text-white">{stats.attente}</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-[#1C1917]/5 dark:border-zinc-800/5">
-                <span className="text-[12px] text-stone-600 dark:text-zinc-400">Échoués</span>
-                <span className="text-[16px] font-bold text-rose-600 dark:text-rose-400">{stats.echoue}</span>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-[12px] text-stone-600 dark:text-zinc-400">SMS reçus</span>
-                <span className="text-[16px] font-bold text-[#1C1917] dark:text-white">{stats.recus}</span>
-              </div>
-            </div>
-            <div className="pt-3 border-t border-[#1C1917]/10 dark:border-zinc-800">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] font-semibold text-stone-600 dark:text-zinc-400">Utilisation ce mois</span>
-                <span className="text-[11px] font-semibold text-[#1C1917] dark:text-white">{utiliseMois} SMS</span>
-              </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#1C1917]/[0.04] dark:bg-zinc-800">
-                <div className="h-full rounded-full bg-blue-600" style={{ width: Math.min(100, (utiliseMois / 100) * 100) + '%' }} />
-              </div>
-              <p className="mt-2 text-[11px] text-stone-500 dark:text-zinc-500">
-                Forfait illimité : ce relevé suit vos envois, aucun plafond n’est appliqué.
-              </p>
-            </div>
           </div>
 
           {/* Card 2 : Sécurité du compte (Mot de passe) */}
