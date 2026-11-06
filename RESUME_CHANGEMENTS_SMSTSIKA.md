@@ -237,13 +237,20 @@ L'API `/api/espace/moi` (GET et PATCH) reste active et alimente les données aff
 
 ## 13. Point au 6 novembre 2026 — écrans consolidés, vocabulary figé, UML
 
-### 13.1 État du vocabulaire (définitif)
+### 13.1 État du vocabulaire (définitif — v3, aligné sur la base réelle)
 
 | Notion | Nom retenu | Où |
 |--------|------------|----|
 | File des livraisons vers le site client | `evenement` (table + API + dossier) | DB, code |
-| Miroir du statut de livraison sur `reponse` | **`statut_notification` / `tentatives_notification`** (arbitrage utilisateur après aller-retour) | DB, code |
+| Miroir du statut de livraison sur `reponse` | **`statut_notification` / `tentative_notification`** (arbitrage utilisateur après aller-retour) | DB, code |
 | Codes d'inscription à 6 chiffres | `validation` | DB, code |
+| Liens vers le propriétaire | `id_client` partout (appareil, tache, reponse, evenement, facturation) · `id_utilisateur` (client, validation) | DB, code |
+| Événements souscrits / actifs (client) | `evenement_souscrit` / `evenement_actif` (singulier) | DB, code |
+| Identité Firebase du téléphone | `firebase_uid` (appareil ; client garde son propre `firebase_uid`) | DB, code |
+| Compteurs d'essai | `tentative` (singulier) sur `evenement`, `validation`, `tentative_notification` sur `reponse` | DB, code |
+| Horodatage de mise à jour | `date_modification` (evenement, facturation, parametre) | DB, code |
+| Facturation | `sms_envoye`, `sms_recu`, `echec` (singulier) | DB, code |
+| Enum du statut d'envoi | `statut_tache` (ex `statut_message`) | DB |
 | Symboles `lib/evenements.ts` | `enfilerEvenement`, `signerEvenement`, `traiterEvenementsEnAttente`, `miroirStatutEvenement`, `EVENEMENTS_DISPONIBLES`, `fabriquerSecretSignature` | code |
 
 ### 13.2 Interfaces de l'espace client (état actuel)
