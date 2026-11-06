@@ -262,7 +262,7 @@ L'API `/api/espace/moi` (GET et PATCH) reste active et alimente les données aff
 
 ### 13.3 Diagrammes UML (nouveau)
 
-- Les ~130 fichiers `.vpp` / `.bak` de la racine ont été supprimés (non commités à ce jour — `git status` satellites).
+- Les ~130 fichiers `.vpp` / `.bak` de la racine ont été supprimés **et enregistrés dans git** (embarqués lors du balayage vers `8109b42`, poussés sur `deploy`).
 - Les diagrammes sont consolidés dans **`Diagramme/SMSTSIKA.vpp`** (5,3 Mo, avec sauvegardes `.bak_*` locales non suivies).
 - Nouveau guide de correction rédigé par l'utilisateur : **`CONCEPTION_EXACTE_UML_CORRECTION.md`** (+ `.html`) — 3 familles de diagrammes (DSS boîte noire, DSD boîte blanche avec vraies classes Kotlin/Next.js, diagramme de classes).
 - ⚠️ Points du guide à corriger pour coller au code réel :
