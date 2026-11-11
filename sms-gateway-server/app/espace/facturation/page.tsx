@@ -240,34 +240,49 @@ export default function PageFacturationEspace() {
             </div>
           </div>
 
-          {/* Card Répartition du mois (données réelles) */}
+          {/* Card Le mois en un coup d'œil (données journalières réelles) */}
           <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
-            <p className="text-xs font-bold text-[#1C1917] dark:text-white">Répartition du mois</p>
+            <p className="text-xs font-bold text-[#1C1917] dark:text-white">Le mois en un coup d'œil</p>
             {(() => {
-              const lignesRepartition = [
-                { phrase: 'SMS envoyés par vos téléphones', valeur: envoyes, couleur: 'bg-blue-500' },
-                { phrase: 'Réponses reçues et transmises à votre site', valeur: recus, couleur: 'bg-emerald-500' },
-                { phrase: 'Envois non aboutis (non facturés)', valeur: echecs, couleur: 'bg-rose-500' },
-              ]
-              const somme = lignesRepartition.reduce((s, l) => s + l.valeur, 0)
+              const entrees = Object.entries(compteursJours)
+              const joursEcoules = estMoisCourant ? maintenantJour : nbJoursMois
+              if (entrees.length === 0) {
+                return (
+                  <p className="text-[11px] text-stone-500 dark:text-zinc-400">
+                    Aucune activité enregistrée sur ce mois pour le moment.
+                  </p>
+                )
+              }
+              const totalMois = entrees.reduce((s, [, v]) => s + v, 0)
+              const meilleure = entrees.reduce((m, [cle, v]) => (v > m.valeur ? { cle, valeur: v } : m), { cle: '', valeur: 0 })
+              const meilleureLibelle = meilleure.cle
+                ? new Date(`${meilleure.cle}T12:00:00`).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+                : '—'
+              const moyenne = joursEcoules > 0 ? totalMois / joursEcoules : 0
               return (
                 <div className="space-y-2.5 text-xs">
-                  {lignesRepartition.map((l) => (
-                    <div key={l.phrase} className="space-y-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-stone-600 dark:text-zinc-400">{l.phrase}</span>
-                        <span className="shrink-0 font-bold text-[#1C1917] dark:text-zinc-200">{l.valeur.toLocaleString('fr-FR')}</span>
-                      </div>
-                      <div className="h-1.5 overflow-hidden rounded-full bg-stone-100 dark:bg-zinc-800">
-                        <div
-                          className={`h-full rounded-full ${l.couleur}`}
-                          style={{ width: somme > 0 ? `${Math.round((l.valeur / somme) * 100)}%` : '0%' }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-stone-600 dark:text-zinc-400">Meilleure journée</span>
+                    <span className="shrink-0 font-bold text-[#1C1917] dark:text-zinc-200">
+                      {meilleure.valeur.toLocaleString('fr-FR')} msg · {meilleureLibelle}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-stone-600 dark:text-zinc-400">Moyenne par jour écoulé</span>
+                    <span className="shrink-0 font-bold text-[#1C1917] dark:text-zinc-200">
+                      {moyenne.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} msg
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-stone-600 dark:text-zinc-400">Jours avec activité</span>
+                    <span className="shrink-0 font-bold text-[#1C1917] dark:text-zinc-200">
+                      {entrees.length} / {joursEcoules}
+                    </span>
+                  </div>
                   <p className="pt-1 text-[11px] text-stone-500 dark:text-zinc-400">
-                    Sur {somme.toLocaleString('fr-FR')} message{somme > 1 ? 's' : ''} échangé{somme > 1 ? 's' : ''} ce mois.
+                    {estMoisCourant
+                      ? `Calcul sur les ${joursEcoules} premiers jours du mois.`
+                      : 'Mois terminé — calcul sur les jours écoulés.'}
                   </p>
                 </div>
               )
