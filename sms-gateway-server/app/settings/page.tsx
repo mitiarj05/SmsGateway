@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import {
-  ChevronDown, Trash2, Check, Copy, Loader2, Eye, EyeOff, ShieldCheck, CheckCircle2, Lock, Plus
+  ChevronDown, Trash2, Check, Copy, Loader2, Eye, EyeOff, ShieldCheck, CheckCircle2, Lock, Plus, ArrowUpRight
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 import { Toast } from '../../composants/interface'
@@ -53,6 +53,7 @@ export default function PageParametres() {
   const [revelationEnCours, setRevelationEnCours] = useState<string | null>(null)
   const [emailTest, setEmailTest] = useState('')
   const [envoiEmailEnCours, setEnvoiEmailEnCours] = useState(false)
+  const [flotte, setFlotte] = useState<{ total: number; enLigne: number } | null>(null)
 
   function afficherNotification(type: 'succes' | 'erreur', texte: string) {
     setNotification({ type, texte })
@@ -61,10 +62,11 @@ export default function PageParametres() {
 
   async function charger() {
     try {
-      const [resParams, resClients, resSante] = await Promise.all([
+      const [resParams, resClients, resSante, resAppareils] = await Promise.all([
         fetch('/api/settings'),
         fetch('/api/api-clients'),
         fetch('/api/health'),
+        fetch('/api/devices'),
       ])
       if (resParams.ok) {
         const d = await resParams.json().catch(() => ({}))
@@ -76,6 +78,13 @@ export default function PageParametres() {
       if (Array.isArray(dCli.clients)) setClients(dCli.clients)
       const dSante = await resSante.json().catch(() => ({}))
       if (dSante?.status) setSante(dSante)
+      const dApp = await resAppareils.json().catch(() => ({}))
+      if (Array.isArray(dApp.devices)) {
+        setFlotte({
+          total: dApp.devices.length,
+          enLigne: dApp.devices.filter((a: { statut?: string }) => a.statut === 'EN_LIGNE').length,
+        })
+      }
     } catch { /* silencieux */ }
   }
 
@@ -242,6 +251,16 @@ export default function PageParametres() {
             </p>
             <p className="mt-1 text-[11px] leading-relaxed text-stone-500">
               Créez des clés dédiées et validez les demandes de vos clients.
+            </p>
+          </div>
+
+          {/* Rappel (bas de la nav) */}
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-stone-100 p-4 dark:border-zinc-800 dark:bg-zinc-800/50">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-500">
+              À retenir
+            </p>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-stone-600 dark:text-zinc-400">
+              Forfait <b className="text-[#1C1917] dark:text-zinc-200">illimité</b> — le seul crédit est la carte SIM du téléphone. Le quota horaire protège vos SIM de la saturation, ce n'est pas une limite commerciale.
             </p>
           </div>
         </div>
@@ -461,6 +480,37 @@ export default function PageParametres() {
                 {envoiEmailEnCours ? '…' : 'Tester'}
               </button>
             </div>
+          </div>
+
+          {/* Flotte d'appareils (compteurs réels) */}
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-2.5">
+            <p className="text-[13.5px] font-bold text-[#1C1917] dark:text-white">
+              Flotte d'appareils
+            </p>
+            {flotte ? (
+              <>
+                <div className="flex items-center justify-between text-[11.5px]">
+                  <span className="text-stone-600 dark:text-zinc-400">Appareils enregistrés</span>
+                  <span className="font-bold text-[#1C1917] dark:text-zinc-200">{flotte.total}</span>
+                </div>
+                <div className="flex items-center justify-between text-[11.5px]">
+                  <span className="text-stone-600 dark:text-zinc-400">En ligne maintenant</span>
+                  <span className={`inline-flex items-center gap-1.5 font-bold${flotte.enLigne > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                    <span className={`h-1.5 w-1.5 rounded-full${flotte.enLigne > 0 ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                    {flotte.enLigne}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[11.5px]">
+                  <span className="text-stone-600 dark:text-zinc-400">Capacité horaire</span>
+                  <span className="font-bold text-[#1C1917] dark:text-zinc-200">{flotte.total * Number(quotaSms || 0)} SMS/h</span>
+                </div>
+              </>
+            ) : (
+              <p className="text-[11px] text-stone-500 dark:text-zinc-400">Chargement de la flotte…</p>
+            )}
+            <a href="/devices" className="inline-flex items-center gap-1 text-[11.5px] font-bold text-blue-600 hover:underline dark:text-blue-400 pt-1">
+              Gérer la flotte <ArrowUpRight className="h-3.5 w-3.5" />
+            </a>
           </div>
         </div>
       </div>
