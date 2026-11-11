@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   User, Mail, KeyRound, Loader2, Save, CheckCircle2, ShieldCheck, Copy, Check,
-  Webhook, FlaskConical, Zap, Download, SlidersHorizontal, Link2,
+  Webhook, FlaskConical, Zap, Download, SlidersHorizontal, Link2, ArrowUpRight,
 } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import { Toast } from '../../../composants/interface'
@@ -445,7 +445,7 @@ export default function PageParametresEspace() {
 
         </div>
 
-        {/* Right Column (Info Card) */}
+        {/* Right Column (Info Cards) */}
         <div className="space-y-4">
           <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4">
             <div className="flex items-center gap-2 font-bold text-amber-300">
@@ -455,6 +455,58 @@ export default function PageParametresEspace() {
             <p className="text-xs text-white/75 leading-relaxed">
               Vos identifiants et clés API sont sécurisés par notre infrastructure Supabase Auth avec isolation complète des espaces clients.
             </p>
+          </div>
+
+          {/* État de l'intégration (données réelles de la page) */}
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+            <p className="text-[13px] font-bold text-[#1C1917] dark:text-white">État de l&apos;intégration</p>
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-stone-600 dark:text-zinc-400">Clé d&apos;API</span>
+                <span className={`inline-flex items-center gap-1.5 font-bold${cleApi ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-500 dark:text-zinc-400'}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full${cleApi ? 'bg-emerald-500' : 'bg-stone-300 dark:bg-zinc-600'}`} />
+                  {cleApi ? 'Générée' : 'Non générée'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-stone-600 dark:text-zinc-400">Lien de réception</span>
+                <span className={`inline-flex items-center gap-1.5 font-bold${url ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-500 dark:text-zinc-400'}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full${url ? 'bg-emerald-500' : 'bg-stone-300 dark:bg-zinc-600'}`} />
+                  {url ? 'Configuré' : 'À configurer'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-stone-600 dark:text-zinc-400">Boutique</span>
+                <span className={`inline-flex items-center gap-1.5 font-bold${boutiqueConnectee ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-500 dark:text-zinc-400'}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full${boutiqueConnectee ? 'bg-emerald-500' : 'bg-stone-300 dark:bg-zinc-600'}`} />
+                  {boutiqueConnectee ? 'Connectée' : 'Non reliée'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-stone-600 dark:text-zinc-400">Réception des événements</span>
+                <span className={`inline-flex items-center gap-1.5 font-bold${actifs ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full${actifs ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                  {actifs ? 'Active' : 'En pause'}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => setOnglet('avancee')}
+              className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline dark:text-blue-400 pt-1"
+            >
+              Gérer dans Paramètres avancés <ArrowUpRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          {/* Besoin d'aide ? */}
+          <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">BESOIN D&apos;AIDE ?</p>
+            <p className="text-xs text-white/75 leading-relaxed">
+              Une question sur votre compte, votre clé ou votre intégration ? Notre équipe répond en moins de 24 h.
+            </p>
+            <a href="mailto:support@smsika.app" className="block w-full rounded-full bg-amber-400 py-3 text-xs font-bold text-[#1C1917] shadow-md hover:bg-amber-300 transition">
+              Écrire au support
+            </a>
           </div>
         </div>
 
