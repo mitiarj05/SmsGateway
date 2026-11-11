@@ -363,17 +363,17 @@ export default function AppareilsPage() {
         {/* Colonne Droite (1 col) : Capacité & Appareils enregistrés (Exact Screenshot) */}
         <div className="space-y-4">
           {/* Card Capacité configurée */}
-          <div className="survol-lift rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
-            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500 dark:text-zinc-400">
+          <div className="survol-lift rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
               Capacité configurée
             </p>
             <p className="text-[44px] font-extrabold leading-none">
-              {totalAppareils * quota} <span className="text-[16px] font-bold text-stone-500 dark:text-zinc-400">SMS/h</span>
+              {totalAppareils * quota} <span className="text-[16px] font-bold text-white/60">SMS/h</span>
             </p>
-            <p className="text-[11.5px] leading-relaxed text-stone-500 dark:text-zinc-400">
+            <p className="text-[11.5px] leading-relaxed text-white/55">
               Capacité totale de la flotte globale, selon les quotas par appareil.
             </p>
-            <p className="flex items-center gap-2 text-[11.5px] text-stone-500 dark:text-zinc-400 pt-2 border-t border-[#1C1917]/10 dark:border-zinc-800">
+            <p className="flex items-center gap-2 text-[11.5px] text-white/55 pt-2 border-t border-white/10">
               <span className={`h-1.5 w-1.5 rounded-full${enLigneCount > 0 ? 'bg-emerald-400' : 'bg-rose-400'}`}></span>
               {enLigneCount > 0
                 ? `${enLigneCount} appareil${enLigneCount > 1 ? 's' : ''} actif${enLigneCount > 1 ? 's' : ''} maintenant`

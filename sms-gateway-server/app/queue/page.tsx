@@ -164,22 +164,22 @@ export default function PageFileAttente() {
       </div>
 
       {/* Bandeau état file d'attente */}
-      <div className="rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 survol-lift">
+      <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card survol-lift">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-emerald-400/40 bg-emerald-400/10 text-emerald-300">
               {actualisation ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
             </div>
             <div>
               <h2 className="text-[19px] font-extrabold">{fileAJour ? 'La file est à jour' : 'File en cours de traitement'}</h2>
-              <p className="mt-0.5 text-[12.5px] text-stone-500 dark:text-zinc-400">
+              <p className="mt-0.5 text-[12.5px] text-white/60">
                 {tempsMoyenMs === null
                   ? 'Aucun message traité récemment.'
                   : `Messages traités en ${formaterDuree(tempsMoyenMs)} en moyenne.`}
               </p>
             </div>
           </div>
-          <span className="text-[11px] text-stone-400 dark:text-zinc-500">
+          <span className="text-[11px] text-white/45">
             {derniereMaj ? `À ${derniereMaj.toLocaleTimeString('fr-FR')}` : '—'}
           </span>
         </div>
@@ -188,16 +188,16 @@ export default function PageFileAttente() {
         <div className="mt-6 flex items-stretch gap-3">
           {steps.map((s, i) => (
             <div key={s.title} className="flex flex-1 items-center gap-3">
-              <div className="flex flex-1 items-center gap-3.5 rounded-2xl border border-[#1C1917]/10 dark:border-zinc-800 bg-stone-50 dark:bg-white/5 p-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-300">
+              <div className="flex flex-1 items-center gap-3.5 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white">
                   <s.icon size={18} />
                 </div>
                 <div>
                   <p className="text-[13.5px] font-bold">{s.title}</p>
-                  <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-stone-500 dark:text-zinc-400">
+                  <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-white/55">
                     {s.sub}
                     {s.offline && (
-                      <span className="rounded-full bg-rose-50 px-2 py-px text-[9.5px] font-bold text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">
+                      <span className="rounded-full bg-rose-500/20 px-2 py-px text-[9.5px] font-bold text-rose-200">
                         Hors ligne
                       </span>
                     )}
@@ -205,23 +205,23 @@ export default function PageFileAttente() {
                 </div>
               </div>
               {i < steps.length - 1 && (
-                <ChevronRight size={18} className="shrink-0 text-stone-300 dark:text-zinc-600" />
+                <ChevronRight size={18} className="shrink-0 text-white/30" />
               )}
             </div>
           ))}
         </div>
 
         {/* Chiffres (Exact Screenshot) */}
-        <div className="mt-6 flex items-center gap-16 border-t border-[#1C1917]/10 dark:border-zinc-800 pt-5">
+        <div className="mt-6 flex items-center gap-16 border-t border-white/10 pt-5">
           <div>
             <p className="text-[30px] font-extrabold leading-none">{enAttente}</p>
-            <p className="mt-1 text-[11px] uppercase tracking-wide text-stone-500 dark:text-zinc-400">
+            <p className="mt-1 text-[11px] uppercase tracking-wide text-white/60">
               en attente
             </p>
           </div>
           <div>
             <p className="text-[30px] font-extrabold leading-none">{enReprise}</p>
-            <p className="mt-1 text-[11px] uppercase tracking-wide text-stone-500 dark:text-zinc-400">
+            <p className="mt-1 text-[11px] uppercase tracking-wide text-white/60">
               en reprise
             </p>
           </div>
@@ -229,7 +229,7 @@ export default function PageFileAttente() {
             <p className="text-[30px] font-extrabold leading-none text-emerald-300">
               {tempsMoyenMs === null ? '—' : formaterDuree(tempsMoyenMs)}
             </p>
-            <p className="mt-1 text-[11px] uppercase tracking-wide text-stone-500 dark:text-zinc-400">
+            <p className="mt-1 text-[11px] uppercase tracking-wide text-white/60">
               temps moyen
             </p>
           </div>

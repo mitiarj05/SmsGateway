@@ -402,40 +402,40 @@ export default function PageParametres() {
 
         {/* Colonne droite sticky */}
         <div className="sticky top-24 space-y-4">
-          <div className="rounded-2xl border border-[#1C1917]/10 bg-white p-5 shadow-card dark:bg-zinc-900 dark:border-zinc-800">
-            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500 dark:text-zinc-400">
+          <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-5 text-white shadow-card">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
               État du système
             </p>
-            <p className="mt-0.5 text-[11px] text-stone-400 dark:text-zinc-500">
+            <p className="mt-0.5 text-[11px] text-white/45">
               Santé des services essentiels
             </p>
             <div className="mt-4 space-y-3">
-              {!sante && <p className="text-[11px] text-stone-400 dark:text-zinc-500">Vérification en cours…</p>}
+              {!sante && <p className="text-[11px] text-white/45">Vérification en cours…</p>}
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-[11px] font-semibold text-stone-600 dark:text-zinc-300">
+                <span className="flex items-center gap-2 text-[11px] font-semibold text-white/75">
                   <span className={`h-1.5 w-1.5 rounded-full${!sante || sante.checks.supabase.ok ? 'bg-emerald-400' : 'bg-red-400'}`} /> SUPABASE
                 </span>
-                <span className="text-[11px] text-stone-500 dark:text-zinc-400">
+                <span className="text-[11px] text-white/55">
                   {!sante ? '…' : sante.checks.supabase.ok ? `OK · ${sante.checks.supabase.latency_ms} ms` : 'KO'}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-[11px] font-semibold text-stone-600 dark:text-zinc-300">
+                <span className="flex items-center gap-2 text-[11px] font-semibold text-white/75">
                   <span className={`h-1.5 w-1.5 rounded-full${!sante || sante.checks.settings_table ? 'bg-emerald-400' : 'bg-red-400'}`} /> TABLE PARAMÈTRES
                 </span>
-                <span className="text-[11px] text-stone-500 dark:text-zinc-400">{!sante ? '…' : sante.checks.settings_table ? 'présente' : 'absente'}</span>
+                <span className="text-[11px] text-white/55">{!sante ? '…' : sante.checks.settings_table ? 'présente' : 'absente'}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-[11px] font-semibold text-stone-600 dark:text-zinc-300">
+                <span className="flex items-center gap-2 text-[11px] font-semibold text-white/75">
                   <span className={`h-1.5 w-1.5 rounded-full${!sante || sante.checks.fcm_configured ? 'bg-emerald-400' : 'bg-amber-400'}`} /> PUSH FCM
                 </span>
-                <span className="text-[11px] text-stone-500 dark:text-zinc-400">{!sante ? '…' : sante.checks.fcm_configured ? 'configuré' : 'non configuré'}</span>
+                <span className="text-[11px] text-white/55">{!sante ? '…' : sante.checks.fcm_configured ? 'configuré' : 'non configuré'}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-[11px] font-semibold text-stone-600 dark:text-zinc-300">
+                <span className="flex items-center gap-2 text-[11px] font-semibold text-white/75">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> API serveur
                 </span>
-                <span className="text-[11px] text-stone-500 dark:text-zinc-400">{sante ? `v${sante.version}` : '…'}</span>
+                <span className="text-[11px] text-white/55">{sante ? `v${sante.version}` : '…'}</span>
               </div>
             </div>
           </div>

@@ -233,13 +233,13 @@ export default function PageFacturationEspace() {
         <div className="space-y-4">
 
           {/* Top Card : Estimation du mois (calculée depuis la vraie conso) */}
-          <div className="rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500 dark:text-zinc-400">ESTIMATION DU MOIS</p>
+          <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">ESTIMATION DU MOIS</p>
             <div>
               <p className="text-[40px] font-extrabold leading-none">
-                {estimation} <span className="text-[16px] font-bold text-stone-500 dark:text-zinc-400">Ar</span>
+                {estimation} <span className="text-[16px] font-bold text-white/60">Ar</span>
               </p>
-              <p className="mt-4 border-t border-[#1C1917]/10 dark:border-zinc-800 pt-3 text-[11.5px] text-stone-500 dark:text-zinc-400">
+              <p className="mt-4 border-t border-white/10 pt-3 text-[11.5px] text-white/60">
                 Coût moyen : 100 Ar / SMS · projection au {projectionJour}
               </p>
             </div>

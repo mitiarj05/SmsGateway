@@ -293,31 +293,31 @@ export default function PageClientsAdmin() {
 
         {/* Right Column (1 col) : 2 Cards (Exact Screenshot) */}
         <div className="space-y-4">
-          <div className="rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
-            <div className="flex items-center gap-2.5 text-stone-500 dark:text-zinc-400">
+          <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-3">
+            <div className="flex items-center gap-2.5 text-white/60">
               <Calendar className="h-4 w-4" />
               <p className="text-[10px] font-bold uppercase tracking-[0.15em]">
                 Prochain renouvellement
               </p>
             </div>
             <p className="text-[40px] font-extrabold leading-none">
-              {joursRestants} <span className="text-[16px] font-bold text-stone-500 dark:text-zinc-400">jours</span>
+              {joursRestants} <span className="text-[16px] font-bold text-white/60">jours</span>
             </p>
-            <p className="text-[11.5px] leading-relaxed text-stone-500 dark:text-zinc-400">
+            <p className="text-[11.5px] leading-relaxed text-white/55">
               Les compteurs de consommation repartent de zéro le 1er du mois.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
-            <p className="text-[14px] font-bold text-[#1C1917] dark:text-white">
+          <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-2">
+            <p className="text-[14px] font-bold text-white">
               Un espace par organisation.
             </p>
-            <p className="text-[11.5px] leading-relaxed text-stone-500">
+            <p className="text-[11.5px] leading-relaxed text-white/55">
               Invitez vos clients et gardez leurs accès et leur consommation à portée de main.
             </p>
             <a
               href="/comment-ca-marche"
-              className="inline-flex items-center gap-1 text-[12px] font-bold text-[#2563EB] hover:underline dark:text-blue-400 pt-1"
+              className="inline-flex items-center gap-1 text-[12px] font-bold text-white hover:underline pt-1"
             >
               Consulter le guide API <ArrowUpRight className="h-3.5 w-3.5" />
             </a>

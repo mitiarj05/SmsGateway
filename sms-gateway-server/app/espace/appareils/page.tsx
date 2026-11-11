@@ -106,20 +106,20 @@ export default function PageAppareilsClient() {
       </div>
 
       {/* Hero Card Informative (#1F1A52 - Exact Screenshot 8) */}
-      <div className="rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+      <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white">
               <Zap className="h-5 w-5" />
             </div>
             <div>
               <h2 className="text-base font-bold">Votre parc d'envoi personnel</h2>
-              <p className="text-xs text-stone-500 dark:text-zinc-400">
+              <p className="text-xs text-white/60">
                 Vos téléphones uniquement — vos SMS partent par votre carte SIM.
               </p>
             </div>
           </div>
-          <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30">
+          <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-200 border border-emerald-500/30">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> {enLigneCount} relais connecté
           </span>
         </div>

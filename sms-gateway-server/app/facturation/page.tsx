@@ -159,23 +159,23 @@ export default function PageFacturation() {
         </div>
 
         {/* Right Estimation Card (1 col) */}
-        <div className="rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 survol-lift flex flex-col justify-between">
+        <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card survol-lift flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500 dark:text-zinc-400">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
               Estimation du mois
             </p>
-            <Download className="h-4 w-4 text-stone-500 dark:text-zinc-400" />
+            <Download className="h-4 w-4 text-white/60" />
           </div>
           <div>
             <p className="text-[42px] font-extrabold leading-none">
-              {estimationCout.toLocaleString('fr-FR')} <span className="text-[16px] font-bold text-stone-500 dark:text-zinc-400">Ar</span>
+              {estimationCout.toLocaleString('fr-FR')} <span className="text-[16px] font-bold text-white/60">Ar</span>
             </p>
-            <p className="mt-4 border-t border-[#1C1917]/10 dark:border-zinc-800 pt-3 text-[11.5px] text-stone-500 dark:text-zinc-400">
+            <p className="mt-4 border-t border-white/10 pt-3 text-[11.5px] text-white/60">
               Coût moyen : {TARIF_SMS_AR} Ar / SMS
             </p>
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wide text-stone-400 dark:text-zinc-500">
+            <p className="text-[10px] uppercase tracking-wide text-white/45">
               Période de consommation
             </p>
             <p className="mt-0.5 text-[13px] font-bold capitalize">{libelleMois()}</p>          </div>

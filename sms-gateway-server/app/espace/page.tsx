@@ -263,42 +263,42 @@ export default function PageTableauDeBordClient() {
         />
 
         {/* Right Dark Card : MON PARC D'ENVOI (Exact Screenshot 9) */}
-        <div className="rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 flex flex-col justify-between space-y-6">
+        <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card flex flex-col justify-between space-y-6">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500 dark:text-zinc-400">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
               MON PARC D'ENVOI
             </p>
-            <Smartphone className="h-4 w-4 text-stone-500 dark:text-zinc-400" />
+            <Smartphone className="h-4 w-4 text-white/60" />
           </div>
 
           {premierAppareil ? (
-            <div className="flex items-center justify-between rounded-2xl border border-[#1C1917]/10 dark:border-zinc-800 bg-stone-50 dark:bg-white/5 p-4">
+            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-300">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white">
                   <Smartphone size={20} />
                 </div>
                 <div>
                   <p className="text-sm font-bold">{premierAppareil.nom}</p>
-                  <p className="text-[11px] text-stone-500 dark:text-zinc-400">
+                  <p className="text-[11px] text-white/55">
                     {premierAppareil.sms_last_hour ?? 0} SMS/h · {tempsEcouleFr(premierAppareil.derniere_activite)}
                   </p>
                 </div>
               </div>
               {premierAppareil.statut === 'EN_LIGNE' ? (
-                <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/30">
+                <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-bold text-emerald-200 border border-emerald-500/30">
                   ● En ligne
                 </span>
               ) : (
-                <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/30">
+                <span className="rounded-full bg-rose-500/20 px-2.5 py-0.5 text-[10px] font-bold text-rose-200 border border-rose-500/30">
                   ● Hors ligne
                 </span>
               )}
             </div>
           ) : (
-            <p className="py-4 text-center text-[12px] text-stone-500 dark:text-zinc-400">Aucun téléphone visible pour le moment.</p>
+            <p className="py-4 text-center text-[12px] text-white/55">Aucun téléphone visible pour le moment.</p>
           )}
 
-          <Link href="/espace/appareils" className="inline-flex items-center gap-1.5 text-[13px] font-bold text-blue-600 hover:underline dark:text-blue-400 pt-2">
+          <Link href="/espace/appareils" className="inline-flex items-center gap-1.5 text-[13px] font-bold text-white hover:underline pt-2">
             Voir le parc <ArrowUpRight className="h-4 w-4" />
           </Link>
         </div>

@@ -426,12 +426,12 @@ export default function PageParametresEspace() {
 
         {/* Right Column (Info Card) */}
         <div className="space-y-4">
-          <div className="rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
-            <div className="flex items-center gap-2 font-bold text-amber-600 dark:text-amber-400">
+          <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4">
+            <div className="flex items-center gap-2 font-bold text-amber-300">
               <ShieldCheck className="h-5 w-5" />
               Protection des données
             </div>
-            <p className="text-xs text-stone-600 dark:text-zinc-300 leading-relaxed">
+            <p className="text-xs text-white/75 leading-relaxed">
               Vos identifiants et clés API sont sécurisés par notre infrastructure Supabase Auth avec isolation complète des espaces clients.
             </p>
           </div>
@@ -467,26 +467,26 @@ export default function PageParametresEspace() {
 
           {/* Card 1 : Connexion Boutique en 1 clic */}
           {sousOnglet === 'boutique' && (
-          <div className="rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 space-y-5">
+          <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-amber-300">
                   <Zap className="h-5 w-5" />
                 </div>
                 <div>
                   <h2 className="text-base font-bold">Connexion Boutique en 1 clic (Auto-Connect)</h2>
-                  <p className="text-xs text-stone-600 dark:text-zinc-300">
+                  <p className="text-xs text-white/70">
                     Saisissez l&apos;adresse de votre site web : SMSTSIKA s&apos;occupe d&apos;injecter la clé et de lier la passerelle automatiquement.
                   </p>
                 </div>
               </div>
-              <span className="rounded-full bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/30">
+              <span className="rounded-full bg-amber-400/20 px-3 py-1 text-[11px] font-bold text-amber-300 border border-amber-400/30">
                 ⚡ Zéro Code
               </span>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-stone-600 dark:text-zinc-300 mb-2">Sélectionnez votre plateforme :</label>
+              <label className="block text-xs font-semibold text-white/70 mb-2">Sélectionnez votre plateforme :</label>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 text-xs font-semibold">
                 {[
                   { id: 'WooCommerce', label: 'WooCommerce / WordPress' },
@@ -497,7 +497,7 @@ export default function PageParametresEspace() {
                   <button
                     key={p.id}
                     onClick={() => setPlateformeChoisie(p.id)}
-                    className={`rounded-xl p-3 text-left transition${plateformeChoisie === p.id ? 'bg-blue-600 text-white font-bold shadow-md' : 'bg-stone-100 text-stone-600 hover:bg-stone-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700'}`}
+                    className={`rounded-xl p-3 text-left transition${plateformeChoisie === p.id ? 'bg-white text-[#1C1917] font-bold shadow-md' : 'bg-white/10 text-white hover:bg-white/20'}`}
                   >
                     {p.label}
                   </button>
@@ -506,14 +506,14 @@ export default function PageParametresEspace() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-stone-600 dark:text-zinc-300">Adresse de votre boutique :</label>
+              <label className="block text-xs font-semibold text-white/70">Adresse de votre boutique :</label>
               <div className="flex flex-col gap-2.5 sm:flex-row">
                 <input
                   type="url"
                   value={urlBoutique}
                   onChange={(e) => setUrlBoutique(e.target.value)}
                   placeholder="https://mon-magasin.com"
-                  className="flex-1 rounded-2xl border border-[#1C1917]/10 bg-white p-3 text-xs text-[#1C1917] placeholder-stone-400 outline-none transition focus:border-blue-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200 font-mono"
+                  className="flex-1 rounded-2xl border border-white/15 bg-white/[0.06] p-3 text-xs text-white placeholder-stone-400 outline-none transition focus:border-white/40 focus:bg-white focus:text-[#1C1917] focus:placeholder-stone-500 font-mono"
                 />
                 <button
                   onClick={connecterBoutiqueAuto}
@@ -690,9 +690,9 @@ export default function PageParametresEspace() {
           </div>
 
           {/* Bottom CTA Dark Navy Card (#1F1A52) */}
-          <div className="rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 space-y-4 text-center">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-zinc-400">BESOIN D'AIDE ?</p>
-            <p className="text-xs text-stone-600 dark:text-zinc-300 leading-relaxed">
+          <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">BESOIN D'AIDE ?</p>
+            <p className="text-xs text-white/75 leading-relaxed">
               Notre équipe intègre votre boutique en moins de 24 h, gratuitement.
             </p>
             <a href="mailto:support@smsika.app" className="block w-full rounded-full bg-amber-400 py-3 text-xs font-bold text-[#1C1917] shadow-md hover:bg-amber-300 transition">
