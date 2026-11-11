@@ -744,6 +744,33 @@ export default function PageParametresEspace() {
             </p>
           </div>
 
+          {/* Checklist d'intégration (états réels) */}
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+            <p className="text-[13px] font-bold text-[#1C1917] dark:text-white">Votre intégration, étape par étape</p>
+            <div className="space-y-2.5 text-xs">
+              {[
+                { fait: Boolean(cleApi), texte: 'Clé d\'API générée' },
+                { fait: Boolean(url), texte: 'Lien de réception configuré' },
+                { fait: boutiqueConnectee, texte: 'Boutique reliée (ou lien manuel actif)' },
+                { fait: envois.length > 0, texte: 'Première livraison reçue' },
+              ].map((etape, i) => (
+                <div key={etape.texte} className="flex items-center gap-2.5">
+                  <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold${etape.fait ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' : 'bg-stone-100 text-stone-400 dark:bg-zinc-800 dark:text-zinc-500'}`}>
+                    {etape.fait ? '✓' : i + 1}
+                  </span>
+                  <span className={etape.fait ? 'font-semibold text-[#1C1917] dark:text-zinc-200' : 'text-stone-500 dark:text-zinc-400'}>
+                    {etape.texte}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="pt-1 text-[11px] text-stone-500 dark:text-zinc-400">
+              {envois.length > 0
+                ? `${envois.length} livraison${envois.length > 1 ? 's' : ''} récente${envois.length > 1 ? 's' : ''} enregistrée${envois.length > 1 ? 's' : ''} — votre liaison fonctionne.`
+                : 'Cochez chaque étape en la réalisant ci-contre — la liaison se teste en quelques minutes.'}
+            </p>
+          </div>
+
           {/* Bottom CTA Dark Navy Card (#1F1A52) */}
           <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4 text-center">
             <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">BESOIN D'AIDE ?</p>
