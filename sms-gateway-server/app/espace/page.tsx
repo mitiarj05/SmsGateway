@@ -362,10 +362,52 @@ export default function PageTableauDeBordClient() {
               <Link href="/espace/envoyer" className="flex items-center gap-2 text-blue-600 hover:underline dark:text-blue-400">
                 <Send className="h-3.5 w-3.5" /> Envoyer un SMS
               </Link>
+              <Link href="/espace/entrees" className="flex items-center gap-2 text-blue-600 hover:underline dark:text-blue-400">
+                <Inbox className="h-3.5 w-3.5" /> Voir mes SMS reçus
+              </Link>
+              <Link href="/espace/envois" className="flex items-center gap-2 text-blue-600 hover:underline dark:text-blue-400">
+                <Clock className="h-3.5 w-3.5" /> Historique de mes envois
+              </Link>
               <Link href="/espace/parametres?onglet=avancee" className="flex items-center gap-2 text-blue-600 hover:underline dark:text-blue-400">
                 <Zap className="h-3.5 w-3.5" /> Connecter ma boutique
               </Link>
             </div>
+          </div>
+
+          {/* Card Ma passerelle (données réelles) */}
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+            <p className="text-xs font-bold text-[#1C1917] dark:text-white">Ma passerelle</p>
+            {premierAppareil ? (
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-stone-600 dark:text-zinc-400">{premierAppareil.nom}</span>
+                  {premierAppareil.statut === 'EN_LIGNE' ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> En ligne
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-bold text-rose-600 dark:bg-rose-500/10 dark:text-rose-400">
+                      <span className="h-1.5 w-1.5 rounded-full bg-rose-500" /> Hors ligne
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-stone-600 dark:text-zinc-400">Débit actuel</span>
+                  <span className="font-bold text-[#1C1917] dark:text-zinc-200">{premierAppareil.sms_last_hour ?? 0} SMS/h</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-stone-600 dark:text-zinc-400">Dernier signal</span>
+                  <span className="font-bold text-[#1C1917] dark:text-zinc-200">{tempsEcouleFr(premierAppareil.derniere_activite)}</span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-[11.5px] text-stone-500 dark:text-zinc-400">
+                Aucun téléphone connecté — associez le vôtre pour activer vos envois.
+              </p>
+            )}
+            <Link href="/espace/appareils" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline dark:text-blue-400 pt-1">
+              Gérer le parc <ArrowUpRight className="h-3.5 w-3.5" />
+            </Link>
           </div>
         </div>
 

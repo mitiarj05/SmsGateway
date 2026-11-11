@@ -160,6 +160,20 @@ export default function AppareilsPage() {
   ).sort(([, nA], [, nB]) => nA.localeCompare(nB))
   const orphelinsCount = appareils.filter((a) => !a.client_id).length
 
+  function tempsEcouleFr(dateIso: string | null): string {
+    if (!dateIso) return '—'
+    const s = Math.floor((Date.now() - new Date(dateIso).getTime()) / 1000)
+    if (Number.isNaN(s)) return '—'
+    if (s < 60) return "à l'instant"
+    if (s < 3600) return `il y a ${Math.floor(s / 60)} min`
+    if (s < 86400) return `il y a ${Math.floor(s / 3600)} h`
+    return new Date(dateIso).toLocaleDateString('fr-FR')
+  }
+
+  const derniersSignaux = [...appareils]
+    .sort((a, b) => (b.derniere_activite ?? '').localeCompare(a.derniere_activite ?? ''))
+    .slice(0, 6)
+
   return (
     <CoquilleTableauDeBord>
       {/* En-tête (Exact Screenshot) */}
@@ -395,6 +409,32 @@ export default function AppareilsPage() {
               Actifs maintenant
             </p>
             <p className="text-[30px] font-extrabold text-emerald-600 dark:text-emerald-400">{enLigneCount}</p>
+          </div>
+
+          {/* Derniers signaux (données réelles de la flotte) */}
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+            <p className="text-[13px] font-bold text-[#1C1917] dark:text-white">Derniers signaux</p>
+            {derniersSignaux.length === 0 && (
+              <p className="text-[11.5px] text-stone-500 dark:text-zinc-400">
+                Aucun appareil enregistré pour le moment.
+              </p>
+            )}
+            <div className="space-y-2.5">
+              {derniersSignaux.map((a) => {
+                const enLigne = a.statut === 'EN_LIGNE'
+                return (
+                  <div key={a.id} className="flex items-center gap-2.5">
+                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full${enLigne ? 'bg-emerald-500' : 'bg-rose-400'}`} />
+                    <p className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-[#1C1917] dark:text-zinc-200">
+                      {a.nom}
+                    </p>
+                    <span className="shrink-0 text-[11px] text-stone-500 dark:text-zinc-400">
+                      {tempsEcouleFr(a.derniere_activite)}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
       </div>

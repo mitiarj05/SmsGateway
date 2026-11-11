@@ -253,6 +253,37 @@ export default function PageFacturationEspace() {
             </p>
           </div>
 
+          {/* Card Répartition du mois (données réelles) */}
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+            <p className="text-xs font-bold text-[#1C1917] dark:text-white">Répartition du mois</p>
+            {(() => {
+              const lignesRepartition = [
+                { libelle: 'Envoyés', valeur: envoyes, couleur: 'bg-blue-500' },
+                { libelle: 'Reçus', valeur: recus, couleur: 'bg-emerald-500' },
+                { libelle: 'Échecs', valeur: echecs, couleur: 'bg-rose-500' },
+              ]
+              const somme = lignesRepartition.reduce((s, l) => s + l.valeur, 0)
+              return (
+                <div className="space-y-2.5 text-xs">
+                  {lignesRepartition.map((l) => (
+                    <div key={l.libelle} className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-stone-600 dark:text-zinc-400">{l.libelle}</span>
+                        <span className="font-bold text-[#1C1917] dark:text-zinc-200">{l.valeur.toLocaleString('fr-FR')}</span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-stone-100 dark:bg-zinc-800">
+                        <div
+                          className={`h-full rounded-full ${l.couleur}`}
+                          style={{ width: somme > 0 ? `${Math.round((l.valeur / somme) * 100)}%` : '0%' }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            })()}
+          </div>
+
         </div>
 
       </div>

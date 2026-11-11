@@ -165,11 +165,16 @@ export default function PageEnvoyerEspace() {
 
               <div className="rounded-2xl bg-[#1C1917] p-3 text-xs leading-relaxed text-[#F7F5F0] space-y-2">
                 <p>
-                  Bonjour ! Votre commande #4821 est prête. Retrait possible dès aujourd'hui au magasin. Merci !
+                  {message.trim() || "Rédigez votre message ici..."}
                 </p>
                 <p className="text-[9px] text-stone-500 text-right">✓✓ Remis</p>
               </div>
             </div>
+            {message.trim() && (
+              <p className="text-[11px] text-stone-500 dark:text-zinc-400">
+                {nbCaracteres} / 160 caractères · {nbSegments} segment{nbSegments > 1 ? 's' : ''}
+              </p>
+            )}
           </div>
 
           {/* Card 2 : Règles d'envoi */}

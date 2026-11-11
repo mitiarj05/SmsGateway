@@ -322,6 +322,41 @@ export default function PageClientsAdmin() {
               Consulter le guide API <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
           </div>
+
+          {/* Top consommateurs du mois (données réelles) */}
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+            <p className="text-[13px] font-bold text-[#1C1917] dark:text-white">
+              Top consommateurs ce mois
+            </p>
+            {(() => {
+              const top = [...clients].sort((a, b) => b.utilise_mois - a.utilise_mois).slice(0, 5)
+              if (top.length === 0 || top.every((c) => c.utilise_mois === 0)) {
+                return (
+                  <p className="text-[11.5px] text-stone-500 dark:text-zinc-400">
+                    Aucune consommation ce mois pour le moment.
+                  </p>
+                )
+              }
+              return (
+                <div className="space-y-2.5 pt-1">
+                  {top.map((c) => (
+                    <div key={c.id} className="flex items-center gap-3">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1C1917]/[0.04] text-[10px] font-bold text-stone-700 dark:bg-zinc-800 dark:text-zinc-300">
+                        {c.initiales}
+                      </span>
+                      <p className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-[#1C1917] dark:text-zinc-200">
+                        {c.nom}
+                        {c.suspendu && <span className="ml-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-400">· suspendu</span>}
+                      </p>
+                      <span className="shrink-0 text-[12px] font-bold text-[#1C1917] dark:text-zinc-200">
+                        {c.utilise_mois.toLocaleString('fr-FR')} SMS
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )
+            })()}
+          </div>
         </div>
 
       </div>

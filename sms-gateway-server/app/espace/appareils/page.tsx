@@ -301,6 +301,17 @@ export default function PageAppareilsClient() {
               <Smartphone className="h-3.5 w-3.5" /> Associer un téléphone
             </span>
           </button>
+
+          {/* Card Besoin d'aide ? */}
+          <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-white/60">BESOIN D'AIDE ?</p>
+            <p className="text-xs text-white/75 leading-relaxed">
+              Un téléphone ne se connecte pas ? Notre équipe vous accompagne en moins de 24 h, gratuitement.
+            </p>
+            <a href="mailto:support@smsika.app" className="block w-full rounded-full bg-amber-400 py-3 text-xs font-bold text-[#1C1917] shadow-md hover:bg-amber-300 transition">
+              Écrire au support
+            </a>
+          </div>
         </div>
 
       </div>
