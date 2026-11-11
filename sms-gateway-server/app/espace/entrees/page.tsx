@@ -137,7 +137,7 @@ export default function PageEntreesEspace() {
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
 
         {/* Left Column (2 cols) : Boîte de réception */}
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-4">
+        <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-4">
           <div className="flex flex-col gap-3 border-b border-[#1C1917]/10 pb-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">Boîte de réception</h2>
@@ -239,7 +239,7 @@ export default function PageEntreesEspace() {
         <div className="space-y-4">
 
           {/* Card 1 : Répartition */}
-          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
             <h3 className="text-sm font-bold text-[#1C1917] dark:text-white">Répartition</h3>
             <div className="space-y-2 text-xs divide-y divide-[#1C1917]/10 dark:divide-zinc-800">
               <div className="flex items-center justify-between pt-1">
@@ -258,7 +258,7 @@ export default function PageEntreesEspace() {
           </div>
 
           {/* Card 2 : Liaison active (#EEF2F6 background) */}
-          <div className="rounded-[1.5rem] border border-blue-100 bg-[#f6f5ff] p-6 shadow-sm dark:bg-blue-500/10 dark:border-blue-500/20 space-y-3">
+          <div className="rounded-2xl border border-blue-100 bg-[#f6f5ff] p-6 shadow-sm dark:bg-blue-500/10 dark:border-blue-500/20 space-y-3">
             <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold text-xs">
               <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-500/20 text-xs">⚡</span>
               Liaison active
@@ -272,7 +272,7 @@ export default function PageEntreesEspace() {
           </div>
 
           {/* Card 3 : Contact fréquent */}
-          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
             <h3 className="text-sm font-bold text-[#1C1917] dark:text-white">Contact fréquent</h3>
             <div className="flex items-center justify-between pt-1">
               <div>

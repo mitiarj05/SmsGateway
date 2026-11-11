@@ -35,6 +35,7 @@ export default function CoquilleEspace({ children }: {
   const [nomClient, setNomClient] = useState('')
   const [versionApp, setVersionApp] = useState<string | null>(null)
   const [systemeOk, setSystemeOk] = useState<boolean | null>(null)
+  const [appareilsEnLigne, setAppareilsEnLigne] = useState(0)
   const [clocheOuverte, setClocheOuverte] = useState(false)
   const [paletteOuverte, setPaletteOuverte] = useState(false)
   const [requete, setRequete] = useState('')
@@ -117,15 +118,22 @@ export default function CoquilleEspace({ children }: {
 
   const chargerAlertes = useCallback(async () => {
     try {
-      const [reponseMoi, reponseSante] = await Promise.all([
+      const [reponseMoi, reponseSante, reponseAppareils] = await Promise.all([
         fetch('/api/espace/moi'),
         fetch('/api/health'),
+        fetch('/api/espace/appareils'),
       ])
       const donnees = await reponseMoi.json()
       if (donnees?.nom) setNomClient(donnees.nom)
       if (donnees?.stats) {
         setEnAttente(donnees.stats.attente ?? 0)
         setEchoues(donnees.stats.echoue ?? 0)
+      }
+      if (reponseAppareils.ok) {
+        const appareilsData = await reponseAppareils.json().catch(() => ({}))
+        if (Array.isArray(appareilsData.appareils)) {
+          setAppareilsEnLigne(appareilsData.appareils.filter((a: { statut?: string }) => a.statut === 'EN_LIGNE').length)
+        }
       }
       const sante = await reponseSante.json().catch(() => null)
       if (sante) {
@@ -171,7 +179,7 @@ export default function CoquilleEspace({ children }: {
 
   return (
     <div
-      className={`flex min-h-screen bg-white text-[#1C1917] antialiased font-sans transition-colors duration-200 dark:bg-[#0B0F19] dark:text-zinc-100 ${redimensionne ? 'select-none' : ''}`}
+      className={`flex min-h-screen bg-stone-100 text-[#1C1917] antialiased font-sans transition-colors duration-200 dark:bg-[#0B0F19] dark:text-zinc-100 ${redimensionne ? 'select-none' : ''}`}
       style={{ '--sbw': `${largeurAffichee}px` } as CSSProperties}
     >
 
@@ -331,7 +339,7 @@ export default function CoquilleEspace({ children }: {
                   <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-60${systemeOk === false ? 'bg-red-400' : 'bg-emerald-400'}`}></span>
                   <span className={`relative inline-flex h-2 w-2 rounded-full${systemeOk === false ? 'bg-red-500' : 'bg-emerald-500'}`}></span>
                 </span>
-                {systemeOk === null ? 'Vérification…' : systemeOk ? 'Services stables' : 'Incident en cours'}
+                {systemeOk === null ? 'État des appareils…' : systemeOk ? `${appareilsEnLigne} appareil${appareilsEnLigne === 1 ? '' : 's'} en ligne` : 'Incident en cours'}
                 {versionApp && (
                   <>
                     <span className="text-stone-400">·</span>
@@ -423,7 +431,7 @@ export default function CoquilleEspace({ children }: {
                 <Link key={item.href} href={item.href}
                   className={`flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium${
                     actif
-                      ? 'bg-[#2563EB] text-white'
+                      ? 'bg-[#2563EB]/10 text-[#1D4ED8] dark:bg-white/10 dark:text-white'
                       : 'text-stone-600 dark:text-zinc-400'
                   }`}>
                   <item.icone className="h-3.5 w-3.5" />

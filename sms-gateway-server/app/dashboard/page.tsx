@@ -196,7 +196,7 @@ export default function DashboardPage() {
       {/* 4 SEPARATE KPI CARDS (Exact Screenshot) */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* Card 1 */}
-        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="survol-lift rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">Appareils en ligne</p>
           <p className="text-[30px] font-extrabold leading-none tracking-tight text-rose-600 dark:text-rose-400">{enLigneCount}/{totalCount}</p>
           <p className="text-[11.5px] text-stone-500">
@@ -205,14 +205,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 2 */}
-        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="survol-lift rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">SMS envoyés - 24 h</p>
           <p className="text-[30px] font-extrabold leading-none tracking-tight text-[#1C1917] dark:text-white"><CompteurValeur valeur={statistiques.tasks_sent} /></p>
           <p className="text-[11.5px] text-stone-500">Total des SMS envoyés</p>
         </div>
 
         {/* Card 3 */}
-        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="survol-lift rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">En file d'attente</p>
           <p className="text-[30px] font-extrabold leading-none tracking-tight text-[#1C1917] dark:text-white"><CompteurValeur valeur={statistiques.tasks_pending} /></p>
           {statistiques.tasks_pending === 0 ? (
@@ -225,7 +225,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Card 4 */}
-        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="survol-lift rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">Taux d'échec</p>
           <p className="text-[30px] font-extrabold leading-none tracking-tight text-[#1C1917] dark:text-white">{tauxEchec}</p>
           <p className="text-[11.5px] text-stone-500">{statistiques.tasks_failed} échec{statistiques.tasks_failed > 1 ? 's' : ''} au total</p>
@@ -262,27 +262,27 @@ export default function DashboardPage() {
         />
 
         {/* Les passerelles, en ce moment (Dark Card 1 col) */}
-        <div className="flex flex-col rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card justify-between space-y-4">
+        <div className="flex flex-col rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 justify-between space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500 dark:text-zinc-400">
               Les passerelles, en ce moment
             </p>
-            <Radio className="h-4 w-4 text-white/50" />
+            <Radio className="h-4 w-4 text-stone-500 dark:text-zinc-400" />
           </div>
 
-          <div className="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-white/80">
+          <div className="flex items-center gap-3.5 rounded-2xl border border-[#1C1917]/10 dark:border-zinc-800 bg-stone-50 dark:bg-white/5 p-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-stone-100 text-stone-600 dark:bg-zinc-800 dark:text-zinc-300">
               <Smartphone size={20} />
             </div>
             <div className="flex-1">
               <p className="text-[14.5px] font-bold">{premierAppareil?.nom ?? 'Aucun appareil'}</p>
               {premierAppareil && (
                 premierAppareil.statut === 'EN_LIGNE' ? (
-                  <span className="mt-1 inline-block rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-bold text-emerald-200">
+                  <span className="mt-1 inline-block rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
                     En ligne
                   </span>
                 ) : (
-                  <span className="mt-1 inline-block rounded-full bg-rose-500/20 px-2.5 py-0.5 text-[10px] font-bold text-rose-200">
+                  <span className="mt-1 inline-block rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-bold text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">
                     Hors ligne
                   </span>
                 )
@@ -290,32 +290,32 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="border-t border-white/10 pt-4 flex items-end justify-between">
-            <p className="text-[12px] text-white/55">
+          <div className="border-t border-[#1C1917]/10 dark:border-zinc-800 pt-4 flex items-end justify-between">
+            <p className="text-[12px] text-stone-500 dark:text-zinc-400">
               {premierAppareil ? `Dernier signal ${tempsEcouleFr(premierAppareil.derniere_activite)}` : 'En attente de connexion'}
             </p>
             <div className="text-right">
-              <p className="text-[10px] uppercase tracking-wide text-white/45">Débit actuel</p>
+              <p className="text-[10px] uppercase tracking-wide text-stone-400 dark:text-zinc-500">Débit actuel</p>
               <p className="text-[22px] font-extrabold leading-tight">{premierAppareil?.sms_last_hour ?? 0} SMS/h</p>
             </div>
           </div>
 
-          <Link href="/devices" className="inline-flex items-center gap-1.5 text-[13px] font-bold text-white hover:underline pt-1">
+          <Link href="/devices" className="inline-flex items-center gap-1.5 text-[13px] font-bold text-blue-600 hover:underline dark:text-blue-400 pt-1">
             Gérer la flotte <ArrowUpRight className="h-4 w-4" />
           </Link>
         </div>
 
       </div>
 
-      {/* Journal du jour (Full Width Card at bottom) */}
-      <div className="mt-4 rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+      {/* Dernières activités (Full Width Card at bottom) */}
+      <div className="mt-4 rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">
-              Journal du jour
+              Dernières activités
             </h2>
             <p className="mt-0.5 text-[12px] text-stone-500">
-              Les événements qui méritent votre attention
+              Les derniers envois traités — quelle que soit leur date
             </p>
           </div>
           <span className="flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
@@ -347,7 +347,7 @@ export default function DashboardPage() {
                 </p>
               </div>
               <span className="shrink-0 text-[12px] text-stone-500">
-                {new Date(t.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                {tempsEcouleFr(t.created_at)}
               </span>
             </button>
             )

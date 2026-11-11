@@ -175,36 +175,31 @@ html.dark {
   animation: dashDraw 2s ease-out .4s forwards;
 }
 
-/* ---------- J. Ombres des cartes admin ---------- */
+/* ---------- J. Ombres des cartes admin (discrètes : bordures fines d'abord) ---------- */
 .shadow-card {
   box-shadow:
-    0 1px 2px rgba(15, 23, 42, .05),
-    0 10px 28px -10px rgba(15, 23, 42, .14),
-    0 20px 56px -20px rgba(91, 91, 214, .14);
+    0 1px 2px rgba(15, 23, 42, .04),
+    0 3px 10px -4px rgba(15, 23, 42, .07);
 }
 .dark .shadow-card {
   box-shadow:
-    0 2px 6px rgba(0, 0, 0, .45),
-    0 12px 32px -10px rgba(0, 0, 0, .6),
-    0 0 0 1px rgba(255, 255, 255, .03),
-    0 18px 56px -18px rgba(91, 91, 214, .28);
+    0 2px 6px rgba(0, 0, 0, .4),
+    0 0 0 1px rgba(255, 255, 255, .03);
 }
-/* Survol : les cartes cliquables se soulèvent */
+/* Survol : les cartes cliquables se soulèvent légèrement */
 a.shadow-card, button.shadow-card {
   transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s cubic-bezier(.22,1,.36,1);
 }
 a.shadow-card:hover, button.shadow-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow:
-    0 2px 4px rgba(15, 23, 42, .06),
-    0 16px 36px -12px rgba(15, 23, 42, .2),
-    0 24px 64px -20px rgba(91, 91, 214, .22);
+    0 2px 4px rgba(15, 23, 42, .05),
+    0 6px 16px -6px rgba(15, 23, 42, .1);
 }
 .dark a.shadow-card:hover, .dark button.shadow-card:hover {
   box-shadow:
-    0 4px 10px rgba(0, 0, 0, .5),
-    0 20px 44px -12px rgba(0, 0, 0, .65),
-    0 24px 64px -20px rgba(91, 91, 214, .4);
+    0 3px 8px rgba(0, 0, 0, .45),
+    0 0 0 1px rgba(255, 255, 255, .04);
 }
 
 /* ---------- K. Survols animés (interfaces admin, sobres & pro) ---------- */

@@ -120,28 +120,28 @@ export default function PageEnvoisEspace() {
       {/* 4 Stat Cards Row (Exact Screenshot) */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* Card 1 */}
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">TOTAL (7 JOURS)</p>
           <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{totalEnvois}</p>
           <p className="text-[11.5px] text-stone-500">{totalEnvois} envoi(s) chargé(s)</p>
         </div>
 
         {/* Card 2 */}
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">REMIS</p>
           <p className="text-[30px] font-extrabold leading-none text-emerald-600 dark:text-emerald-400">{remisCount}</p>
           <p className="text-[11.5px] text-stone-500">{tauxReussite} % de réussite</p>
         </div>
 
         {/* Card 3 */}
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">EN ATTENTE</p>
           <p className="text-[30px] font-extrabold leading-none text-amber-600 dark:text-amber-400">{attenteCount}</p>
           <p className="text-[11.5px] text-stone-500">Dans la file</p>
         </div>
 
         {/* Card 4 */}
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">ÉCHECS</p>
           <p className="text-[30px] font-extrabold leading-none text-rose-600 dark:text-rose-400">{echecsCount}</p>
           <p className="text-[11.5px] text-stone-500">À vérifier dans l'historique</p>
@@ -149,7 +149,7 @@ export default function PageEnvoisEspace() {
       </div>
 
       {/* Main Table Card (Exact Screenshot) */}
-      <div className="mt-4 rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+      <div className="mt-4 rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
 
         {/* Header filtres & recherche */}
         <div className="flex flex-col gap-3 border-b border-[#1C1917]/10 pb-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
@@ -318,7 +318,7 @@ export default function PageEnvoisEspace() {
 
       {/* 3 Mini-Cards Insight (Exact Screenshot) */}
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
             <BarChart3 className="h-4 w-4" />
           </div>
@@ -326,7 +326,7 @@ export default function PageEnvoisEspace() {
           <p className="text-[11.5px] text-stone-500">{remisCount} remis sur {totalEnvois} · {tauxReussite} % de réussite</p>
         </div>
 
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
             <Zap className="h-4 w-4" />
           </div>
@@ -334,7 +334,7 @@ export default function PageEnvoisEspace() {
           <p className="text-[11.5px] text-stone-500">{totalEnvois} SMS sur la période chargée</p>
         </div>
 
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400">
             <Eye className="h-4 w-4" />
           </div>

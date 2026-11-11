@@ -193,19 +193,19 @@ export default function PageClientsAdmin() {
 
       {/* Top 3 Metric Cards (Exact Screenshot) */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
+        <div className="survol-lift rounded-2xl border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
             Espaces actifs
           </p>
           <p className="mt-1.5 text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{clients.length}</p>
         </div>
-        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
+        <div className="survol-lift rounded-2xl border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
             SMS ce mois-ci
           </p>
           <p className="mt-1.5 text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{totalSmsMois.toLocaleString('fr-FR')}</p>
         </div>
-        <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
+        <div className="survol-lift rounded-2xl border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
             Accès suspendus
           </p>
@@ -217,7 +217,7 @@ export default function PageClientsAdmin() {
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
 
         {/* Left Column (2 cols) : Organisations */}
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-4">
+        <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">
@@ -293,22 +293,22 @@ export default function PageClientsAdmin() {
 
         {/* Right Column (1 col) : 2 Cards (Exact Screenshot) */}
         <div className="space-y-4">
-          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-3">
-            <div className="flex items-center gap-2.5 text-white/60">
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+            <div className="flex items-center gap-2.5 text-stone-500 dark:text-zinc-400">
               <Calendar className="h-4 w-4" />
               <p className="text-[10px] font-bold uppercase tracking-[0.15em]">
                 Prochain renouvellement
               </p>
             </div>
             <p className="text-[40px] font-extrabold leading-none">
-              {joursRestants} <span className="text-[16px] font-bold text-white/60">jours</span>
+              {joursRestants} <span className="text-[16px] font-bold text-stone-500 dark:text-zinc-400">jours</span>
             </p>
-            <p className="text-[11.5px] leading-relaxed text-white/55">
+            <p className="text-[11.5px] leading-relaxed text-stone-500 dark:text-zinc-400">
               Les compteurs de consommation repartent de zéro le 1er du mois.
             </p>
           </div>
 
-          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
             <p className="text-[14px] font-bold text-[#1C1917] dark:text-white">
               Un espace par organisation.
             </p>

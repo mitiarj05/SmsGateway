@@ -37,6 +37,7 @@ export default function CoquilleTableauDeBord({ children }: {
   const [enAttente, setEnAttente] = useState(0)
   const [echoues, setEchoues] = useState(0)
   const [seuilFile, setSeuilFile] = useState(10)
+  const [appareilsEnLigne, setAppareilsEnLigne] = useState<number | null>(null)
   const [versionApp, setVersionApp] = useState<string | null>(null)
   const [banniereIgnoreePour, setBanniereIgnoreePour] = useState<number | null>(null)
 
@@ -120,15 +121,22 @@ export default function CoquilleTableauDeBord({ children }: {
 
   const chargerAlertes = useCallback(async () => {
     try {
-      const [statRes, setRes, santeRes] = await Promise.all([
+      const [statRes, setRes, santeRes, appareilsRes] = await Promise.all([
         fetch('/api/stats'),
         fetch('/api/settings'),
         fetch('/api/health'),
+        fetch('/api/devices'),
       ])
       const statData = await statRes.json()
       if (statData.stats) {
         setEnAttente(statData.stats.tasks_pending ?? 0)
         setEchoues(statData.stats.tasks_failed ?? 0)
+      }
+      if (appareilsRes.ok) {
+        const appareilsData = await appareilsRes.json().catch(() => ({}))
+        if (Array.isArray(appareilsData.devices)) {
+          setAppareilsEnLigne(appareilsData.devices.filter((d: { statut?: string }) => d.statut === 'EN_LIGNE').length)
+        }
       }
       if (setRes.ok) {
         const setData = await setRes.json()
@@ -177,7 +185,7 @@ export default function CoquilleTableauDeBord({ children }: {
 
   return (
     <div
-      className={`flex min-h-screen bg-white text-[#1C1917] antialiased font-sans transition-colors duration-200 dark:bg-[#0B0F19] dark:text-zinc-100 ${redimensionne ? 'select-none' : ''}`}
+      className={`flex min-h-screen bg-stone-100 text-[#1C1917] antialiased font-sans transition-colors duration-200 dark:bg-[#0B0F19] dark:text-zinc-100 ${redimensionne ? 'select-none' : ''}`}
       style={{ '--sbw': `${largeurAffichee}px` } as CSSProperties}
     >
 
@@ -361,13 +369,17 @@ export default function CoquilleTableauDeBord({ children }: {
             </div>
 
             <div className="flex items-center gap-3">
-              {/* Badge Statut Services Stables */}
+              {/* Badge État de la flotte (attention : liste détaille vraiment les appareils) */}
               <div className="flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-[12px] font-medium text-stone-600 shadow-sm border border-[#1C1917]/10 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"></span>
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                  <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-60${appareilsEnLigne === 0 ? 'bg-rose-400' : 'bg-emerald-400'}`}></span>
+                  <span className={`relative inline-flex h-2 w-2 rounded-full${appareilsEnLigne === 0 ? 'bg-rose-500' : 'bg-emerald-500'}`}></span>
                 </span>
-                Services stables
+                {appareilsEnLigne === null
+                  ? 'État des appareils…'
+                  : appareilsEnLigne === 0
+                    ? 'Aucun appareil en ligne'
+                    : `${appareilsEnLigne} appareil${appareilsEnLigne > 1 ? 's' : ''} en ligne`}
                 <span className="text-stone-400">·</span>
                 <span className="font-semibold text-[#1C1917] dark:text-white">v{versionApp ?? '1.0.0'}</span>
               </div>
@@ -455,7 +467,7 @@ export default function CoquilleTableauDeBord({ children }: {
                 <Link key={item.href} href={item.href}
                   className={`flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium${
                     actif
-                      ? 'bg-[#2563EB] text-white'
+                      ? 'bg-[#2563EB]/10 text-[#1D4ED8] dark:bg-white/10 dark:text-white'
                       : 'text-stone-600 dark:text-zinc-400'
                   }`}>
                   <item.icone className="h-3.5 w-3.5" />

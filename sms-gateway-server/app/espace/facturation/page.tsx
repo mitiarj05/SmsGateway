@@ -125,19 +125,19 @@ export default function PageFacturationEspace() {
 
       {/* 4 Stat Cards Row */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">SMS ENVOYÉS</p>
           <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{envoyes}</p>
           <p className="text-[11.5px] text-stone-500">Ce mois-ci</p>
         </div>
 
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">SMS REÇUS</p>
           <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{recus}</p>
           <p className="text-[11.5px] text-stone-500">Transmis au site</p>
         </div>
 
-        <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+        <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">ÉCHECS</p>
           <p className="text-[30px] font-extrabold leading-none text-rose-600 dark:text-rose-400">{echecs}</p>
           <p className="text-[11.5px] text-stone-500">Non facturés</p>
@@ -151,7 +151,7 @@ export default function PageFacturationEspace() {
         <div className="xl:col-span-2 space-y-4">
 
           {/* Card 1 : Relevé du mois courant réel */}
-          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-5">
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-indigo-400">
@@ -181,7 +181,7 @@ export default function PageFacturationEspace() {
           />
 
           {/* Card 3 : Historique des relevés (mois courant réel uniquement) */}
-          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
             <h2 className="text-sm font-bold text-[#1C1917] dark:text-white">Historique des relevés</h2>
 
             <div className="overflow-x-auto">
@@ -233,13 +233,13 @@ export default function PageFacturationEspace() {
         <div className="space-y-4">
 
           {/* Top Card : Estimation du mois (calculée depuis la vraie conso) */}
-          <div className="rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">ESTIMATION DU MOIS</p>
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500 dark:text-zinc-400">ESTIMATION DU MOIS</p>
             <div>
               <p className="text-[40px] font-extrabold leading-none">
-                {estimation} <span className="text-[16px] font-bold text-white/60">Ar</span>
+                {estimation} <span className="text-[16px] font-bold text-stone-500 dark:text-zinc-400">Ar</span>
               </p>
-              <p className="mt-4 border-t border-white/10 pt-3 text-[11.5px] text-white/55">
+              <p className="mt-4 border-t border-[#1C1917]/10 dark:border-zinc-800 pt-3 text-[11.5px] text-stone-500 dark:text-zinc-400">
                 Coût moyen : 100 Ar / SMS · projection au {projectionJour}
               </p>
             </div>

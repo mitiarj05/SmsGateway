@@ -82,7 +82,7 @@ export default function PageEnvoyerEspace() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Formulaire principal à gauche (Exact Screenshot) */}
-        <section className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2">
+        <section className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2">
           <form onSubmit={soumettre} className="space-y-6">
 
             {/* Destinataires */}
@@ -157,10 +157,10 @@ export default function PageEnvoyerEspace() {
         <div className="space-y-6">
 
           {/* Card 1 : Aperçu sur mobile */}
-          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-4">
             <h3 className="text-xs font-bold text-[#1C1917] dark:text-white">Aperçu sur mobile</h3>
 
-            <div className="rounded-[2.2rem] bg-slate-950 p-4 border-4 border-slate-900 shadow-xl space-y-3">
+            <div className="rounded-2xl bg-slate-950 p-4 border-4 border-slate-900 shadow-xl space-y-3">
               <p className="text-[10px] text-stone-500 text-center">SMS · aujourd'hui 09:12</p>
 
               <div className="rounded-2xl bg-[#1C1917] p-3 text-xs leading-relaxed text-[#F7F5F0] space-y-2">
@@ -173,7 +173,7 @@ export default function PageEnvoyerEspace() {
           </div>
 
           {/* Card 2 : Règles d'envoi */}
-          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
             <h3 className="text-xs font-bold text-[#1C1917] dark:text-white">Règles d'envoi</h3>
 
             <ul className="space-y-2.5 text-xs text-stone-600 dark:text-zinc-400 leading-relaxed">

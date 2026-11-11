@@ -42,6 +42,7 @@ export async function GET() {
         solde_maj_le: d.solde_maj_le ?? null,
         // Propriétaire (client lié) — null tant qu'aucun client n'est rattaché.
         client_nom: d.client?.nom ?? null,
+        client_id: d.id_client ?? null,
       }))
     )
 

@@ -183,7 +183,7 @@ export default function AppareilsPage() {
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Colonne Gauche (2 cols) : Flotte de téléphones */}
         <div className="xl:col-span-2 space-y-4">
-          <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-6">
+          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-6">
             <div className="flex flex-col gap-3 border-b border-[#1C1917]/10 pb-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-[17px] font-bold text-[#1C1917] dark:text-white">Flotte de téléphones</h2>
@@ -287,56 +287,40 @@ export default function AppareilsPage() {
                     </div>
                   </div>
 
-                  {/* Body Vector & Details */}
-                  <div className="flex flex-col sm:flex-row items-center gap-6">
-                    {/* Phone Vector Container */}
-                    <div className="flex h-44 w-32 shrink-0 flex-col items-center justify-center gap-2 rounded-[2.2rem] border-2 border-[#1C1917]/10 bg-stone-100 p-3 text-center dark:border-zinc-700 dark:bg-zinc-900">
-                      {enLigne
-                        ? <Smartphone size={26} className="text-emerald-500" />
-                        : <WifiOff size={26} className="text-stone-400 dark:text-zinc-600" />}
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-stone-500">
-                        {enLigne ? 'EN LIGNE' : 'HORS LIGNE'}
-                      </span>
-                    </div>
-
-                    <div className="space-y-4 flex-1 text-center sm:text-left">
-                      <div>
-                        <h3 className="text-[20px] font-extrabold text-[#1C1917] dark:text-white">{a.nom}</h3>
-                        <p className="font-mono text-[12px] text-stone-500">{a.id}</p>
-                        <p className="mt-0.5 text-[11.5px] font-semibold text-stone-500 dark:text-zinc-400">
-                          Client :{' '}
-                          <span className={a.client_nom ? 'text-[#1C1917] dark:text-zinc-200' : ''}>
-                            {a.client_nom ?? '— non lié à un client —'}
-                          </span>
+                  {/* Fiche compacte : identité + connexion + activité + solde regroupés */}
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl${enLigne ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-stone-100 text-stone-400 dark:bg-zinc-800 dark:text-zinc-600'}`}>
+                        {enLigne ? <Smartphone size={18} /> : <WifiOff size={18} />}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-[15px] font-extrabold text-[#1C1917] dark:text-white">{a.nom}</h3>
+                        <p className="text-[11px] font-semibold text-stone-500 dark:text-zinc-400">
+                          Client : {a.client_nom ?? '— non lié à un client —'}
                         </p>
                       </div>
+                      <code className="hidden md:inline-block self-center rounded bg-[#1C1917]/[0.06] px-2 py-0.5 font-mono text-[10.5px] text-stone-500 dark:bg-zinc-800 dark:text-zinc-400">
+                        {a.fcm_token ? `FCM ${a.fcm_token}` : 'sans FCM'}
+                      </code>
+                    </div>
 
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">JETON PUSH FCM</p>
-                        <code className="mt-0.5 inline-block rounded bg-[#1C1917]/10 px-2.5 py-1 font-mono text-[13px] text-stone-600 dark:bg-zinc-800 dark:text-zinc-300">
-                          {a.fcm_token ? a.fcm_token : '—'}
-                        </code>
-                      </div>
-
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">DERNIÈRE ACTIVITÉ</p>
-                        <p className="text-[13.5px] font-bold text-[#1C1917] dark:text-zinc-200">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      <div className="rounded-xl border border-[#1C1917]/10 bg-stone-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-800/50">
+                        <p className="text-[9.5px] font-bold uppercase tracking-wider text-stone-400 dark:text-zinc-500">Dernière activité</p>
+                        <p className="text-[12.5px] font-bold text-[#1C1917] dark:text-zinc-200">
                           {a.derniere_activite && !Number.isNaN(new Date(a.derniere_activite).getTime())
                             ? new Date(a.derniere_activite).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
                             : '—'}
                         </p>
                       </div>
-
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500">SOLDE DE LA SIM</p>
-                        <div className="mt-1">
-                          <SoldeSim
-                            montant={a.solde_sim}
-                            devise={a.solde_devise}
-                            texte={a.solde_texte}
-                            majLe={a.solde_maj_le}
-                          />
-                        </div>
+                      <div className="rounded-xl border border-[#1C1917]/10 bg-stone-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-800/50">
+                        <p className="text-[9.5px] font-bold uppercase tracking-wider text-stone-400 dark:text-zinc-500">Solde de la SIM</p>
+                        <SoldeSim
+                          montant={a.solde_sim}
+                          devise={a.solde_devise}
+                          texte={a.solde_texte}
+                          majLe={a.solde_maj_le}
+                        />
                       </div>
                     </div>
                   </div>
@@ -379,17 +363,17 @@ export default function AppareilsPage() {
         {/* Colonne Droite (1 col) : Capacité & Appareils enregistrés (Exact Screenshot) */}
         <div className="space-y-4">
           {/* Card Capacité configurée */}
-          <div className="survol-lift rounded-[1.5rem] bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-3">
-            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/60">
+          <div className="survol-lift rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:bg-zinc-900 dark:border-zinc-800 space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-stone-500 dark:text-zinc-400">
               Capacité configurée
             </p>
             <p className="text-[44px] font-extrabold leading-none">
-              {totalAppareils * quota} <span className="text-[16px] font-bold text-white/60">SMS/h</span>
+              {totalAppareils * quota} <span className="text-[16px] font-bold text-stone-500 dark:text-zinc-400">SMS/h</span>
             </p>
-            <p className="text-[11.5px] leading-relaxed text-white/55">
+            <p className="text-[11.5px] leading-relaxed text-stone-500 dark:text-zinc-400">
               Capacité totale de la flotte globale, selon les quotas par appareil.
             </p>
-            <p className="flex items-center gap-2 text-[11.5px] text-white/60 pt-2 border-t border-white/10">
+            <p className="flex items-center gap-2 text-[11.5px] text-stone-500 dark:text-zinc-400 pt-2 border-t border-[#1C1917]/10 dark:border-zinc-800">
               <span className={`h-1.5 w-1.5 rounded-full${enLigneCount > 0 ? 'bg-emerald-400' : 'bg-rose-400'}`}></span>
               {enLigneCount > 0
                 ? `${enLigneCount} appareil${enLigneCount > 1 ? 's' : ''} actif${enLigneCount > 1 ? 's' : ''} maintenant`
@@ -398,7 +382,7 @@ export default function AppareilsPage() {
           </div>
 
           {/* Card Appareils enregistrés */}
-          <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
+          <div className="survol-lift rounded-2xl border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
             <p className="text-[12px] font-medium text-stone-500">
               Appareils enregistrés
             </p>
@@ -406,7 +390,7 @@ export default function AppareilsPage() {
           </div>
 
           {/* Card Actifs maintenant */}
-          <div className="survol-lift rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
+          <div className="survol-lift rounded-2xl border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
             <p className="text-[12px] font-medium text-stone-500">
               Actifs maintenant
             </p>
@@ -424,7 +408,7 @@ export default function AppareilsPage() {
       {cibleEdition && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setCibleEdition(null)}>
           <div
-            className="w-full max-w-sm rounded-[1.5rem] bg-white p-6 shadow-card dark:bg-zinc-900 dark:border dark:border-zinc-800"
+            className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-card dark:bg-zinc-900 dark:border dark:border-zinc-800"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-[15px] font-bold text-[#1C1917] dark:text-white">Renommer l&apos;appareil</h3>

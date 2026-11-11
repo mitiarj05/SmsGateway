@@ -128,7 +128,7 @@ export default function GraphiqueRythme({
   }
 
   return (
-    <div className="rounded-[1.5rem] border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-4">
+    <div className="rounded-2xl border border-slate-100 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-4">
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-[16px] font-bold text-slate-900 dark:text-white">{titre}</h2>

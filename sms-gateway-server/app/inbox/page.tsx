@@ -136,7 +136,7 @@ export default function PageBoiteReception() {
       )}
 
       {/* Statistiques 3 Cartes (Exact Screenshot 1) */}
-      <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card survol-lift grid grid-cols-3 divide-x divide-[#1C1917]/10 px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 dark:divide-zinc-800">
+      <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card survol-lift grid grid-cols-3 divide-x divide-[#1C1917]/10 px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 dark:divide-zinc-800">
         <div className="pr-6">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
             Messages reçus
@@ -201,7 +201,7 @@ export default function PageBoiteReception() {
       </div>
 
       {/* Liste des messages (Exact Screenshot 1) */}
-      <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white shadow-card overflow-hidden dark:bg-zinc-900 dark:border-zinc-800">
+      <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card overflow-hidden dark:bg-zinc-900 dark:border-zinc-800">
         <div className="divide-y divide-[#1C1917]/10 dark:divide-zinc-800">
           {chargement && (
             <p className="flex items-center justify-center gap-2 px-6 py-12 text-xs text-stone-500">

@@ -57,7 +57,7 @@ export default function GraphiqueConsommationQuotidienne({
   ]
 
   return (
-    <div className="rounded-[1.5rem] border border-[#1C1917]/10 bg-white p-6 shadow-card dark:border-zinc-800 dark:bg-zinc-900 space-y-4">
+    <div className="rounded-2xl border border-[#1C1917]/10 bg-white p-6 shadow-card dark:border-zinc-800 dark:bg-zinc-900 space-y-4">
 
       {/* En-tête avec titre & Légende supérieure centré/gauche */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-[#1C1917]/5 pb-3 dark:border-zinc-800/60">
