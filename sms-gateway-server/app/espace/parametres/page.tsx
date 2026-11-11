@@ -270,7 +270,7 @@ export default function PageParametresEspace() {
       </div>
 
       {/* Onglets internes : Profil & sécurité | Paramètres avancés */}
-      <div className="mb-5 flex items-center gap-2">
+      <div className="mb-5 flex flex-wrap items-center gap-2">
         <button
           onClick={() => setOnglet('profil')}
           aria-pressed={onglet === 'profil'}
@@ -285,6 +285,27 @@ export default function PageParametresEspace() {
         >
           <SlidersHorizontal className="h-3.5 w-3.5" /> Paramètres avancés
         </button>
+
+        {/* Sous-onglets (visibles uniquement dans Paramètres avancés, même rangée) */}
+        {onglet === 'avancee' && (
+          <>
+            <span aria-hidden className="mx-1 hidden h-5 w-px bg-[#1C1917]/15 sm:block dark:bg-zinc-700" />
+            <button
+              onClick={() => setSousOnglet('boutique')}
+              aria-pressed={sousOnglet === 'boutique'}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold transition ${sousOnglet === 'boutique' ? 'bg-[#2563EB] text-white shadow-sm' : 'border border-[#1C1917]/10 bg-white text-stone-500 hover:bg-stone-100 hover:text-[#1C1917] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-white'}`}
+            >
+              <Zap className="h-3 w-3" /> Boutique
+            </button>
+            <button
+              onClick={() => setSousOnglet('avancee')}
+              aria-pressed={sousOnglet === 'avancee'}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold transition ${sousOnglet === 'avancee' ? 'bg-[#2563EB] text-white shadow-sm' : 'border border-[#1C1917]/10 bg-white text-stone-500 hover:bg-stone-100 hover:text-[#1C1917] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-white'}`}
+            >
+              <SlidersHorizontal className="h-3 w-3" /> Configuration avancée
+            </button>
+          </>
+        )}
       </div>
 
       {/* ============ ONGLET : PROFIL & SÉCURITÉ ============ */}
@@ -446,24 +467,6 @@ export default function PageParametresEspace() {
 
         {/* Left Column (2 cols) */}
         <div className="xl:col-span-2 space-y-4">
-
-          {/* Sous-menu : Boutique | Configuration avancée */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSousOnglet('boutique')}
-              aria-pressed={sousOnglet === 'boutique'}
-              className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition ${sousOnglet === 'boutique' ? 'bg-[#1C1917] text-white shadow-md dark:bg-white dark:text-zinc-900' : 'border border-[#1C1917]/10 bg-white text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300'}`}
-            >
-              <Zap className="h-3.5 w-3.5" /> Boutique
-            </button>
-            <button
-              onClick={() => setSousOnglet('avancee')}
-              aria-pressed={sousOnglet === 'avancee'}
-              className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition ${sousOnglet === 'avancee' ? 'bg-[#1C1917] text-white shadow-md dark:bg-white dark:text-zinc-900' : 'border border-[#1C1917]/10 bg-white text-stone-600 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300'}`}
-            >
-              <SlidersHorizontal className="h-3.5 w-3.5" /> Configuration avancée
-            </button>
-          </div>
 
           {/* Card 1 : Connexion Boutique en 1 clic */}
           {sousOnglet === 'boutique' && (
