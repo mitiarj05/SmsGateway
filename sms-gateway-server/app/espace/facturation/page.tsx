@@ -245,18 +245,18 @@ export default function PageFacturationEspace() {
             <p className="text-xs font-bold text-[#1C1917] dark:text-white">Répartition du mois</p>
             {(() => {
               const lignesRepartition = [
-                { libelle: 'Envoyés', valeur: envoyes, couleur: 'bg-blue-500' },
-                { libelle: 'Reçus', valeur: recus, couleur: 'bg-emerald-500' },
-                { libelle: 'Échecs', valeur: echecs, couleur: 'bg-rose-500' },
+                { phrase: 'SMS envoyés par vos téléphones', valeur: envoyes, couleur: 'bg-blue-500' },
+                { phrase: 'Réponses reçues et transmises à votre site', valeur: recus, couleur: 'bg-emerald-500' },
+                { phrase: 'Envois non aboutis (non facturés)', valeur: echecs, couleur: 'bg-rose-500' },
               ]
               const somme = lignesRepartition.reduce((s, l) => s + l.valeur, 0)
               return (
                 <div className="space-y-2.5 text-xs">
                   {lignesRepartition.map((l) => (
-                    <div key={l.libelle} className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-stone-600 dark:text-zinc-400">{l.libelle}</span>
-                        <span className="font-bold text-[#1C1917] dark:text-zinc-200">{l.valeur.toLocaleString('fr-FR')}</span>
+                    <div key={l.phrase} className="space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-stone-600 dark:text-zinc-400">{l.phrase}</span>
+                        <span className="shrink-0 font-bold text-[#1C1917] dark:text-zinc-200">{l.valeur.toLocaleString('fr-FR')}</span>
                       </div>
                       <div className="h-1.5 overflow-hidden rounded-full bg-stone-100 dark:bg-zinc-800">
                         <div
@@ -266,6 +266,9 @@ export default function PageFacturationEspace() {
                       </div>
                     </div>
                   ))}
+                  <p className="pt-1 text-[11px] text-stone-500 dark:text-zinc-400">
+                    Sur {somme.toLocaleString('fr-FR')} message{somme > 1 ? 's' : ''} échangé{somme > 1 ? 's' : ''} ce mois.
+                  </p>
                 </div>
               )
             })()}
