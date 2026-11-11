@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Receipt, Calendar, ShieldCheck, ArrowUpRight } from 'lucide-react'
+import { Calendar, ShieldCheck, ArrowUpRight } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import GraphiqueConsommationQuotidienne, { ItemConsommation } from '../../../composants/GraphiqueConsommationQuotidienne'
 
@@ -142,6 +142,12 @@ export default function PageFacturationEspace() {
           <p className="text-[30px] font-extrabold leading-none text-rose-600 dark:text-rose-400">{echecs}</p>
           <p className="text-[11.5px] text-stone-500">Non facturés</p>
         </div>
+
+        <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">UNITÉS FACTURÉES</p>
+          <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{total}</p>
+          <p className="text-[11.5px] text-stone-500">1 unité = 1 SMS créé ce mois</p>
+        </div>
       </div>
 
       {/* Main Grid 2 Cols */}
@@ -150,29 +156,7 @@ export default function PageFacturationEspace() {
         {/* Left Column (2 cols) */}
         <div className="xl:col-span-2 space-y-4">
 
-          {/* Card 1 : Relevé du mois courant réel */}
-          <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 space-y-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-indigo-400">
-                  <Receipt className="h-4 w-4" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-[#1C1917] dark:text-white">Relevé de {idMois}</h2>
-                  <p className="text-xs text-stone-500">{total} unité(s) consommée(s)</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-[#1C1917]/10 dark:border-zinc-800">
-              <p className="text-[11.5px] text-stone-500">
-                Forfait illimité : 1 unité correspond à 1 SMS créé dans le mois.
-                Votre seul crédit est la carte SIM de vos téléphones.
-              </p>
-            </div>
-          </div>
-
-          {/* Card 2 : Graphique de Consommation Quotidienne (Bâtons bleus identiques à l'image exemple) */}
+          {/* Graphique de Consommation Quotidienne (Bâtons bleus identiques à l'image exemple) */}
           <GraphiqueConsommationQuotidienne
             titre="Consommation quotidienne"
             sousTitre={`du ${clesVisibles[0].libelle} au ${clesVisibles[6].libelle}`}
@@ -243,14 +227,17 @@ export default function PageFacturationEspace() {
                 Coût moyen : 100 Ar / SMS · projection au {projectionJour}
               </p>
             </div>
-          </div>
-
-          {/* Bottom Green Tip Box */}
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-900 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300 flex items-start gap-3">
-            <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-            <p className="leading-relaxed">
-              <b>Consommation du mois.</b> Votre forfait est illimité — le relevé suit vos SIM en revenus et en envois.
-            </p>
+            <div className="border-t border-white/10 pt-3">
+              <p className="text-[10px] uppercase tracking-wide text-white/45">
+                Relevé de {nomMois}
+              </p>
+              <p className="mt-0.5 text-[13px] font-bold">
+                {total} unité{total > 1 ? 's' : ''} consommée{total > 1 ? 's' : ''}
+              </p>
+              <p className="mt-1 text-[11.5px] leading-relaxed text-white/60">
+                Forfait illimité : 1 unité = 1 SMS créé dans le mois. Votre seul crédit est la carte SIM de vos téléphones.
+              </p>
+            </div>
           </div>
 
           {/* Card Répartition du mois (données réelles) */}
@@ -282,6 +269,14 @@ export default function PageFacturationEspace() {
                 </div>
               )
             })()}
+          </div>
+
+          {/* Green Tip Box (clôture de la colonne) */}
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-900 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300 flex items-start gap-3">
+            <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              <b>Consommation du mois.</b> Votre forfait est illimité — le relevé suit vos SIM en revenus et en envois.
+            </p>
           </div>
 
         </div>
