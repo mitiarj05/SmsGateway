@@ -19,8 +19,11 @@ export interface Appareil {
   /** Réponse brute de l'opérateur (servie en infobulle : jamais de chiffre inventé). */
   solde_texte?: string | null
   solde_maj_le?: string | null
+  /** true = jeton FCM présent → le push de réveil est possible. */
+  fcm_present?: boolean
   /** Nom du client propriétaire (vue admin) — null tant qu'aucun client n'est rattaché. */
   client_nom?: string | null
+  client_id?: string | null
 }
 
 export interface Tache {

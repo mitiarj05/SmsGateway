@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Smartphone, Plus, RefreshCw, SlidersHorizontal,
-  Check, MoreHorizontal, Loader2, QrCode, Search, ChevronDown, Info, ArrowUpRight, WifiOff
+  Check, Loader2, QrCode, Search, ChevronDown, Info, ArrowUpRight, WifiOff,
+  Pencil, Trash2, FileText, Radio,
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 import { Appareil, Toast, DialogueConfirmation, QUOTA_SMS_PAR_HEURE, SoldeSim } from '../../composants/interface'
@@ -17,10 +18,15 @@ export default function AppareilsPage() {
   const [actualisationEnCours, setActualisationEnCours] = useState(false)
   const [recherche, setRecherche] = useState('')
   const [filtreStatut, setFiltreStatut] = useState('ALL')
+  const [filtreClient, setFiltreClient] = useState('ALL')
   const [notification, setNotification] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
   const [cibleSuppression, setCibleSuppression] = useState<Appareil | null>(null)
   const [suppressionEnCours, setSuppressionEnCours] = useState(false)
   const [modalAjoutOuverte, setModalAjoutOuverte] = useState(false)
+  const [cibleEdition, setCibleEdition] = useState<Appareil | null>(null)
+  const [nomEdition, setNomEdition] = useState('')
+  const [editionEnCours, setEditionEnCours] = useState(false)
+  const [reveilEnCours, setReveilEnCours] = useState<string | null>(null)
 
   function afficherNotification(type: 'succes' | 'erreur', texte: string) {
     setNotification({ type, texte })
@@ -79,6 +85,48 @@ export default function AppareilsPage() {
     }
   }
 
+  /** POST ping : un push test FCM pour réveiller la connexion de l'appareil. */
+  async function reveillerAppareil(a: Appareil) {
+    setReveilEnCours(a.id)
+    try {
+      const reponse = await fetch(`/api/devices/${a.id}/ping`, { method: 'POST' })
+      const donnees = await reponse.json().catch(() => ({}))
+      if (reponse.ok && donnees.ping_sent) {
+        afficherNotification('succes', `Push de réveil envoyé à « ${a.nom} »`)
+      } else {
+        afficherNotification('erreur', donnees?.error ?? 'Réveil impossible (pas de jeton FCM ?)')
+      }
+    } catch {
+      afficherNotification('erreur', 'Erreur réseau')
+    } finally {
+      setReveilEnCours(null)
+    }
+  }
+
+  async function enregistrerEdition() {
+    if (!cibleEdition || !nomEdition.trim()) return
+    setEditionEnCours(true)
+    try {
+      const reponse = await fetch(`/api/devices/${cibleEdition.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nom: nomEdition.trim() }),
+      })
+      const donnees = await reponse.json().catch(() => ({}))
+      if (reponse.ok) {
+        afficherNotification('succes', `Appareil renommé en « ${nomEdition.trim()} »`)
+        setCibleEdition(null)
+        chargerDonnees(true)
+      } else {
+        afficherNotification('erreur', donnees?.error ?? 'Renommage impossible')
+      }
+    } catch {
+      afficherNotification('erreur', 'Erreur réseau')
+    } finally {
+      setEditionEnCours(false)
+    }
+  }
+
   if (chargement) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#1C1917]/[0.04] dark:bg-zinc-950">
@@ -92,12 +140,25 @@ export default function AppareilsPage() {
 
   const appareilsVisibles = appareils.filter((a) => {
     const correspondStatut = filtreStatut === 'ALL' || a.statut === filtreStatut
+    const correspondClient =
+      filtreClient === 'ALL' ||
+      (filtreClient === 'NONE' ? !a.client_id : a.client_id === filtreClient)
     const retour = recherche.toLowerCase()
     const correspondRecherche =
       a.nom.toLowerCase().includes(retour) ||
       (a.client_nom ?? '').toLowerCase().includes(retour)
-    return correspondStatut && correspondRecherche
+    return correspondStatut && correspondClient && correspondRecherche
   })
+
+  // Clients réellement présents dans la flotte (dédupliqués, triés).
+  const listeClients = Array.from(
+    new Map(
+      appareils
+        .filter((a) => a.client_id && a.client_nom)
+        .map((a) => [a.client_id as string, a.client_nom as string])
+    ).entries()
+  ).sort(([, nA], [, nB]) => nA.localeCompare(nB))
+  const orphelinsCount = appareils.filter((a) => !a.client_id).length
 
   return (
     <CoquilleTableauDeBord>
@@ -127,10 +188,12 @@ export default function AppareilsPage() {
               <div>
                 <h2 className="text-[17px] font-bold text-[#1C1917] dark:text-white">Flotte de téléphones</h2>
                 <p className="text-[12px] text-stone-500 dark:text-zinc-500">
-                  {totalAppareils} appareil{totalAppareils > 1 ? 's' : ''} au service de la passerelle
+                  {appareilsVisibles.length === totalAppareils
+                    ? `${totalAppareils} appareil${totalAppareils > 1 ? 's' : ''} au service de la passerelle`
+                    : `${appareilsVisibles.length} affiché${appareilsVisibles.length > 1 ? 's' : ''} sur ${totalAppareils}`}
                 </p>
               </div>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 flex-wrap">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-500" />
                   <input
@@ -140,6 +203,22 @@ export default function AppareilsPage() {
                     onChange={(e) => setRecherche(e.target.value)}
                     className="w-52 rounded-full border border-[#1C1917]/10 bg-white py-2 pl-8 pr-3 text-[12.5px] shadow-2xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
                   />
+                </div>
+                <div className="relative">
+                  <select
+                    value={filtreClient}
+                    onChange={(e) => setFiltreClient(e.target.value)}
+                    className="appearance-none rounded-full border border-[#1C1917]/10 bg-white py-2 pl-3.5 pr-8 text-[12.5px] font-semibold text-stone-600 shadow-2xs focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  >
+                    <option value="ALL">Tous les clients</option>
+                    {listeClients.map(([id, nom]) => (
+                      <option key={id} value={id}>{nom}</option>
+                    ))}
+                    {orphelinsCount > 0 && (
+                      <option value="NONE">Sans client ({orphelinsCount})</option>
+                    )}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-500" />
                 </div>
                 <div className="relative">
                   <select
@@ -169,14 +248,43 @@ export default function AppareilsPage() {
                 const pct = quota > 0 ? Math.min(100, Math.round((utilises / quota) * 100)) : 0
                 return (
                 <div key={a.id} className="relative rounded-2xl bg-white p-6 dark:bg-zinc-800/40 border border-[#1C1917]/10 dark:border-zinc-800 space-y-6">
-                  {/* Badge statut top left */}
+                  {/* Badge statut + actions */}
                   <div className="flex items-center justify-between">
                     <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold${enLigne ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400'}`}>
                       <span className={`h-1.5 w-1.5 rounded-full${enLigne ? 'bg-emerald-500' : 'bg-rose-500'}`} /> {enLigne ? 'En ligne' : 'Hors ligne'}
                     </span>
-                    <button onClick={() => setCibleSuppression(a)} className="text-stone-500 hover:text-stone-600 dark:hover:text-zinc-200">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => reveillerAppareil(a)}
+                        disabled={!a.fcm_present || reveilEnCours === a.id}
+                        title={a.fcm_present ? 'Envoyer un push de réveil' : 'Aucun jeton FCM — réveil impossible'}
+                        className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white px-3 text-[11px] font-semibold text-stone-600 transition hover:border-blue-300 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:text-blue-400"
+                      >
+                        {reveilEnCours === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Radio className="h-3.5 w-3.5" />}
+                        Réveiller
+                      </button>
+                      <button
+                        onClick={() => { setCibleEdition(a); setNomEdition(a.nom) }}
+                        title="Renommer cet appareil"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white px-3 text-[11px] font-semibold text-stone-600 transition hover:border-blue-300 hover:text-blue-600 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:text-blue-400"
+                      >
+                        <Pencil className="h-3.5 w-3.5" /> Éditer
+                      </button>
+                      <Link
+                        href={`/history?appareil=${a.id}`}
+                        title="Voir les envois de cet appareil"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white px-3 text-[11px] font-semibold text-stone-600 transition hover:border-blue-300 hover:text-blue-600 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:text-blue-400"
+                      >
+                        <FileText className="h-3.5 w-3.5" /> Envois
+                      </Link>
+                      <button
+                        onClick={() => setCibleSuppression(a)}
+                        title="Supprimer cet appareil"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-full border border-rose-200 bg-white px-3 text-[11px] font-semibold text-rose-600 transition hover:bg-rose-50 hover:border-rose-300 dark:bg-zinc-800 dark:border-rose-900/50 dark:text-rose-400 dark:hover:bg-rose-900/20"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" /> Supprimer
+                      </button>
+                    </div>
                   </div>
 
                   {/* Body Vector & Details */}
@@ -311,6 +419,46 @@ export default function AppareilsPage() {
         ouvert={modalAjoutOuverte}
         onFermer={() => setModalAjoutOuverte(false)}
       />
+
+      {/* Modal de renommage */}
+      {cibleEdition && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setCibleEdition(null)}>
+          <div
+            className="w-full max-w-sm rounded-[1.5rem] bg-white p-6 shadow-card dark:bg-zinc-900 dark:border dark:border-zinc-800"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-[15px] font-bold text-[#1C1917] dark:text-white">Renommer l&apos;appareil</h3>
+            <p className="mt-0.5 text-[11.5px] text-stone-500 dark:text-zinc-400">
+              Le nom apparaît sur les pages Appareils et Historique.
+            </p>
+            <input
+              type="text"
+              value={nomEdition}
+              onChange={(e) => setNomEdition(e.target.value)}
+              maxLength={60}
+              autoFocus
+              onKeyDown={(e) => { if (e.key === 'Enter') enregistrerEdition() }}
+              className="mt-4 w-full rounded-xl border border-[#1C1917]/10 bg-white px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-blue-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setCibleEdition(null)}
+                className="rounded-full border border-[#1C1917]/10 px-4 py-2 text-[12px] font-semibold text-stone-600 hover:bg-stone-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={enregistrerEdition}
+                disabled={!nomEdition.trim() || editionEnCours}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#2563EB] px-4 py-2 text-[12px] font-semibold text-white hover:bg-[#1D4ED8] disabled:opacity-60"
+              >
+                {editionEnCours && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <DialogueConfirmation
         ouvert={!!cibleSuppression}

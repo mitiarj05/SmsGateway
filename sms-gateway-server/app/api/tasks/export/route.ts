@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
     const q = (params.get('q') ?? '').trim()
     const from = params.get('from')
     const to = params.get('to')
+    const appareil = (params.get('appareil') ?? '').trim()
     const statuts = (params.get('statut') ?? '')
       .split(',')
       .map((s) => s.trim().toUpperCase())
@@ -42,6 +43,9 @@ export async function GET(request: NextRequest) {
     if (q) {
       const echappe = q.replace(/[%_,]/g, (c) => `\\${c}`)
       requete = requete.or(`numero_destinataire.ilike.%${echappe}%,contenu.ilike.%${echappe}%`)
+    }
+    if (appareil) {
+      requete = requete.eq('id_appareil', appareil)
     }
     if (from) {
       const d = new Date(from)

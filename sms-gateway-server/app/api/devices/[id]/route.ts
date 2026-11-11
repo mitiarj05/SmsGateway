@@ -52,8 +52,8 @@ export async function GET(
   }
 }
 
-/** PATCH /api/devices/[id] — activer/désactiver + SIM dédiée.
- *  Corps: { statut?: "DESACTIVE" | "HORS_LIGNE", id_client?: string | null } */
+/** PATCH /api/devices/[id] — renommer + activer/désactiver + SIM dédiée.
+ *  Corps: { nom?: string, statut?: "DESACTIVE" | "HORS_LIGNE", id_client?: string | null } */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -61,9 +61,15 @@ export async function PATCH(
   try {
     const { id } = await params
     const corps = await request.json()
-    const { statut, id_client } = corps
+    const { nom, statut, id_client } = corps
 
     const donneesMaj: Record<string, unknown> = {}
+    if (nom !== undefined) {
+      if (typeof nom !== 'string' || nom.trim().length === 0) {
+        return NextResponse.json({ error: 'Nom invalide' }, { status: 400 })
+      }
+      donneesMaj.nom = nom.trim().slice(0, 60)
+    }
     if (statut !== undefined) {
       if (![STATUT_APPAREIL.DESACTIVE, STATUT_APPAREIL.HORS_LIGNE].includes(statut)) {
         return NextResponse.json({ error: 'Statut invalide (DESACTIVE | HORS_LIGNE)' }, { status: 400 })

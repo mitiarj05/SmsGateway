@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import {
-  Download, Search, RefreshCw, ChevronDown, Package, Loader2,
+  Download, Search, RefreshCw, ChevronDown, Package, Loader2, Info,
 } from 'lucide-react'
 import CoquilleTableauDeBord from '../../composants/CoquilleTableauDeBord'
 import { Appareil, Tache, BadgeStatut, STATUTS_TACHES, BadgeLivraison } from '../../composants/interface'
@@ -14,6 +14,13 @@ export default function PageHistorique() {
   const [actualisationEnCours, setActualisationEnCours] = useState(false)
   const [recherche, setRecherche] = useState('')
   const [filtreEtat, setFiltreEtat] = useState('ALL')
+  // Filtrage par appareil — survient via /history?appareil=<id> (bouton « Envois » des cartes).
+  const [filtreAppareil, setFiltreAppareil] = useState<string | null>(null)
+
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('appareil')
+    if (id) setFiltreAppareil(id)
+  }, [])
 
   const chargerDonnees = useCallback(async (silencieux = false) => {
     if (!silencieux) setActualisationEnCours(true)
@@ -47,15 +54,17 @@ export default function PageHistorique() {
 
   const demandeFiltrees = taches.filter((t) => {
     const correspondEtat = filtreEtat === 'ALL' || t.statut === filtreEtat
+    const correspondAppareil = !filtreAppareil || t.device_id === filtreAppareil
     const correspondRecherche =
       t.numero_destinataire.includes(recherche) || t.message.toLowerCase().includes(recherche.toLowerCase())
-    return correspondEtat && correspondRecherche
+    return correspondEtat && correspondAppareil && correspondRecherche
   })
 
   function exporter() {
     const parametres = new URLSearchParams()
     parametres.set('statut', 'ENVOYE,ECHOUE')
     if (recherche.trim()) parametres.set('q', recherche.trim())
+    if (filtreAppareil) parametres.set('appareil', filtreAppareil)
     window.location.href = `/api/tasks/export?${parametres.toString()}`
   }
 
@@ -84,6 +93,22 @@ export default function PageHistorique() {
           <Download className="h-4 w-4" /> Exporter
         </button>
       </div>
+
+      {/* Bannière : filtré par appareil (depuis la carte Appareils) */}
+      {filtreAppareil && (
+        <div className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 dark:border-blue-500/20 dark:bg-blue-500/10">
+          <Info className="h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
+          <p className="flex-1 text-[12.5px] text-blue-800 dark:text-blue-300">
+            Envois de l&apos;appareil <b>{nomAppareil(filtreAppareil)}</b> uniquement.
+          </p>
+          <button
+            onClick={() => setFiltreAppareil(null)}
+            className="text-[12px] font-bold text-blue-700 hover:underline dark:text-blue-300"
+          >
+            Tout afficher
+          </button>
+        </div>
+      )}
 
       {/* Main Table Card */}
       <div className="rounded-2xl bg-white shadow-card border border-[#1C1917]/10 dark:bg-zinc-900 dark:border-zinc-800">
