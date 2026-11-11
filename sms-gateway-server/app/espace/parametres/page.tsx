@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   User, Mail, KeyRound, Loader2, Save, CheckCircle2, ShieldCheck, Copy, Check,
-  Webhook, FlaskConical, Zap, Download, SlidersHorizontal,
+  Webhook, FlaskConical, Zap, Download, SlidersHorizontal, Link2,
 } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import { Toast } from '../../../composants/interface'
@@ -302,7 +302,7 @@ export default function PageParametresEspace() {
               aria-pressed={sousOnglet === 'avancee'}
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold transition ${sousOnglet === 'avancee' ? 'bg-[#2563EB] text-white shadow-sm' : 'border border-[#1C1917]/10 bg-white text-stone-500 hover:bg-stone-100 hover:text-[#1C1917] dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:text-white'}`}
             >
-              <SlidersHorizontal className="h-3 w-3" /> Configuration avancée
+              <Link2 className="h-3 w-3" /> Lien manuel
             </button>
           </>
         )}
