@@ -221,29 +221,29 @@ export default function PageInscription() {
         {/* Colonne marque */}
         <div className="space-y-7">
           <Link href="/" title="Retour à l'accueil" className="inline-block">
-            <Image src="/icons/logoClair.png" alt="SMSTSIKA — retour à l'accueil" width={320} height={82} className="h-16 w-auto" priority />
+            <Image src="/icons/logoClair.png" alt="SMSTSIKA — retour à l'accueil" width={320} height={82} className="h-auto w-full max-w-[340px]" priority />
           </Link>
 
-          <h1 className="max-w-md font-sans text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+          <h1 className="max-w-md font-sans text-4xl font-extrabold leading-tight tracking-tight sm:text-[44px]">
             Créez votre compte SMSTSIKA
           </h1>
 
-          <ul className="space-y-3 text-sm font-medium text-stone-600">
-            <li className="flex items-center gap-3">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-[#15803B]" />
+          <ul className="space-y-4 text-base font-medium leading-relaxed text-stone-600">
+            <li className="flex items-center gap-3.5">
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-[#15803B]" />
               <span>Votre propre clé API pour envoyer des SMS</span>
             </li>
-            <li className="flex items-center gap-3">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-[#15803B]" />
+            <li className="flex items-center gap-3.5">
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-[#15803B]" />
               <span>Recevez les SMS de vos clients sur votre espace</span>
             </li>
-            <li className="flex items-center gap-3">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-[#15803B]" />
+            <li className="flex items-center gap-3.5">
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-[#15803B]" />
               <span>Vos numéros, vos tarifs, vos données restent chez vous</span>
             </li>
           </ul>
 
-          <p className="font-mono text-[11px] text-stone-500">
+          <p className="font-mono text-[13px] text-stone-500">
             *Accès sous réserve de validation par l'administrateur.
           </p>
         </div>
