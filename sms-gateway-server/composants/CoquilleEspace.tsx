@@ -260,31 +260,30 @@ export default function CoquilleEspace({ children }: {
               )
             })}
           </nav>
-        </div>
 
-        {/* Bottom Section : Aide & Utilisateur */}
-        <div>
-          {/* Card Aide */}
+          {/* Card Aide - Toujours visible sous Paramètres */}
           {!reduite && (
-            <div className="rounded-2xl border border-[#1C1917]/10 bg-stone-100 p-4 [@media(max-height:780px)]:hidden dark:border-white/10 dark:bg-white/5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#1C1917]/15 text-sm font-bold text-stone-500 dark:border-white/25 dark:text-zinc-300">
-              ?
-            </div>
-            <p className="mt-2.5 text-[13px] font-bold text-[#1C1917] dark:text-white">Besoin d'aide ?</p>
-            <p className="mt-1 text-[11px] leading-relaxed text-stone-500 dark:text-zinc-400">
-              Consultez la documentation ou contactez le support.
-            </p>
-            <Link
-              href="/comment-ca-marche"
-              className="mt-2.5 inline-flex items-center gap-1 text-[12px] font-semibold text-[#1D4ED8] hover:underline dark:text-[#93C5FD]"
-            >
-              Centre d'aide <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
+            <div className="mt-6 rounded-2xl border border-[#1C1917]/10 bg-stone-100 p-4 dark:border-white/10 dark:bg-white/5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#1C1917]/15 text-sm font-bold text-stone-500 dark:border-white/25 dark:text-zinc-300">
+                ?
+              </div>
+              <p className="mt-2.5 text-[13px] font-bold text-[#1C1917] dark:text-white">Besoin d'aide ?</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-stone-500 dark:text-zinc-400">
+                Consultez la documentation ou contactez le support.
+              </p>
+              <Link
+                href="/comment-ca-marche"
+                className="mt-2.5 inline-flex items-center gap-1 text-[12px] font-semibold text-[#1D4ED8] hover:underline dark:text-[#93C5FD]"
+              >
+                Centre d'aide <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
             </div>
           )}
+        </div>
 
-          {/* Utilisateur */}
-          <div className={`mt-4 flex items-center gap-3 border-t border-[#1C1917]/10 pt-4 dark:border-white/10 ${reduite ? 'flex-col justify-center gap-2 border-t-0 pt-0' : ''}`}>
+        {/* Bottom Section : Utilisateur uniquement */}
+        <div className="border-t border-[#1C1917]/10 pt-4 dark:border-white/10">
+          <div className={`flex items-center gap-3 ${reduite ? 'flex-col justify-center gap-2' : ''}`}>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-[13px] font-bold text-white">
               {initiales}
             </div>
