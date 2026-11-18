@@ -295,13 +295,10 @@ export default function CoquilleTableauDeBord({ children }: {
               )
             })}
           </nav>
-        </div>
 
-        {/* Bottom Section : Aide & Utilisateur */}
-        <div>
-          {/* Card Aide */}
+          {/* Card Aide - Toujours visible sous le menu Config */}
           {!reduite && (
-            <div className="rounded-2xl border border-[#1C1917]/10 bg-stone-100 p-4 [@media(max-height:780px)]:hidden dark:border-white/10 dark:bg-white/5">
+            <div className="mt-6 rounded-2xl border border-[#1C1917]/10 bg-stone-100 p-4 dark:border-white/10 dark:bg-white/5">
               <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#1C1917]/15 text-sm font-bold text-stone-500 dark:border-white/25 dark:text-zinc-300">
                 ?
               </div>
@@ -317,9 +314,11 @@ export default function CoquilleTableauDeBord({ children }: {
               </a>
             </div>
           )}
+        </div>
 
-          {/* Utilisateur */}
-          <div className={`mt-4 flex items-center gap-3 border-t border-[#1C1917]/10 pt-4 dark:border-white/10 ${reduite ? 'flex-col justify-center gap-2 border-t-0 pt-0' : ''}`}>
+        {/* Bottom Section : Utilisateur uniquement */}
+        <div className="border-t border-[#1C1917]/10 pt-4 dark:border-white/10">
+          <div className={`flex items-center gap-3 ${reduite ? 'flex-col justify-center gap-2' : ''}`}>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563EB] text-[13px] font-bold text-white">
               A
             </div>
