@@ -221,7 +221,7 @@ export default function PageInscription() {
         {/* Colonne marque */}
         <div className="space-y-7">
           <Link href="/" title="Retour à l'accueil" className="inline-block">
-            <Image src="/icons/logoClair.png" alt="SMSTSIKA — retour à l'accueil" width={180} height={42} className="h-10 w-auto" />
+            <Image src="/icons/logoClair.png" alt="SMSTSIKA — retour à l'accueil" width={320} height={82} className="h-16 w-auto" priority />
           </Link>
 
           <h1 className="max-w-md font-sans text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
