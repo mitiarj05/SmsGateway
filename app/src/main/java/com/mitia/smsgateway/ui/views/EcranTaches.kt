@@ -261,7 +261,7 @@ fun EcranTaches(
                 OutlinedTextField(
                     value = recherche,
                     onValueChange = { recherche = it },
-                    placeholder = { Text("Rechercher numéro ou message…", color = MaterialTheme.colorScheme.secondaryContainer) },
+                    placeholder = { Text("Rechercher numéro ou message…", color = TexteIndiceClair) },
                     leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = MaterialTheme.colorScheme.secondaryContainer) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),

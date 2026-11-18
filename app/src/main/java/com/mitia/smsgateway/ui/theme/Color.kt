@@ -18,11 +18,14 @@ val NeonShadowColor = Color(0xFF5B5BD6)
 val FondDarkCardStart = Color(0xFF332C75)
 val FondDarkCardEnd = Color(0xFF1F1A52)
 
-// Typographie
-val TexteTitreClair = Color(0xFF0F172A)
-val TexteSousTitreClair = Color(0xFF94A3B8)
-val TexteLabelClair = Color(0xFF94A3B8)
-val TexteCorpsClair = Color(0xFF475569)
+// Typographie — textes noirs sur les fonds clairs (lisibilité maximale)
+val TexteTitreClair = Color(0xFF000000)
+val TexteSousTitreClair = Color(0xFF000000)
+val TexteLabelClair = Color(0xFF000000)
+val TexteCorpsClair = Color(0xFF000000)
+// Indice de saisie (placeholder) : seul texte volontairement grisé, pour ne pas
+// se confondre avec une valeur réellement enregistrée.
+val TexteIndiceClair = Color(0xFF94A3B8)
 
 // Badges Pastel Exacts
 val VertPastelBg = Color(0xFFECFDF5)

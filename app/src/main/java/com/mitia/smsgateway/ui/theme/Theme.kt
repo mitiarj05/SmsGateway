@@ -17,8 +17,8 @@ private val SchemeCouleursSombres = darkColorScheme(
     onSecondary = Color.White,
     onBackground = Color.White,
     onSurface = Color.White,
-    onSurfaceVariant = TexteSousTitreClair,
-    secondaryContainer = TexteSousTitreClair,
+    onSurfaceVariant = TexteSecondaire,
+    secondaryContainer = TexteSecondaire,
     outline = CouleurBordure, // #1E293B
 )
 

@@ -481,7 +481,8 @@ fun EcranDiagnostic(
                                                 placeholder = {
                                                     Text(
                                                         text = "Saisir le numéro de la SIM…",
-                                                        fontSize = 10.sp
+                                                        fontSize = 10.sp,
+                                                        color = TexteIndiceClair
                                                     )
                                                 },
                                                 singleLine = true,
@@ -698,7 +699,7 @@ private fun BlocSoldeCarte(
                 Text(
                     text = "code de consultation, ex. #357#",
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    color = TexteIndiceClair,
                 )
             },
             // Clavier téléphonique : il donne # et * sans passer par les symboles.

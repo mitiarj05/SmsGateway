@@ -200,7 +200,7 @@ fun EcranParametres(
                                 Text(
                                     text = "ex. https://mon-serveur.vercel.app",
                                     fontSize = 13.sp,
-                                    color = MaterialTheme.colorScheme.secondaryContainer
+                                    color = TexteIndiceClair
                                 )
                             },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
