@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import {
-  Smartphone, RefreshCw, Loader2, QrCode, Zap, ArrowUpRight, Trash2
+  Smartphone, RefreshCw, Loader2, QrCode, Zap, ArrowUpRight,
+  Trash2, Radio, Pencil, FileText
 } from 'lucide-react'
 import CoquilleEspace from '../../../composants/CoquilleEspace'
 import ModalAjouterAppareil from '../../../composants/ModalAjouterAppareil'
-import { SoldeSim } from '../../../composants/interface'
+import { SoldeSim, Toast, DialogueConfirmation } from '../../../composants/interface'
 
 interface AppareilParc {
   id: string
@@ -16,6 +18,8 @@ interface AppareilParc {
   sms_last_hour: number
   derniere_activite: string | null
   supprimable?: boolean
+  fcm_present?: boolean
+  fcm_token?: string | null
   solde_sim?: string | null
   solde_devise?: string | null
   solde_texte?: string | null
@@ -27,7 +31,20 @@ export default function PageAppareilsClient() {
   const [chargement, setChargement] = useState(true)
   const [actualisation, setActualisation] = useState(false)
   const [modalAjoutOuverte, setModalAjoutOuverte] = useState(false)
-  const [erreur, setErreur] = useState<string | null>(null)
+  const [notification, setNotification] = useState<{ type: 'succes' | 'erreur'; texte: string } | null>(null)
+
+  // Modales & Actions
+  const [cibleSuppression, setCibleSuppression] = useState<AppareilParc | null>(null)
+  const [suppressionEnCours, setSuppressionEnCours] = useState(false)
+  const [cibleEdition, setCibleEdition] = useState<AppareilParc | null>(null)
+  const [nomEdition, setNomEdition] = useState('')
+  const [editionEnCours, setEditionEnCours] = useState(false)
+  const [reveilEnCours, setReveilEnCours] = useState<string | null>(null)
+
+  function afficherNotification(type: 'succes' | 'erreur', texte: string) {
+    setNotification({ type, texte })
+    setTimeout(() => setNotification(null), 4000)
+  }
 
   const chargerDonnees = useCallback(async (silencieux = false) => {
     if (!silencieux) setActualisation(true)
@@ -49,6 +66,77 @@ export default function PageAppareilsClient() {
     return () => clearInterval(i)
   }, [chargerDonnees])
 
+  async function reveillerAppareil(a: AppareilParc) {
+    setReveilEnCours(a.id)
+    try {
+      const reponse = await fetch(`/api/devices/${a.id}/ping`, { method: 'POST' })
+      const donnees = await reponse.json().catch(() => ({}))
+      if (reponse.ok && donnees.ping_sent) {
+        afficherNotification('succes', `Push de réveil envoyé à « ${a.nom} »`)
+      } else {
+        afficherNotification('erreur', donnees?.error ?? 'Réveil impossible (pas de jeton FCM ?)')
+      }
+    } catch {
+      afficherNotification('erreur', 'Erreur réseau')
+    } finally {
+      setReveilEnCours(null)
+    }
+  }
+
+  async function enregistrerEdition() {
+    if (!cibleEdition || !nomEdition.trim()) return
+    setEditionEnCours(true)
+    try {
+      const reponse = await fetch(`/api/espace/appareils/${cibleEdition.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nom: nomEdition.trim() }),
+      })
+      const donnees = await reponse.json().catch(() => ({}))
+      if (reponse.ok) {
+        afficherNotification('succes', `Appareil renommé en « ${nomEdition.trim()} »`)
+        setCibleEdition(null)
+        chargerDonnees(true)
+      } else {
+        afficherNotification('erreur', donnees?.error ?? 'Renommage impossible')
+      }
+    } catch {
+      afficherNotification('erreur', 'Erreur réseau')
+    } finally {
+      setEditionEnCours(false)
+    }
+  }
+
+  async function supprimerAppareil() {
+    if (!cibleSuppression) return
+    setSuppressionEnCours(true)
+    try {
+      const res = await fetch(`/api/espace/appareils/${cibleSuppression.id}`, { method: 'DELETE' })
+      const donnees = await res.json().catch(() => ({}))
+      if (res.ok) {
+        afficherNotification('succes', `« ${cibleSuppression.nom} » supprimé de votre parc`)
+        setCibleSuppression(null)
+        chargerDonnees(true)
+      } else {
+        afficherNotification('erreur', donnees?.error ?? 'Suppression impossible')
+      }
+    } catch {
+      afficherNotification('erreur', 'Erreur réseau')
+      setCibleSuppression(null)
+    } finally {
+      setSuppressionEnCours(false)
+    }
+  }
+
+  function tempsEcouleFr(dateIso: string | null): string {
+    if (!dateIso) return '—'
+    const s = Math.floor((Date.now() - new Date(dateIso).getTime()) / 1000)
+    if (s < 60) return "à l'instant"
+    if (s < 3600) return `il y a ${Math.floor(s / 60)} min`
+    if (s < 86400) return `il y a ${Math.floor(s / 3600)} h`
+    return new Date(dateIso).toLocaleDateString('fr-FR')
+  }
+
   if (chargement) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#1C1917]/[0.04] dark:bg-zinc-950">
@@ -62,34 +150,9 @@ export default function PageAppareilsClient() {
   const horsLigneCount = totalAppareils - enLigneCount
   const debitTotal = appareils.reduce((s, a) => s + (a.sms_last_hour ?? 0), 0)
 
-  async function supprimerAppareil(a: AppareilParc) {
-    if (!window.confirm(`Supprimer « ${a.nom} » de votre parc ? Ses tâches passées sont conservées.`)) return
-    setErreur(null)
-    try {
-      const res = await fetch(`/api/espace/appareils/${a.id}`, { method: 'DELETE' })
-      const donnees = await res.json().catch(() => null)
-      if (!res.ok) {
-        setErreur(donnees?.error ?? 'Suppression impossible')
-        return
-      }
-      await chargerDonnees(true)
-    } catch {
-      setErreur('Serveur injoignable')
-    }
-  }
-
-  function tempsEcouleFr(dateIso: string | null): string {
-    if (!dateIso) return '—'
-    const s = Math.floor((Date.now() - new Date(dateIso).getTime()) / 1000)
-    if (s < 60) return "à l'instant"
-    if (s < 3600) return `il y a ${Math.floor(s / 60)} min`
-    if (s < 86400) return `il y a ${Math.floor(s / 3600)} h`
-    return new Date(dateIso).toLocaleDateString('fr-FR')
-  }
-
   return (
     <CoquilleEspace>
-      {/* En-tête (Exact Screenshot 8) */}
+      {/* En-tête */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Appareils</h1>
@@ -105,7 +168,7 @@ export default function PageAppareilsClient() {
         </button>
       </div>
 
-      {/* Hero Card Informative (#1F1A52 - Exact Screenshot 8) */}
+      {/* Hero Card Informative */}
       <div className="rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-6 text-white shadow-card space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -125,12 +188,13 @@ export default function PageAppareilsClient() {
         </div>
       </div>
 
-      {/* 3 Metric Cards (Exact Screenshot 8) */}
+      {/* 3 Metric Cards */}
       <div className="mt-4 grid grid-cols-3 gap-4">
         <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">TÉLÉPHONES ASSOCIÉS</p>
           <p className="text-[30px] font-extrabold leading-none text-[#1C1917] dark:text-white">{totalAppareils}</p>
-          <p className="text-[11px] text-stone-500">{enLigneCount} en ligne · {horsLigneCount} hors ligne</p>        </div>
+          <p className="text-[11px] text-stone-500">{enLigneCount} en ligne · {horsLigneCount} hors ligne</p>
+        </div>
 
         <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">CAPACITÉ TOTALE</p>
@@ -145,7 +209,7 @@ export default function PageAppareilsClient() {
         </div>
       </div>
 
-      {/* Main Grid 2 Cols (Exact Screenshot 8) */}
+      {/* Main Grid 2 Cols */}
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
 
         {/* Left Column (2 cols) : Téléphones du parc */}
@@ -160,18 +224,13 @@ export default function PageAppareilsClient() {
               disabled={actualisation}
               className="inline-flex items-center gap-1.5 rounded-full border border-[#1C1917]/10 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-stone-600 shadow-2xs hover:border-slate-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
             >
-              <RefreshCw className={`h-3.5 w-3.5${actualisation ? 'animate-spin' : ''}`} /> Actualiser
+              <RefreshCw className={`h-3.5 w-3.5${actualisation ? ' animate-spin' : ''}`} /> Actualiser
             </button>
           </div>
-          {erreur && (
-            <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-semibold text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
-              {erreur}
-            </p>
-          )}
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-                <thead>
+              <thead>
                 <tr className="border-b border-[#1C1917]/10 text-[11px] font-semibold uppercase tracking-wide text-stone-500 dark:border-zinc-800">
                   <th className="pb-3 pr-4">TÉLÉPHONE</th>
                   <th className="pb-3 pr-4">STATUT</th>
@@ -195,10 +254,10 @@ export default function PageAppareilsClient() {
                   <tr key={a.id} className="text-[#1C1917] dark:text-zinc-200">
                     <td className="py-4 pr-4">
                       <div className="flex items-center gap-3">
-                        <div className={`relative h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-[#1C1917]/10 dark:border-[#1C1917]/10 dark:border-zinc-800 ${enLigne ? '' : 'opacity-60 grayscale'}`}>
+                        <div className={`relative h-8 w-8 shrink-0 overflow-hidden rounded-xl border border-[#1C1917]/10 dark:border-zinc-800 ${enLigne ? '' : 'opacity-60 grayscale'}`}>
                           <Image
                             src="/images/flotte.jpg"
-                            alt="Téléphone de la flotte configuré comme relais d'envoi SMSTSIKA"
+                            alt="Téléphone configuré comme relais d'envoi SMSTSIKA"
                             fill
                             sizes="32px"
                             className="object-cover"
@@ -226,16 +285,40 @@ export default function PageAppareilsClient() {
                     <td className="py-4 pr-4 font-semibold">{a.sms_last_hour ?? 0} SMS/h</td>
                     <td className="py-4 pr-4 text-stone-500">{tempsEcouleFr(a.derniere_activite)}</td>
                     <td className="py-4 text-right">
-                      {a.supprimable && (
+                      <div className="flex items-center justify-end gap-1.5">
                         <button
                           type="button"
-                          onClick={() => supprimerAppareil(a)}
-                          title={`Supprimer ${a.nom} de votre parc`}
-                          className="inline-flex items-center justify-center rounded-lg p-2 text-stone-500 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"
+                          onClick={() => reveillerAppareil(a)}
+                          disabled={!a.fcm_present || reveilEnCours === a.id}
+                          title={a.fcm_present ? 'Envoyer un push de réveil' : 'Aucun jeton FCM — réveil impossible'}
+                          className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#1C1917]/10 bg-white text-stone-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          {reveilEnCours === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Radio className="h-3.5 w-3.5" />}
                         </button>
-                      )}
+                        <button
+                          type="button"
+                          onClick={() => { setCibleEdition(a); setNomEdition(a.nom) }}
+                          title="Renommer cet appareil"
+                          className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#1C1917]/10 bg-white text-stone-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <Link
+                          href={`/espace/envois?appareil=${a.id}`}
+                          title="Voir les envois de cet appareil"
+                          className="flex h-8 w-8 items-center justify-center rounded-xl border border-[#1C1917]/10 bg-white text-stone-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-blue-500/10 dark:hover:text-blue-400"
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => setCibleSuppression(a)}
+                          title={`Supprimer ${a.nom} de votre parc`}
+                          className="flex h-8 w-8 items-center justify-center rounded-xl border border-rose-200 bg-white text-rose-600 transition hover:border-rose-300 hover:bg-rose-50 dark:border-rose-900/50 dark:bg-zinc-800 dark:text-rose-400 dark:hover:bg-rose-900/20"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                   )
@@ -287,7 +370,7 @@ export default function PageAppareilsClient() {
             </div>
           </div>
 
-          {/* QR de liaison : ouvre la modale (vrai QR, 10 min) */}
+          {/* QR de liaison */}
           <button
             onClick={() => setModalAjoutOuverte(true)}
             className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 text-center space-y-3 w-full transition hover:border-[#2563EB]/40"
@@ -320,6 +403,58 @@ export default function PageAppareilsClient() {
         ouvert={modalAjoutOuverte}
         onFermer={() => setModalAjoutOuverte(false)}
       />
+
+      {/* Modal de renommage */}
+      {cibleEdition && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setCibleEdition(null)}>
+          <div
+            className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-card dark:bg-zinc-900 dark:border dark:border-zinc-800"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-[15px] font-bold text-[#1C1917] dark:text-white">Renommer l&apos;appareil</h3>
+            <p className="mt-0.5 text-[11.5px] text-stone-500 dark:text-zinc-400">
+              Le nom apparaît sur les pages Appareils et Historique.
+            </p>
+            <input
+              type="text"
+              value={nomEdition}
+              onChange={(e) => setNomEdition(e.target.value)}
+              maxLength={60}
+              autoFocus
+              onKeyDown={(e) => { if (e.key === 'Enter') enregistrerEdition() }}
+              className="mt-4 w-full rounded-xl border border-[#1C1917]/10 bg-white px-3.5 py-2.5 text-[13px] focus:outline-none focus:border-blue-400 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-200"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setCibleEdition(null)}
+                className="rounded-full border border-[#1C1917]/10 px-4 py-2 text-[12px] font-semibold text-stone-600 hover:bg-stone-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={enregistrerEdition}
+                disabled={!nomEdition.trim() || editionEnCours}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#2563EB] px-4 py-2 text-[12px] font-semibold text-white hover:bg-[#1D4ED8] disabled:opacity-60"
+              >
+                {editionEnCours && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <DialogueConfirmation
+        ouvert={!!cibleSuppression}
+        onFermer={() => setCibleSuppression(null)}
+        onConfirmer={supprimerAppareil}
+        chargement={suppressionEnCours}
+        titre="Supprimer cet appareil ?"
+        message={`« ${cibleSuppression?.nom ?? ''} » sera retiré de votre parc.`}
+        etiquetteConfirmer="Supprimer"
+      />
+
+      <Toast notification={notification} />
     </CoquilleEspace>
   )
 }
