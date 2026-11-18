@@ -191,55 +191,32 @@ export default function PageConnexion() {
       <div className="mx-auto grid w-full max-w-6xl flex-1 grid-cols-1 items-center gap-12 px-6 py-14 lg:grid-cols-2 lg:px-8">
 
         {/* Colonne marque */}
-        <div className="space-y-8">
+        <div className="space-y-7">
           <Link href="/" title="Retour à l'accueil" className="inline-block">
-            <Image
-              src="/icons/logoClair.png"
-              alt="SMSTSIKA — retour à l'accueil"
-              width={320}
-              height={82}
-              priority
-              className="h-14 w-auto sm:h-16"
-            />
+            <Image src="/icons/logoClair.png" alt="SMSTSIKA — retour à l'accueil" width={180} height={42} className="h-10 w-auto" />
           </Link>
 
-          <h1 className="max-w-lg font-sans text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
-            Connectez-vous à votre console SMSTSIKA et pilotez vos envois&nbsp;:
+          <h1 className="max-w-md font-sans text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+            Connectez-vous à votre console SMSTSIKA et pilotez vos envois :
           </h1>
 
-          <ul className="max-w-md space-y-4 text-[15px] font-medium text-stone-700">
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#15803B]/10">
-                <Check className="h-4 w-4 text-[#15803B]" />
-              </span>
+          <ul className="space-y-3 text-sm font-medium text-stone-600">
+            <li className="flex items-center gap-3">
+              <Check className="h-4 w-4 shrink-0 text-[#15803B]" />
               <span>Console admin et espace client réunis</span>
             </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#15803B]/10">
-                <Check className="h-4 w-4 text-[#15803B]" />
-              </span>
+            <li className="flex items-center gap-3">
+              <Check className="h-4 w-4 shrink-0 text-[#15803B]" />
               <span>Suivi des appareils et des envois en direct</span>
             </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#15803B]/10">
-                <Check className="h-4 w-4 text-[#15803B]" />
-              </span>
+            <li className="flex items-center gap-3">
+              <Check className="h-4 w-4 shrink-0 text-[#15803B]" />
               <span>Clé API remise après validation</span>
             </li>
           </ul>
 
-          {/* Panneau violet (cohérence avec les consoles) */}
-          <div className="max-w-md rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-5 text-white shadow-card">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-amber-300">
-              Forfait illimité
-            </p>
-            <p className="mt-2 text-[13px] leading-relaxed text-white/75">
-              Aucun plafond d&apos;envoi : le seul crédit consommé est celui de la carte SIM de votre téléphone.
-            </p>
-          </div>
-
-          <p className="font-mono text-xs text-stone-500">
-            *Accès sous réserve de validation par l&apos;administrateur.
+          <p className="font-mono text-[11px] text-stone-500">
+            *Accès sous réserve de validation par l'administrateur.
           </p>
         </div>
 
@@ -251,7 +228,7 @@ export default function PageConnexion() {
               <h2 className="font-sans text-2xl font-extrabold tracking-tight text-[#1C1917]">
                 Se connecter
               </h2>
-              <p className="text-sm text-stone-500">
+              <p className="text-xs text-stone-500">
                 Connectez-vous à votre console SMSTSIKA.
               </p>
             </div>
@@ -266,7 +243,7 @@ export default function PageConnexion() {
             <form onSubmit={gererSoumission} className="space-y-4">
               {etape === 'email' ? (
                     <div className="space-y-1">
-                      <label htmlFor="utilisateur" className="block text-[13px] font-semibold text-stone-700">
+                      <label htmlFor="utilisateur" className="block text-xs font-semibold text-stone-700">
                         Adresse e-mail*
                       </label>
                       <input
@@ -277,7 +254,7 @@ export default function PageConnexion() {
                         placeholder="admin@smstsika.local"
                         value={utilisateur}
                         onChange={(e) => setUtilisateur(e.target.value)}
-                        className="w-full rounded-lg border border-[#1C1917]/15 bg-white p-3 text-sm font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB]"
+                        className="w-full rounded-lg border border-[#1C1917]/15 bg-white p-3 text-xs font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB]"
                       />
                     </div>
                   ) : (
@@ -286,13 +263,13 @@ export default function PageConnexion() {
                         type="button"
                         onClick={() => { setEtape('email'); setErreur(null) }}
                         title="Modifier l'adresse e-mail"
-                        className="flex w-full items-center justify-between gap-2 rounded-lg bg-[#F7F5F0] px-3 py-3 text-sm transition hover:bg-[#1C1917]/5"
+                        className="flex w-full items-center justify-between gap-2 rounded-lg bg-[#F7F5F0] px-3 py-2.5 text-xs transition hover:bg-[#1C1917]/5"
                       >
                         <span className="truncate font-semibold text-stone-700">{utilisateur}</span>
                         <span className="shrink-0 font-bold text-[#1D4ED8]">Modifier</span>
                       </button>
                       <div className="space-y-1">
-                        <label htmlFor="motDePasse" className="block text-[13px] font-semibold text-stone-700">
+                        <label htmlFor="motDePasse" className="block text-xs font-semibold text-stone-700">
                           Mot de passe*
                         </label>
                         <div className="relative">
@@ -304,7 +281,7 @@ export default function PageConnexion() {
                             placeholder="••••••••••"
                             value={motDePasse}
                             onChange={(e) => setMotDePasse(e.target.value)}
-                            className="w-full rounded-lg border border-[#1C1917]/15 bg-white p-3 pr-10 text-sm font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB]"
+                            className="w-full rounded-lg border border-[#1C1917]/15 bg-white p-3 pr-10 text-xs font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB]"
                           />
                           <button
                             type="button"
@@ -339,7 +316,7 @@ export default function PageConnexion() {
               <button
                 type="submit"
                 disabled={chargement}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] py-3.5 text-sm font-bold text-white transition hover:bg-[#1D4ED8] disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] py-3.5 text-xs font-bold text-white transition hover:bg-[#1D4ED8] disabled:opacity-60"
               >
                 {googleEnCours ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Redirection vers Google…</>
@@ -353,7 +330,7 @@ export default function PageConnexion() {
                 <>
                   <div className="relative flex items-center justify-center text-center">
                     <div className="w-full border-t border-[#1C1917]/10" />
-                    <span className="absolute bg-white px-3 text-[11px] font-bold uppercase text-stone-400">
+                    <span className="absolute bg-white px-3 text-[10.5px] font-bold uppercase text-stone-400">
                       OR
                     </span>
                   </div>
@@ -362,7 +339,7 @@ export default function PageConnexion() {
                     type="button"
                     onClick={connexionGoogleManuelle}
                     disabled={googleEnCours || chargement}
-                    className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-[#1C1917]/15 bg-white py-3 text-sm font-bold text-[#1C1917] transition hover:bg-[#F7F5F0] disabled:opacity-60"
+                    className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-[#1C1917]/15 bg-white py-3 text-xs font-bold text-[#1C1917] transition hover:bg-[#F7F5F0] disabled:opacity-60"
                   >
                     {googleEnCours ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -381,7 +358,7 @@ export default function PageConnexion() {
               )}
             </form>
 
-            <div className="text-center text-sm text-stone-500">
+            <div className="text-center text-xs text-stone-500">
               Pas encore de compte ?{' '}
               <Link href="/inscription" className="font-bold text-[#1D4ED8] hover:underline">
                 S'inscrire
@@ -391,12 +368,12 @@ export default function PageConnexion() {
           </div>
 
           <div className="mx-auto mt-6 max-w-md space-y-2 text-center">
-            <div className="flex justify-center gap-3 font-mono text-xs text-stone-500">
+            <div className="flex justify-center gap-3 font-mono text-[11px] text-stone-500">
               <Link href="/mentions-legales" className="transition hover:text-[#1C1917] hover:underline">Mentions légales</Link>
               <span>|</span>
               <Link href="/confidentialite" className="transition hover:text-[#1C1917] hover:underline">Politique de confidentialité</Link>
             </div>
-            <p className="font-mono text-xs text-stone-400">© 2026 SMSTSIKA · Tous droits réservés</p>
+            <p className="font-mono text-[11px] text-stone-400">© 2026 SMSTSIKA · Tous droits réservés</p>
           </div>
         </div>
 

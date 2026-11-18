@@ -219,59 +219,32 @@ export default function PageInscription() {
       <div className="mx-auto grid w-full max-w-6xl flex-1 grid-cols-1 items-center gap-12 px-6 py-14 lg:grid-cols-2 lg:px-8">
 
         {/* Colonne marque */}
-        <div className="space-y-8">
+        <div className="space-y-7">
           <Link href="/" title="Retour à l'accueil" className="inline-block">
-            <Image
-              src="/icons/logoClair.png"
-              alt="SMSTSIKA — retour à l'accueil"
-              width={320}
-              height={82}
-              priority
-              className="h-14 w-auto sm:h-16"
-            />
+            <Image src="/icons/logoClair.png" alt="SMSTSIKA — retour à l'accueil" width={180} height={42} className="h-10 w-auto" />
           </Link>
 
-          <h1 className="max-w-lg font-sans text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
+          <h1 className="max-w-md font-sans text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
             Créez votre compte SMSTSIKA
           </h1>
 
-          <p className="max-w-md text-[15px] leading-relaxed text-stone-600">
-            Un seul espace pour envoyer vos SMS, recevoir ceux de vos clients et garder la main sur vos numéros, vos tarifs et vos données.
-          </p>
-
-          <ul className="max-w-md space-y-4 text-[15px] font-medium text-stone-700">
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#15803B]/10">
-                <CheckCircle2 className="h-4 w-4 text-[#15803B]" />
-              </span>
+          <ul className="space-y-3 text-sm font-medium text-stone-600">
+            <li className="flex items-center gap-3">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-[#15803B]" />
               <span>Votre propre clé API pour envoyer des SMS</span>
             </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#15803B]/10">
-                <CheckCircle2 className="h-4 w-4 text-[#15803B]" />
-              </span>
+            <li className="flex items-center gap-3">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-[#15803B]" />
               <span>Recevez les SMS de vos clients sur votre espace</span>
             </li>
-            <li className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#15803B]/10">
-                <CheckCircle2 className="h-4 w-4 text-[#15803B]" />
-              </span>
+            <li className="flex items-center gap-3">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-[#15803B]" />
               <span>Vos numéros, vos tarifs, vos données restent chez vous</span>
             </li>
           </ul>
 
-          {/* Panneau violet (cohérence avec les consoles) */}
-          <div className="max-w-md rounded-2xl bg-gradient-to-br from-[#332c75] to-[#1f1a52] p-5 text-white shadow-card">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-amber-300">
-              Forfait illimité
-            </p>
-            <p className="mt-2 text-[13px] leading-relaxed text-white/75">
-              Aucun plafond d&apos;envoi : le seul crédit consommé est celui de la carte SIM de votre téléphone.
-            </p>
-          </div>
-
-          <p className="font-mono text-xs text-stone-500">
-            *Accès sous réserve de validation par l&apos;administrateur.
+          <p className="font-mono text-[11px] text-stone-500">
+            *Accès sous réserve de validation par l'administrateur.
           </p>
         </div>
 
@@ -284,7 +257,7 @@ export default function PageInscription() {
               <>
                 <div className="space-y-1 text-center">
                   <h2 className="font-sans text-2xl font-extrabold tracking-tight text-[#1C1917]">Créer mon compte</h2>
-                  <p className="text-sm text-stone-500">
+                  <p className="text-xs text-stone-500">
                     Renseignez vos informations pour ouvrir votre espace.
                   </p>
                 </div>
@@ -298,7 +271,7 @@ export default function PageInscription() {
 
                 <form onSubmit={gererSoumission} className="space-y-5">
                   <div className="space-y-1">
-                    <label htmlFor="nom" className="block text-[13px] font-semibold text-stone-700">
+                    <label htmlFor="nom" className="block text-xs font-semibold text-stone-700">
                       Nom ou société*
                     </label>
                     <input
@@ -308,7 +281,7 @@ export default function PageInscription() {
                       placeholder="Ex. Ma boutique"
                       value={nom}
                       onChange={(e) => setNom(e.target.value)}
-                      className={`w-full rounded-lg border px-3 py-3 text-sm font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB] ${
+                      className={`w-full rounded-lg border px-3 py-3 text-xs font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB] ${
                         erreurs.nom ? 'border-rose-400 focus:ring-rose-400' : 'border-[#1C1917]/15 bg-white focus:border-[#2563EB]'
                       }`}
                     />
@@ -316,7 +289,7 @@ export default function PageInscription() {
                   </div>
 
                   <div className="space-y-1">
-                    <label htmlFor="email" className="block text-[13px] font-semibold text-stone-700">
+                    <label htmlFor="email" className="block text-xs font-semibold text-stone-700">
                       Adresse e-mail*
                     </label>
                     <input
@@ -326,7 +299,7 @@ export default function PageInscription() {
                       placeholder="vous@votre-entreprise.mg"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className={`w-full rounded-lg border px-3 py-3 text-sm font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB] ${
+                      className={`w-full rounded-lg border px-3 py-3 text-xs font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB] ${
                         erreurs.email ? 'border-rose-400 focus:ring-rose-400' : 'border-[#1C1917]/15 bg-white focus:border-[#2563EB]'
                       }`}
                     />
@@ -334,7 +307,7 @@ export default function PageInscription() {
                   </div>
 
                   <div className="space-y-1">
-                    <label htmlFor="motDePasse" className="block text-[13px] font-semibold text-stone-700">
+                    <label htmlFor="motDePasse" className="block text-xs font-semibold text-stone-700">
                       Mot de passe*
                     </label>
                     <div className="relative">
@@ -345,7 +318,7 @@ export default function PageInscription() {
                         placeholder="••••••••"
                         value={motDePasse}
                         onChange={(e) => setMotDePasse(e.target.value)}
-                        className="w-full rounded-lg border px-3 py-3 pr-10 text-sm font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB]"
+                        className="w-full rounded-lg border px-3 py-3 pr-10 text-xs font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB]"
                       />
                       <button
                         type="button"
@@ -357,13 +330,13 @@ export default function PageInscription() {
                       </button>
                     </div>
                     {champErreur('motDePasse')}
-                    <p className="mt-1 text-xs text-stone-400">
+                    <p className="mt-1 text-[11px] text-stone-400">
                       8 caractères minimum
                     </p>
                   </div>
 
                   <div className="space-y-1">
-                    <label htmlFor="confirmerMotDePasse" className="block text-[13px] font-semibold text-stone-700">
+                    <label htmlFor="confirmerMotDePasse" className="block text-xs font-semibold text-stone-700">
                       Confirmer le mot de passe*
                     </label>
                     <div className="relative">
@@ -374,7 +347,7 @@ export default function PageInscription() {
                         placeholder="••••••••"
                         value={confirmerMotDePasse}
                         onChange={(e) => setConfirmerMotDePasse(e.target.value)}
-                        className="w-full rounded-lg border px-3 py-3 pr-10 text-sm font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB]"
+                        className="w-full rounded-lg border px-3 py-3 pr-10 text-xs font-medium text-[#1C1917] outline-none transition placeholder:text-stone-400 focus:border-[#2563EB]"
                       />
                       <button
                         type="button"
@@ -393,7 +366,7 @@ export default function PageInscription() {
                   <button
                     type="submit"
                     disabled={chargement}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] py-3.5 text-sm font-bold text-white transition hover:bg-[#1D4ED8] disabled:opacity-60"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] py-3.5 text-xs font-bold text-white transition hover:bg-[#1D4ED8] disabled:opacity-60"
                   >
                     {chargement ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -404,7 +377,7 @@ export default function PageInscription() {
 
                   <div className="relative flex items-center justify-center text-center">
                     <div className="w-full border-t border-[#1C1917]/10" />
-                    <span className="absolute bg-white px-3 text-[11px] font-bold uppercase text-stone-400">
+                    <span className="absolute bg-white px-3 text-[10.5px] font-bold uppercase text-stone-400">
                       ou
                     </span>
                   </div>
@@ -413,7 +386,7 @@ export default function PageInscription() {
                     type="button"
                     onClick={inscriptionGoogle}
                     disabled={chargement}
-                    className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-[#1C1917]/15 bg-white py-3 text-sm font-bold text-[#1C1917] transition hover:bg-[#F7F5F0] disabled:opacity-60"
+                    className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-[#1C1917]/15 bg-white py-3 text-xs font-bold text-[#1C1917] transition hover:bg-[#F7F5F0] disabled:opacity-60"
                   >
                     <img
                       src="/icons/google.jpg"
@@ -424,7 +397,7 @@ export default function PageInscription() {
                   </button>
                 </form>
 
-                <div className="mt-6 text-center text-sm text-stone-500">
+                <div className="mt-6 text-center text-xs text-stone-500">
                   Déjà un compte ?{' '}
                   <Link href="/login" className="font-bold text-[#1D4ED8] hover:underline">
                     Se connecter
@@ -438,7 +411,7 @@ export default function PageInscription() {
               <>
                 <div className="space-y-1 text-center">
                   <h2 className="font-sans text-2xl font-extrabold tracking-tight text-[#1C1917]">Vérifiez votre e-mail</h2>
-                  <p className="text-sm text-stone-500">
+                  <p className="text-xs text-stone-500">
                     Un code à 6 chiffres a été envoyé à{' '}
                     <span className="font-semibold text-[#1C1917]">{emailVerification}</span>.
                   </p>
@@ -453,7 +426,7 @@ export default function PageInscription() {
 
                 <form onSubmit={(e) => { e.preventDefault(); verifierCode() }} className="space-y-4">
                   <div className="space-y-1">
-                    <label htmlFor="code" className="block text-[13px] font-semibold text-stone-700">
+                    <label htmlFor="code" className="block text-xs font-semibold text-stone-700">
                       Code de vérification*
                     </label>
                     <input
@@ -464,14 +437,14 @@ export default function PageInscription() {
                       placeholder="123456"
                       value={code}
                       onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                      className="w-full rounded-lg border border-[#1C1917]/15 bg-white px-3 py-3 text-sm font-mono font-semibold text-[#1C1917] outline-none transition focus:border-[#2563EB] tracking-widest"
+                      className="w-full rounded-lg border border-[#1C1917]/15 bg-white px-3 py-3 text-xs font-mono font-semibold text-[#1C1917] outline-none transition focus:border-[#2563EB] tracking-widest"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={chargementVerification || code.length !== 6}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] py-3.5 text-sm font-bold text-white transition hover:bg-[#1D4ED8] disabled:opacity-60"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#2563EB] py-3.5 text-xs font-bold text-white transition hover:bg-[#1D4ED8] disabled:opacity-60"
                   >
                     {chargementVerification ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -508,7 +481,7 @@ export default function PageInscription() {
                 <h2 className="font-sans text-2xl font-extrabold tracking-tight text-[#1C1917] mb-2">
                   Compte créé
                 </h2>
-                <p className="text-sm text-stone-600 mb-6">
+                <p className="text-xs text-stone-600 mb-6">
                   Votre espace SMSTSIKA est prêt. Vous allez y être redirigé.
                 </p>
                 <Link
@@ -521,7 +494,7 @@ export default function PageInscription() {
             )}
 
             <div className="mx-auto mt-6 max-w-md space-y-2 text-center">
-              <div className="flex justify-center gap-3 font-mono text-xs text-stone-500">
+              <div className="flex justify-center gap-3 font-mono text-[11px] text-stone-500">
                 <Link href="/mentions-legales" className="transition hover:text-[#1C1917] hover:underline">Mentions légales</Link>
                 <span>|</span>
                 <Link href="/confidentialite" className="transition hover:text-[#1C1917] hover:underline">Politique de confidentialité</Link>
