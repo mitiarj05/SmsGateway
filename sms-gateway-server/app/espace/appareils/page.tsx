@@ -92,7 +92,7 @@ export default function PageAppareilsClient() {
       {/* En-tête (Exact Screenshot 8) */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Parc d'envoi</h1>
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Appareils</h1>
           <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Les téléphones qui expédient vos SMS, avec leur état en temps réel.
           </p>
@@ -113,7 +113,7 @@ export default function PageAppareilsClient() {
               <Zap className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold">Votre parc d'envoi personnel</h2>
+              <h2 className="text-base font-bold">Votre parc d'appareils</h2>
               <p className="text-xs text-white/60">
                 Vos téléphones uniquement — vos SMS partent par votre carte SIM.
               </p>
@@ -141,7 +141,7 @@ export default function PageAppareilsClient() {
         <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card px-6 py-5 dark:bg-zinc-900 dark:border-zinc-800 space-y-1">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">DÉBIT ACTUEL</p>
           <p className="text-[30px] font-extrabold leading-none text-emerald-600 dark:text-emerald-400">{debitTotal}</p>
-          <p className="text-[11px] text-stone-500">SMS/h sur le parc</p>
+          <p className="text-[11px] text-stone-500">SMS/h sur vos appareils</p>
         </div>
       </div>
 
@@ -152,7 +152,7 @@ export default function PageAppareilsClient() {
         <div className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2 space-y-6">
           <div className="flex items-center justify-between border-b border-[#1C1917]/10 pb-4 dark:border-zinc-800">
             <div>
-              <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">Téléphones du parc</h2>
+              <h2 className="text-[16px] font-bold text-[#1C1917] dark:text-white">Vos téléphones</h2>
               <p className="text-[12px] text-stone-500">{totalAppareils} appareil visible</p>
             </div>
             <button

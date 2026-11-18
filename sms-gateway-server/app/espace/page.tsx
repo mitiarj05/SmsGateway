@@ -167,7 +167,7 @@ export default function PageTableauDeBordClient() {
             Vue d&apos;ensemble
           </h1>
           <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
-            Vos envois, vos réponses et votre parc d&apos;envoi en un regard.
+            Vos envois, vos réponses et vos appareils en un regard.
           </p>
         </div>
         <div className="flex items-center gap-4">

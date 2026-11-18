@@ -104,7 +104,7 @@ export default function PageEnvoisEspace() {
       {/* En-tête (Exact Screenshot) */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Mes envois</h1>
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Historique</h1>
           <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Suivez l'état de traitement et la livraison de vos SMS.
           </p>

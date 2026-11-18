@@ -13,10 +13,10 @@ import { Modale } from './interface'
 import { useTheme } from '../lib/use-theme'
 
 const NAVIGATION = [
-  { href: '/espace', icone: LayoutGrid, etiquette: 'Tableau de bord' },
-  { href: '/espace/appareils', icone: Smartphone, etiquette: 'Parc d\'envoi' },
+  { href: '/espace', icone: LayoutGrid, etiquette: 'Vue d\'ensemble' },
+  { href: '/espace/appareils', icone: Smartphone, etiquette: 'Appareils' },
   { href: '/espace/envoyer', icone: Send, etiquette: 'Envoyer un SMS' },
-  { href: '/espace/envois', icone: List, etiquette: 'Mes envois' },
+  { href: '/espace/envois', icone: List, etiquette: 'Historique' },
   { href: '/espace/entrees', icone: Inbox, etiquette: 'SMS reçus' },
   { href: '/espace/facturation', icone: Receipt, etiquette: 'Facturation' },
   { href: '/espace/parametres', icone: Settings, etiquette: 'Paramètres' },
@@ -328,7 +328,7 @@ export default function CoquilleEspace({ children }: {
               <span className="font-semibold text-[#1C1917] dark:text-zinc-200">Espace</span>
               <span className="text-stone-500">&gt;</span>
               <span className="text-stone-600 dark:text-zinc-400">
-                {NAVIGATION.find((n) => chemin === n.href)?.etiquette || 'Tableau de bord'}
+                {NAVIGATION.find((n) => chemin === n.href)?.etiquette || 'Vue d\'ensemble'}
               </span>
             </div>
 

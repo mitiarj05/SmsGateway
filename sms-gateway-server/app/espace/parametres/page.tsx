@@ -261,7 +261,7 @@ export default function PageParametresEspace() {
       <div className="mb-6 flex items-end justify-between">
         <div>
           <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">
-            Paramètres du compte
+            Paramètres
           </h1>
           <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
             Profil, sécurité et configuration avancée de votre application.
