@@ -9,6 +9,7 @@ export default function PageEnvoyerEspace() {
   const [numeros, setNumeros] = useState('+261340000000\n+261330000000')
   const [message, setMessage] = useState("Bonjour ! Votre commande #4821 est prête. Retrait possible dès aujourd'hui au magasin. Merci !")
   const [modeProgrammation, setModeProgrammation] = useState<'immediat' | 'programmer'>('immediat')
+  const [programme, setProgramme] = useState('')
   const [envoiEnCours, setEnvoiEnCours] = useState(false)
   const [resultat, setResultat] = useState<{
     reussi: boolean; texte: string
@@ -27,24 +28,33 @@ export default function PageEnvoyerEspace() {
 
   async function soumettre(e: React.FormEvent) {
     e.preventDefault()
+    if (modeProgrammation === 'programmer' && !programme) {
+      afficherNotification('erreur', 'Veuillez choisir la date et l’heure de programmation')
+      return
+    }
+
     setEnvoiEnCours(true)
     setResultat(null)
     try {
+      const programmeA =
+        modeProgrammation === 'programmer' && programme ? new Date(programme).toISOString() : undefined
+
       const reponse = await fetch('/api/espace/envoyer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: nombreDestinataires > 1 ? destinatairesListe : destinatairesListe[0] ?? '',
           message,
+          ...(programmeA ? { scheduled_at: programmeA } : {}),
         }),
       })
       const donnees = await reponse.json().catch(() => null)
       if (reponse.ok) {
         setResultat({
           reussi: true,
-          texte: donnees?.message ?? 'SMS mis en file d’attente',
+          texte: donnees?.message ?? (programmeA ? 'SMS programmé avec succès' : 'SMS mis en file d’attente'),
         })
-        afficherNotification('succes', 'Messages envoyés avec succès')
+        afficherNotification('succes', programmeA ? 'SMS programmé avec succès' : 'Messages envoyés avec succès')
       } else {
         afficherNotification('erreur', donnees?.error ?? 'Erreur lors de l’envoi')
       }
@@ -57,7 +67,7 @@ export default function PageEnvoyerEspace() {
 
   return (
     <CoquilleEspace>
-      {/* En-tête (Exact Screenshot) */}
+      {/* En-tête */}
       <div className="mb-6 flex items-end justify-between">
         <div>
           <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Envoyer un SMS</h1>
@@ -81,7 +91,7 @@ export default function PageEnvoyerEspace() {
       )}
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        {/* Formulaire principal à gauche (Exact Screenshot) */}
+        {/* Formulaire principal à gauche */}
         <section className="rounded-2xl border border-[#1C1917]/10 bg-white shadow-card p-6 dark:bg-zinc-900 dark:border-zinc-800 xl:col-span-2">
           <form onSubmit={soumettre} className="space-y-6">
 
@@ -127,18 +137,48 @@ export default function PageEnvoyerEspace() {
             <div className="space-y-2">
               <p className="text-xs font-bold text-stone-700 dark:text-zinc-300">Programmation</p>
               <div className="flex items-center gap-3">
-                <div className="flex flex-1 items-center gap-2 rounded-2xl border border-[#1C1917]/10 bg-white p-3 text-xs text-stone-700 shadow-2xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-                  <Clock className="h-4 w-4 text-stone-500" />
-                  <span className="font-medium">Envoi immédiat</span>
-                </div>
                 <button
                   type="button"
-                  onClick={() => setModeProgrammation(modeProgrammation === 'immediat' ? 'programmer' : 'immediat')}
-                  className="inline-flex items-center gap-1.5 rounded-2xl border border-[#1C1917]/10 bg-white px-4 py-3 text-xs font-semibold text-stone-700 shadow-2xs hover:bg-stone-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  onClick={() => { setModeProgrammation('immediat'); setProgramme(''); }}
+                  className={`flex flex-1 items-center gap-2 rounded-2xl border p-3 text-xs transition ${
+                    modeProgrammation === 'immediat'
+                      ? 'border-blue-600 bg-blue-50/50 font-bold text-blue-600 dark:border-blue-500 dark:bg-blue-500/10 dark:text-blue-400'
+                      : 'border-[#1C1917]/10 bg-white font-medium text-stone-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200'
+                  }`}
+                >
+                  <Clock className="h-4 w-4 text-stone-500" />
+                  <span className="font-medium">Envoi immédiat</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModeProgrammation('programmer')}
+                  className={`flex flex-1 items-center gap-2 rounded-2xl border p-3 text-xs transition ${
+                    modeProgrammation === 'programmer'
+                      ? 'border-blue-600 bg-blue-50/50 font-bold text-blue-600 dark:border-blue-500 dark:bg-blue-500/10 dark:text-blue-400'
+                      : 'border-[#1C1917]/10 bg-white font-medium text-stone-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200'
+                  }`}
                 >
                   <Calendar className="h-4 w-4 text-stone-500" /> Programmer
                 </button>
               </div>
+
+              {modeProgrammation === 'programmer' && (
+                <div className="space-y-1.5 pt-2">
+                  <label className="block text-[11px] font-semibold text-stone-600 dark:text-zinc-400">
+                    Date et heure d'envoi différé :
+                  </label>
+                  <input
+                    type="datetime-local"
+                    required
+                    value={programme}
+                    onChange={(e) => setProgramme(e.target.value)}
+                    className="w-full rounded-2xl border border-[#1C1917]/10 bg-white p-3 text-xs font-semibold text-stone-700 focus:outline-none focus:border-blue-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  />
+                  <p className="text-[11px] text-stone-500 dark:text-zinc-400">
+                    Le SMS sera conservé en statut PROGRAMMÉ et transmis automatiquement à la date indiquée.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Bouton pleine largeur */}
@@ -148,12 +188,12 @@ export default function PageEnvoyerEspace() {
               className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#2563EB] py-3.5 text-[13px] font-bold text-white shadow-lg hover:bg-[#1D4ED8] disabled:opacity-60 transition"
             >
               {envoiEnCours ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              {envoiEnCours ? 'Expédition en cours...' : 'Envoyer les messages'}
+              {envoiEnCours ? 'Expédition en cours...' : modeProgrammation === 'programmer' ? 'Programmer le SMS' : 'Envoyer les messages'}
             </button>
           </form>
         </section>
 
-        {/* Colonne Droite (3 Cards - Exact Screenshot) */}
+        {/* Colonne Droite (2 Cards) */}
         <div className="space-y-6">
 
           {/* Card 1 : Aperçu sur mobile */}
@@ -161,13 +201,19 @@ export default function PageEnvoyerEspace() {
             <h3 className="text-xs font-bold text-[#1C1917] dark:text-white">Aperçu sur mobile</h3>
 
             <div className="rounded-2xl bg-slate-950 p-4 border-4 border-slate-900 shadow-xl space-y-3">
-              <p className="text-[10px] text-stone-500 text-center">SMS · aujourd'hui 09:12</p>
+              <p className="text-[10px] text-stone-500 text-center">
+                {modeProgrammation === 'programmer' && programme
+                  ? `SMS programmé pour le ${new Date(programme).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`
+                  : 'SMS · aujourd’hui 09:12'}
+              </p>
 
               <div className="rounded-2xl bg-[#1C1917] p-3 text-xs leading-relaxed text-[#F7F5F0] space-y-2">
                 <p>
                   {message.trim() || "Rédigez votre message ici..."}
                 </p>
-                <p className="text-[9px] text-stone-500 text-right">✓✓ Remis</p>
+                <p className="text-[9px] text-stone-500 text-right">
+                  {modeProgrammation === 'programmer' ? '⏳ Programmé' : '✓✓ Remis'}
+                </p>
               </div>
             </div>
             {message.trim() && (
@@ -184,12 +230,16 @@ export default function PageEnvoyerEspace() {
             <ul className="space-y-2.5 text-xs text-stone-600 dark:text-zinc-400 leading-relaxed">
               <li className="flex items-start gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
+                <span><b>Envoi différé / programmé</b> : le SMS passe au statut `PROGRAMME` jusqu'à l'échéance.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
                 <span><b>Limite de destinataires</b> : jusqu'à 100 numéros par lot.</span>
               </li>
-                <li className="flex items-start gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
-                  <span><b>Format international</b> : préférez la forme E.164 (ex. +261...).</span>
-                </li>
+              <li className="flex items-start gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
+                <span><b>Format international</b> : préférez la forme E.164 (ex. +261...).</span>
+              </li>
               <li className="flex items-start gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
                 <span><b>Quota</b> : 20 SMS/h par téléphone du parc.</span>
