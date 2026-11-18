@@ -137,48 +137,13 @@ export default function DashboardPage() {
     .pop() ?? null
   const premierAppareil = appareils[0] ?? null
 
-  const statutEnTete = totalCount === 0
-    ? { ton: 'neutre' as const, texte: 'Service en attente' }
-    : horsLigneCount > 0
-      ? { ton: 'attention' as const, texte: 'Service partiellement dégradé' }
-      : { ton: 'ok' as const, texte: 'Service opérationnel' }
-
-  const stylesStatut = {
-    ok: {
-      conteneur: 'border-emerald-300/60 bg-emerald-50 text-emerald-700 dark:border-emerald-500/25 dark:bg-emerald-500/10 dark:text-emerald-300',
-      point: 'bg-emerald-500',
-      halo: 'bg-emerald-400',
-    },
-    attention: {
-      conteneur: 'border-amber-300/70 bg-amber-50 text-amber-700 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-300',
-      point: 'bg-amber-500',
-      halo: 'bg-amber-400',
-    },
-    neutre: {
-      conteneur: 'border-[#1C1917]/10 bg-white text-stone-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300',
-      point: 'bg-stone-400',
-      halo: 'bg-stone-300',
-    },
-  }[statutEnTete.ton]
-
   return (
     <CoquilleTableauDeBord>
-      {/* En-tête : état du service en direct */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-2.5">
-          <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10.5px] font-bold uppercase tracking-[0.12em] ${stylesStatut.conteneur}`}>
-            <span className="relative flex h-1.5 w-1.5">
-              <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-70 ${stylesStatut.halo}`} />
-              <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${stylesStatut.point}`} />
-            </span>
-            {statutEnTete.texte}
-          </span>
-          <div>
-            <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Vue d&apos;ensemble</h1>
-            <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
-              Trafic, file d&apos;attente et état de vos SIM — en temps réel.
-            </p>
-          </div>
+      {/* En-tête (Exact Screenshot) */}
+      <div className="mb-6 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">Bonjour.</h1>
+          <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">Votre infrastructure SMS, en un regard.</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
