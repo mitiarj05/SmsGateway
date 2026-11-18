@@ -220,7 +220,7 @@ fun EcranStatut(
                         text = smsEnvoyesAujourdhui.toString(),
                         fontSize = 28.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = NeonCyan
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
@@ -236,7 +236,7 @@ fun EcranStatut(
                         text = smsEnAttente.toString(),
                         fontSize = 28.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = NeonViolet
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
