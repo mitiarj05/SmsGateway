@@ -294,7 +294,7 @@ fun EcranStatut(
                         text = libelleSolde(carteCritique.solde),
                         fontSize = 26.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = NeonCyan
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
