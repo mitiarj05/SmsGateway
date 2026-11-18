@@ -227,30 +227,30 @@ export default function CoquilleTableauDeBord({ children }: {
           </div>
         </div>
 
-        {/* Liens défilants : logo et bas de menu restent toujours visibles */}
-        <div className="min-h-0 flex-1 overflow-y-auto py-1 [scrollbar-width:thin] [&::-webkit-scrollbar]:w-[6px] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-black/15 dark:[&::-webkit-scrollbar-thumb]:bg-white/15">
+        {/* Liens : navigation fixe sans scrollbar */}
+        <div className="min-h-0 flex-1 overflow-hidden py-0.5">
           {!reduite && (
-            <p className="mb-2 mt-7 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400 dark:text-zinc-500">
+            <p className="mb-1.5 mt-3 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400 dark:text-zinc-500">
               Espace admin
             </p>
           )}
 
           {/* Navigation Admin */}
-          <nav className="flex flex-col gap-1">
+          <nav className="flex flex-col gap-0.5">
             {NAVIGATION_ADMIN.map(({ href, etiquette, icone: Icon, pastille }) => {
               const active = chemin === href || (href !== '/devices' && chemin.startsWith(href + '/'))
               return (
                 <Link
                   key={href}
                   href={href}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] transition-colors${
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] transition-colors${
                     active
                       ? 'bg-[#2563EB]/10 font-semibold text-[#1D4ED8] dark:bg-white/10 dark:text-white'
                       : 'text-stone-500 hover:bg-stone-100 hover:text-[#1C1917] dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white'
                   }${reduite ? ' justify-center px-0' : ''}`}
                 >
                   <span title={etiquette} className="flex shrink-0">
-                    <Icon size={17} className={active ? 'text-[#2563EB] dark:text-[#93C5FD]' : 'text-stone-400 dark:text-zinc-500'} />
+                    <Icon size={16} className={active ? 'text-[#2563EB] dark:text-[#93C5FD]' : 'text-stone-400 dark:text-zinc-500'} />
                   </span>
                   <span className={`flex-1 overflow-hidden whitespace-nowrap transition-all duration-200 ${reduite ? 'max-w-0 opacity-0' : 'max-w-[180px] opacity-100'}`}>{etiquette}</span>
                   {pastille && !reduite && (
@@ -268,27 +268,27 @@ export default function CoquilleTableauDeBord({ children }: {
           </nav>
 
           {!reduite && (
-            <p className="mb-2 mt-6 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400 dark:text-zinc-500">
+            <p className="mb-1.5 mt-3 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400 dark:text-zinc-500">
               Configuration
             </p>
           )}
 
           {/* Navigation Config */}
-          <nav className="flex flex-col gap-1">
+          <nav className="flex flex-col gap-0.5">
             {NAVIGATION_CONFIG.map(({ href, etiquette, icone: Icon }) => {
               const active = chemin === href || chemin.startsWith(href + '/')
               return (
                 <Link
                   key={href}
                   href={href}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] transition-colors${
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] transition-colors${
                     active
                       ? 'bg-[#2563EB]/10 font-semibold text-[#1D4ED8] dark:bg-white/10 dark:text-white'
                       : 'text-stone-500 hover:bg-stone-100 hover:text-[#1C1917] dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white'
                   }${reduite ? ' justify-center px-0' : ''}`}
                 >
                   <span title={etiquette} className="flex shrink-0">
-                    <Icon size={17} className={active ? 'text-[#2563EB] dark:text-[#93C5FD]' : 'text-stone-400 dark:text-zinc-500'} />
+                    <Icon size={16} className={active ? 'text-[#2563EB] dark:text-[#93C5FD]' : 'text-stone-400 dark:text-zinc-500'} />
                   </span>
                   <span className={`flex-1 overflow-hidden whitespace-nowrap transition-all duration-200 ${reduite ? 'max-w-0 opacity-0' : 'max-w-[180px] opacity-100'}`}>{etiquette}</span>
                 </Link>
@@ -298,19 +298,19 @@ export default function CoquilleTableauDeBord({ children }: {
 
           {/* Card Aide - Toujours visible sous le menu Config */}
           {!reduite && (
-            <div className="mt-6 rounded-2xl border border-[#1C1917]/10 bg-stone-100 p-4 dark:border-white/10 dark:bg-white/5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#1C1917]/15 text-sm font-bold text-stone-500 dark:border-white/25 dark:text-zinc-300">
+            <div className="mt-3 rounded-2xl border border-[#1C1917]/10 bg-stone-100 p-3 dark:border-white/10 dark:bg-white/5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full border border-[#1C1917]/15 text-xs font-bold text-stone-500 dark:border-white/25 dark:text-zinc-300">
                 ?
               </div>
-              <p className="mt-2.5 text-[13px] font-bold text-[#1C1917] dark:text-white">Besoin d'aide ?</p>
-              <p className="mt-1 text-[11px] leading-relaxed text-stone-500 dark:text-zinc-400">
-                Consultez la documentation ou contactez le support.
+              <p className="mt-2 text-[12px] font-bold text-[#1C1917] dark:text-white">Besoin d'aide ?</p>
+              <p className="mt-0.5 text-[11px] leading-relaxed text-stone-500 dark:text-zinc-400">
+                Consultez la documentation ou le support.
               </p>
               <a
                 href="/comment-ca-marche"
-                className="mt-2.5 inline-flex items-center gap-1 text-[12px] font-semibold text-[#1D4ED8] hover:underline dark:text-[#93C5FD]"
+                className="mt-2 inline-flex items-center gap-1 text-[11.5px] font-semibold text-[#1D4ED8] hover:underline dark:text-[#93C5FD]"
               >
-                Centre d'aide <ArrowUpRight className="h-3.5 w-3.5" />
+                Centre d'aide <ArrowUpRight className="h-3 w-3" />
               </a>
             </div>
           )}
