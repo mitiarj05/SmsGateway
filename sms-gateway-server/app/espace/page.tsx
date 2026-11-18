@@ -157,14 +157,17 @@ export default function PageTableauDeBordClient() {
 
   return (
     <CoquilleEspace>
-      {/* En-tête (Exact Screenshot 9) */}
-      <div className="mb-6 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+      {/* En-tête de page */}
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">
-            Bonjour, {moi?.nom ?? '…'}
+          <p className="text-[10.5px] font-bold uppercase tracking-[0.16em] text-stone-500 dark:text-zinc-500">
+            Espace client
+          </p>
+          <h1 className="mt-1 text-[28px] font-extrabold tracking-tight text-[#1C1917] dark:text-white">
+            Vue d&apos;ensemble
           </h1>
           <p className="mt-1 text-[13.5px] text-stone-600 dark:text-zinc-400">
-            Votre activité SMS, en un regard.
+            Vos envois, vos réponses et votre parc d&apos;envoi en un regard.
           </p>
         </div>
         <div className="flex items-center gap-4">
